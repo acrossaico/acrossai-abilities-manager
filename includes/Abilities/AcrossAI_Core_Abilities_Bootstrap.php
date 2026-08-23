@@ -367,6 +367,12 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Block\Refresh_Site_Editor_Context();
 		new Block\List_Reusable_Blocks();
 		new Block\List_Block_Areas();
+		// Feature 070 — block-editor site-context reads.
+		new Block\Get_Style_Guide();
+		new Block\Get_Style_Book();
+		new Block\Get_Site_Editor_Summary();
+		new Block\Get_Site_Editor_References();
+		new Block\List_Block_Categories();
 		new SiteHealth\Get_Site_Maintenance_Report();
 		// Feature 063 — Maintenance-mode status read.
 		new SiteHealth\Get_Maintenance_Mode_Status();

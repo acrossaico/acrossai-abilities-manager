@@ -189,6 +189,18 @@
 		<testsuite name="feature-065-unit">
 			<file>tests/phpunit/abilities/Test_Feature_065_Safety_And_Payload.php</file>
 		</testsuite>
+		<!--
+			Feature 070 — block-editor site-context reads. Files must be listed
+			explicitly: a test file that is not listed here silently does not run.
+		-->
+		<testsuite name="feature-070-unit">
+			<file>tests/phpunit/abilities/Test_Get_Style_Guide.php</file>
+			<file>tests/phpunit/abilities/Test_Get_Style_Book.php</file>
+			<file>tests/phpunit/abilities/Test_Get_Site_Editor_Summary.php</file>
+			<file>tests/phpunit/abilities/Test_Get_Site_Editor_References.php</file>
+			<file>tests/phpunit/abilities/Test_List_Block_Categories.php</file>
+			<file>tests/phpunit/abilities/Test_Get_Site_Editor_Context.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

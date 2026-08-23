@@ -50,6 +50,8 @@ class Get_Site_Editor_Context extends Ability_Definition {
 						'active_style_variation' => array( 'type' => 'string' ),
 						'template_count'         => array( 'type' => 'integer' ),
 						'template_part_count'    => array( 'type' => 'integer' ),
+						'navigation_count'       => array( 'type' => 'integer' ),
+						'style_variation_count'  => array( 'type' => 'integer' ),
 						'site_editor_url'        => array( 'type' => 'string' ),
 						'message'                => array( 'type' => 'string' ),
 					),
@@ -101,6 +103,20 @@ class Get_Site_Editor_Context extends Ability_Definition {
 		$templates      = get_block_templates( array(), 'wp_template' );
 		$template_parts = get_block_templates( array(), 'wp_template_part' );
 
+		$navigation_ids = get_posts(
+			array(
+				'post_type'      => 'wp_navigation',
+				'post_status'    => array( 'publish', 'draft' ),
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+			)
+		);
+
+		$style_variation_count = 0;
+		if ( class_exists( '\WP_Theme_JSON_Resolver' ) && method_exists( '\WP_Theme_JSON_Resolver', 'get_style_variations' ) ) {
+			$style_variation_count = count( (array) \WP_Theme_JSON_Resolver::get_style_variations() );
+		}
+
 		return array(
 			'success'                => true,
 			'is_block_theme'         => (bool) $is_block_theme,
@@ -108,6 +124,8 @@ class Get_Site_Editor_Context extends Ability_Definition {
 			'active_style_variation' => sanitize_text_field( $style_variation ),
 			'template_count'         => is_array( $templates ) ? count( $templates ) : 0,
 			'template_part_count'    => is_array( $template_parts ) ? count( $template_parts ) : 0,
+			'navigation_count'       => is_array( $navigation_ids ) ? count( $navigation_ids ) : 0,
+			'style_variation_count'  => $style_variation_count,
 			'site_editor_url'        => esc_url_raw( (string) admin_url( 'site-editor.php' ) ),
 			'message'                => $is_block_theme
 				? __( 'Block theme active; Site Editor available.', 'acrossai-abilities-manager' )
