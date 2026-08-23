@@ -397,6 +397,17 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Block\Set_Template_Lock();
 		new Block\Read_Block_Bindings();
 		new Block\Set_Block_Bindings();
+		// Feature 074 — parse / serialize primitives + content-quality analysis.
+		new Block\Parse_Content();
+		new Block\Serialize_Blocks();
+		new Block\Validate_Content();
+		new Block\Audit_Content();
+		new Block\Analyze_Content();
+		new Block\Evaluate_Design();
+		new Block\Suggest_Design_Fixes();
+		new Block\Evaluate_Copy();
+		new Block\Suggest_Copy_Fixes();
+		new Block\Evaluate_Render_Context();
 		new SiteHealth\Get_Site_Maintenance_Report();
 		// Feature 063 — Maintenance-mode status read.
 		new SiteHealth\Get_Maintenance_Mode_Status();

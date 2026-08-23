@@ -213,6 +213,10 @@
 		<testsuite name="feature-073-unit">
 			<file>tests/phpunit/abilities/Test_Feature_073_Suite_Contract.php</file>
 		</testsuite>
+		<!-- Feature 074 — parse + serialize primitives + content-quality analysis. -->
+		<testsuite name="feature-074-unit">
+			<file>tests/phpunit/abilities/Test_Feature_074_Suite_Contract.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
