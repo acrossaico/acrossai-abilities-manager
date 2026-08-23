@@ -205,6 +205,10 @@
 		<testsuite name="feature-071-unit">
 			<file>tests/phpunit/abilities/Test_Feature_071_Suite_Contract.php</file>
 		</testsuite>
+		<!-- Feature 072 — usage lookups + advanced block-tree mutation. -->
+		<testsuite name="feature-072-unit">
+			<file>tests/phpunit/abilities/Test_Feature_072_Suite_Contract.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

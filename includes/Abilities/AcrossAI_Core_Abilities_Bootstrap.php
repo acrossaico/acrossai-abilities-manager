@@ -383,6 +383,14 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Block\Read_Navigation();
 		new Block\Create_Navigation();
 		new Block\Update_Navigation();
+		// Feature 072 — usage lookups & advanced block-tree mutation.
+		new Block\Find_Navigation_Usage();
+		new Block\Find_Template_Part_Usage();
+		new Block\Find_Reusable_Block_Usage();
+		new Block\Mutate_Block_Tree();
+		new Block\Transform_Blocks();
+		new Block\Replace_Block_Text();
+		new Block\Normalize_Heading_Levels();
 		new SiteHealth\Get_Site_Maintenance_Report();
 		// Feature 063 — Maintenance-mode status read.
 		new SiteHealth\Get_Maintenance_Mode_Status();
