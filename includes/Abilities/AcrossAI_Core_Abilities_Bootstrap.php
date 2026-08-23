@@ -391,6 +391,12 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Block\Transform_Blocks();
 		new Block\Replace_Block_Text();
 		new Block\Normalize_Heading_Levels();
+		// Feature 073 — block/template locking + block bindings.
+		new Block\Set_Block_Lock();
+		new Block\Set_Allowed_Blocks();
+		new Block\Set_Template_Lock();
+		new Block\Read_Block_Bindings();
+		new Block\Set_Block_Bindings();
 		new SiteHealth\Get_Site_Maintenance_Report();
 		// Feature 063 — Maintenance-mode status read.
 		new SiteHealth\Get_Maintenance_Mode_Status();

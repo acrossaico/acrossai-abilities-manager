@@ -209,6 +209,10 @@
 		<testsuite name="feature-072-unit">
 			<file>tests/phpunit/abilities/Test_Feature_072_Suite_Contract.php</file>
 		</testsuite>
+		<!-- Feature 073 — locking + block bindings. -->
+		<testsuite name="feature-073-unit">
+			<file>tests/phpunit/abilities/Test_Feature_073_Suite_Contract.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
