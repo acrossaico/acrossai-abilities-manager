@@ -373,6 +373,16 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Block\Get_Site_Editor_Summary();
 		new Block\Get_Site_Editor_References();
 		new Block\List_Block_Categories();
+		// Feature 071 — reusable-block writes & wp_navigation entities.
+		new Block\Read_Reusable_Block();
+		new Block\Create_Reusable_Block();
+		new Block\Update_Reusable_Block();
+		new Block\Extract_Reusable_Block();
+		new Block\Insert_Reusable_Block_Into_Post();
+		new Block\List_Navigations();
+		new Block\Read_Navigation();
+		new Block\Create_Navigation();
+		new Block\Update_Navigation();
 		new SiteHealth\Get_Site_Maintenance_Report();
 		// Feature 063 — Maintenance-mode status read.
 		new SiteHealth\Get_Maintenance_Mode_Status();

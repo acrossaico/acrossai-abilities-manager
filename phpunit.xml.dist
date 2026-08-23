@@ -201,6 +201,10 @@
 			<file>tests/phpunit/abilities/Test_List_Block_Categories.php</file>
 			<file>tests/phpunit/abilities/Test_Get_Site_Editor_Context.php</file>
 		</testsuite>
+		<!-- Feature 071 — reusable-block writes + wp_navigation entities. -->
+		<testsuite name="feature-071-unit">
+			<file>tests/phpunit/abilities/Test_Feature_071_Suite_Contract.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
