@@ -217,6 +217,10 @@
 		<testsuite name="feature-074-unit">
 			<file>tests/phpunit/abilities/Test_Feature_074_Suite_Contract.php</file>
 		</testsuite>
+		<!-- Feature 075 — generation, recipes & authoring guidance. -->
+		<testsuite name="feature-075-unit">
+			<file>tests/phpunit/abilities/Test_Feature_075_Suite_Contract.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

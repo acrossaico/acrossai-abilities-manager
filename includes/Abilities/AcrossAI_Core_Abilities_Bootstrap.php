@@ -408,6 +408,17 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Block\Evaluate_Copy();
 		new Block\Suggest_Copy_Fixes();
 		new Block\Evaluate_Render_Context();
+		// Feature 075 — block-editor generation, recipes & authoring guidance.
+		new Block\Get_Block_Guidance();
+		new Block\List_Page_Recipes();
+		new Block\List_Section_Recipes();
+		new Block\List_Query_Section_Recipes();
+		new Block\Generate_Landing_Page();
+		new Block\Generate_Section();
+		new Block\Generate_Query_Section();
+		new Block\Create_Page_From_Blocks();
+		new Block\Create_Page_From_Pattern();
+		new Block\Create_Landing_Page();
 		new SiteHealth\Get_Site_Maintenance_Report();
 		// Feature 063 — Maintenance-mode status read.
 		new SiteHealth\Get_Maintenance_Mode_Status();
