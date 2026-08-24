@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -110,6 +111,12 @@ class Read_File extends Ability_Definition {
 	 * @return array
 	 */
 	public function execute( array $input = array() ): array {
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
+
 		$rel_path = sanitize_text_field( $input['path'] ?? '' );
 		$base     = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
 		$abs_path = $base . '/' . ltrim( $rel_path, '/' );
@@ -136,7 +143,7 @@ class Read_File extends Ability_Definition {
 			);
 		}
 
-		if ( ! is_file( $abs_path ) ) {
+		if ( ! $fs->is_file( $abs_path ) ) {
 			return array(
 				'success' => false,
 				'message' => __( 'File does not exist.', 'acrossai-abilities-manager' ),
@@ -144,7 +151,7 @@ class Read_File extends Ability_Definition {
 		}
 
 		// Size cap: refuse before loading the file into memory.
-		$size = (int) filesize( $abs_path );
+		$size = (int) $fs->size( $abs_path );
 		if ( $size > self::MAX_READ_BYTES ) {
 			return array(
 				'success'        => false,
@@ -156,7 +163,7 @@ class Read_File extends Ability_Definition {
 			);
 		}
 
-		$content = file_get_contents( $abs_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$content = $fs->get_contents( $abs_path );
 
 		if ( false === $content ) {
 			return array(

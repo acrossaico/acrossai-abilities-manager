@@ -187,6 +187,10 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// Feature 087 — core-table engine audit + InnoDB conversion.
 		new Database\Audit_Core_Table_Engines();
 		new Database\Convert_Core_Tables_To_Innodb();
+		// Feature 091: every FileManager ability below (except the three
+		// deferred zip abilities marked with TODO(feature-092) at the top of
+		// their source files) routes filesystem I/O through WP_Filesystem via
+		// the Utilities\Wp_Filesystem_Init helper.
 		new FileManager\Read_File();
 		new FileManager\Create_File();
 		new FileManager\Edit_File();

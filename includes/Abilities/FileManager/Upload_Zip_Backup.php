@@ -2,6 +2,11 @@
 /**
  * Upload_Zip_Backup ability (Feature 041).
  *
+ * TODO(feature-092): migrate to WP_Filesystem. Deferred from Feature 091
+ * because chunked upload uses fopen/fwrite/fclose file-handle APIs that
+ * WP_Filesystem does not expose. Currently native PHP; works reliably
+ * only on FS_METHOD='direct' transports.
+ *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\FileManager

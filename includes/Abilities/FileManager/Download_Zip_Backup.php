@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups_Storage;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -52,13 +53,14 @@ class Download_Zip_Backup extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'    => array( 'type' => 'boolean' ),
-						'file_path'  => array( 'type' => 'string' ),
-						'file_url'   => array( 'type' => 'string' ),
-						'size'       => array( 'type' => 'integer' ),
-						'sha256'     => array( 'type' => 'string' ),
-						'created_at' => array( 'type' => 'string' ),
-						'message'    => array( 'type' => 'string' ),
+						'success'        => array( 'type' => 'boolean' ),
+						'file_path'      => array( 'type' => 'string' ),
+						'file_url'       => array( 'type' => 'string' ),
+						'size'           => array( 'type' => 'integer' ),
+						'sha256'         => array( 'type' => 'string' ),
+						'created_at'     => array( 'type' => 'string' ),
+						'message'        => array( 'type' => 'string' ),
+						'blocked_reason' => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -91,6 +93,12 @@ class Download_Zip_Backup extends Ability_Definition {
 	 * @return array
 	 */
 	public function execute( array $input = array() ): array {
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
+
 		$file_path = sanitize_text_field( (string) ( $input['file_path'] ?? '' ) );
 
 		$resolved = Backups_Storage::resolve_managed_path( $file_path );
@@ -101,7 +109,7 @@ class Download_Zip_Backup extends Ability_Definition {
 			);
 		}
 
-		if ( ! is_file( $resolved ) ) {
+		if ( ! $fs->is_file( $resolved ) ) {
 			return array(
 				'success' => false,
 				'message' => __( 'File does not exist.', 'acrossai-abilities-manager' ),
@@ -112,9 +120,9 @@ class Download_Zip_Backup extends Ability_Definition {
 			'success'    => true,
 			'file_path'  => Backups_Storage::to_abspath_relative( $resolved ),
 			'file_url'   => Backups_Storage::url_for( $resolved ),
-			'size'       => (int) filesize( $resolved ),
+			'size'       => (int) $fs->size( $resolved ),
 			'sha256'     => Backups_Storage::sha256_of( $resolved ),
-			'created_at' => gmdate( 'c', (int) filemtime( $resolved ) ),
+			'created_at' => gmdate( 'c', (int) $fs->mtime( $resolved ) ),
 		);
 	}
 }

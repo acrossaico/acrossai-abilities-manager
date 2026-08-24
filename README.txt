@@ -139,6 +139,18 @@ No data is sent to any external server without an explicit administrator action.
 == Changelog ==
 
 = Unreleased =
+**Feature 091 — WP_Filesystem migration for `file-manager/*` abilities.** Every filesystem read, write, list, delete, copy, move, and stat performed by 19 file-manager abilities now routes through WordPress's `WP_Filesystem` transport instead of raw PHP filesystem functions. On the majority of hosts (`FS_METHOD='direct'`) the behaviour is identical. On hosts where WordPress requires FTP / SSH credentials (`FS_METHOD='ftpext'` / `'ftpsockets'` / `'ssh2'`) the abilities now succeed via the same channel WordPress core's file editor uses instead of silently failing.
+
+**Biggest wins — `wp-config.php` and `debug.log`:** `file-manager/read-wp-config`, `file-manager/edit-wp-config`, `file-manager/read-debug-log`, `file-manager/clear-debug-log` are the abilities most likely to touch files owned by the SSH user rather than the web-server user. Those calls previously failed on non-`direct` transports; they now work.
+
+**New response value:** every migrated ability's `blocked_reason` enum widens by one value — `filesystem_unavailable` — returned when `WP_Filesystem()` initialisation fails (typically missing `FTP_HOST` / `FTP_USER` / `FTP_PASS` on a non-`direct` host).
+
+**BREAKING — `file-manager/file-info` schema shrink:** the response no longer includes `ctime` or `atime` fields. `WP_Filesystem_Base` does not expose these consistently across transports (native `stat` returns them on `direct`, FTP/SSH transports don't). Callers programmatically reading `.ctime` or `.atime` must switch to `.mtime` or accept the loss. Every other field on the response is unchanged.
+
+**Deferred to feature 092:** `file-manager/create-zip-backup`, `file-manager/extract-zip-backup`, and `file-manager/upload-zip-backup` remain on native PHP for now. `ZipArchive` requires direct filesystem access and has no `WP_Filesystem` equivalent, and chunked upload uses `fopen`/`fwrite`/`fclose` file-handle APIs that `WP_Filesystem` does not expose. These three abilities continue to work exactly as before on `direct` transports and continue to fail as before on FTP/SSH ones. Every file carries a `// TODO(feature-092)` marker.
+
+**Housekeeping:** approximately 20 `phpcs:ignore WordPress.WP.AlternativeFunctions` suppressions removed from the 19 migrated files. `Ability_Definition` and `File_Mods_Guard` are unchanged (verified — sibling plugin `acrossai-buddyboss` continues to extend the former without issue).
+
 **Feature 090 — file-manager additions.** Four new abilities extend the `file-manager/*` namespace to cover directory management and metadata: `file-manager/append-file` (append or prepend to an existing file; refuses missing files and refuses `wp-config.php` / `.htaccess`), `file-manager/create-directory` (recursive-by-default `mkdir` under ABSPATH; idempotent), `file-manager/delete-directory` (empty-only by default; opt-in `recursive:true`; requires `confirm:true`; refuses nine critical WordPress directories), and `file-manager/file-info` (read-only stat wrapper with optional POSIX owner/group names). Ability count 385 → 389.
 
 **Feature 089 — file abilities consolidation.** Every file read / write / list / copy / move for the WordPress installation now flows through the `file-manager/*` namespace. Three new abilities added; six duplicate theme- and plugin-scoped abilities removed; a pre-existing security gap closed.

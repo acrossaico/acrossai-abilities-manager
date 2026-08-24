@@ -2,6 +2,11 @@
 /**
  * Extract_Zip_Backup ability (Feature 041).
  *
+ * TODO(feature-092): migrate to WP_Filesystem. Deferred from Feature 091
+ * because ZipArchive requires direct filesystem access and has no
+ * WP_Filesystem equivalent. Currently native PHP; works reliably only on
+ * FS_METHOD='direct' transports.
+ *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\FileManager

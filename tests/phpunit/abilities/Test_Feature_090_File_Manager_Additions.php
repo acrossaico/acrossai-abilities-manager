@@ -76,8 +76,12 @@ class Test_Feature_090_File_Manager_Additions extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'File_Mods_Guard::blocked_response()', $this->files['append_file'] );
 	}
 
-	public function test_append_file_uses_file_append_and_lock_ex(): void {
-		$this->assertStringContainsString( 'FILE_APPEND | LOCK_EX', $this->files['append_file'] );
+	public function test_append_file_uses_wp_filesystem_read_then_put(): void {
+		// Feature 091: WP_Filesystem has no FILE_APPEND equivalent, so both
+		// append and prepend use $fs->get_contents() + concat + $fs->put_contents().
+		$this->assertStringContainsString( '$fs->get_contents( $real )', $this->files['append_file'] );
+		$this->assertStringContainsString( '$fs->put_contents( $real', $this->files['append_file'] );
+		$this->assertStringContainsString( 'FS_CHMOD_FILE', $this->files['append_file'] );
 	}
 
 	public function test_append_file_refuses_missing_source(): void {
@@ -202,13 +206,19 @@ class Test_Feature_090_File_Manager_Additions extends WP_UnitTestCase {
 		$this->assertStringContainsString( "'blocked_reason' => 'protected_directory'", $this->files['delete_directory'] );
 	}
 
-	public function test_delete_directory_uses_recursive_iterator_with_child_first(): void {
-		$this->assertStringContainsString( 'RecursiveIteratorIterator::CHILD_FIRST', $this->files['delete_directory'] );
-		$this->assertStringContainsString( 'RecursiveDirectoryIterator::SKIP_DOTS', $this->files['delete_directory'] );
+	public function test_delete_directory_uses_recursive_dirlist_walk(): void {
+		// Feature 091: replaced RecursiveIteratorIterator+CHILD_FIRST with a
+		// private walk_delete() method driven by $fs->dirlist(). Bottom-up
+		// deletion is preserved (files deleted then $fs->rmdir on parent).
+		$this->assertStringContainsString( 'walk_delete(', $this->files['delete_directory'] );
+		$this->assertStringContainsString( '$fs->dirlist(', $this->files['delete_directory'] );
+		$this->assertStringContainsString( '$fs->rmdir(', $this->files['delete_directory'] );
 	}
 
 	public function test_delete_directory_skips_symlinks(): void {
-		$this->assertStringContainsString( '->isLink()', $this->files['delete_directory'] );
+		// Feature 091: dirlist() reports 'l' for symlinks; walk explicitly
+		// deletes the reference but never recurses into the target.
+		$this->assertStringContainsString( "'l' === \$type", $this->files['delete_directory'] );
 	}
 
 	public function test_delete_directory_reports_partial_entries_on_failure(): void {
@@ -247,15 +257,21 @@ class Test_Feature_090_File_Manager_Additions extends WP_UnitTestCase {
 		$this->assertStringNotContainsString( 'File_Mods_Guard', $this->files['file_info'] );
 	}
 
-	public function test_file_info_calls_native_stat(): void {
-		$this->assertMatchesRegularExpression(
-			"/stat\\(\\s*\\\$candidate\\s*\\)/",
-			$this->files['file_info']
-		);
+	public function test_file_info_composes_stat_from_wp_filesystem(): void {
+		// Feature 091: no native stat(). Compose from $fs->size / mtime /
+		// owner / group / getchmod / is_link / is_readable / is_writable.
+		$this->assertStringContainsString( '$fs->size( $candidate )', $this->files['file_info'] );
+		$this->assertStringContainsString( '$fs->mtime( $candidate )', $this->files['file_info'] );
+		$this->assertStringContainsString( '$fs->owner( $candidate )', $this->files['file_info'] );
+		$this->assertStringContainsString( '$fs->group( $candidate )', $this->files['file_info'] );
+		$this->assertStringContainsString( '$fs->getchmod( $candidate )', $this->files['file_info'] );
 	}
 
-	public function test_file_info_derives_octal_mode_from_stat(): void {
-		$this->assertStringContainsString( 'decoct(', $this->files['file_info'] );
+	public function test_file_info_response_omits_ctime_and_atime(): void {
+		// Feature 091 BREAKING: WP_Filesystem_Base doesn't expose ctime/atime,
+		// so the response schema drops them.
+		$this->assertStringNotContainsString( "'ctime'", $this->files['file_info'] );
+		$this->assertStringNotContainsString( "'atime'", $this->files['file_info'] );
 	}
 
 	public function test_file_info_guards_posix_functions_behind_function_exists(): void {

@@ -12,8 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -137,6 +136,11 @@ class Delete_Directory extends Ability_Definition {
 		if ( null !== $blocked ) {
 			return $blocked;
 		}
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
 
 		$rel_path  = sanitize_text_field( $input['path'] ?? '' );
 		$recursive = ! empty( $input['recursive'] );
@@ -172,7 +176,7 @@ class Delete_Directory extends Ability_Definition {
 			);
 		}
 
-		if ( ! is_dir( $real ) ) {
+		if ( ! $fs->is_dir( $real ) ) {
 			return array(
 				'success'        => false,
 				'blocked_reason' => 'not_a_directory',
@@ -197,7 +201,7 @@ class Delete_Directory extends Ability_Definition {
 		}
 
 		if ( ! $recursive ) {
-			if ( ! rmdir( $real ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
+			if ( ! $fs->rmdir( $real ) ) {
 				return array(
 					'success'         => false,
 					'blocked_reason'  => 'not_empty',
@@ -213,51 +217,22 @@ class Delete_Directory extends Ability_Definition {
 			);
 		}
 
-		// Recursive walk, bottom-up.
+		// Recursive walk, bottom-up. Feature 091 replaces the earlier
+		// SPL-iterator pattern (feature 090) with a WP_Filesystem-compatible
+		// $fs->dirlist() walk.
 		$entries_removed = 0;
-		$iterator        = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator( $real, RecursiveDirectoryIterator::SKIP_DOTS ),
-			RecursiveIteratorIterator::CHILD_FIRST
-		);
+		$fail_message    = null;
+		$this->walk_delete( $fs, $real, $entries_removed, $fail_message );
 
-		foreach ( $iterator as $file_info ) {
-			$entry_path = $file_info->getPathname();
-
-			// Symlinks are unlinked as references — never followed.
-			if ( $file_info->isLink() ) {
-				if ( ! @unlink( $entry_path ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-					return array(
-						'success'         => false,
-						'entries_removed' => $entries_removed,
-						/* translators: %s: entry path */
-						'message'         => sprintf( __( 'Could not remove symlink at "%s".', 'acrossai-abilities-manager' ), $entry_path ),
-					);
-				}
-				++$entries_removed;
-				continue;
-			}
-
-			if ( $file_info->isDir() ) {
-				if ( ! @rmdir( $entry_path ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-					return array(
-						'success'         => false,
-						'entries_removed' => $entries_removed,
-						/* translators: %s: entry path */
-						'message'         => sprintf( __( 'Could not remove directory at "%s".', 'acrossai-abilities-manager' ), $entry_path ),
-					);
-				}
-			} elseif ( ! @unlink( $entry_path ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-				return array(
-					'success'         => false,
-					'entries_removed' => $entries_removed,
-					/* translators: %s: entry path */
-					'message'         => sprintf( __( 'Could not remove file at "%s".', 'acrossai-abilities-manager' ), $entry_path ),
-				);
-			}
-			++$entries_removed;
+		if ( null !== $fail_message ) {
+			return array(
+				'success'         => false,
+				'entries_removed' => $entries_removed,
+				'message'         => $fail_message,
+			);
 		}
 
-		if ( ! @rmdir( $real ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		if ( ! $fs->rmdir( $real ) ) {
 			return array(
 				'success'         => false,
 				'entries_removed' => $entries_removed,
@@ -273,5 +248,72 @@ class Delete_Directory extends Ability_Definition {
 			/* translators: %d: entries removed */
 			'message'         => sprintf( __( 'Directory removed (%d entries).', 'acrossai-abilities-manager' ), $entries_removed ),
 		);
+	}
+
+	/**
+	 * Recursive bottom-up delete using WP_Filesystem dirlist().
+	 *
+	 * Deletes files first, then recurses into directories, then rmdirs each
+	 * directory once empty. Skips symlinks (unlinks the reference, never
+	 * follows). On first failure captures $fail_message and returns; callers
+	 * then decide how to surface the partial result.
+	 *
+	 * @param \WP_Filesystem_Base $fs              Initialised filesystem transport.
+	 * @param string              $dir_abs         Absolute directory path to walk.
+	 * @param int                 $entries_removed Output counter.
+	 * @param string|null         $fail_message    Output — set to a human message on first failure.
+	 * @return void
+	 */
+	private function walk_delete( \WP_Filesystem_Base $fs, string $dir_abs, int &$entries_removed, ?string &$fail_message ): void {
+		if ( null !== $fail_message ) {
+			return;
+		}
+
+		$dirlist = $fs->dirlist( $dir_abs );
+		if ( ! is_array( $dirlist ) ) {
+			return;
+		}
+
+		foreach ( $dirlist as $name => $info ) {
+			if ( null !== $fail_message ) {
+				return;
+			}
+			$entry_path = rtrim( $dir_abs, '/' ) . '/' . $name;
+			$type       = isset( $info['type'] ) ? (string) $info['type'] : 'f';
+
+			if ( 'l' === $type ) {
+				// Symlink — delete the reference, never follow.
+				if ( ! $fs->delete( $entry_path ) ) {
+					/* translators: %s: entry path */
+					$fail_message = sprintf( __( 'Could not remove symlink at "%s".', 'acrossai-abilities-manager' ), $entry_path );
+					return;
+				}
+				++$entries_removed;
+				continue;
+			}
+
+			if ( 'd' === $type ) {
+				// Recurse into subdir first, then rmdir it.
+				$this->walk_delete( $fs, $entry_path, $entries_removed, $fail_message );
+				if ( null !== $fail_message ) {
+					return;
+				}
+				if ( ! $fs->rmdir( $entry_path ) ) {
+					/* translators: %s: entry path */
+					$fail_message = sprintf( __( 'Could not remove directory at "%s".', 'acrossai-abilities-manager' ), $entry_path );
+					return;
+				}
+				++$entries_removed;
+				continue;
+			}
+
+			// Regular file.
+			if ( ! $fs->delete( $entry_path ) ) {
+				/* translators: %s: entry path */
+				$fail_message = sprintf( __( 'Could not remove file at "%s".', 'acrossai-abilities-manager' ), $entry_path );
+				return;
+			}
+			++$entries_removed;
+		}
 	}
 }

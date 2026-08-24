@@ -429,3 +429,11 @@ Sorted by namespace → sub-group → slug.
 | `users/` | `users/update-user` | users | users | Update User |
 | `widgets/` | `widgets/list-sidebars` | widgets | introspection | List Sidebars |
 | `widgets/` | `widgets/list-widgets` | widgets | introspection | List Widgets |
+
+---
+
+## Transport note (Feature 091)
+
+All 19 non-zip `file-manager/*` abilities perform their filesystem I/O through WordPress's `WP_Filesystem` transport. That means they work on every host WordPress itself can write to — `direct` filesystems (Local, wp-env, most managed WP hosts, containers, VPS setups) as well as hosts configured with `FS_METHOD='ftpext'` / `'ftpsockets'` / `'ssh2'` where the web-server process cannot write files directly. When `WP_Filesystem()` initialisation fails (typically missing FTP/SSH credentials), the ability responds `{success:false, blocked_reason:"filesystem_unavailable"}` with a message identifying the credential requirement.
+
+Three `file-manager/*` abilities remain on native PHP for now: `create-zip-backup`, `extract-zip-backup`, `upload-zip-backup`. `ZipArchive` and chunked `fopen()` upload have no `WP_Filesystem` equivalent. Feature 092 will address the design question (refuse on non-`direct`, stage via a temp local copy, or rewrite the chunked upload to buffer + `put_contents`). Until then those three work on `direct` transports and fail on non-`direct` transports.

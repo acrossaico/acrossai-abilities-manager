@@ -1,6 +1,12 @@
 <?php
 /**
- * File-manager file-info ability (Feature 090).
+ * File-manager file-info ability (Feature 090; migrated to WP_Filesystem in Feature 091).
+ *
+ * Feature 091 schema change: `ctime` and `atime` fields are no longer
+ * returned. `WP_Filesystem_Base` exposes size/mtime/owner/group/getchmod
+ * but not the creation- or access-time fields, and remote transports
+ * cannot provide them consistently. See specs/091-wp-filesystem-migration/
+ * contracts/file-info-schema-change.json.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
@@ -11,6 +17,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -33,7 +40,7 @@ class File_Info extends Ability_Definition {
 			'name' => 'file-manager/file-info',
 			'args' => array(
 				'label'               => __( 'Get File Info', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Return stat metadata (type, size, timestamps, mode/permissions, ownership, readability, writability, symlink flag) for any path inside the WordPress installation. Path must be relative to ABSPATH. Read-only — does not open the file. Owner/group name fields are omitted when the PHP POSIX extension is absent.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Return stat metadata (type, size, modification time, mode/permissions, ownership, readability, writability, symlink flag) for any path inside the WordPress installation. Path must be relative to ABSPATH. Read-only — does not open the file. Owner/group name fields are omitted when the PHP POSIX extension is absent.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-abilities-manager-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -61,8 +68,6 @@ class File_Info extends Ability_Definition {
 						),
 						'size'           => array( 'type' => 'integer' ),
 						'mtime'          => array( 'type' => 'integer' ),
-						'ctime'          => array( 'type' => 'integer' ),
-						'atime'          => array( 'type' => 'integer' ),
 						'mode_octal'     => array( 'type' => 'string' ),
 						'owner_uid'      => array( 'type' => 'integer' ),
 						'owner_name'     => array( 'type' => 'string' ),
@@ -105,8 +110,14 @@ class File_Info extends Ability_Definition {
 	 * @return array
 	 */
 	public function execute( array $input = array() ): array {
-		$rel_path = sanitize_text_field( $input['path'] ?? '' );
-		$base     = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
+
+		$rel_path  = sanitize_text_field( $input['path'] ?? '' );
+		$base      = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
 		$candidate = $base . '/' . ltrim( $rel_path, '/' );
 
 		// Scope check: parent must resolve inside ABSPATH. This mirrors the
@@ -121,7 +132,8 @@ class File_Info extends Ability_Definition {
 			);
 		}
 
-		if ( ! file_exists( $candidate ) && ! is_link( $candidate ) ) {
+		$is_link_ref = $fs->is_link( $candidate );
+		if ( ! $fs->exists( $candidate ) && ! $is_link_ref ) {
 			return array(
 				'success'        => false,
 				'blocked_reason' => 'path_not_found',
@@ -129,48 +141,55 @@ class File_Info extends Ability_Definition {
 			);
 		}
 
-		$stat = @stat( $candidate ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-		if ( ! is_array( $stat ) ) {
-			return array(
-				'success' => false,
-				'message' => __( 'Could not stat path.', 'acrossai-abilities-manager' ),
-			);
-		}
-
-		$is_link = is_link( $candidate );
-		if ( $is_link && ! file_exists( $candidate ) ) {
+		if ( $is_link_ref && ! $fs->exists( $candidate ) ) {
 			$type = 'link';
-		} elseif ( is_dir( $candidate ) ) {
+		} elseif ( $fs->is_dir( $candidate ) ) {
 			$type = 'dir';
 		} else {
 			$type = 'file';
 		}
 
+		// WP_Filesystem_Base->getchmod() returns a string like "644" — pad to
+		// 4 chars to match the pre-migration schema.
+		$chmod = (string) $fs->getchmod( $candidate );
+		if ( '' === $chmod ) {
+			$mode_octal = '';
+		} else {
+			$mode_octal = 4 === strlen( $chmod ) ? $chmod : str_pad( $chmod, 4, '0', STR_PAD_LEFT );
+		}
+
+		$owner_raw = $fs->owner( $candidate );
+		$group_raw = $fs->group( $candidate );
+
 		$response = array(
 			'success'    => true,
 			'path'       => $candidate,
 			'type'       => $type,
-			'size'       => 'dir' === $type ? 0 : (int) $stat['size'],
-			'mtime'      => (int) $stat['mtime'],
-			'ctime'      => (int) $stat['ctime'],
-			'atime'      => (int) $stat['atime'],
-			'mode_octal' => substr( (string) decoct( (int) $stat['mode'] ), -4 ),
-			'owner_uid'  => (int) $stat['uid'],
-			'group_gid'  => (int) $stat['gid'],
-			'readable'   => is_readable( $candidate ),
-			'writable'   => is_writable( $candidate ),
-			'is_link'    => $is_link,
+			'size'       => 'dir' === $type ? 0 : (int) $fs->size( $candidate ),
+			'mtime'      => (int) $fs->mtime( $candidate ),
+			'mode_octal' => $mode_octal,
+			'owner_uid'  => (int) $owner_raw,
+			'group_gid'  => (int) $group_raw,
+			'readable'   => (bool) $fs->is_readable( $candidate ),
+			'writable'   => (bool) $fs->is_writable( $candidate ),
+			'is_link'    => (bool) $is_link_ref,
 			'message'    => __( 'Path metadata retrieved.', 'acrossai-abilities-manager' ),
 		);
 
-		if ( function_exists( 'posix_getpwuid' ) ) {
-			$pw = posix_getpwuid( (int) $stat['uid'] );
+		// If the transport returned a name string (FTP/SSH transports may),
+		// expose it as owner_name / group_name.
+		if ( is_string( $owner_raw ) && '' !== $owner_raw && ! ctype_digit( $owner_raw ) ) {
+			$response['owner_name'] = $owner_raw;
+		} elseif ( function_exists( 'posix_getpwuid' ) ) {
+			$pw = posix_getpwuid( (int) $owner_raw );
 			if ( is_array( $pw ) && isset( $pw['name'] ) && '' !== $pw['name'] ) {
 				$response['owner_name'] = (string) $pw['name'];
 			}
 		}
-		if ( function_exists( 'posix_getgrgid' ) ) {
-			$gr = posix_getgrgid( (int) $stat['gid'] );
+		if ( is_string( $group_raw ) && '' !== $group_raw && ! ctype_digit( $group_raw ) ) {
+			$response['group_name'] = $group_raw;
+		} elseif ( function_exists( 'posix_getgrgid' ) ) {
+			$gr = posix_getgrgid( (int) $group_raw );
 			if ( is_array( $gr ) && isset( $gr['name'] ) && '' !== $gr['name'] ) {
 				$response['group_name'] = (string) $gr['name'];
 			}

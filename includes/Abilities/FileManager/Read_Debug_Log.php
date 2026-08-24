@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -51,10 +52,11 @@ class Read_Debug_Log extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success' => array( 'type' => 'boolean' ),
-						'content' => array( 'type' => 'string' ),
-						'size'    => array( 'type' => 'integer' ),
-						'message' => array( 'type' => 'string' ),
+						'success'        => array( 'type' => 'boolean' ),
+						'content'        => array( 'type' => 'string' ),
+						'size'           => array( 'type' => 'integer' ),
+						'message'        => array( 'type' => 'string' ),
+						'blocked_reason' => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -87,9 +89,15 @@ class Read_Debug_Log extends Ability_Definition {
 	 * @return array
 	 */
 	public function execute( array $input = array() ): array {
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
+
 		$log_path = WP_CONTENT_DIR . '/debug.log';
 
-		if ( ! is_file( $log_path ) ) {
+		if ( ! $fs->is_file( $log_path ) ) {
 			$logging_on = ( defined( 'WP_DEBUG_LOG' ) && \WP_DEBUG_LOG ) && ( defined( 'WP_DEBUG' ) && \WP_DEBUG );
 			$reason     = $logging_on
 				? __( 'No entries have been written yet.', 'acrossai-abilities-manager' )
@@ -101,7 +109,7 @@ class Read_Debug_Log extends Ability_Definition {
 			);
 		}
 
-		$content = file_get_contents( $log_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$content = $fs->get_contents( $log_path );
 
 		if ( false === $content ) {
 			return array(

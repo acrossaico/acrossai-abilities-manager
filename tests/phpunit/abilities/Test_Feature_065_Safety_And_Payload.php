@@ -365,15 +365,16 @@ class Test_Feature_065_Safety_And_Payload extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'private const MAX_READ_BYTES', $src );
 		$this->assertStringContainsString( '5242880', $src );
 		$this->assertStringContainsString( "'blocked_reason' => 'file_too_large'", $src );
-		// The filesize check must precede the file_get_contents call.
+		// The size check must precede the read call. Feature 091 migrated
+		// file_get_contents() → $fs->get_contents().
 		$pos_check   = strpos( $src, 'MAX_READ_BYTES' );
-		$pos_read    = strpos( $src, 'file_get_contents(' );
+		$pos_read    = strpos( $src, '$fs->get_contents(' );
 		$this->assertNotFalse( $pos_check );
 		$this->assertNotFalse( $pos_read );
 		$this->assertLessThan(
 			$pos_read,
 			$pos_check,
-			'Size cap must be checked before file_get_contents runs.'
+			'Size cap must be checked before $fs->get_contents runs.'
 		);
 	}
 
@@ -436,7 +437,8 @@ class Test_Feature_065_Safety_And_Payload extends WP_UnitTestCase {
 	public function test_fr019_delete_file_writes_timestamped_backup(): void {
 		$src = $this->sources['delete_file'];
 		$this->assertStringContainsString( "\$real . '.bak.' . time()", $src );
-		$this->assertStringContainsString( 'copy( $real, $backup )', $src );
+		// Feature 091 migrated native copy() → $fs->copy() with FS_CHMOD_FILE.
+		$this->assertStringContainsString( '$fs->copy( $real, $backup, false, FS_CHMOD_FILE )', $src );
 		$this->assertStringContainsString( "'backup'  => \$backup,", $src );
 	}
 

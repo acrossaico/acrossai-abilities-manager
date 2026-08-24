@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -73,8 +74,9 @@ class Edit_Wp_Config extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success' => array( 'type' => 'boolean' ),
-						'message' => array( 'type' => 'string' ),
+						'success'        => array( 'type' => 'boolean' ),
+						'message'        => array( 'type' => 'string' ),
+						'blocked_reason' => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -111,6 +113,11 @@ class Edit_Wp_Config extends Ability_Definition {
 		if ( null !== $blocked ) {
 			return $blocked;
 		}
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
 
 		$name  = strtoupper( sanitize_text_field( $input['constant_name'] ?? '' ) );
 		$value = $input['value'] ?? '';
@@ -129,7 +136,7 @@ class Edit_Wp_Config extends Ability_Definition {
 			);
 		}
 
-		$config_path = $this->locate_wp_config();
+		$config_path = $this->locate_wp_config( $fs );
 
 		if ( null === $config_path ) {
 			return array(
@@ -138,7 +145,7 @@ class Edit_Wp_Config extends Ability_Definition {
 			);
 		}
 
-		$raw     = file_get_contents( $config_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$raw     = $fs->get_contents( $config_path );
 		$escaped = addslashes( $value );
 		$pattern = "/define\(\s*(['\"])" . preg_quote( $name, '/' ) . "\\1\s*,\s*(?:'[^']*'|\"[^\"]*\"|[^)]+)\s*\)/";
 		$updated = preg_replace( $pattern, "define( '{$name}', '{$escaped}' )", $raw, -1, $count );
@@ -150,7 +157,7 @@ class Edit_Wp_Config extends Ability_Definition {
 			);
 		}
 
-		if ( false === file_put_contents( $config_path, $updated ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		if ( false === $fs->put_contents( $config_path, $updated, FS_CHMOD_FILE ) ) {
 			return array(
 				'success' => false,
 				'message' => __( 'Could not write wp-config.php.', 'acrossai-abilities-manager' ),
@@ -165,17 +172,18 @@ class Edit_Wp_Config extends Ability_Definition {
 	}
 
 	/**
-	 * Locate wp config.
+	 * Locate wp config via the initialised filesystem transport.
 	 *
+	 * @param \WP_Filesystem_Base $fs Initialised filesystem transport.
 	 * @return ?string
 	 */
-	private function locate_wp_config(): ?string {
+	private function locate_wp_config( \WP_Filesystem_Base $fs ): ?string {
 		$candidates = array(
 			ABSPATH . 'wp-config.php',
 			dirname( rtrim( ABSPATH, '/' ) ) . '/wp-config.php',
 		);
 		foreach ( $candidates as $path ) {
-			if ( is_file( $path ) ) {
+			if ( $fs->is_file( $path ) ) {
 				return $path;
 			}
 		}
