@@ -1662,3 +1662,29 @@ Setting the wrong `tab_group` value on a new ability is silently accepted — th
 - PR #128 (2026-08-14) — flipped 63 Elementor ability files from `'core'` to `'elementor'`; sole change needed to produce a working "Elementor" tab.
 
 **Tags**: ability-library, ability-integrations, tab-derivation, meta-acrossai, tab_group, silent-misplacement, first-party, jsx-runtime-derivation
+
+---
+
+### 2026-08-24 — PATTERN-ABILITY-BASE-OPTIONAL-TEMPLATE-AUTO-INJECT — extend Ability_Definition with an optional template method + guarded auto-inject to meta
+
+**Status**: Active
+**Scope**: Ability_Definition / Framework extension pattern
+**Tags**: template-method, base-class, backwards-compatible, auto-inject, feature-088, framework-extension
+
+**Pattern**: When adding a new optional per-ability metadata field to the plugin's ability surface, follow this shape:
+
+1. Add a `protected function xxx(): array` (or scalar) template method to `Ability_Definition` that defaults to an empty value.
+2. Inside the existing `push_definition()` callback, call `$this->xxx()` and merge the non-empty result into `$args['meta']['acrossai']['xxx']` behind a `! empty()` guard.
+3. Do NOT inject when the method returns empty — abilities that don't override see zero payload change.
+4. Runtime enrichment or gating of the field lives in `AcrossAI_Ability_Library_Registry::get_definitions()` (single-point decoration for all consumers), not in per-subclass code.
+5. If admin-facing kill-switching is needed, expose it as a WP option consumed at the same Registry decoration point (single-point gate for REST + MCP + Library UI).
+
+**Why this is durable**: 100% backwards-compatible way to extend the framework surface without touching 500+ subclasses. Alternatives (traits mixed into every subclass, decorators, new base classes, filter-only extension points) either require subclass edits or add unnecessary indirection. The pattern was proven by Feature 088's suggested_plugins framework which added a new field to every ability's payload contract while the full regression suite (1658 tests / 5344 assertions) passed on the first run.
+
+**How to apply**: reach for this pattern whenever a new field should be available to every ability but only meaningful for a subset (e.g. future badges, health flags, deprecation notices, related-abilities links, per-ability required-capability hints). If the field is REQUIRED for every ability, use the abstract `ability()` return array instead. This pattern is for OPTIONAL cross-cutting metadata.
+
+**References**:
+- `includes/Modules/Library/Ability_Definition.php::suggested_plugins()` — canonical example (Feature 088)
+- `includes/Modules/Library/AcrossAI_Ability_Library_Registry.php::apply_suggested_plugins_decoration()` — Registry-side decoration example
+- `docs/memory/DECISIONS.md#DEC-ABILITY-SUGGESTED-PLUGINS-CONTRACT` — the field this pattern first delivered
+- `PATTERN-META-ACROSSAI-NAMESPACE` (Feature 041) — the namespace the pattern writes into

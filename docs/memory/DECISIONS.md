@@ -1840,3 +1840,25 @@ Feature 060 introduced the second abstract base class in this plugin (after `Abi
 **References**:
 - `includes/Abilities/Utilities/Database_Mutation_Attribution.php` — the utility.
 - `includes/Abilities/Database/Convert_Core_Tables_To_Innodb.php` — first consumer.
+
+---
+
+### 2026-08-24 — DEC-ABILITY-SUGGESTED-PLUGINS-CONTRACT — meta.acrossai.suggested_plugins[] contract owned by the framework, not per-ability
+
+**Status**: Active
+**Scope**: Ability_Definition / Library payload
+**Tags**: framework-contract, meta-acrossai, suggested-plugins, backwards-compatible, feature-088
+
+**Decision**: The `meta.acrossai.suggested_plugins[]` field is a framework-level contract owned by `Ability_Definition` + `AcrossAI_Ability_Library_Registry`. Ability authors opt in by overriding the optional `protected suggested_plugins(): array` template method; the base class auto-injects into meta only when non-empty. Each entry declares 3 required fields (slug, name, reason) + 2 optional strings (url, covers) + 2 boolean flags (`plugin_provides_abilities`, `acrossai_provides_integration`) that signal to the UI/agent whether installing the plugin adds native ability discovery, unlocks an AcrossAI integration, both, or neither. Payload transformations (kill-switch, `is_active` enrichment, malformed-entry drop) happen exactly once in `Registry::get_definitions()`.
+
+**Why this is durable**: Prevents per-ability duplication where each subclass would implement its own suggestion mechanism inconsistently. Any future framework field (badges, health flags, deprecation notices, related-abilities links) should follow the same shape — one template method + one Registry decoration point — rather than being injected 500× at subclass level.
+
+**Tradeoffs**:
+- Gained: byte-identical payloads for 500+ existing abilities (verified by full-suite regression on merge); one gate covers REST + MCP + Library UI so admin toggles never leak between consumers; consistent runtime enrichment shape
+- Reconsider: only if per-ability logic actually needs to bypass framework gating (no known case)
+
+**References**:
+- `includes/Modules/Library/Ability_Definition.php` — template method + `push_definition()` auto-inject
+- `includes/Modules/Library/AcrossAI_Ability_Library_Registry.php` — `apply_suggested_plugins_decoration()` (kill-switch + is_active enrichment)
+- `admin/Partials/SettingsMenu.php` — "Disable the Plugin suggestion" checkbox owning the `acrossai_disable_plugin_suggestions` option
+- `specs/088-ability-suggested-plugins-framework/contracts/*.md` — full contract text

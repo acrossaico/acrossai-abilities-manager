@@ -537,3 +537,25 @@ Shipped 7 new `database/*` abilities in two stacked phases, closing the parity g
 New utilities: `Database_Core_Table_Allowlist`, `Database_Mutation_Attribution` — both reusable by future DB abilities. Three new decisions (DEC-DB-CORE-TABLE-ALLOWLIST, DEC-DB-DUAL-GATE-DDL, DEC-DB-MUTATION-ATTRIBUTION) codify the patterns. One bug pattern (BUG-SOURCE-INSPECTION-ADJACENCY-BRITTLE) captured from the additive-hardening regression.
 
 DB/state surface is now ~34 abilities (19 `database/` + 7 `cache/` + 8 `options/`) vs the source plugin's 10, with every one of their safety patterns adopted verbatim.
+
+---
+
+### 2026-08-24 — Feature 088: Ability-level suggested-plugins framework
+
+**Scope**: Framework / Ability_Definition / Library UI + Registry / Admin settings
+**Tags**: feature-088, framework-extension, meta-acrossai, suggested-plugins, admin-settings, kill-switch, template-method, backwards-compatible
+
+Shipped a purely-additive framework extension so any ability can advertise external WordPress plugins the site admin might install as alternatives or specialists. Trigger: the search-replace review question ("should we wrap or delete our built-in abilities?") resolved as "neither — keep abilities, add a framework-level suggestion surface so authors and admins share context on where each ability's specialist ecosystem lives."
+
+Delivered:
+
+- New optional `Ability_Definition::suggested_plugins()` template method (default `[]`)
+- Auto-inject into `meta.acrossai.suggested_plugins[]` guarded by `! empty()` — 500+ existing abilities byte-identical to pre-feature (verified by regression suite)
+- Registry read-path decoration (kill-switch + `is_active` enrichment + malformed-entry drop) — single-point gate for REST + MCP + Library UI
+- Admin checkbox "Disable the Plugin suggestion" on the AcrossAI settings page (opt-out, default off)
+- `uninstall.php` deletes the new option inside the existing `$acrossai_delete_data` gate
+- PHPUnit `feature-088-unit` suite: 13 tests, 22 assertions; full suite: 1658 tests, 5344 assertions, 0 failures
+
+Two durable memory entries captured this session: `DEC-ABILITY-SUGGESTED-PLUGINS-CONTRACT` (framework-owned contract shape) + `PATTERN-ABILITY-BASE-OPTIONAL-TEMPLATE-AUTO-INJECT` (reusable extension pattern). Framework is dormant until abilities individually opt in — retrofit of the 4 search-replace abilities is Feature 089 (deferred).
+
+Spec-kit-driven end-to-end: docs/planning/088-*.md → /speckit-specify → /speckit-plan → /speckit-tasks → implementation → fast-forward merge to main. Every artifact committed to the same feature branch.
