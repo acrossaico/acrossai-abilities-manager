@@ -191,12 +191,10 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new FileManager\Create_File();
 		new FileManager\Edit_File();
 		new FileManager\Delete_File();
-		new Plugins\Read_Plugin_Structure();
-		new Plugins\Read_Plugin_Code();
-		new Plugins\Manage_Plugin_Files();
-		new Themes\Read_Theme_Structure();
-		new Themes\Read_Theme_Code();
-		new Themes\Edit_Theme_File();
+		// Feature 089 — consolidated file surface (list-directory + copy + move).
+		new FileManager\List_Directory();
+		new FileManager\Copy_File();
+		new FileManager\Move_File();
 		new FileManager\Read_Wp_Config();
 		new FileManager\Edit_Wp_Config();
 		new FileManager\Read_Debug_Log();

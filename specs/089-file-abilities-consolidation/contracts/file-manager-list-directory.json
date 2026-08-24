@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "ability": "file-manager/list-directory",
+  "label": "List Directory",
+  "description": "Recursively list entries under a directory inside the WordPress installation. Path must be relative to ABSPATH. Results are bounded by max_depth and max_entries; truncated:true indicates more entries exist.",
+  "annotations": {
+    "readonly": true,
+    "destructive": false,
+    "idempotent": true
+  },
+  "input_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["path"],
+    "properties": {
+      "path": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Directory path relative to ABSPATH (e.g. wp-content/plugins/hello-dolly)."
+      },
+      "max_depth": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 20,
+        "default": 5,
+        "description": "Maximum recursion depth. Depth 1 lists only direct children."
+      },
+      "max_entries": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 5000,
+        "default": 1000,
+        "description": "Maximum number of entries returned. If reached, response has truncated:true."
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["success", "message"],
+    "properties": {
+      "success": { "type": "boolean" },
+      "path": { "type": "string" },
+      "entries": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "type", "size", "mtime"],
+          "properties": {
+            "path": { "type": "string" },
+            "type": { "type": "string", "enum": ["file", "dir"] },
+            "size": { "type": "integer", "minimum": 0 },
+            "mtime": { "type": "integer", "minimum": 0 }
+          }
+        }
+      },
+      "truncated": { "type": "boolean" },
+      "message": { "type": "string" },
+      "blocked_reason": {
+        "type": "string",
+        "enum": ["invalid_path", "not_a_directory", "protected_read"]
+      }
+    }
+  },
+  "guards": [
+    "manage_options capability required",
+    "realpath(path) must resolve inside realpath(ABSPATH)",
+    "symlinks are not followed during recursion"
+  ]
+}

@@ -21,6 +21,20 @@ defined( 'ABSPATH' ) || exit;
 class Create_File extends Ability_Definition {
 
 	/**
+	 * Filenames refused as targets even when they don't yet exist.
+	 * Same list as Read_File::PROTECTED_FILES and Delete_File::PROTECTED_FILES.
+	 * Added by Feature 089 to close a guard-gap where the generic create
+	 * path could write wp-config.php or .htaccess while the read/delete
+	 * paths already refused them.
+	 *
+	 * @var array<int,string>
+	 */
+	private const PROTECTED_FILES = array(
+		'wp-config.php',
+		'.htaccess',
+	);
+
+	/**
 	 * Full ability spec for wp_register_ability().
 	 *
 	 * @return array
@@ -30,7 +44,7 @@ class Create_File extends Ability_Definition {
 			'name' => 'file-manager/create-file',
 			'args' => array(
 				'label'               => __( 'Create File', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Creates a new file within the WordPress installation. Fails if the file already exists. Path must be relative to ABSPATH. Pass create_dirs=true to auto-create any missing parent directories.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Creates a new file within the WordPress installation. Fails if the file already exists. Path must be relative to ABSPATH. Refuses wp-config.php and .htaccess at ABSPATH root. Pass create_dirs=true to auto-create any missing parent directories.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-abilities-manager-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -60,9 +74,10 @@ class Create_File extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success' => array( 'type' => 'boolean' ),
-						'path'    => array( 'type' => 'string' ),
-						'message' => array( 'type' => 'string' ),
+						'success'        => array( 'type' => 'boolean' ),
+						'path'           => array( 'type' => 'string' ),
+						'message'        => array( 'type' => 'string' ),
+						'blocked_reason' => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -134,6 +149,19 @@ class Create_File extends Ability_Definition {
 			return array(
 				'success' => false,
 				'message' => __( 'Invalid or disallowed file path.', 'acrossai-abilities-manager' ),
+			);
+		}
+
+		// Protected-file guard: refuse to write secret-holding files at
+		// ABSPATH root regardless of the caller's capability. Mirrors
+		// Read_File / Delete_File / Edit_File / Copy_File / Move_File.
+		$target_basename = basename( $abs_path );
+		if ( in_array( $target_basename, self::PROTECTED_FILES, true ) && $parent === $base ) {
+			return array(
+				'success'        => false,
+				'blocked_reason' => 'protected_write',
+				/* translators: %s: filename */
+				'message'        => sprintf( __( 'File "%s" is protected and cannot be created.', 'acrossai-abilities-manager' ), $target_basename ),
 			);
 		}
 
