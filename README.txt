@@ -5,7 +5,7 @@ Tags: abilities, ability management, access control, site management, ai
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.0.31
+Stable tag: 0.0.30
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -138,8 +138,8 @@ No data is sent to any external server without an explicit administrator action.
 
 == Changelog ==
 
-= 0.0.31 - 2026-08-25 =
-**Feature 089 — file abilities consolidation.** Every file read / write / list / copy / move for the WordPress installation now flows through the `file-manager/*` namespace. Three new abilities added; six duplicate theme- and plugin-scoped abilities removed; a pre-existing security gap closed. Plugin version bumped 0.0.30 → 0.0.31.
+= Unreleased =
+**Feature 089 — file abilities consolidation.** Every file read / write / list / copy / move for the WordPress installation now flows through the `file-manager/*` namespace. Three new abilities added; six duplicate theme- and plugin-scoped abilities removed; a pre-existing security gap closed.
 
 **Added — three new `file-manager/*` abilities:**
 
