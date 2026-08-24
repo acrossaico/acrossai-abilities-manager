@@ -1881,3 +1881,19 @@ Site returns the standard "Briefly unavailable for scheduled maintenance" 503 fo
 - `wp-includes/load.php::wp_maintenance()` — the canonical gate; look for the `< 600` literal.
 
 **Tags**: wp-core, maintenance-mode, .maintenance, upgrading-timestamp, wp-cron, silent-expiry, 600-seconds
+
+---
+
+### 2026-08-24 — BUG-SOURCE-INSPECTION-ADJACENCY-BRITTLE — Source-inspection regex assertions that require adjacency silently break under additive hardening
+
+**Status**: Active
+**Scope**: Tests (source-inspection style), Additive hardening
+**Tags**: phpunit, source-inspection, regex, adjacency, additive-hardening, feature-086
+
+**Bug**: `Test_Delete_Expired_Transients::test_captures_count_before_core_call` (pre-Feature-086) asserted `/\$count\s*=[^;]+;\s*(?:\/\/[^\n]*\n\s*)*delete_expired_transients\s*\(/s` — expecting the `$count = ...` assignment to be immediately adjacent to the `delete_expired_transients()` call. Feature 086's additive dry-run early-return branch between them broke the regex without breaking the intent.
+
+**Prevention**: For source-inspection tests, prefer FILE-ORDER assertions (`strpos($src, 'A') < strrpos($src, 'B')`) over adjacency-regex when the intent is "A happens before B". Docblocks may mention the target function early — use `strrpos()` to skip past them.
+
+**References**:
+- `tests/phpunit/abilities/Test_Delete_Expired_Transients.php` — the fixed assertion using strpos/strrpos.
+- `includes/Abilities/Cache/Delete_Expired_Transients.php` — the additively-hardened source.

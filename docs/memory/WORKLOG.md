@@ -519,3 +519,21 @@ Ships two abilities under a new `Core/` Category folder (18th sub-partition insi
 Adds a third ability under the Core Category folder: `wp-core-rollback`. Rolls back WordPress core by fetching an older offer from `api.wordpress.org/core/version-check/1.7/` via `wp_remote_get()`, forcing `$offer->response = 'upgrade'`, and handing the offer directly to `Core_Upgrader::upgrade()` — the same class the forward path uses. Uses only WordPress functions; no bundled updater code. Requires both `manage_options` and `update_core`; File_Mods_Guard + multisite + non-downgrade guards. Introduces the plugin's first outbound HTTP request (rate-bounded by a per-locale `DAY_IN_SECONDS` transient cache; 15s timeout; hardcoded URL as a class constant, no SSRF surface; standard WordPress User-Agent). Inspired by Andy Fragen's [core-rollback](https://github.com/afragen/core-rollback) plugin (MIT-licensed) — read `wp-content/plugins/core-rollback/src/Core.php` for the underlying technique; we skip its transient + `pre_http_request` injection dance because we invoke `Core_Upgrader` directly. Key observation superseding Feature 042's out-of-scope statement: `Core_Upgrader::upgrade($offer)` does NOT inspect whether `$offer->version` is older or newer than currently-installed. Released as 0.0.12 (PRs [#77](https://github.com/acrossai-co/acrossai-abilities-manager/pull/77) + [#78](https://github.com/acrossai-co/acrossai-abilities-manager/pull/78)).
 
 **Tags**: feature-043, core-rollback, wp-org-api, core-upgrader, outbound-http
+
+---
+
+### 2026-08-24 — Features 086 + 087: Database-maintenance parity
+
+**Scope**: Database / Cache / Options
+**Tags**: feature-086, feature-087, db-maintenance, mcp-parity, allowlist, dual-gate, mutation-attribution
+
+Shipped 7 new `database/*` abilities in two stacked phases, closing the parity gap vs `mcp-abilities-database` (search-replace trio intentionally skipped — Better Search Replace covers it):
+
+- Health audits (3): `audit-health`, `audit-index-health`, `audit-options-health` (bounded, paginated, never returns option values)
+- Safe writes (2): `cleanup-expired-transients`, `set-option-autoload` (dry-run + confirm gated, postcondition verified)
+- Engine ops (2): `audit-core-table-engines`, `convert-core-tables-to-innodb` (18-key core-table allowlist, mutation-attributed DDL)
+- Plus additive hardening of existing `cache/delete-expired-transients` (optional `dry_run` + `limit`, default `dry_run=false` preserves prior behavior)
+
+New utilities: `Database_Core_Table_Allowlist`, `Database_Mutation_Attribution` — both reusable by future DB abilities. Three new decisions (DEC-DB-CORE-TABLE-ALLOWLIST, DEC-DB-DUAL-GATE-DDL, DEC-DB-MUTATION-ATTRIBUTION) codify the patterns. One bug pattern (BUG-SOURCE-INSPECTION-ADJACENCY-BRITTLE) captured from the additive-hardening regression.
+
+DB/state surface is now ~34 abilities (19 `database/` + 7 `cache/` + 8 `options/`) vs the source plugin's 10, with every one of their safety patterns adopted verbatim.

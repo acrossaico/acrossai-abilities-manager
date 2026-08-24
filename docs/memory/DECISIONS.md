@@ -1783,3 +1783,60 @@ Feature 060 introduced the second abstract base class in this plugin (after `Abi
 - `docs/memory/DECISIONS.md#DEC-EXTERNAL-PACKAGE-HOOK-CTOR` — sibling deviation for external Composer packages.
 
 **Tags**: boot-flow-rule, constructor-hooks, ability-definition, integration, accepted-deviation, feature-060
+
+---
+
+### 2026-08-24 — DEC-DB-CORE-TABLE-ALLOWLIST — Physical table names always resolved via 18-key logical allowlist
+
+**Status**: Active
+**Scope**: Database abilities, Utilities
+**Tags**: db-security, table-allowlist, injection-prevention, wpdb, feature-086, feature-087
+
+**Decision**: Every database ability that touches core tables MUST resolve physical table names via `Database_Core_Table_Allowlist::resolve( $logical_key )`, never accept a raw physical name from the caller. The allowlist contains 18 fixed keys (10 blog-scoped + 8 network-global) each mapping to a `$wpdb->{key}` property.
+
+**Tradeoffs**:
+- Gained: Arbitrary-identifier injection is impossible at the schema level; multisite-safe (blog keys use current-blog prefix); auditing is trivial (grep for `Database_Core_Table_Allowlist::`).
+- Reconsider: If we ever need to touch non-core plugin tables (unlikely for maintenance abilities).
+
+**References**:
+- `includes/Abilities/Utilities/Database_Core_Table_Allowlist.php` — the allowlist implementation.
+- `includes/Abilities/Database/Audit_Core_Table_Engines.php` — first consumer (087).
+- `includes/Abilities/Database/Convert_Core_Tables_To_Innodb.php` — DDL consumer (087).
+
+---
+
+### 2026-08-24 — DEC-DB-DUAL-GATE-DDL — Irreversible DDL writes require both dry_run=false AND confirm=true
+
+**Status**: Active
+**Scope**: Database abilities, safety envelope
+**Tags**: ddl, dry-run, confirm-gate, mutation-safety, feature-086, feature-087
+
+**Decision**: Any database ability performing DDL or bounded destructive writes (`Convert_Core_Tables_To_Innodb`, `Cleanup_Expired_Transients`, `Set_Option_Autoload`) MUST require both `dry_run=false` AND `confirm=true` in the input payload for live writes. Either flag alone (or missing) returns a dry-run envelope. Defaults: `dry_run=true`, `confirm=false`.
+
+**Tradeoffs**:
+- Gained: Two independent affirmatives eliminate accidental live writes from partial payloads; dry-run always returns a predictable "here's what would happen" shape.
+- Reconsider: For read-only audits (which use no gate) or for hardening existing non-gated abilities (`cache/delete-expired-transients` uses `dry_run=false` default for backward compat — see the additive-hardening note in 086 planning doc).
+
+**References**:
+- `includes/Abilities/Database/Cleanup_Expired_Transients.php` — bounded destructive write with the gate.
+- `includes/Abilities/Database/Set_Option_Autoload.php` — bounded destructive write with the gate.
+- `includes/Abilities/Database/Convert_Core_Tables_To_Innodb.php` — DDL with the gate.
+- `docs/planning/086-database-health-and-safe-writes.md` — planning brief for the pattern.
+
+---
+
+### 2026-08-24 — DEC-DB-MUTATION-ATTRIBUTION — Irreversible DDL uses tri-state (statement / postcondition / mutation) attribution
+
+**Status**: Active
+**Scope**: Database abilities, DDL responses
+**Tags**: ddl, mutation-attribution, postcondition, wpdb, feature-087
+
+**Decision**: Any ability performing irreversible DDL (starting with `Convert_Core_Tables_To_Innodb`) MUST use `Database_Mutation_Attribution::classify()` to attribute each per-item outcome and `::aggregate()` for the batch summary. The tri-state is: statement outcome (`succeeded` / `failed`), postcondition (`met` / `failed` / `unknown`), and mutation outcome (`changed` / `unchanged` / `partial` / `unknown` / `none` / `partial_or_unknown`). Never report "changed" solely on statement success; always re-read the target state after the write.
+
+**Tradeoffs**:
+- Gained: Callers can distinguish "definitely changed" from "unknown outcome" (statement returned success but postcondition read failed); partial-batch attribution is honest.
+- Reconsider: Never — this is the honest DDL response shape and shouldn't be relaxed.
+
+**References**:
+- `includes/Abilities/Utilities/Database_Mutation_Attribution.php` — the utility.
+- `includes/Abilities/Database/Convert_Core_Tables_To_Innodb.php` — first consumer.

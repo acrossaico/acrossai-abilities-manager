@@ -1,0 +1,11 @@
+{
+  "servers": [
+    {
+      "name": "wordpress",
+      "command": "npm run env:start",
+      "cwd": ".",
+      "url": "http://localhost:8888"
+    }
+  ],
+  "autoVerify": true
+}
