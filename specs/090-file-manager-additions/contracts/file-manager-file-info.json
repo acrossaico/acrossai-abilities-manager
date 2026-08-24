@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "ability": "file-manager/file-info",
+  "label": "Get File Info",
+  "description": "Return stat metadata (type, size, timestamps, mode, ownership, permissions, symlink flag) for any path inside the WordPress installation. Path must be relative to ABSPATH. Read-only — does not open the file. Owner/group name fields are omitted when the PHP POSIX extension is absent.",
+  "annotations": { "readonly": true, "destructive": false, "idempotent": true },
+  "input_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["path"],
+    "properties": {
+      "path": { "type": "string", "minLength": 1 }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["success", "message"],
+    "properties": {
+      "success":        { "type": "boolean" },
+      "path":           { "type": "string" },
+      "type":           { "type": "string", "enum": ["file", "dir", "link"] },
+      "size":           { "type": "integer" },
+      "mtime":          { "type": "integer" },
+      "ctime":          { "type": "integer" },
+      "atime":          { "type": "integer" },
+      "mode_octal":     { "type": "string" },
+      "owner_uid":      { "type": "integer" },
+      "owner_name":     { "type": "string" },
+      "group_gid":      { "type": "integer" },
+      "group_name":     { "type": "string" },
+      "readable":       { "type": "boolean" },
+      "writable":       { "type": "boolean" },
+      "is_link":        { "type": "boolean" },
+      "message":        { "type": "string" },
+      "blocked_reason": { "type": "string", "enum": ["invalid_path", "path_not_found"] }
+    }
+  }
+}

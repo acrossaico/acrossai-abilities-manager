@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "ability": "file-manager/delete-directory",
+  "label": "Delete Directory",
+  "description": "Delete a directory inside the WordPress installation. Path must be relative to ABSPATH. Requires confirm:true. Default recursive:false refuses non-empty directories. Refuses a hardcoded list of critical WordPress directories (ABSPATH, wp-admin, wp-includes, wp-content, wp-content/plugins, wp-content/themes, wp-content/mu-plugins, wp-content/uploads, and this plugin's directory). Symlinks are not followed during recursive walks. Idempotent — a missing target returns success with entries_removed:0.",
+  "annotations": { "readonly": false, "destructive": true, "idempotent": true },
+  "input_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["path", "confirm"],
+    "properties": {
+      "path":      { "type": "string", "minLength": 1 },
+      "recursive": { "type": "boolean", "default": false },
+      "confirm":   { "type": "boolean", "description": "Must be true to proceed." }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["success", "message"],
+    "properties": {
+      "success":         { "type": "boolean" },
+      "path":            { "type": "string" },
+      "entries_removed": { "type": "integer" },
+      "message":         { "type": "string" },
+      "blocked_reason":  {
+        "type": "string",
+        "enum": ["confirmation_required", "invalid_path", "not_a_directory", "protected_directory", "not_empty", "file_mods_disabled"]
+      }
+    }
+  }
+}
