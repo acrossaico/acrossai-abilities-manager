@@ -66,6 +66,38 @@ abstract class Ability_Definition {
 	abstract protected function ability(): array;
 
 	/**
+	 * Return external WordPress plugins the site admin may consider as
+	 * alternatives or specialists for this ability's scope.
+	 *
+	 * Optional; default is an empty list. Override in subclasses that want to
+	 * surface plugin suggestions on their Library card and in agent discovery.
+	 *
+	 * Each entry SHOULD include:
+	 *   - 'slug'   (string, required)  wordpress.org plugin slug
+	 *   - 'name'   (string, required)  display name
+	 *   - 'reason' (string, required)  one-line "why this plugin for this ability"
+	 *
+	 * And MAY include:
+	 *   - 'url'                           (string) override link target; defaults
+	 *                                     to https://wordpress.org/plugins/{slug}/
+	 *   - 'covers'                        (string) short scope summary
+	 *   - 'plugin_provides_abilities'     (bool)   does the suggested plugin ship
+	 *                                     its own wp_register_ability() abilities?
+	 *   - 'acrossai_provides_integration' (bool)   does our plugin ship an
+	 *                                     AcrossAI_Integration_Ability_Base for it?
+	 *
+	 * Feature 088. See specs/088-ability-suggested-plugins-framework/ for the
+	 * full data model and behavioural contracts. Author-curated at declaration
+	 * time; runtime install-status enrichment happens in the Registry.
+	 *
+	 * @since 0.0.33
+	 * @return array<int,array<string,scalar>>
+	 */
+	protected function suggested_plugins(): array {
+		return array();
+	}
+
+	/**
 	 * Filter callback — wired automatically by the constructor.
 	 *
 	 * Derives Library grouping fields from ability() so subclasses only need
@@ -78,6 +110,21 @@ abstract class Ability_Definition {
 		$spec = $this->ability();
 		$name = $spec['name'] ?? '';
 		$args = $spec['args'] ?? array();
+
+		// Feature 088: auto-inject subclass-declared suggested plugins into
+		// meta.acrossai.suggested_plugins. Only writes when the subclass
+		// override returned a non-empty array; abilities that do not override
+		// suggested_plugins() see zero payload change.
+		$suggested = $this->suggested_plugins();
+		if ( ! empty( $suggested ) && is_array( $suggested ) ) {
+			if ( ! isset( $args['meta'] ) || ! is_array( $args['meta'] ) ) {
+				$args['meta'] = array();
+			}
+			if ( ! isset( $args['meta']['acrossai'] ) || ! is_array( $args['meta']['acrossai'] ) ) {
+				$args['meta']['acrossai'] = array();
+			}
+			$args['meta']['acrossai']['suggested_plugins'] = array_values( $suggested );
+		}
 
 		$category = $args['category'] ?? '';
 

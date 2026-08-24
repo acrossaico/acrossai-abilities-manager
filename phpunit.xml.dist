@@ -231,6 +231,10 @@
 		<testsuite name="feature-087-unit">
 			<file>tests/phpunit/abilities/Test_Feature_087_Suite_Contract.php</file>
 		</testsuite>
+		<!-- Feature 088 — ability-level suggested-plugins framework. -->
+		<testsuite name="feature-088-unit">
+			<file>tests/phpunit/abilities/Test_Feature_088_Suggested_Plugins_Framework.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

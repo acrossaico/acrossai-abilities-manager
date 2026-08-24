@@ -140,6 +140,16 @@ class SettingsMenu {
 				'default'           => 0,
 			)
 		);
+		// Feature 088 — Ability-level suggested-plugins kill-switch.
+		register_setting(
+			$page_slug,
+			'acrossai_disable_plugin_suggestions',
+			array(
+				'type'              => 'boolean',
+				'sanitize_callback' => array( $this, 'sanitize_disable_plugin_suggestions' ),
+				'default'           => 0,
+			)
+		);
 
 		// Section 1 of 3 (rendered first): Display settings.
 		//
@@ -160,6 +170,22 @@ class SettingsMenu {
 			array( $this, 'render_per_page_field' ),
 			$page_slug,
 			'acrossai_display_settings_section'
+		);
+
+		// Feature 088 — Plugin Suggestions section (adjacent to Display Settings).
+		add_settings_section(
+			'acrossai_plugin_suggestions_section',
+			__( 'Plugin Suggestions', 'acrossai-abilities-manager' ),
+			'__return_false',
+			$page_slug
+		);
+
+		add_settings_field(
+			'acrossai_disable_plugin_suggestions',
+			__( 'Disable the Plugin suggestion', 'acrossai-abilities-manager' ),
+			array( $this, 'render_disable_plugin_suggestions_field' ),
+			$page_slug,
+			'acrossai_plugin_suggestions_section'
 		);
 	}
 
@@ -254,6 +280,42 @@ class SettingsMenu {
 			checked( $checked, true, false ),
 			esc_html__( 'Delete all data on uninstall', 'acrossai-abilities-manager' ),
 			esc_html__( '⚠ Warning: When checked, uninstalling this plugin will permanently delete all custom database tables and plugin options. This cannot be undone.', 'acrossai-abilities-manager' )
+		);
+	}
+
+	/**
+	 * Sanitizes the disable-plugin-suggestions checkbox value.
+	 *
+	 * Returns 1 when the checkbox is checked, 0 when unchecked or absent.
+	 * Per PATTERN-CHECKBOX-SANITIZE — named public method, not closure.
+	 *
+	 * Feature 088.
+	 *
+	 * @since 0.0.33
+	 * @param mixed $value Raw submitted value.
+	 * @return int
+	 */
+	public function sanitize_disable_plugin_suggestions( $value ): int {
+		return empty( $value ) ? 0 : 1;
+	}
+
+	/**
+	 * Renders the disable-plugin-suggestions checkbox field.
+	 *
+	 * When checked, no ability card shows a "Consider also" section and no
+	 * `suggested_plugins` field is emitted in ability payloads (REST + MCP).
+	 * Default: unchecked (suggestions shown). Feature 088.
+	 *
+	 * @since 0.0.33
+	 * @return void
+	 */
+	public function render_disable_plugin_suggestions_field(): void {
+		$checked = (bool) get_option( 'acrossai_disable_plugin_suggestions', 0 );
+		printf(
+			'<label><input type="checkbox" id="acrossai_disable_plugin_suggestions" name="acrossai_disable_plugin_suggestions" value="1" %1$s /> %2$s</label><p class="description">%3$s</p>',
+			checked( $checked, true, false ),
+			esc_html__( 'Disable the Plugin suggestion', 'acrossai-abilities-manager' ),
+			esc_html__( 'When enabled, no suggested-plugin cards appear on the Library page and no suggested_plugins field is emitted in ability payloads (REST + MCP). Ability behaviour is unaffected.', 'acrossai-abilities-manager' )
 		);
 	}
 }

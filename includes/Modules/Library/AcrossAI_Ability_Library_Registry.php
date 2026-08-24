@@ -154,11 +154,77 @@ class AcrossAI_Ability_Library_Registry {
 	/**
 	 * Return cached definitions (call after collect()).
 	 *
+	 * Feature 088: at read time, decorate each definition's
+	 * `args.meta.acrossai.suggested_plugins[]` list — either strip it entirely
+	 * when the site-wide kill-switch option `acrossai_disable_plugin_suggestions`
+	 * is on, or enrich each entry with an `is_active` boolean via
+	 * `is_plugin_active( "{slug}/{slug}.php" )`. Decoration happens on a copy of
+	 * the cached definitions so the collect() cache stays pristine.
+	 *
 	 * @since  0.1.0
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function get_definitions(): array {
-		return self::$definitions ?? array();
+		return self::apply_suggested_plugins_decoration( self::$definitions ?? array() );
+	}
+
+	/**
+	 * Feature 088: decorate the suggested_plugins list on every definition row.
+	 *
+	 * Two responsibilities in strict order:
+	 *   1. If the site option `acrossai_disable_plugin_suggestions` is truthy,
+	 *      strip the field from every row's args.meta.acrossai and return early.
+	 *   2. Otherwise, for each row's args.meta.acrossai.suggested_plugins[],
+	 *      attach `is_active` computed via `is_plugin_active()` per entry.
+	 *
+	 * @param array<int, array<string, mixed>> $definitions Cached rows.
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function apply_suggested_plugins_decoration( array $definitions ): array {
+		$kill_switch = (bool) get_option( 'acrossai_disable_plugin_suggestions', false );
+
+		foreach ( $definitions as &$row ) {
+			if ( ! isset( $row['args']['meta']['acrossai']['suggested_plugins'] ) ) {
+				continue;
+			}
+			$list = $row['args']['meta']['acrossai']['suggested_plugins'];
+			if ( ! is_array( $list ) ) {
+				unset( $row['args']['meta']['acrossai']['suggested_plugins'] );
+				continue;
+			}
+			if ( $kill_switch ) {
+				unset( $row['args']['meta']['acrossai']['suggested_plugins'] );
+				continue;
+			}
+
+			$decorated = array();
+			foreach ( $list as $entry ) {
+				if ( ! is_array( $entry ) ) {
+					continue;
+				}
+				$slug   = isset( $entry['slug'] ) ? (string) $entry['slug'] : '';
+				$name   = isset( $entry['name'] ) ? (string) $entry['name'] : '';
+				$reason = isset( $entry['reason'] ) ? (string) $entry['reason'] : '';
+				if ( '' === $slug || '' === $name || '' === $reason ) {
+					// Malformed entry — drop silently (FR-009).
+					continue;
+				}
+				$entry['plugin_provides_abilities']     = ! empty( $entry['plugin_provides_abilities'] );
+				$entry['acrossai_provides_integration'] = ! empty( $entry['acrossai_provides_integration'] );
+				$entry['is_active']                     = function_exists( 'is_plugin_active' )
+					&& is_plugin_active( $slug . '/' . $slug . '.php' );
+				$decorated[]                            = $entry;
+			}
+
+			if ( empty( $decorated ) ) {
+				unset( $row['args']['meta']['acrossai']['suggested_plugins'] );
+			} else {
+				$row['args']['meta']['acrossai']['suggested_plugins'] = $decorated;
+			}
+		}
+		unset( $row );
+
+		return $definitions;
 	}
 
 	/**

@@ -71,4 +71,7 @@ if ( $acrossai_delete_data ) {
 	// Sits inside the existing $acrossai_delete_data gate per
 	// PATTERN-UNINSTALL-DATA-GATE / BUG-UNINSTALL-OPTIONS-OUTSIDE-GATE.
 	\delete_option( 'acrossai_abilities_manager_extra_mimes' );
+
+	// Feature 088 — Ability-level suggested-plugins kill-switch.
+	\delete_option( 'acrossai_disable_plugin_suggestions' );
 }
