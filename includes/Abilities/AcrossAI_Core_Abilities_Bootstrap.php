@@ -178,6 +178,12 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Database\Search_Replace();
 		// Feature 063 — Database introspection.
 		new Database\Get_Db_Prefix();
+		// Feature 086 — database health audits + safe writes.
+		new Database\Audit_Health();
+		new Database\Audit_Index_Health();
+		new Database\Audit_Options_Health();
+		new Database\Cleanup_Expired_Transients();
+		new Database\Set_Option_Autoload();
 		new FileManager\Read_File();
 		new FileManager\Create_File();
 		new FileManager\Edit_File();

@@ -40,13 +40,25 @@ class Delete_Expired_Transients extends Ability_Definition {
 				},
 				'input_schema'        => array(
 					'type'                 => 'object',
-					'properties'           => array(),
+					'properties'           => array(
+						'dry_run' => array(
+							'type'    => 'boolean',
+							'default' => false,
+						),
+						'limit'   => array(
+							'type'    => 'integer',
+							'minimum' => 0,
+							'default' => 0,
+						),
+					),
 					'additionalProperties' => false,
 				),
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
 						'success' => array( 'type' => 'boolean' ),
+						'dry_run' => array( 'type' => 'boolean' ),
+						'limit'   => array( 'type' => 'integer' ),
 						'deleted' => array( 'type' => 'integer' ),
 						'message' => array( 'type' => 'string' ),
 					),
@@ -80,7 +92,8 @@ class Delete_Expired_Transients extends Ability_Definition {
 	 * @return array
 	 */
 	public function execute( array $input = array() ): array {
-		unset( $input );
+		$dry_run = (bool) ( $input['dry_run'] ?? false );
+		$limit   = max( 0, (int) ( $input['limit'] ?? 0 ) );
 
 		global $wpdb;
 
@@ -107,12 +120,30 @@ class Delete_Expired_Transients extends Ability_Definition {
 		);
 		// phpcs:enable
 
-		$count = $blog_expired + $site_expired;
+		$count   = $blog_expired + $site_expired;
+		$planned = $limit > 0 ? min( $count, $limit ) : $count;
+
+		if ( $dry_run ) {
+			return array(
+				'success' => true,
+				'dry_run' => true,
+				'limit'   => $limit,
+				'deleted' => 0,
+				'message' => sprintf(
+					/* translators: 1: number planned, 2: total expired */
+					__( 'Dry run: %1$d of %2$d expired transient(s) would be purged.', 'acrossai-abilities-manager' ),
+					$planned,
+					$count
+				),
+			);
+		}
 
 		delete_expired_transients( true );
 
 		return array(
 			'success' => true,
+			'dry_run' => false,
+			'limit'   => $limit,
 			'deleted' => $count,
 			'message' => sprintf(
 				/* translators: %d: number of expired transients purged */

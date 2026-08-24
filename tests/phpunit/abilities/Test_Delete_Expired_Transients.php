@@ -56,13 +56,22 @@ class Test_Delete_Expired_Transients extends WP_UnitTestCase {
 
 	public function test_captures_count_before_core_call(): void {
 		// The core function returns void, so the count must be snapshotted first.
-		// Look at the execute() method body — everything before it (comments,
-		// docblock) does not represent runtime order.
-		$src = $this->src;
-		$this->assertMatchesRegularExpression(
-			'/\$count\s*=[^;]+;\s*(?:\/\/[^\n]*\n\s*)*delete_expired_transients\s*\(/s',
-			$src,
-			'Assignment to $count must immediately precede the delete_expired_transients() call.'
+		// Verify that the $count assignment appears in the source BEFORE the
+		// delete_expired_transients() call. Feature 086 hardening added an
+		// early-return dry-run branch between the two — the ordering assertion
+		// still holds (the assignment happens before the core call in the
+		// non-dry-run path), so we assert file-order rather than adjacency.
+		$src           = $this->src;
+		$count_pos     = strpos( $src, '$count' );
+		// The actual runtime call is the LAST mention of the function in the
+		// file; earlier mentions are inside docblocks.
+		$core_call_pos = strrpos( $src, 'delete_expired_transients(' );
+		$this->assertNotFalse( $count_pos );
+		$this->assertNotFalse( $core_call_pos );
+		$this->assertLessThan(
+			$core_call_pos,
+			$count_pos,
+			'$count assignment must appear before the delete_expired_transients() call in execute().'
 		);
 	}
 
