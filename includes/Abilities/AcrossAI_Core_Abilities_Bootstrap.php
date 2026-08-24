@@ -184,6 +184,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Database\Audit_Options_Health();
 		new Database\Cleanup_Expired_Transients();
 		new Database\Set_Option_Autoload();
+		// Feature 087 — core-table engine audit + InnoDB conversion.
+		new Database\Audit_Core_Table_Engines();
+		new Database\Convert_Core_Tables_To_Innodb();
 		new FileManager\Read_File();
 		new FileManager\Create_File();
 		new FileManager\Edit_File();

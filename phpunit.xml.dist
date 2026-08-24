@@ -225,6 +225,10 @@
 		<testsuite name="feature-086-unit">
 			<file>tests/phpunit/abilities/Test_Feature_086_Suite_Contract.php</file>
 		</testsuite>
+		<!-- Feature 087 — core-table engine audit + InnoDB conversion. -->
+		<testsuite name="feature-087-unit">
+			<file>tests/phpunit/abilities/Test_Feature_087_Suite_Contract.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
