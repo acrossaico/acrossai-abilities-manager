@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "purpose": "Enumerates the ability slugs this feature removes from the registry so downstream consumers can grep for a canonical list.",
+  "removed": [
+    {
+      "slug": "themes/read-theme-code",
+      "class": "AcrossAI_Abilities_Manager\\Includes\\Abilities\\Themes\\Read_Theme_Code",
+      "file": "includes/Abilities/Themes/Read_Theme_Code.php",
+      "replacement": "file-manager/read-file"
+    },
+    {
+      "slug": "themes/edit-theme-file",
+      "class": "AcrossAI_Abilities_Manager\\Includes\\Abilities\\Themes\\Edit_Theme_File",
+      "file": "includes/Abilities/Themes/Edit_Theme_File.php",
+      "replacement": "file-manager/edit-file"
+    },
+    {
+      "slug": "themes/read-theme-structure",
+      "class": "AcrossAI_Abilities_Manager\\Includes\\Abilities\\Themes\\Read_Theme_Structure",
+      "file": "includes/Abilities/Themes/Read_Theme_Structure.php",
+      "replacement": "file-manager/list-directory"
+    },
+    {
+      "slug": "plugins/read-plugin-code",
+      "class": "AcrossAI_Abilities_Manager\\Includes\\Abilities\\Plugins\\Read_Plugin_Code",
+      "file": "includes/Abilities/Plugins/Read_Plugin_Code.php",
+      "replacement": "file-manager/read-file"
+    },
+    {
+      "slug": "plugins/read-plugin-structure",
+      "class": "AcrossAI_Abilities_Manager\\Includes\\Abilities\\Plugins\\Read_Plugin_Structure",
+      "file": "includes/Abilities/Plugins/Read_Plugin_Structure.php",
+      "replacement": "file-manager/list-directory"
+    },
+    {
+      "slug": "plugins/manage-plugin-files",
+      "class": "AcrossAI_Abilities_Manager\\Includes\\Abilities\\Plugins\\Manage_Plugin_Files",
+      "file": "includes/Abilities/Plugins/Manage_Plugin_Files.php",
+      "replacement": "file-manager/copy-file OR file-manager/move-file"
+    }
+  ],
+  "hardened": [
+    {
+      "slug": "file-manager/create-file",
+      "change": "Add PROTECTED_FILES guard for wp-config.php and .htaccess (parity with read-file / delete-file)."
+    },
+    {
+      "slug": "file-manager/edit-file",
+      "change": "Add PROTECTED_FILES guard for wp-config.php and .htaccess (parity with read-file / delete-file)."
+    }
+  ]
+}

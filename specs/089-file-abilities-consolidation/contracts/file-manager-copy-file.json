@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "ability": "file-manager/copy-file",
+  "label": "Copy File",
+  "description": "Copy a file from a source path to a destination path within the WordPress installation. Both paths must remain inside ABSPATH. Default refuses overwrite; pass overwrite:true to replace an existing destination. Refuses when the destination resolves to wp-config.php or .htaccess.",
+  "annotations": {
+    "readonly": false,
+    "destructive": false,
+    "idempotent": false
+  },
+  "input_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["source", "destination"],
+    "properties": {
+      "source": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Source file path relative to ABSPATH."
+      },
+      "destination": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Destination file path relative to ABSPATH."
+      },
+      "overwrite": {
+        "type": "boolean",
+        "default": false,
+        "description": "When true, an existing destination file is replaced. Even with overwrite:true, wp-config.php and .htaccess are refused."
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["success", "message"],
+    "properties": {
+      "success": { "type": "boolean" },
+      "source": { "type": "string" },
+      "destination": { "type": "string" },
+      "overwritten": { "type": "boolean" },
+      "message": { "type": "string" },
+      "blocked_reason": {
+        "type": "string",
+        "enum": [
+          "invalid_path",
+          "source_not_found",
+          "destination_exists",
+          "protected_write",
+          "file_mods_disabled"
+        ]
+      }
+    }
+  },
+  "guards": [
+    "manage_options capability required",
+    "File_Mods_Guard::check('edit') must pass",
+    "realpath(source) and realpath(destination-parent) must resolve inside realpath(ABSPATH)",
+    "source must be a file (not a directory)",
+    "destination basename must not be wp-config.php or .htaccess when destination resolves at ABSPATH root"
+  ]
+}
