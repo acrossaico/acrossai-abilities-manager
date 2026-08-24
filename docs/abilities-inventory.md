@@ -3,7 +3,7 @@
 Generated snapshot of every ability the plugin registers, using the **post-rename** slugs
 (after PRs #134 blocks, #135 elementor, #136 rank-math, #137 topic-namespaces land).
 
-**Total abilities:** 385 across 24 topic namespaces.
+**Total abilities:** 389 across 24 topic namespaces.
 
 ## Summary
 
@@ -19,7 +19,7 @@ Generated snapshot of every ability the plugin registers, using the **post-renam
 | `cron/` | 16 | `acrossai-abilities-manager-cron` |
 | `database/` | 11 | `acrossai-abilities-manager-database` |
 | `elementor/` | 62 | `acrossai-abilities-manager-elementor` |
-| `file-manager/` | 18 | `acrossai-abilities-manager-file-manager` |
+| `file-manager/` | 22 | `acrossai-abilities-manager-file-manager` |
 | `fonts/` | 8 | `acrossai-abilities-manager-fonts` |
 | `media/` | 11 | `acrossai-abilities-manager-media` |
 | `menus/` | 12 | `acrossai-abilities-manager-menus` |
@@ -247,10 +247,14 @@ Sorted by namespace → sub-group → slug.
 | `file-manager/` | `file-manager/upload-zip-backup` | file-manager | backups | Upload Zip Backup |
 | `file-manager/` | `file-manager/clear-debug-log` | file-manager | debug | Clear Debug Log |
 | `file-manager/` | `file-manager/read-debug-log` | file-manager | debug | Read Debug Log |
+| `file-manager/` | `file-manager/append-file` | file-manager | files | Append to File |
 | `file-manager/` | `file-manager/copy-file` | file-manager | files | Copy File |
+| `file-manager/` | `file-manager/create-directory` | file-manager | files | Create Directory |
 | `file-manager/` | `file-manager/create-file` | file-manager | files | Create File |
+| `file-manager/` | `file-manager/delete-directory` | file-manager | files | Delete Directory |
 | `file-manager/` | `file-manager/delete-file` | file-manager | files | Delete File |
 | `file-manager/` | `file-manager/edit-file` | file-manager | files | Create or Overwrite File |
+| `file-manager/` | `file-manager/file-info` | file-manager | files | Get File Info |
 | `file-manager/` | `file-manager/list-directory` | file-manager | files | List Directory |
 | `file-manager/` | `file-manager/move-file` | file-manager | files | Move File |
 | `file-manager/` | `file-manager/read-file` | file-manager | files | Read File |
