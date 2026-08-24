@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "ability": "file-manager/create-directory",
+  "label": "Create Directory",
+  "description": "Create a directory inside the WordPress installation. Path must be relative to ABSPATH. Default recursive:true uses wp_mkdir_p; recursive:false uses a single mkdir call. Idempotent — returns success with created:false when the target already exists as a directory. Refuses when the target exists as a file.",
+  "annotations": { "readonly": false, "destructive": false, "idempotent": true },
+  "input_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["path"],
+    "properties": {
+      "path":      { "type": "string", "minLength": 1 },
+      "recursive": { "type": "boolean", "default": true }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["success", "message"],
+    "properties": {
+      "success":        { "type": "boolean" },
+      "path":           { "type": "string" },
+      "created":        { "type": "boolean" },
+      "message":        { "type": "string" },
+      "blocked_reason": {
+        "type": "string",
+        "enum": ["invalid_path", "path_is_file", "parent_missing", "file_mods_disabled"]
+      }
+    }
+  }
+}

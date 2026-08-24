@@ -239,6 +239,10 @@
 		<testsuite name="feature-089-unit">
 			<file>tests/phpunit/abilities/Test_Feature_089_File_Consolidation.php</file>
 		</testsuite>
+		<!-- Feature 090 — file-manager additions. -->
+		<testsuite name="feature-090-unit">
+			<file>tests/phpunit/abilities/Test_Feature_090_File_Manager_Additions.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

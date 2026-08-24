@@ -195,6 +195,11 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new FileManager\List_Directory();
 		new FileManager\Copy_File();
 		new FileManager\Move_File();
+		// Feature 090 — directory + append + file-info.
+		new FileManager\Append_File();
+		new FileManager\Create_Directory();
+		new FileManager\Delete_Directory();
+		new FileManager\File_Info();
 		new FileManager\Read_Wp_Config();
 		new FileManager\Edit_Wp_Config();
 		new FileManager\Read_Debug_Log();

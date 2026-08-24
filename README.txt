@@ -139,6 +139,8 @@ No data is sent to any external server without an explicit administrator action.
 == Changelog ==
 
 = Unreleased =
+**Feature 090 — file-manager additions.** Four new abilities extend the `file-manager/*` namespace to cover directory management and metadata: `file-manager/append-file` (append or prepend to an existing file; refuses missing files and refuses `wp-config.php` / `.htaccess`), `file-manager/create-directory` (recursive-by-default `mkdir` under ABSPATH; idempotent), `file-manager/delete-directory` (empty-only by default; opt-in `recursive:true`; requires `confirm:true`; refuses nine critical WordPress directories), and `file-manager/file-info` (read-only stat wrapper with optional POSIX owner/group names). Ability count 385 → 389.
+
 **Feature 089 — file abilities consolidation.** Every file read / write / list / copy / move for the WordPress installation now flows through the `file-manager/*` namespace. Three new abilities added; six duplicate theme- and plugin-scoped abilities removed; a pre-existing security gap closed.
 
 **Added — three new `file-manager/*` abilities:**
