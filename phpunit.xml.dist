@@ -235,6 +235,10 @@
 		<testsuite name="feature-088-unit">
 			<file>tests/phpunit/abilities/Test_Feature_088_Suggested_Plugins_Framework.php</file>
 		</testsuite>
+		<!-- Feature 089 — file abilities consolidation. -->
+		<testsuite name="feature-089-unit">
+			<file>tests/phpunit/abilities/Test_Feature_089_File_Consolidation.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

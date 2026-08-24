@@ -3,7 +3,7 @@
 Generated snapshot of every ability the plugin registers, using the **post-rename** slugs
 (after PRs #134 blocks, #135 elementor, #136 rank-math, #137 topic-namespaces land).
 
-**Total abilities:** 388 across 24 topic namespaces.
+**Total abilities:** 385 across 24 topic namespaces.
 
 ## Summary
 
@@ -19,18 +19,18 @@ Generated snapshot of every ability the plugin registers, using the **post-renam
 | `cron/` | 16 | `acrossai-abilities-manager-cron` |
 | `database/` | 11 | `acrossai-abilities-manager-database` |
 | `elementor/` | 62 | `acrossai-abilities-manager-elementor` |
-| `file-manager/` | 15 | `acrossai-abilities-manager-file-manager` |
+| `file-manager/` | 18 | `acrossai-abilities-manager-file-manager` |
 | `fonts/` | 8 | `acrossai-abilities-manager-fonts` |
 | `media/` | 11 | `acrossai-abilities-manager-media` |
 | `menus/` | 12 | `acrossai-abilities-manager-menus` |
 | `options/` | 7 | `acrossai-abilities-manager-options` |
-| `plugins/` | 13 | `acrossai-abilities-manager-plugins` |
+| `plugins/` | 10 | `acrossai-abilities-manager-plugins` |
 | `rank-math/` | 61 | `acrossai-abilities-manager-rank-math` |
 | `recovery/` | 7 | `acrossai-abilities-manager-recovery` |
 | `settings/` | 11 | `acrossai-abilities-manager-settings` |
 | `site-health/` | 6 | `acrossai-abilities-manager-site-health` |
 | `taxonomies/` | 10 | `acrossai-abilities-manager-taxonomies` |
-| `themes/` | 10 | `acrossai-abilities-manager-themes` |
+| `themes/` | 7 | `acrossai-abilities-manager-themes` |
 | `users/` | 16 | `acrossai-abilities-manager-users` |
 | `widgets/` | 2 | `acrossai-abilities-manager-widgets` |
 
@@ -247,9 +247,12 @@ Sorted by namespace → sub-group → slug.
 | `file-manager/` | `file-manager/upload-zip-backup` | file-manager | backups | Upload Zip Backup |
 | `file-manager/` | `file-manager/clear-debug-log` | file-manager | debug | Clear Debug Log |
 | `file-manager/` | `file-manager/read-debug-log` | file-manager | debug | Read Debug Log |
+| `file-manager/` | `file-manager/copy-file` | file-manager | files | Copy File |
 | `file-manager/` | `file-manager/create-file` | file-manager | files | Create File |
 | `file-manager/` | `file-manager/delete-file` | file-manager | files | Delete File |
 | `file-manager/` | `file-manager/edit-file` | file-manager | files | Create or Overwrite File |
+| `file-manager/` | `file-manager/list-directory` | file-manager | files | List Directory |
+| `file-manager/` | `file-manager/move-file` | file-manager | files | Move File |
 | `file-manager/` | `file-manager/read-file` | file-manager | files | Read File |
 | `file-manager/` | `file-manager/edit-wp-config` | file-manager | wp-config | Edit wp-config.php |
 | `file-manager/` | `file-manager/get-wp-config-constant` | file-manager | wp-config | Get wp-config Constant |
@@ -292,9 +295,6 @@ Sorted by namespace → sub-group → slug.
 | `options/` | `options/update-option` | core | manage | Update Option |
 | `options/` | `options/list-options` | core | search | List Options |
 | `options/` | `options/search-options` | core | search | Search Options |
-| `plugins/` | `plugins/manage-plugin-files` | plugins | files | Copy or Move Plugin File |
-| `plugins/` | `plugins/read-plugin-code` | plugins | files | Read Plugin Code |
-| `plugins/` | `plugins/read-plugin-structure` | plugins | files | Read Plugin Structure |
 | `plugins/` | `plugins/check-plugin-updates` | plugins | info | Check Updates |
 | `plugins/` | `plugins/list-plugins` | plugins | info | List Plugins |
 | `plugins/` | `plugins/verify-plugin-checksums` | plugins | integrity | Verify Plugin Checksums |
@@ -400,9 +400,6 @@ Sorted by namespace → sub-group → slug.
 | `taxonomies/` | `taxonomies/list-terms` | core | terms | List Terms |
 | `taxonomies/` | `taxonomies/set-term-image` | core | terms | Set Term Image |
 | `taxonomies/` | `taxonomies/update-term` | core | terms | Update Term |
-| `themes/` | `themes/edit-theme-file` | themes | files | Create or Overwrite Theme File |
-| `themes/` | `themes/read-theme-code` | themes | files | Read Theme Code |
-| `themes/` | `themes/read-theme-structure` | themes | files | Read Theme Structure |
 | `themes/` | `themes/list-themes` | themes | info | List Themes |
 | `themes/` | `themes/list-theme-mods` | themes | introspection | List Theme Mods |
 | `themes/` | `themes/activate-theme` | themes | lifecycle | Activate Theme |

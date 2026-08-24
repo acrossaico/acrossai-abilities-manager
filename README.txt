@@ -5,7 +5,7 @@ Tags: abilities, ability management, access control, site management, ai
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.0.30
+Stable tag: 0.0.31
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -137,6 +137,32 @@ Several admin-only actions can cause external services to receive data — all a
 No data is sent to any external server without an explicit administrator action.
 
 == Changelog ==
+
+= 0.0.31 - 2026-08-25 =
+**Feature 089 — file abilities consolidation.** Every file read / write / list / copy / move for the WordPress installation now flows through the `file-manager/*` namespace. Three new abilities added; six duplicate theme- and plugin-scoped abilities removed; a pre-existing security gap closed. Plugin version bumped 0.0.30 → 0.0.31.
+
+**Added — three new `file-manager/*` abilities:**
+
+* **`file-manager/list-directory`** — recursive directory walk under ABSPATH. Bounded by `max_depth` (default 5, max 20) and `max_entries` (default 1000, max 5000); response sets `truncated:true` when a bound is reached. Symlinks are not followed. Replaces `themes/read-theme-structure` and `plugins/read-plugin-structure`.
+* **`file-manager/copy-file`** — copy a file between two paths under ABSPATH. Default refuses when the destination exists; pass `overwrite:true` to replace. Refuses copies **onto** `wp-config.php` or `.htaccess` even with `overwrite:true`. Replaces the copy mode of `plugins/manage-plugin-files`.
+* **`file-manager/move-file`** — rename/move a file between two paths under ABSPATH. Same overwrite semantics as `copy-file`, plus refuses moves **from** `wp-config.php` or `.htaccess`. Replaces the move mode of `plugins/manage-plugin-files`.
+
+**Removed — six duplicate abilities (BREAKING):** any MCP client hardcoding these slugs will get an "unknown ability" error. Migrate to the `file-manager/*` replacement.
+
+| Removed slug | Replacement |
+|---|---|
+| `themes/read-theme-code` | `file-manager/read-file` |
+| `themes/edit-theme-file` | `file-manager/edit-file` |
+| `themes/read-theme-structure` | `file-manager/list-directory` |
+| `plugins/read-plugin-code` | `file-manager/read-file` |
+| `plugins/read-plugin-structure` | `file-manager/list-directory` |
+| `plugins/manage-plugin-files` | `file-manager/copy-file` or `file-manager/move-file` |
+
+**Hardened — `file-manager/create-file` and `file-manager/edit-file` now refuse `wp-config.php` and `.htaccess`.** Before this release, these two abilities silently allowed overwriting those files even though `read-file` and `delete-file` refused them. This closes the last generic write path to those protected files; the specialized `file-manager/edit-wp-config` (single-constant edit with secret-key allowlist) remains the only supported way to modify `wp-config.php`.
+
+**Kept as-is (not duplicates):** `file-manager/read-wp-config`, `file-manager/edit-wp-config`, `file-manager/get-wp-config-constant`, `file-manager/read-debug-log`, `file-manager/clear-debug-log`, `recovery/list-recent-fatal-errors`, and all theme / plugin lifecycle abilities (install / activate / update / delete-theme / lifecycle-context / checksums / etc.).
+
+**Ability count:** 388 → 385 (-6 removed, +3 added). Full per-ability inventory refreshed at `docs/abilities-inventory.md`.
 
 = 0.0.30 - 2026-08-19 =
 **Ability namespace migration — every ability slug moves from `acrossai/*` to a topic-based prefix.** 388 abilities across 24 topic namespaces. No behavioural changes; this is a slug rename only. Delivered as four disjoint PRs merged in order: #134 (blocks), #135 (elementor), #136 (rank-math), #137 (remaining 21 domains).
