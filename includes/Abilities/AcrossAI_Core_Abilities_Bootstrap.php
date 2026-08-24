@@ -464,6 +464,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Recovery\Unpause_Theme();
 		new Recovery\List_Recent_Fatal_Errors();
 
+		// Feature 061 — Debugging / Conflict Testing abilities.
+		new Debugging\List_Plugins();
+		new Debugging\Get_Overrides();
+		new Debugging\Set_Override();
+		new Debugging\Clear_Overrides();
+		new Debugging\Deploy_Mu_Plugin();
+		new Debugging\Remove_Mu_Plugin();
+		new Debugging\Bulk_Set_Overrides();
+
 		// Feature 055 — register the option-backed lifecycle event log.
 		Utilities\Lifecycle_Event_Log::register_hooks();
 

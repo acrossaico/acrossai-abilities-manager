@@ -177,23 +177,51 @@ if ( ! function_exists( 'wp_parse_args' ) ) {
 }
 
 if ( ! function_exists( 'get_option' ) ) {
-	/** Stub: returns $default (no DB in unit tests). */
+	/**
+	 * Stub: reads from the test-owned $__acrossai_test_options global if the
+	 * caller has seeded it; otherwise returns $default. Lets test files
+	 * simulate specific option values (e.g. active_plugins for Feature 061
+	 * Overrides_Store tests) without a full WP install.
+	 */
 	function get_option( string $option, mixed $default = false ): mixed {
+		global $__acrossai_test_options;
+		if ( is_array( $__acrossai_test_options ) && array_key_exists( $option, $__acrossai_test_options ) ) {
+			return $__acrossai_test_options[ $option ];
+		}
 		return $default;
 	}
 }
 
 if ( ! function_exists( 'update_option' ) ) {
-	/** Stub: no-op option update. */
+	/**
+	 * Stub: writes to the test-owned $__acrossai_test_options global so
+	 * a subsequent get_option() sees the new value. Returns true when the
+	 * value changed, false otherwise, mirroring WP core.
+	 */
 	function update_option( string $option, mixed $value, string|bool $autoload = 'yes' ): bool {
-		return false;
+		global $__acrossai_test_options;
+		if ( ! is_array( $__acrossai_test_options ) ) {
+			$__acrossai_test_options = array();
+		}
+		$existed_before = array_key_exists( $option, $__acrossai_test_options );
+		$prior          = $existed_before ? $__acrossai_test_options[ $option ] : null;
+		$__acrossai_test_options[ $option ] = $value;
+		return ! $existed_before || $prior !== $value;
 	}
 }
 
 if ( ! function_exists( 'delete_option' ) ) {
-	/** Stub: no-op option delete. */
+	/**
+	 * Stub: removes the entry from $__acrossai_test_options and returns
+	 * true if it was present, false otherwise.
+	 */
 	function delete_option( string $option ): bool {
-		return false;
+		global $__acrossai_test_options;
+		if ( ! is_array( $__acrossai_test_options ) || ! array_key_exists( $option, $__acrossai_test_options ) ) {
+			return false;
+		}
+		unset( $__acrossai_test_options[ $option ] );
+		return true;
 	}
 }
 

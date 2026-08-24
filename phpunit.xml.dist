@@ -24,6 +24,8 @@
 			<file>tests/phpunit/abilities/AbilityOverrideInjectVariantATest.php</file>
 			<file>tests/phpunit/abilities/SettingsMenuTest.php</file>
 			<file>tests/phpunit/abilities/AbilitiesPassAsToolRemovalTest.php</file>
+			<file>tests/phpunit/abilities/debugging/OverridesStoreTest.php</file>
+			<file>tests/phpunit/abilities/debugging/DependencyResolverTest.php</file>
 		</testsuite>
 		<testsuite name="library-unit">
 			<file>tests/phpunit/Modules/Library/Test_Ability_Definition.php</file>
