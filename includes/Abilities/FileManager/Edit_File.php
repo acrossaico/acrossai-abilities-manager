@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Enforcer;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
@@ -64,6 +65,11 @@ class Edit_File extends Ability_Definition {
 							'type'        => 'string',
 							'description' => __( 'New file content.', 'acrossai-abilities-manager' ),
 						),
+						'context' => array(
+							'type'        => 'string',
+							'maxLength'   => 2000,
+							'description' => __( 'Optional caller-supplied reason for this edit. Captured in the audit log for accountability. Truncated to 500 chars in the persisted entry.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'path', 'content' ),
 					'additionalProperties' => false,
@@ -85,6 +91,8 @@ class Edit_File extends Ability_Definition {
 						'size'           => array( 'type' => 'integer' ),
 						'max_bytes'      => array( 'type' => 'integer' ),
 						'marker'         => array( 'type' => 'string' ),
+						// Feature 094 audit-trail addition.
+						'backup_path'    => array( 'type' => array( 'string', 'null' ) ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -165,19 +173,57 @@ class Edit_File extends Ability_Definition {
 			return $blocked;
 		}
 
+		// Feature 094: pre-image backup + log. Backup returns null when the
+		// target didn't already exist, string on success, false on I/O failure.
+		$size_before   = $fs->exists( $abs_path ) ? (int) $fs->size( $abs_path ) : 0;
+		$backup_result = Audit_Trail::write_backup( $abs_path );
+		$backup_path   = is_string( $backup_result ) ? $backup_result : null;
+		$backup_status = is_string( $backup_result )
+			? 'written'
+			: ( false === $backup_result ? 'failed' : ( 0 === $size_before ? 'skipped' : 'disabled' ) );
+
 		$result = $fs->put_contents( $abs_path, $content, FS_CHMOD_FILE );
 
 		if ( false === $result ) {
+			Audit_Trail::write_log(
+				'EDIT',
+				$abs_path,
+				array(
+					'ability_slug'  => 'file-manager/edit-file',
+					'size_before'   => $size_before,
+					'size_after'    => null,
+					'backup_status' => $backup_status,
+					'backup_path'   => $backup_path,
+					'backup_reason' => 'primary write failed',
+					'context'       => (string) ( $input['context'] ?? '' ),
+				)
+			);
 			return array(
-				'success' => false,
-				'message' => __( 'Could not write file.', 'acrossai-abilities-manager' ),
+				'success'     => false,
+				'message'     => __( 'Could not write file.', 'acrossai-abilities-manager' ),
+				'backup_path' => $backup_path,
 			);
 		}
 
+		Audit_Trail::write_log(
+			'EDIT',
+			$abs_path,
+			array(
+				'ability_slug'  => 'file-manager/edit-file',
+				'size_before'   => $size_before,
+				'size_after'    => strlen( $content ),
+				'backup_status' => $backup_status,
+				'backup_path'   => $backup_path,
+				'backup_reason' => ( 'skipped' === $backup_status ) ? 'target did not exist' : '',
+				'context'       => (string) ( $input['context'] ?? '' ),
+			)
+		);
+
 		return array(
-			'success' => true,
-			'path'    => $abs_path,
-			'message' => __( 'File saved.', 'acrossai-abilities-manager' ),
+			'success'     => true,
+			'path'        => $abs_path,
+			'message'     => __( 'File saved.', 'acrossai-abilities-manager' ),
+			'backup_path' => $backup_path,
 		);
 	}
 }
