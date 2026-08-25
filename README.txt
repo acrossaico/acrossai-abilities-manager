@@ -139,6 +139,21 @@ No data is sent to any external server without an explicit administrator action.
 == Changelog ==
 
 = Unreleased =
+**Feature 092 — File Manager admin tab: per-folder read/write allowlists + configurable secret redactor.** New "File Manager" tab at `admin.php?page=acrossai-settings` gives site admins three per-folder controls over what MCP clients can do via `file-manager/*` abilities. Also introduces a hardened secret-scrubber that runs on every read response.
+
+**Write allowlist.** The 8 write-capable file-manager abilities (`create-file`, `edit-file`, `delete-file`, `copy-file`, `move-file`, `append-file`, `create-directory`, `delete-directory`) refuse any operation whose target path resolves outside the admin's allowlist. Default on activation: `['wp-content']` (writes only inside wp-content). `copy-file` and `move-file` check both source and destination. Refusal returns `{success:false, blocked_reason:"path_not_allowed_for_write", allowed_roots:[…]}`.
+
+**Read allowlist.** The 2 content-reading abilities (`read-file`, `read-debug-log`) can also be gated. Default on activation: `[]` — unrestricted (every path readable). Admins can flip a "Restrict reads to specific folders" toggle and pick specific folders. Refusal returns `{success:false, blocked_reason:"path_not_allowed_for_read"}`. `list-directory` and `file-info` remain ungated (metadata only, no content leak).
+
+**Secret redactor.** Every text response from `read-file` and `read-debug-log` is scrubbed through 8 configurable pattern classes before return: **WordPress credentials** (DB_PASSWORD, DB_USER, all 8 auth keys/salts, SECRET_KEY) — value replaced but constant name preserved; **Stripe** (sk_live_ / sk_test_ / rk_live_ / rk_test_); **AWS access key IDs** (AKIA…); **OpenAI** (sk-…{48+}); **Anthropic** (sk-ant-…); **GitHub** (ghp_/gho_/ghu_/ghs_/ghr_…); **SendGrid** (SG.xxx.yyy); **JWT** (eyJ…\.eyJ…\.…). All enabled by default except JWT (false-positive risk). Admin can toggle each pattern and add custom literal strings (case-sensitive substring match) via the settings UI. Responses grow two fields: `redacted:bool` and `redaction_count:int`.
+
+**REST endpoints.** Six new routes under `acrossai/v1`: GET/POST `/file-manager-settings/write-allowlist`, `/read-allowlist`, `/redaction`. `manage_options` + `X-WP-Nonce` required. GET responses include enumeration data (immediate ABSPATH children, `get_plugins()`, `wp_get_themes()`) so the React UI renders without a second round-trip.
+
+**BREAKING — `file-manager/read-file`.** The previous outright refusal of `wp-config.php` and `.htaccess` (`blocked_reason:"protected_read"`) is REMOVED. Those files are now readable; sensitive content is redacted per the secret redactor above. Callers that programmatically handled `blocked_reason:"protected_read"` should switch to reading the returned content with `redacted:true`. Write-side refusals on `wp-config.php` / `.htaccess` for `create-file`, `edit-file`, `delete-file`, `copy-file`, `move-file`, `append-file` are UNCHANGED.
+
+**Not touched.** `Ability_Definition`, `File_Mods_Guard`, `Wp_Filesystem_Init`, `read-wp-config`, `edit-wp-config`, `get-wp-config-constant`, `list-directory`, `file-info`, all 6 zip-backup abilities, and every ability outside `file-manager/*`.
+
+= Feature 091 milestone =
 **Feature 091 — WP_Filesystem migration for `file-manager/*` abilities.** Every filesystem read, write, list, delete, copy, move, and stat performed by 19 file-manager abilities now routes through WordPress's `WP_Filesystem` transport instead of raw PHP filesystem functions. On the majority of hosts (`FS_METHOD='direct'`) the behaviour is identical. On hosts where WordPress requires FTP / SSH credentials (`FS_METHOD='ftpext'` / `'ftpsockets'` / `'ssh2'`) the abilities now succeed via the same channel WordPress core's file editor uses instead of silently failing.
 
 **Biggest wins — `wp-config.php` and `debug.log`:** `file-manager/read-wp-config`, `file-manager/edit-wp-config`, `file-manager/read-debug-log`, `file-manager/clear-debug-log` are the abilities most likely to touch files owned by the SSH user rather than the web-server user. Those calls previously failed on non-`direct` transports; they now work.
