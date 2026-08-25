@@ -247,6 +247,10 @@
 		<testsuite name="feature-091-unit">
 			<file>tests/phpunit/abilities/Test_Feature_091_Wp_Filesystem_Migration.php</file>
 		</testsuite>
+		<!-- Feature 092 — file-manager allowlists + redactor. -->
+		<testsuite name="feature-092-unit">
+			<file>tests/phpunit/abilities/Test_Feature_092_Allowlists_And_Redactor.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

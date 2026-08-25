@@ -343,15 +343,16 @@ class Test_Feature_065_Safety_And_Payload extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_fr014_read_file_refuses_protected_read_targets(): void {
+		// Feature 092: read-file no longer REFUSES wp-config.php / .htaccess
+		// outright — those files are now readable and Secret_Redactor scrubs
+		// the sensitive content before the response leaves. The former
+		// PROTECTED_FILES constant + protected_read guard were removed.
+		// Assert the new posture instead.
 		$src = $this->sources['read_file'];
-		$this->assertStringContainsString( 'private const PROTECTED_FILES', $src );
-		$this->assertStringContainsString( "'wp-config.php'", $src );
-		$this->assertStringContainsString( "'.htaccess'", $src );
-		$this->assertStringContainsString( "'blocked_reason' => 'protected_read'", $src );
-		$this->assertMatchesRegularExpression(
-			"/in_array\(\s*basename\(\s*\\\$real_for_check\s*\),\s*self::PROTECTED_FILES,\s*true\s*\)/",
-			$src
-		);
+		$this->assertStringNotContainsString( 'private const PROTECTED_FILES', $src, 'Feature 092 removes PROTECTED_FILES from Read_File.' );
+		$this->assertStringNotContainsString( "'blocked_reason' => 'protected_read'", $src, 'Feature 092 removes the protected_read blocked_reason envelope.' );
+		$this->assertStringContainsString( 'Secret_Redactor::scrub(', $src, 'Feature 092 routes read-file content through the secret redactor.' );
+		$this->assertStringContainsString( 'Path_Allowlist_Guard::blocked_read_response(', $src, 'Feature 092 gates read-file with the read allowlist.' );
 	}
 
 	/**
@@ -498,7 +499,9 @@ class Test_Feature_065_Safety_And_Payload extends WP_UnitTestCase {
 			'deactivate_plugin' => array( 'protected_plugin' ),
 			'delete_media'      => array( 'confirmation_required' ),
 			'update_post'       => array( 'non_writable_post_type', 'publish_cap_required', 'edit_others_posts_required' ),
-			'read_file'         => array( 'protected_read', 'file_too_large' ),
+			// Feature 092: 'protected_read' removed; reads now succeed with
+			// Secret_Redactor scrubbing. Only the size-cap refusal remains.
+			'read_file'         => array( 'file_too_large' ),
 			'delete_file'       => array( 'confirmation_required', 'protected_write' ),
 		);
 		foreach ( $expectations as $key => $reasons ) {

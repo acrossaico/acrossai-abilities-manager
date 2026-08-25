@@ -17,20 +17,14 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Read_File ability class (absorbed).
+ *
+ * Feature 092: the previous outright refusal of wp-config.php / .htaccess
+ * (blocked_reason:'protected_read') was removed. Those files are now
+ * readable; sensitive content is scrubbed by Secret_Redactor before the
+ * response leaves the site. Reads are also gated by the admin-configurable
+ * read allowlist (Path_Allowlist_Guard).
  */
 class Read_File extends Ability_Definition {
-
-	/**
-	 * Hardcoded filenames (at ABSPATH root) whose contents must never be
-	 * returned. wp-config.php holds the DB password and eight auth constants;
-	 * .htaccess can leak rewrite rules and access-control secrets.
-	 *
-	 * @var array<int,string>
-	 */
-	private const PROTECTED_FILES = array(
-		'wp-config.php',
-		'.htaccess',
-	);
 
 	/**
 	 * Maximum file size (bytes) that read-file will return as text. Files
@@ -51,7 +45,7 @@ class Read_File extends Ability_Definition {
 			'name' => 'file-manager/read-file',
 			'args' => array(
 				'label'               => __( 'Read File', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Reads the contents of a file within the WordPress installation. Path must be relative to ABSPATH. Refuses wp-config.php and .htaccess, refuses files larger than 5 MB, and reports binary content without returning raw bytes.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Reads the contents of a file within the WordPress installation. Path must be relative to ABSPATH. Refuses files larger than 5 MB and reports binary content without returning raw bytes. Text content is scrubbed through the configurable secret redactor before return; response includes redacted:bool and redaction_count:int. When a read allowlist is configured, reads outside it return blocked_reason:"path_not_allowed_for_read".', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-abilities-manager-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
