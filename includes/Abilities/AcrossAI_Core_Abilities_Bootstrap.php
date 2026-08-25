@@ -216,6 +216,8 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new FileManager\Delete_Zip_Backup();
 		// Feature 063 — wp-config constant read.
 		new FileManager\Get_Wp_Config_Constant();
+		// Feature 094 — audit log reader.
+		new FileManager\Get_Changelog();
 		new Block\List_Block_Patterns();
 		new Block\Read_Block_Pattern();
 		new Block\Create_Block_Pattern();

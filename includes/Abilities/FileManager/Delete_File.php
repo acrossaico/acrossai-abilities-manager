@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
@@ -60,6 +61,11 @@ class Delete_File extends Ability_Definition {
 							'type'        => 'boolean',
 							'description' => __( 'Must be true to proceed. Guards against accidental deletes.', 'acrossai-abilities-manager' ),
 						),
+						'context' => array(
+							'type'        => 'string',
+							'maxLength'   => 2000,
+							'description' => __( 'Optional caller-supplied reason for this delete. Captured in the audit log for accountability. Truncated to 500 chars in the persisted entry.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'path', 'confirm' ),
 					'additionalProperties' => false,
@@ -69,6 +75,7 @@ class Delete_File extends Ability_Definition {
 					'properties'           => array(
 						'success'        => array( 'type' => 'boolean' ),
 						'backup'         => array( 'type' => array( 'string', 'null' ) ),
+						'backup_path'    => array( 'type' => array( 'string', 'null' ) ),
 						'message'        => array( 'type' => 'string' ),
 						'blocked_reason' => array( 'type' => 'string' ),
 						'allowed_roots'  => array( 'type' => 'array' ),
@@ -160,19 +167,35 @@ class Delete_File extends Ability_Definition {
 			return $blocked;
 		}
 
-		// Best-effort backup: copy the file to <path>.bak.<timestamp> before
-		// deleting. If the copy fails we still proceed with the delete —
-		// backup is a convenience, not a hard prerequisite.
-		$backup = $real . '.bak.' . time();
-		if ( ! $fs->copy( $real, $backup, false, FS_CHMOD_FILE ) ) {
-			$backup = null;
-		}
+		// Feature 094: centralised pre-image backup. When backup_enabled is
+		// false the inline .bak.<time> scheme is GONE — no backup at all.
+		// Populates both the legacy `backup` field (for one transition
+		// release) and the canonical `backup_path`.
+		$size_before   = (int) $fs->size( $real );
+		$backup_result = Audit_Trail::write_backup( $real );
+		$backup_path   = is_string( $backup_result ) ? $backup_result : null;
+		$backup_status = self::classify_backup( $backup_result );
 
 		if ( ! $fs->delete( $real ) ) {
+			// Log the FAILED delete so admins see the attempted mutation.
+			Audit_Trail::write_log(
+				'DELETE',
+				$real,
+				array(
+					'ability_slug'  => 'file-manager/delete-file',
+					'size_before'   => $size_before,
+					'size_after'    => null,
+					'backup_status' => $backup_status,
+					'backup_path'   => $backup_path,
+					'backup_reason' => 'primary delete failed',
+					'context'       => (string) ( $input['context'] ?? '' ),
+				)
+			);
 			return array(
-				'success' => false,
-				'backup'  => $backup,
-				'message' => __( 'Could not delete file.', 'acrossai-abilities-manager' ),
+				'success'     => false,
+				'backup'      => $backup_path,
+				'backup_path' => $backup_path,
+				'message'     => __( 'Could not delete file.', 'acrossai-abilities-manager' ),
 			);
 		}
 
@@ -181,10 +204,41 @@ class Delete_File extends Ability_Definition {
 			opcache_invalidate( $real, true );
 		}
 
-		return array(
-			'success' => true,
-			'backup'  => $backup,
-			'message' => __( 'File deleted.', 'acrossai-abilities-manager' ),
+		Audit_Trail::write_log(
+			'DELETE',
+			$real,
+			array(
+				'ability_slug'  => 'file-manager/delete-file',
+				'size_before'   => $size_before,
+				'size_after'    => null,
+				'backup_status' => $backup_status,
+				'backup_path'   => $backup_path,
+				'context'       => (string) ( $input['context'] ?? '' ),
+			)
 		);
+
+		return array(
+			'success'     => true,
+			'backup'      => $backup_path, // Deprecated; mirrors backup_path this release.
+			'backup_path' => $backup_path,
+			'message'     => __( 'File deleted.', 'acrossai-abilities-manager' ),
+		);
+	}
+
+	/**
+	 * Map Audit_Trail::write_backup() return values to the log-writer's
+	 * backup_status enum.
+	 *
+	 * @param mixed $result Return value from Audit_Trail::write_backup().
+	 * @return string
+	 */
+	private static function classify_backup( $result ): string {
+		if ( is_string( $result ) && '' !== $result ) {
+			return 'written';
+		}
+		if ( false === $result ) {
+			return 'failed';
+		}
+		return 'disabled'; // null → backup_enabled=false or nothing to back up.
 	}
 }

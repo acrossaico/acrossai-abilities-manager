@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
@@ -53,6 +54,11 @@ class Create_Directory extends Ability_Definition {
 							'type'        => 'boolean',
 							'default'     => true,
 							'description' => __( 'When true (default), missing parent directories are created via wp_mkdir_p. When false, a single mkdir is used and refuses if the parent does not exist.', 'acrossai-abilities-manager' ),
+						),
+						'context'   => array(
+							'type'        => 'string',
+							'maxLength'   => 2000,
+							'description' => __( 'Optional caller-supplied reason for this mkdir. Captured in the audit log for accountability. Truncated to 500 chars in the persisted entry.', 'acrossai-abilities-manager' ),
 						),
 					),
 					'required'             => array( 'path' ),
@@ -187,6 +193,19 @@ class Create_Directory extends Ability_Definition {
 				);
 			}
 		}
+
+		// Feature 094: log the mkdir. No backup (no content to preserve).
+		Audit_Trail::write_log(
+			'MKDIR',
+			realpath( $abs ) ?: $abs,
+			array(
+				'ability_slug'  => 'file-manager/create-directory',
+				'size_before'   => null,
+				'size_after'    => null,
+				'backup_status' => 'disabled', // MKDIR has no content to back up.
+				'context'       => (string) ( $input['context'] ?? '' ),
+			)
+		);
 
 		return array(
 			'success' => true,

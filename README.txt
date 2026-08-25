@@ -139,6 +139,31 @@ No data is sent to any external server without an explicit administrator action.
 == Changelog ==
 
 = Unreleased =
+**Feature 094 — File Manager Audit Log + Backup Harness (partial).** Consumes the four Backup & Audit option keys shipped as scaffold in PR #144 and enforced-toggle-only in PR #146. New `Audit_Trail` utility owns pre-image backups (into `wp-content/acrossai-file-manager-backups/<YYYY-MM-DD>/`) + append-only log (into `wp-content/acrossai-file-manager-logs/acrossai-file-manager.log`) + amortised 1-in-10 cleanup + stats. Both storage locations get a `Deny from all` `.htaccess` on first creation. All I/O goes through `WP_Filesystem`.
+
+**New ability:** `file-manager/get-changelog` — tails the last N entries (default 100, max 500) via MCP. Honours the read allowlist. Empty log returns a friendly message, not an error. `manage_options` gated.
+
+**Log entry format** (blank-line separated, one entry per mutation):
+
+  [YYYY-MM-DD HH:MM:SS UTC] <OPERATION>
+    Ability: file-manager/<slug>
+    File: <abs path>
+    User: <email> (ID:<id>) IP:<ip>
+    Size: <before> -> <after> bytes
+    Destination: <abs path>       (COPY / MOVE only)
+    Backup: <abs path | SKIPPED (...) | FAILED (...) | DISABLED>
+    Context: <sanitised text or empty>
+
+**New action hook:** `do_action('acrossai_file_manager_log_entry', $entry)` fires after every log write. Subscribers (Slack, Datadog, SIEM…) receive the parsed entry as an assoc array. Zero cost when no subscribers.
+
+**New optional `context` input field** on wired abilities (`delete-file`, `edit-file`, `create-directory` in this PR — more in the follow-up). Schema max 2000 chars; log writer truncates to 500 chars via `sanitize_text_field` before persisting.
+
+**BREAKING — `file-manager/delete-file` `backup` response field.** The inline `<path>.bak.<time>` scheme is REPLACED by the centralised backup dir. When `backup_enabled=true` the response's new canonical field is `backup_path`; the legacy `backup` field is populated with the same value for one transition release and will be removed. When `backup_enabled=false` NO backup is written at all — callers who relied on the inline `.bak` return value now get `null` for both fields when the toggle is off. Direct callers to read `backup_path` instead of `backup`.
+
+**Retention.** `backup_retention_days` deletes backup dirs older than N days; `audit_log_retention_days` trims log entries older than N days. Both fire probabilistically (1-in-10 per log write) — no WP-Cron dependency.
+
+**Scope note (PARTIAL).** This PR wires three abilities end-to-end (`delete-file`, `edit-file`, `create-directory`) to prove the design across the backup + log-only paths. The remaining seven mutation abilities (`create-file`, `append-file`, `copy-file`, `move-file`, `delete-directory`, `edit-wp-config`, `clear-debug-log`) and the `BackupAuditPanel` scaffold-banner flip + `/backup-audit-stats` REST endpoint + uninstall extension are DEFERRED to a follow-up PR. Test coverage is scoped accordingly (35 new tests, mostly structural — behavioural I/O tests need a full-WP bootstrap and run in the CI matrix).
+
 **Feature 093 — File Manager Hardening (enforcement pass for PR #144 scaffold).** The eight Content Filters knobs and the one sensitive-read denylist that PR #144 shipped as UI scaffold are now enforced at runtime by every file-manager write ability and by `file-manager/read-file`. Persistence layer (`Hardening_Settings`) unchanged; the new `Hardening_Enforcer` utility runs each check after the existing `File_Mods_Guard` + `Path_Allowlist_Guard` gates and returns the standard `{success:false, blocked_reason, path, message, …context}` envelope on refusal. Enforcement order (best-cheap-first): dangerous_extensions → block_double_extensions → sanitize_filename_check → strict_filename_filter → mime_type_check → htaccess_directive_scan → write_max_bytes. Empty list / false toggle is a no-op so callers upgrading with defaults get zero behaviour change beyond what defaults dictate.
 
 **Six abilities wired** — `file-manager/{create-file, edit-file, append-file, copy-file, move-file}` for the seven content-filter checks; `file-manager/read-file` for the sensitive-read denylist. Copy/move check the DESTINATION basename; append-file scans only the appended bytes for `.htaccess` directives and caps size on `new_size = existing + appended`; copy/move use source file size for the size cap and read source content lazily for the `.htaccess` scan (only when destination basename is `.htaccess`). `mime_type_check` skips append-file (extension didn't change) and always allows `{php, txt, log, json, xml, css, js, md, html, htm, htaccess}` even with the check on — prevents breaking the mu-plugins deploy use case the write allowlist explicitly permits.

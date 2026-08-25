@@ -430,17 +430,27 @@ class Test_Feature_065_Safety_And_Payload extends WP_UnitTestCase {
 	}
 
 	/**
-	 * FR-019: delete-file writes a .bak.<timestamp> copy before deleting
-	 * and returns the backup path in the response.
+	 * FR-019: delete-file writes a pre-image backup before deleting and
+	 * returns the backup path in the response.
+	 *
+	 * Feature 094 (2026-08-26) REPLACED the original inline
+	 * `$real . '.bak.' . time()` scheme with a centralised backup dir
+	 * managed by Audit_Trail — see specs/094-file-manager-audit-log/. The
+	 * FR-019 intent (a pre-image is available on delete) is unchanged; only
+	 * the storage location and the response field name evolved. Callers
+	 * should read `response.backup_path` (canonical) — `response.backup`
+	 * is populated for one transition release and will be removed.
 	 *
 	 * @return void
 	 */
 	public function test_fr019_delete_file_writes_timestamped_backup(): void {
 		$src = $this->sources['delete_file'];
-		$this->assertStringContainsString( "\$real . '.bak.' . time()", $src );
-		// Feature 091 migrated native copy() → $fs->copy() with FS_CHMOD_FILE.
-		$this->assertStringContainsString( '$fs->copy( $real, $backup, false, FS_CHMOD_FILE )', $src );
-		$this->assertStringContainsString( "'backup'  => \$backup,", $src );
+		// Feature 094: backup writer runs before delete.
+		$this->assertStringContainsString( 'Audit_Trail::write_backup(', $src );
+		// Canonical response field for the backup location.
+		$this->assertStringContainsString( "'backup_path' => \$backup_path,", $src );
+		// Deprecated `backup` field is mirrored from backup_path for one release.
+		$this->assertMatchesRegularExpression( "/'backup'\\s*=>\\s*\\\$backup_path/", $src );
 	}
 
 	/**
