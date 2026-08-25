@@ -28,6 +28,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\Rest;
 use AcrossAI_Abilities_Manager\Includes\Modules\Abilities\Rest\AcrossAI_Abilities_Rest_Controller;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Secret_Redactor;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Settings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -144,6 +145,56 @@ final class File_Manager_Settings_Controller {
 				),
 			)
 		);
+
+		register_rest_route(
+			AcrossAI_Abilities_Rest_Controller::REST_NAMESPACE,
+			'/' . self::REST_BASE . '/content-filters',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_content_filters' ),
+					'permission_callback' => $permission,
+				),
+				array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'save_content_filters' ),
+					'permission_callback' => $permission,
+					'args'                => array(
+						'dangerous_extensions'    => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+						'block_double_extensions' => array( 'type' => 'boolean' ),
+						'htaccess_directive_scan' => array( 'type' => 'boolean' ),
+						'sanitize_filename_check' => array( 'type' => 'boolean' ),
+						'write_max_bytes'         => array( 'type' => 'integer' ),
+						'sensitive_read_denylist' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+						'strict_filename_filter'  => array( 'type' => 'boolean' ),
+						'mime_type_check'         => array( 'type' => 'boolean' ),
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			AcrossAI_Abilities_Rest_Controller::REST_NAMESPACE,
+			'/' . self::REST_BASE . '/backup-audit',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_backup_audit' ),
+					'permission_callback' => $permission,
+				),
+				array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'save_backup_audit' ),
+					'permission_callback' => $permission,
+					'args'                => array(
+						'audit_log_enabled'        => array( 'type' => 'boolean' ),
+						'audit_log_retention_days' => array( 'type' => 'integer' ),
+						'backup_enabled'           => array( 'type' => 'boolean' ),
+						'backup_retention_days'    => array( 'type' => 'integer' ),
+					),
+				),
+			)
+		);
 	}
 
 	/* -------------------------------------------------------------------- */
@@ -244,6 +295,105 @@ final class File_Manager_Settings_Controller {
 			)
 		);
 		return $this->get_redaction();
+	}
+
+	/* -------------------------------------------------------------------- */
+	/* Content filters (feature 093 scope — scaffold only)                   */
+	/* -------------------------------------------------------------------- */
+
+	/**
+	 * GET /file-manager-settings/content-filters
+	 *
+	 * Returns the current snapshot plus a `scaffold_only:true` marker so the
+	 * React panel can render its "not yet enforced" banner without needing
+	 * an out-of-band signal.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function get_content_filters(): \WP_REST_Response {
+		return new \WP_REST_Response(
+			array(
+				'config'         => Hardening_Settings::get_content_filters(),
+				'scaffold_only'  => true,
+				'follow_up_spec' => '093-file-manager-hardening',
+				'limits'         => array(
+					'write_max_bytes_min' => Hardening_Settings::MIN_WRITE_MAX_BYTES,
+					'write_max_bytes_max' => Hardening_Settings::MAX_WRITE_MAX_BYTES,
+				),
+			),
+			200
+		);
+	}
+
+	/**
+	 * POST /file-manager-settings/content-filters
+	 *
+	 * Response merges the freshly-persisted snapshot with any per-entry
+	 * rejections the sanitiser reported (empty array when nothing was
+	 * dropped). The React panel renders `skipped` as a warning notice so
+	 * admins see exactly which entries didn't persist and why.
+	 *
+	 * @param \WP_REST_Request $request Incoming request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function save_content_filters( \WP_REST_Request $request ) {
+		$payload = $request->get_json_params();
+		if ( ! is_array( $payload ) ) {
+			$payload = $request->get_params();
+		}
+		$result = Hardening_Settings::set_content_filters( (array) $payload );
+		return new \WP_REST_Response(
+			array(
+				'config'         => $result['config'],
+				'skipped'        => $result['skipped'],
+				'scaffold_only'  => true,
+				'follow_up_spec' => '093-file-manager-hardening',
+				'limits'         => array(
+					'write_max_bytes_min' => Hardening_Settings::MIN_WRITE_MAX_BYTES,
+					'write_max_bytes_max' => Hardening_Settings::MAX_WRITE_MAX_BYTES,
+				),
+			),
+			200
+		);
+	}
+
+	/* -------------------------------------------------------------------- */
+	/* Backup + audit (feature 094 scope — scaffold only)                    */
+	/* -------------------------------------------------------------------- */
+
+	/**
+	 * GET /file-manager-settings/backup-audit
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function get_backup_audit(): \WP_REST_Response {
+		return new \WP_REST_Response(
+			array(
+				'config'         => Hardening_Settings::get_backup_audit(),
+				'scaffold_only'  => true,
+				'follow_up_spec' => '094-file-manager-audit-log',
+				'limits'         => array(
+					'retention_days_min' => Hardening_Settings::MIN_RETENTION_DAYS,
+					'retention_days_max' => Hardening_Settings::MAX_RETENTION_DAYS,
+				),
+			),
+			200
+		);
+	}
+
+	/**
+	 * POST /file-manager-settings/backup-audit
+	 *
+	 * @param \WP_REST_Request $request Incoming request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function save_backup_audit( \WP_REST_Request $request ) {
+		$payload = $request->get_json_params();
+		if ( ! is_array( $payload ) ) {
+			$payload = $request->get_params();
+		}
+		Hardening_Settings::set_backup_audit( (array) $payload );
+		return $this->get_backup_audit();
 	}
 
 	/* -------------------------------------------------------------------- */

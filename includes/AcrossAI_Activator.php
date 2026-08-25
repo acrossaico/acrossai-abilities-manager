@@ -13,6 +13,7 @@ use AcrossAI_Abilities_Manager\Includes\Modules\Abilities\Database\AcrossAI_Abil
 use AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Abilities_Access_Control;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Secret_Redactor;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Settings;
 use WPBoilerplate\AccessControl\Database\Rule\RuleTable;
 
 // Exit if accessed directly.
@@ -60,6 +61,23 @@ class AcrossAI_Activator {
 		add_option( Path_Allowlist_Guard::OPTION_WRITE, Path_Allowlist_Guard::DEFAULT_WRITE_ALLOWLIST );
 		add_option( Path_Allowlist_Guard::OPTION_READ, Path_Allowlist_Guard::DEFAULT_READ_ALLOWLIST );
 		add_option( Secret_Redactor::OPTION, Secret_Redactor::default_config() );
+
+		// Feature 093 / 094 SCAFFOLD: seed the twelve hardening + audit option
+		// keys the new File Manager tab panels bind to. Enforcement lands in
+		// the follow-up features that read these keys — the UI ships first so
+		// admins can see the shape and set values pre-emptively.
+		add_option( Hardening_Settings::OPTION_DANGEROUS_EXTENSIONS, Hardening_Settings::DEFAULT_DANGEROUS_EXTENSIONS );
+		add_option( Hardening_Settings::OPTION_BLOCK_DOUBLE_EXTENSIONS, Hardening_Settings::DEFAULT_BLOCK_DOUBLE_EXTENSIONS );
+		add_option( Hardening_Settings::OPTION_HTACCESS_DIRECTIVE_SCAN, Hardening_Settings::DEFAULT_HTACCESS_DIRECTIVE_SCAN );
+		add_option( Hardening_Settings::OPTION_SANITIZE_FILENAME_CHECK, Hardening_Settings::DEFAULT_SANITIZE_FILENAME_CHECK );
+		add_option( Hardening_Settings::OPTION_WRITE_MAX_BYTES, Hardening_Settings::DEFAULT_WRITE_MAX_BYTES );
+		add_option( Hardening_Settings::OPTION_SENSITIVE_READ_DENYLIST, Hardening_Settings::DEFAULT_SENSITIVE_READ_DENYLIST );
+		add_option( Hardening_Settings::OPTION_STRICT_FILENAME_FILTER, Hardening_Settings::DEFAULT_STRICT_FILENAME_FILTER );
+		add_option( Hardening_Settings::OPTION_MIME_TYPE_CHECK, Hardening_Settings::DEFAULT_MIME_TYPE_CHECK );
+		add_option( Hardening_Settings::OPTION_AUDIT_LOG_ENABLED, Hardening_Settings::DEFAULT_AUDIT_LOG_ENABLED );
+		add_option( Hardening_Settings::OPTION_AUDIT_LOG_RETENTION_DAYS, Hardening_Settings::DEFAULT_AUDIT_LOG_RETENTION_DAYS );
+		add_option( Hardening_Settings::OPTION_BACKUP_ENABLED, Hardening_Settings::DEFAULT_BACKUP_ENABLED );
+		add_option( Hardening_Settings::OPTION_BACKUP_RETENTION_DAYS, Hardening_Settings::DEFAULT_BACKUP_RETENTION_DAYS );
 	}
 
 	/**
