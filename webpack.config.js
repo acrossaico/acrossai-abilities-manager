@@ -101,6 +101,16 @@ module.exports = {
 			'src/js/mcp-abilities-extension',
 			'index.js'
 		),
+		'js/file-manager-settings': path.resolve(
+			process.cwd(),
+			'src/js/file-manager-settings',
+			'index.js'
+		),
+		'css/file-manager-settings': path.resolve(
+			process.cwd(),
+			'src/scss/file-manager-settings',
+			'admin.scss'
+		),
 	},
 	output: {
 		...defaultConfig.output,
