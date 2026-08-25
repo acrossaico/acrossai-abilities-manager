@@ -321,4 +321,247 @@ class Test_Feature_092_Allowlists_And_Redactor extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'Path_Allowlist_Guard::DEFAULT_READ_ALLOWLIST', $src );
 		$this->assertStringContainsString( 'Secret_Redactor::default_config()', $src );
 	}
+
+	/* -------------------------------------------------------------------- */
+	/* Admin UI "Affects these abilities" callouts                           */
+	/*                                                                       */
+	/* Each of the three settings panels lists the file-manager/* slugs it   */
+	/* gates. These tests keep the JSX in sync with the PHP: if someone      */
+	/* wires a new ability to a guard/redactor and forgets to update the     */
+	/* frontend list (or vice versa), tests fail. Load-bearing for user      */
+	/* trust — the settings copy must not lie about what the setting does.  */
+	/* -------------------------------------------------------------------- */
+
+	/**
+	 * The 8 file-manager/* slugs the WRITE allowlist gates. Source of
+	 * truth for the affects-list assertion. Must equal the set of files
+	 * whose classes call Path_Allowlist_Guard::blocked_write_response().
+	 *
+	 * @var array<int,string>
+	 */
+	private const WRITE_AFFECTED_SLUGS = array(
+		'file-manager/create-file',
+		'file-manager/edit-file',
+		'file-manager/delete-file',
+		'file-manager/copy-file',
+		'file-manager/move-file',
+		'file-manager/append-file',
+		'file-manager/create-directory',
+		'file-manager/delete-directory',
+	);
+
+	/**
+	 * The 2 file-manager/* slugs the READ allowlist gates AND the same 2
+	 * the Secret_Redactor scrubs.
+	 *
+	 * @var array<int,string>
+	 */
+	private const READ_AFFECTED_SLUGS = array(
+		'file-manager/read-file',
+		'file-manager/read-debug-log',
+	);
+
+	/**
+	 * Metadata-only abilities the read allowlist explicitly does NOT gate.
+	 * The Read panel names them so admins know browsing keeps working.
+	 *
+	 * @var array<int,string>
+	 */
+	private const READ_UNAFFECTED_SLUGS = array(
+		'file-manager/list-directory',
+		'file-manager/file-info',
+	);
+
+	public function test_write_panel_shows_affects_callout(): void {
+		$src = $this->read( 'src/js/file-manager-settings/components/WriteAllowlistPanel.jsx' );
+		$this->assertStringContainsString( 'Affects these abilities:', $src, 'Write panel must show the "Affects" callout.' );
+		$this->assertStringContainsString( 'className="acrossai-fm-affects"', $src );
+		$this->assertStringContainsString( 'const AFFECTED_ABILITIES', $src );
+	}
+
+	public function test_write_panel_lists_exactly_the_eight_gated_slugs(): void {
+		$src = $this->read( 'src/js/file-manager-settings/components/WriteAllowlistPanel.jsx' );
+		foreach ( self::WRITE_AFFECTED_SLUGS as $slug ) {
+			$this->assertStringContainsString(
+				"'$slug'",
+				$src,
+				"Write panel AFFECTED_ABILITIES must list $slug."
+			);
+		}
+		// Read-only slugs must NOT appear in the write panel — that would
+		// misinform the admin about what saving does.
+		foreach ( self::READ_AFFECTED_SLUGS as $slug ) {
+			$this->assertStringNotContainsString(
+				"'$slug'",
+				$src,
+				"Write panel must NOT claim to gate $slug (read-only ability)."
+			);
+		}
+	}
+
+	public function test_write_panel_slugs_match_php_guard_wiring(): void {
+		// Cross-check: every slug the Write panel advertises MUST correspond
+		// to an ability class that actually calls the write-guard in PHP.
+		// If someone adds a slug here but forgets to wire the guard (or
+		// vice-versa), this test fails and prevents drift.
+		$slug_to_file = array(
+			'file-manager/create-file'      => 'includes/Abilities/FileManager/Create_File.php',
+			'file-manager/edit-file'        => 'includes/Abilities/FileManager/Edit_File.php',
+			'file-manager/delete-file'      => 'includes/Abilities/FileManager/Delete_File.php',
+			'file-manager/copy-file'        => 'includes/Abilities/FileManager/Copy_File.php',
+			'file-manager/move-file'        => 'includes/Abilities/FileManager/Move_File.php',
+			'file-manager/append-file'      => 'includes/Abilities/FileManager/Append_File.php',
+			'file-manager/create-directory' => 'includes/Abilities/FileManager/Create_Directory.php',
+			'file-manager/delete-directory' => 'includes/Abilities/FileManager/Delete_Directory.php',
+		);
+		foreach ( $slug_to_file as $slug => $rel ) {
+			$php = $this->read( $rel );
+			$this->assertStringContainsString(
+				"'$slug'",
+				$php,
+				"Ability file for $slug must declare that slug in its ability() spec."
+			);
+			$this->assertStringContainsString(
+				'Path_Allowlist_Guard::blocked_write_response(',
+				$php,
+				"Ability $slug is advertised as write-gated but its PHP does not call blocked_write_response()."
+			);
+		}
+	}
+
+	public function test_read_panel_shows_affects_callout(): void {
+		$src = $this->read( 'src/js/file-manager-settings/components/ReadAllowlistPanel.jsx' );
+		$this->assertStringContainsString( 'Affects these abilities:', $src );
+		$this->assertStringContainsString( 'className="acrossai-fm-affects"', $src );
+		$this->assertStringContainsString( 'const AFFECTED_ABILITIES', $src );
+		$this->assertStringContainsString( 'const UNAFFECTED_ABILITIES', $src );
+	}
+
+	public function test_read_panel_lists_exactly_the_two_gated_slugs(): void {
+		$src = $this->read( 'src/js/file-manager-settings/components/ReadAllowlistPanel.jsx' );
+		foreach ( self::READ_AFFECTED_SLUGS as $slug ) {
+			$this->assertStringContainsString( "'$slug'", $src, "Read panel AFFECTED_ABILITIES must list $slug." );
+		}
+		foreach ( self::READ_UNAFFECTED_SLUGS as $slug ) {
+			$this->assertStringContainsString( "'$slug'", $src, "Read panel UNAFFECTED_ABILITIES must list $slug." );
+		}
+		// Write slugs must not appear in the read panel — different guard.
+		foreach ( self::WRITE_AFFECTED_SLUGS as $slug ) {
+			$this->assertStringNotContainsString(
+				"'$slug'",
+				$src,
+				"Read panel must NOT claim to gate $slug (write-only ability)."
+			);
+		}
+	}
+
+	public function test_read_panel_slugs_match_php_guard_wiring(): void {
+		$slug_to_file = array(
+			'file-manager/read-file'      => 'includes/Abilities/FileManager/Read_File.php',
+			'file-manager/read-debug-log' => 'includes/Abilities/FileManager/Read_Debug_Log.php',
+		);
+		foreach ( $slug_to_file as $slug => $rel ) {
+			$php = $this->read( $rel );
+			$this->assertStringContainsString( "'$slug'", $php );
+			$this->assertStringContainsString(
+				'Path_Allowlist_Guard::blocked_read_response(',
+				$php,
+				"Ability $slug is advertised as read-gated but its PHP does not call blocked_read_response()."
+			);
+		}
+	}
+
+	public function test_read_panel_unaffected_slugs_have_no_read_guard(): void {
+		// The panel promises list-directory + file-info are ungated.
+		// Confirm those ability files do NOT contain the read-guard call —
+		// if a future refactor adds one there, the panel description would
+		// silently mislead admins and this test would catch it.
+		foreach (
+			array(
+				'file-manager/list-directory' => 'includes/Abilities/FileManager/List_Directory.php',
+				'file-manager/file-info'      => 'includes/Abilities/FileManager/File_Info.php',
+			) as $slug => $rel
+		) {
+			$php = $this->read( $rel );
+			$this->assertStringNotContainsString(
+				'Path_Allowlist_Guard::blocked_read_response(',
+				$php,
+				"Ability $slug is advertised as ungated but its PHP calls blocked_read_response()."
+			);
+		}
+	}
+
+	public function test_redaction_panel_shows_affects_callout(): void {
+		$src = $this->read( 'src/js/file-manager-settings/components/RedactionPanel.jsx' );
+		$this->assertStringContainsString( 'Affects these abilities:', $src );
+		$this->assertStringContainsString( 'className="acrossai-fm-affects"', $src );
+		$this->assertStringContainsString( 'const AFFECTED_ABILITIES', $src );
+	}
+
+	public function test_redaction_panel_lists_exactly_the_two_scrubbed_slugs(): void {
+		$src = $this->read( 'src/js/file-manager-settings/components/RedactionPanel.jsx' );
+		// Redactor applies to the same two content-read abilities.
+		foreach ( self::READ_AFFECTED_SLUGS as $slug ) {
+			$this->assertStringContainsString(
+				"'$slug'",
+				$src,
+				"Redaction panel AFFECTED_ABILITIES must list $slug."
+			);
+		}
+		foreach ( self::WRITE_AFFECTED_SLUGS as $slug ) {
+			$this->assertStringNotContainsString(
+				"'$slug'",
+				$src,
+				"Redaction panel must NOT claim to affect $slug (writes aren't scrubbed)."
+			);
+		}
+	}
+
+	public function test_redaction_panel_slugs_match_php_scrub_wiring(): void {
+		// Every slug the Redaction panel names MUST correspond to an ability
+		// class that actually calls Secret_Redactor::scrub() in PHP.
+		$slug_to_file = array(
+			'file-manager/read-file'      => 'includes/Abilities/FileManager/Read_File.php',
+			'file-manager/read-debug-log' => 'includes/Abilities/FileManager/Read_Debug_Log.php',
+		);
+		foreach ( $slug_to_file as $slug => $rel ) {
+			$php = $this->read( $rel );
+			$this->assertStringContainsString( "'$slug'", $php );
+			$this->assertStringContainsString(
+				'Secret_Redactor::scrub(',
+				$php,
+				"Ability $slug is advertised as scrubbed but its PHP does not call Secret_Redactor::scrub()."
+			);
+		}
+	}
+
+	public function test_redaction_panel_wp_config_abilities_are_not_in_the_affects_list(): void {
+		// The panel description promises read-wp-config and
+		// get-wp-config-constant handle their own redaction — those slugs
+		// must not appear in AFFECTED_ABILITIES.
+		$src = $this->read( 'src/js/file-manager-settings/components/RedactionPanel.jsx' );
+		foreach (
+			array(
+				'file-manager/read-wp-config',
+				'file-manager/get-wp-config-constant',
+				'file-manager/edit-wp-config',
+			) as $slug
+		) {
+			$this->assertStringNotContainsString(
+				"'$slug'",
+				$src,
+				"Redaction panel must NOT list $slug — those abilities handle redaction separately."
+			);
+		}
+	}
+
+	public function test_affects_callout_styles_exist(): void {
+		// The .acrossai-fm-affects styles land the callout consistently
+		// across all three panels. If someone deletes them (or renames the
+		// className without updating this component), the UI becomes an
+		// unstyled bullet list — this test guards against that.
+		$scss = $this->read( 'src/scss/file-manager-settings/admin.scss' );
+		$this->assertStringContainsString( '.acrossai-fm-affects', $scss, 'Affects callout must have styles.' );
+		$this->assertStringContainsString( '.acrossai-fm-affects-list', $scss, 'Affects slug list must have styles.' );
+	}
 }
