@@ -551,4 +551,339 @@ class Test_Feature_093_Hardening_Enforcement extends WP_UnitTestCase {
 			'Backup & Audit panel banner should reference 094-file-manager-audit-log'
 		);
 	}
+
+	/* ==================================================================== */
+	/* Extra safety tests — substitute for the live probes not executed      */
+	/* ==================================================================== */
+
+	/* --- Non-goal abilities must NOT import Hardening_Enforcer ----------- */
+
+	/**
+	 * Spec FR-012 explicitly excludes 15 abilities from this feature. If any
+	 * of them accidentally gain an enforcer call site we'd introduce refusal
+	 * behaviour the spec forbids. This test locks the surface area.
+	 *
+	 * @dataProvider non_goal_ability_provider
+	 */
+	public function test_non_goal_ability_does_not_import_enforcer( string $relative_path ): void {
+		$src = $this->read_source( $relative_path );
+		$this->assertStringNotContainsString(
+			'Hardening_Enforcer',
+			$src,
+			"Non-goal ability {$relative_path} must not reference Hardening_Enforcer (spec FR-012)"
+		);
+	}
+
+	/**
+	 * @return array<string, array{0:string}>
+	 */
+	public static function non_goal_ability_provider(): array {
+		return array(
+			'delete-file'            => array( 'includes/Abilities/FileManager/Delete_File.php' ),
+			'delete-directory'       => array( 'includes/Abilities/FileManager/Delete_Directory.php' ),
+			'create-directory'       => array( 'includes/Abilities/FileManager/Create_Directory.php' ),
+			'file-info'              => array( 'includes/Abilities/FileManager/File_Info.php' ),
+			'list-directory'         => array( 'includes/Abilities/FileManager/List_Directory.php' ),
+			'read-debug-log'         => array( 'includes/Abilities/FileManager/Read_Debug_Log.php' ),
+			'clear-debug-log'        => array( 'includes/Abilities/FileManager/Clear_Debug_Log.php' ),
+			'read-wp-config'         => array( 'includes/Abilities/FileManager/Read_Wp_Config.php' ),
+			'edit-wp-config'         => array( 'includes/Abilities/FileManager/Edit_Wp_Config.php' ),
+			'get-wp-config-constant' => array( 'includes/Abilities/FileManager/Get_Wp_Config_Constant.php' ),
+			'create-zip-backup'      => array( 'includes/Abilities/FileManager/Create_Zip_Backup.php' ),
+			'extract-zip-backup'     => array( 'includes/Abilities/FileManager/Extract_Zip_Backup.php' ),
+			'upload-zip-backup'      => array( 'includes/Abilities/FileManager/Upload_Zip_Backup.php' ),
+			'download-zip-backup'    => array( 'includes/Abilities/FileManager/Download_Zip_Backup.php' ),
+			'list-zip-backups'       => array( 'includes/Abilities/FileManager/List_Zip_Backups.php' ),
+			'delete-zip-backup'      => array( 'includes/Abilities/FileManager/Delete_Zip_Backup.php' ),
+		);
+	}
+
+	/* --- Ordering: first-fires-only proves the check sequence ------------- */
+
+	/**
+	 * With every write check enabled and a file that violates several at once,
+	 * only the FIRST-ORDERED refusal is returned. Cross-references the ordering
+	 * documented in Hardening_Enforcer's class docblock:
+	 *   extension → double-ext → sanitize → strict → mime → htaccess → write-size.
+	 */
+	public function test_ordering_extension_beats_all_other_write_checks(): void {
+		// Turn every check on so the ability WOULD refuse under multiple rules.
+		update_option( Hardening_Settings::OPTION_DANGEROUS_EXTENSIONS, array( 'exe' ) );
+		update_option( Hardening_Settings::OPTION_BLOCK_DOUBLE_EXTENSIONS, true );
+		update_option( Hardening_Settings::OPTION_SANITIZE_FILENAME_CHECK, true );
+		update_option( Hardening_Settings::OPTION_STRICT_FILENAME_FILTER, true );
+		update_option( Hardening_Settings::OPTION_MIME_TYPE_CHECK, true );
+		update_option( Hardening_Settings::OPTION_WRITE_MAX_BYTES, 1024 );
+
+		// Basename that would fail dangerous_extensions AND strict_filename
+		// (contains "shell") AND sanitize_filename (has space) AND write_size.
+		$result = Hardening_Enforcer::check_write(
+			self::ABSPATH_FIXTURE . '/shell attack.exe',
+			str_repeat( 'x', 5000 )
+		);
+		$this->assertNotNull( $result );
+		$this->assertSame(
+			'extension_blocked',
+			$result['blocked_reason'],
+			'Extension check must fire first when multiple checks would refuse'
+		);
+	}
+
+	public function test_ordering_double_extension_beats_sanitize_strict_size(): void {
+		// dangerous_extensions empty → extension check no-ops; the next
+		// ordered check that fires is block_double_extensions.
+		update_option( Hardening_Settings::OPTION_BLOCK_DOUBLE_EXTENSIONS, true );
+		update_option( Hardening_Settings::OPTION_SANITIZE_FILENAME_CHECK, true );
+		update_option( Hardening_Settings::OPTION_STRICT_FILENAME_FILTER, true );
+		update_option( Hardening_Settings::OPTION_WRITE_MAX_BYTES, 1024 );
+
+		// Basename "shell.php.jpg" hits double-ext + strict-filename + sanitize
+		// (no problematic char here so sanitize actually passes) + write-size.
+		$result = Hardening_Enforcer::check_write(
+			self::ABSPATH_FIXTURE . '/shell.php.jpg',
+			str_repeat( 'x', 5000 )
+		);
+		$this->assertSame( 'double_extension_blocked', $result['blocked_reason'] );
+	}
+
+	public function test_ordering_sanitize_beats_strict_and_size(): void {
+		// Only sanitize + strict + size enabled. Basename with a space AND a
+		// webshell marker AND huge content → sanitize fires first.
+		update_option( Hardening_Settings::OPTION_SANITIZE_FILENAME_CHECK, true );
+		update_option( Hardening_Settings::OPTION_STRICT_FILENAME_FILTER, true );
+		update_option( Hardening_Settings::OPTION_WRITE_MAX_BYTES, 1024 );
+
+		$result = Hardening_Enforcer::check_write(
+			self::ABSPATH_FIXTURE . '/c99 attack.txt',
+			str_repeat( 'x', 5000 )
+		);
+		$this->assertSame( 'filename_sanitize_failed', $result['blocked_reason'] );
+	}
+
+	public function test_ordering_size_check_fires_last(): void {
+		// Everything OFF except the write-size cap. Only over-cap payload
+		// triggers a refusal.
+		update_option( Hardening_Settings::OPTION_WRITE_MAX_BYTES, 1024 );
+
+		$result = Hardening_Enforcer::check_write(
+			self::ABSPATH_FIXTURE . '/normal-file.txt',
+			str_repeat( 'x', 5000 )
+		);
+		$this->assertSame( 'write_size_exceeded', $result['blocked_reason'] );
+	}
+
+	/* --- Snapshot-per-call: no caching between calls --------------------- */
+
+	/**
+	 * Spec Decision #2: no static caching. An admin flipping a toggle takes
+	 * effect on the very next ability invocation.
+	 */
+	public function test_snapshot_is_read_on_every_call_no_caching(): void {
+		// Call 1: extension blocklist empty → allowed.
+		$this->assertNull( Hardening_Enforcer::check_write( self::ABSPATH_FIXTURE . '/probe.exe', 'x' ) );
+
+		// Admin flips the toggle between calls.
+		update_option( Hardening_Settings::OPTION_DANGEROUS_EXTENSIONS, array( 'exe' ) );
+
+		// Call 2: the very next call must see the new snapshot.
+		$result = Hardening_Enforcer::check_write( self::ABSPATH_FIXTURE . '/probe.exe', 'x' );
+		$this->assertSame( 'extension_blocked', $result['blocked_reason'] );
+
+		// Admin flips it back off.
+		update_option( Hardening_Settings::OPTION_DANGEROUS_EXTENSIONS, array() );
+
+		// Call 3: back to allowed on the very next call.
+		$this->assertNull( Hardening_Enforcer::check_write( self::ABSPATH_FIXTURE . '/probe.exe', 'x' ) );
+	}
+
+	/* --- Every default-enabled option DOES enforce ----------------------- */
+
+	/**
+	 * If someone accidentally sets a default to `null` or empty in the
+	 * seed, this proves the getters still fall back to the DEFAULT_* const
+	 * and the check actually runs.
+	 */
+	public function test_defaults_from_hardening_settings_actually_enforce(): void {
+		// Seed the same defaults the activator would seed.
+		update_option( Hardening_Settings::OPTION_DANGEROUS_EXTENSIONS, Hardening_Settings::DEFAULT_DANGEROUS_EXTENSIONS );
+		update_option( Hardening_Settings::OPTION_BLOCK_DOUBLE_EXTENSIONS, Hardening_Settings::DEFAULT_BLOCK_DOUBLE_EXTENSIONS );
+		update_option( Hardening_Settings::OPTION_SANITIZE_FILENAME_CHECK, Hardening_Settings::DEFAULT_SANITIZE_FILENAME_CHECK );
+
+		// Every default-listed dangerous extension should be refused.
+		foreach ( Hardening_Settings::DEFAULT_DANGEROUS_EXTENSIONS as $ext ) {
+			$result = Hardening_Enforcer::check_write( self::ABSPATH_FIXTURE . "/probe.{$ext}", 'x' );
+			$this->assertNotNull( $result, "Default extension .{$ext} was NOT refused" );
+			$this->assertSame( 'extension_blocked', $result['blocked_reason'] );
+			$this->assertSame( $ext, $result['extension'] );
+		}
+	}
+
+	/* --- .htaccess-scan basename edge cases ------------------------------ */
+
+	public function test_htaccess_scan_ignores_htaccess_txt(): void {
+		update_option( Hardening_Settings::OPTION_HTACCESS_DIRECTIVE_SCAN, true );
+		// Basename "not-htaccess.txt" contains "htaccess" as a substring but
+		// is NOT the literal ".htaccess" — scanner MUST ignore it.
+		$this->assertNull( Hardening_Enforcer::check_write(
+			self::ABSPATH_FIXTURE . '/not-htaccess.txt',
+			'php_value display_errors 1'
+		) );
+	}
+
+	public function test_htaccess_scan_ignores_dot_htaccess_dot_bak(): void {
+		update_option( Hardening_Settings::OPTION_HTACCESS_DIRECTIVE_SCAN, true );
+		// Backup filename — Apache won't parse it, so no scan needed.
+		$this->assertNull( Hardening_Enforcer::check_write(
+			self::ABSPATH_FIXTURE . '/.htaccess.bak',
+			'AddType text/plain .foo'
+		) );
+	}
+
+	public function test_htaccess_scan_empty_content_is_noop(): void {
+		update_option( Hardening_Settings::OPTION_HTACCESS_DIRECTIVE_SCAN, true );
+		// Writing an empty .htaccess (e.g. to reset it) must not refuse.
+		$this->assertNull( Hardening_Enforcer::check_write(
+			self::ABSPATH_FIXTURE . '/.htaccess',
+			''
+		) );
+	}
+
+	/* --- Sensitive-read basename edge cases ------------------------------ */
+
+	public function test_sensitive_read_matches_basename_not_directory(): void {
+		update_option( Hardening_Settings::OPTION_SENSITIVE_READ_DENYLIST, array( '.env' ) );
+		// A directory NAMED ".env" is a legitimate path; only exact basename
+		// on the target matters. A file INSIDE such a dir with a normal name
+		// must not be refused.
+		$this->assertNull( Hardening_Enforcer::check_read( self::ABSPATH_FIXTURE . '/.env/config.txt' ) );
+	}
+
+	public function test_sensitive_read_glob_ignores_files_without_matching_extension(): void {
+		update_option( Hardening_Settings::OPTION_SENSITIVE_READ_DENYLIST, array( '*.key' ) );
+		$this->assertNull( Hardening_Enforcer::check_read( self::ABSPATH_FIXTURE . '/backup.txt' ) );
+		$this->assertNull( Hardening_Enforcer::check_read( self::ABSPATH_FIXTURE . '/key-notes.md' ) );
+	}
+
+	public function test_sensitive_read_glob_matches_only_full_extension(): void {
+		update_option( Hardening_Settings::OPTION_SENSITIVE_READ_DENYLIST, array( '*.key' ) );
+		// A file named "keyed.txt" has extension "txt", not "key", so must
+		// pass — the glob is a full-extension match, not substring.
+		$this->assertNull( Hardening_Enforcer::check_read( self::ABSPATH_FIXTURE . '/keyed.txt' ) );
+	}
+
+	/* --- Envelope shape completeness ------------------------------------- */
+
+	/**
+	 * Every new blocked_reason envelope MUST include the standard base keys
+	 * (success, blocked_reason, path, message) — the ability adapter's
+	 * schema validator depends on these being present, and callers rely on
+	 * `path` to render error UIs. Missing any is a silent contract break.
+	 */
+	public function test_all_new_blocked_reason_envelopes_include_base_fields(): void {
+		$scenarios = array(
+			'extension_blocked'        => static function (): ?array {
+				update_option( Hardening_Settings::OPTION_DANGEROUS_EXTENSIONS, array( 'exe' ) );
+				return Hardening_Enforcer::check_write( '/fixture/probe.exe', 'x' );
+			},
+			'double_extension_blocked' => static function (): ?array {
+				update_option( Hardening_Settings::OPTION_BLOCK_DOUBLE_EXTENSIONS, true );
+				return Hardening_Enforcer::check_write( '/fixture/foo.php.jpg', 'x' );
+			},
+			'filename_sanitize_failed' => static function (): ?array {
+				update_option( Hardening_Settings::OPTION_SANITIZE_FILENAME_CHECK, true );
+				return Hardening_Enforcer::check_write( '/fixture/bad name.txt', 'x' );
+			},
+			'filename_strict_blocked'  => static function (): ?array {
+				update_option( Hardening_Settings::OPTION_STRICT_FILENAME_FILTER, true );
+				return Hardening_Enforcer::check_write( '/fixture/c99.txt', 'x' );
+			},
+			'mime_type_blocked'        => static function (): ?array {
+				update_option( Hardening_Settings::OPTION_MIME_TYPE_CHECK, true );
+				return Hardening_Enforcer::check_write( '/fixture/probe.xyz', 'x' );
+			},
+			'htaccess_directive_blocked' => static function (): ?array {
+				update_option( Hardening_Settings::OPTION_HTACCESS_DIRECTIVE_SCAN, true );
+				return Hardening_Enforcer::check_write( '/fixture/.htaccess', 'AddType foo .bar' );
+			},
+			'write_size_exceeded'      => static function (): ?array {
+				update_option( Hardening_Settings::OPTION_WRITE_MAX_BYTES, 1024 );
+				return Hardening_Enforcer::check_write( '/fixture/big.txt', str_repeat( 'x', 5000 ) );
+			},
+			'sensitive_read_blocked'   => static function (): ?array {
+				update_option( Hardening_Settings::OPTION_SENSITIVE_READ_DENYLIST, array( '.env' ) );
+				return Hardening_Enforcer::check_read( '/fixture/.env' );
+			},
+		);
+
+		foreach ( $scenarios as $blocked_reason => $factory ) {
+			// Reset options to avoid inter-scenario cross-fire.
+			$this->setUp();
+			$envelope = $factory();
+			$this->assertNotNull( $envelope, "Scenario {$blocked_reason} did not return a refusal envelope" );
+			$this->assertFalse( $envelope['success'], "Scenario {$blocked_reason} envelope success MUST be false" );
+			$this->assertSame( $blocked_reason, $envelope['blocked_reason'] );
+			$this->assertArrayHasKey( 'path', $envelope, "Scenario {$blocked_reason} missing 'path'" );
+			$this->assertArrayHasKey( 'message', $envelope, "Scenario {$blocked_reason} missing 'message'" );
+			$this->assertIsString( $envelope['message'] );
+			$this->assertNotSame( '', $envelope['message'] );
+		}
+	}
+
+	/* --- Enforcer const integrity (protect the marker/directive lists) --- */
+
+	/**
+	 * The enforcer's private const arrays are the substantive security
+	 * contract. Verify they contain exactly the entries the spec + contract
+	 * doc name, so an accidental typo or truncation is caught early.
+	 */
+	public function test_enforcer_constants_match_spec(): void {
+		$src = $this->read_source( 'includes/Abilities/Utilities/Hardening_Enforcer.php' );
+
+		foreach ( array( 'AddType', 'SetHandler', 'php_value', 'php_flag', 'auto_prepend', 'auto_append' ) as $directive ) {
+			$this->assertMatchesRegularExpression(
+				"/'{$directive}'/",
+				$src,
+				"HTACCESS_DIRECTIVES const missing entry: {$directive}"
+			);
+		}
+		foreach ( array( 'c99', 'r57', 'wso', 'b374k', 'weevely', 'shell', 'alfa', 'bypass', 'backdoor' ) as $marker ) {
+			$this->assertMatchesRegularExpression(
+				"/'{$marker}'/",
+				$src,
+				"STRICT_FILENAME_MARKERS const missing entry: {$marker}"
+			);
+		}
+		foreach ( array( 'php', 'txt', 'log', 'json', 'xml', 'css', 'js', 'md', 'html', 'htm', 'htaccess' ) as $ext ) {
+			$this->assertMatchesRegularExpression(
+				"/'{$ext}'/",
+				$src,
+				"MIME_ALWAYS_ALLOWED const missing entry: {$ext}"
+			);
+		}
+		foreach ( array( '.htaccess', '.htpasswd', '.user.ini' ) as $dotfile ) {
+			$this->assertMatchesRegularExpression(
+				"/'\\{$dotfile}'/",
+				$src,
+				"ALLOWED_DOTFILES const missing entry: {$dotfile}"
+			);
+		}
+	}
+
+	/* --- File_Mods_Guard fires BEFORE Hardening_Enforcer (source proof) --- */
+
+	/**
+	 * @dataProvider write_ability_provider
+	 */
+	public function test_file_mods_guard_fires_before_enforcer( string $relative_path ): void {
+		$src = $this->read_source( $relative_path );
+		$fmg_pos      = strpos( $src, 'File_Mods_Guard::blocked_response(' );
+		$enforcer_pos = strpos( $src, 'Hardening_Enforcer::check_write(' );
+		$this->assertNotFalse( $fmg_pos, "{$relative_path} missing File_Mods_Guard call" );
+		$this->assertNotFalse( $enforcer_pos, "{$relative_path} missing enforcer call" );
+		$this->assertLessThan(
+			$enforcer_pos,
+			$fmg_pos,
+			"File_Mods_Guard MUST fire before Hardening_Enforcer in {$relative_path} — otherwise DISALLOW_FILE_MODS/EDIT sites would see hardening refusals instead of the correct file_mods_disabled/file_edit_disabled"
+		);
+	}
 }
