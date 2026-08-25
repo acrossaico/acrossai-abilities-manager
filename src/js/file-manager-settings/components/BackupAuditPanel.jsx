@@ -70,11 +70,7 @@ const BackupAuditPanel = ( { data, onSave } ) => {
 			<div className="notice notice-warning inline" style={ { padding: '8px 12px', marginTop: 0 } }>
 				<p style={ { margin: 0 } }>
 					<strong>{ __( 'Scaffold only.', 'acrossai-abilities-manager' ) }</strong>{ ' ' }
-					{ sprintf(
-						/* translators: %s: follow-up spec id */
-						__( 'Values save to the database, but no backup is written and no log entry is emitted yet. Enforcement lands in %s.', 'acrossai-abilities-manager' ),
-						data.follow_up_spec || '094-file-manager-audit-log'
-					) }
+					{ __( 'Values save but no backup is written and no log entry is emitted yet. Enforcement lands in feature 094-file-manager-audit-log.', 'acrossai-abilities-manager' ) }
 				</p>
 			</div>
 

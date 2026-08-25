@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Enforcer;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
@@ -75,6 +76,15 @@ class Edit_File extends Ability_Definition {
 						'message'        => array( 'type' => 'string' ),
 						'blocked_reason' => array( 'type' => 'string' ),
 						'allowed_roots'  => array( 'type' => 'array' ),
+						// Feature 093 context fields (union across new blocked_reason values).
+						'extension'      => array( 'type' => 'string' ),
+						'basename'       => array( 'type' => 'string' ),
+						'directive'      => array( 'type' => 'string' ),
+						'input'          => array( 'type' => 'string' ),
+						'sanitized'      => array( 'type' => 'string' ),
+						'size'           => array( 'type' => 'integer' ),
+						'max_bytes'      => array( 'type' => 'integer' ),
+						'marker'         => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -145,6 +155,12 @@ class Edit_File extends Ability_Definition {
 
 		// Feature 092: admin-controlled write allowlist gate.
 		$blocked = Path_Allowlist_Guard::blocked_write_response( $abs_path );
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+
+		// Feature 093: content-filter enforcement (extensions, filename, size, …).
+		$blocked = Hardening_Enforcer::check_write( $abs_path, $content, array( 'mode' => 'edit' ) );
 		if ( null !== $blocked ) {
 			return $blocked;
 		}

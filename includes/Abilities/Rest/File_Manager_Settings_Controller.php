@@ -314,8 +314,10 @@ final class File_Manager_Settings_Controller {
 		return new \WP_REST_Response(
 			array(
 				'config'         => Hardening_Settings::get_content_filters(),
-				'scaffold_only'  => true,
-				'follow_up_spec' => '093-file-manager-hardening',
+				// Feature 093 flipped this from true → false: every content-filter
+				// option here is now consumed at runtime by Hardening_Enforcer.
+				'scaffold_only'  => false,
+				'follow_up_spec' => null,
 				'limits'         => array(
 					'write_max_bytes_min' => Hardening_Settings::MIN_WRITE_MAX_BYTES,
 					'write_max_bytes_max' => Hardening_Settings::MAX_WRITE_MAX_BYTES,
@@ -346,8 +348,8 @@ final class File_Manager_Settings_Controller {
 			array(
 				'config'         => $result['config'],
 				'skipped'        => $result['skipped'],
-				'scaffold_only'  => true,
-				'follow_up_spec' => '093-file-manager-hardening',
+				'scaffold_only'  => false,
+				'follow_up_spec' => null,
 				'limits'         => array(
 					'write_max_bytes_min' => Hardening_Settings::MIN_WRITE_MAX_BYTES,
 					'write_max_bytes_max' => Hardening_Settings::MAX_WRITE_MAX_BYTES,

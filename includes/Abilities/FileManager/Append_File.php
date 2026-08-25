@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Enforcer;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
@@ -91,6 +92,15 @@ class Append_File extends Ability_Definition {
 						'message'        => array( 'type' => 'string' ),
 						'blocked_reason' => array( 'type' => 'string' ),
 						'allowed_roots'  => array( 'type' => 'array' ),
+						// Feature 093 context fields.
+						'extension'      => array( 'type' => 'string' ),
+						'basename'       => array( 'type' => 'string' ),
+						'directive'      => array( 'type' => 'string' ),
+						'input'          => array( 'type' => 'string' ),
+						'sanitized'      => array( 'type' => 'string' ),
+						'size'           => array( 'type' => 'integer' ),
+						'max_bytes'      => array( 'type' => 'integer' ),
+						'marker'         => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -171,6 +181,21 @@ class Append_File extends Ability_Definition {
 
 		// Feature 092: admin-controlled write allowlist gate.
 		$blocked = Path_Allowlist_Guard::blocked_write_response( $real );
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+
+		// Feature 093: content-filter enforcement. mode:append tells the
+		// enforcer to (a) scan APPENDED content only for htaccess directives,
+		// (b) cap on new_size = existing + appended, (c) skip mime-type check.
+		$blocked = Hardening_Enforcer::check_write(
+			$real,
+			$content,
+			array(
+				'mode'          => 'append',
+				'existing_size' => (int) $fs->size( $real ),
+			)
+		);
 		if ( null !== $blocked ) {
 			return $blocked;
 		}

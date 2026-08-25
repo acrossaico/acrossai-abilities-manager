@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Enforcer;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Secret_Redactor;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
@@ -77,6 +78,9 @@ class Read_File extends Ability_Definition {
 						'max_bytes'       => array( 'type' => 'integer' ),
 						'blocked_reason'  => array( 'type' => 'string' ),
 						'allowed_roots'   => array( 'type' => 'array' ),
+						// Feature 093 sensitive-read denylist context fields.
+						'basename'        => array( 'type' => 'string' ),
+						'matched_pattern' => array( 'type' => 'string' ),
 						'message'         => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
@@ -134,6 +138,13 @@ class Read_File extends Ability_Definition {
 		// on paths that don't exist yet.
 		$abs_for_check = realpath( $abs_path ) ?: $abs_path;
 		$blocked       = Path_Allowlist_Guard::blocked_read_response( $abs_for_check );
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+
+		// Feature 093 (FR-011): sensitive-read denylist runs AFTER the allowlist
+		// gate so allowlist refusals (path_not_allowed_for_read) take precedence.
+		$blocked = Hardening_Enforcer::check_read( $abs_for_check );
 		if ( null !== $blocked ) {
 			return $blocked;
 		}

@@ -133,19 +133,13 @@ const ContentFiltersPanel = ( { data, onSave } ) => {
 		<section className="acrossai-fm-panel">
 			<h2>{ __( 'Content filters', 'acrossai-abilities-manager' ) }</h2>
 
-			<div className="notice notice-warning inline" style={ { padding: '8px 12px', marginTop: 0 } }>
+			<div className="notice notice-info inline" style={ { padding: '8px 12px', marginTop: 0 } }>
 				<p style={ { margin: 0 } }>
-					<strong>{ __( 'Scaffold only.', 'acrossai-abilities-manager' ) }</strong>{ ' ' }
-					{ sprintf(
-						/* translators: %s: follow-up spec id */
-						__( 'Values save to the database, but no ability enforces them yet. Enforcement lands in %s.', 'acrossai-abilities-manager' ),
-						data.follow_up_spec || '093-file-manager-hardening'
-					) }
+					{ __( 'This list now gates create-file / edit-file / append-file / copy-file / move-file. Saved values take effect on the next ability call.', 'acrossai-abilities-manager' ) }
 				</p>
 			</div>
 
 			<div className="acrossai-fm-affects">
-				<strong>{ __( 'Will affect these abilities once enforced:', 'acrossai-abilities-manager' ) }</strong>
 				<ul className="acrossai-fm-affects-list">
 					{ AFFECTED_ABILITIES.map( ( slug ) => (
 						<li key={ slug }><code>{ slug }</code></li>

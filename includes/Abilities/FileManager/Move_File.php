@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Enforcer;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
@@ -85,6 +86,15 @@ class Move_File extends Ability_Definition {
 						'blocked_reason' => array( 'type' => 'string' ),
 						'allowed_roots'  => array( 'type' => 'array' ),
 						'path'           => array( 'type' => 'string' ),
+						// Feature 093 context fields.
+						'extension'      => array( 'type' => 'string' ),
+						'basename'       => array( 'type' => 'string' ),
+						'directive'      => array( 'type' => 'string' ),
+						'input'          => array( 'type' => 'string' ),
+						'sanitized'      => array( 'type' => 'string' ),
+						'size'           => array( 'type' => 'integer' ),
+						'max_bytes'      => array( 'type' => 'integer' ),
+						'marker'         => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -199,6 +209,26 @@ class Move_File extends Ability_Definition {
 			return $blocked;
 		}
 		$blocked = Path_Allowlist_Guard::blocked_write_response( $dest_abs );
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+
+		// Feature 093: content-filter enforcement — checks apply to the
+		// DESTINATION basename; source_size + lazy content reader mirror
+		// copy-file semantics.
+		$blocked = Hardening_Enforcer::check_write(
+			$src_real,
+			'',
+			array(
+				'mode'                     => 'move',
+				'target_basename_override' => basename( $dest_abs ),
+				'source_size'              => (int) $fs->size( $src_real ),
+				'source_content_reader'    => static function () use ( $fs, $src_real ) {
+					$bytes = $fs->get_contents( $src_real );
+					return is_string( $bytes ) ? $bytes : '';
+				},
+			)
+		);
 		if ( null !== $blocked ) {
 			return $blocked;
 		}
