@@ -160,18 +160,38 @@ final class Hardening_Settings {
 	/**
 	 * Persist a content-filters payload from the REST controller.
 	 *
-	 * Unknown keys are ignored; sanitisers reject malformed values and fall
-	 * back to the stored value.
+	 * Unknown keys are ignored; the two list-typed keys pass through their
+	 * sanitiser, which additionally reports any entries it dropped. Result
+	 * shape:
+	 *
+	 *     [
+	 *         'config'  => <same shape as get_content_filters()>,
+	 *         'skipped' => [
+	 *             ['field' => 'dangerous_extensions', 'value' => 'in valid', 'reason' => 'invalid_format'],
+	 *             ...
+	 *         ],
+	 *     ]
+	 *
+	 * The React panel renders the `skipped` list as a WP admin notice so the
+	 * admin sees exactly what got dropped and why (matches the UX the
+	 * server-rendered Mime Types field surfaces via add_settings_error).
 	 *
 	 * @param array<string,mixed> $input Raw payload.
-	 * @return array<string,mixed> Snapshot after write.
+	 * @return array{config: array<string,mixed>, skipped: array<int,array{field:string,value:string,reason:string}>}
 	 */
 	public static function set_content_filters( array $input ): array {
+		$skipped = array();
+
 		if ( array_key_exists( 'dangerous_extensions', $input ) ) {
-			update_option(
-				self::OPTION_DANGEROUS_EXTENSIONS,
-				self::sanitize_extension_list( (array) $input['dangerous_extensions'] )
-			);
+			list( $sanitized, $drops ) = self::sanitize_extension_list_verbose( (array) $input['dangerous_extensions'] );
+			update_option( self::OPTION_DANGEROUS_EXTENSIONS, $sanitized );
+			foreach ( $drops as $drop ) {
+				$skipped[] = array(
+					'field'  => 'dangerous_extensions',
+					'value'  => $drop['value'],
+					'reason' => $drop['reason'],
+				);
+			}
 		}
 		if ( array_key_exists( 'block_double_extensions', $input ) ) {
 			update_option( self::OPTION_BLOCK_DOUBLE_EXTENSIONS, self::coerce_bool( $input['block_double_extensions'] ) );
@@ -186,10 +206,15 @@ final class Hardening_Settings {
 			update_option( self::OPTION_WRITE_MAX_BYTES, self::clamp_write_max_bytes( $input['write_max_bytes'] ) );
 		}
 		if ( array_key_exists( 'sensitive_read_denylist', $input ) ) {
-			update_option(
-				self::OPTION_SENSITIVE_READ_DENYLIST,
-				self::sanitize_pattern_list( (array) $input['sensitive_read_denylist'] )
-			);
+			list( $sanitized, $drops ) = self::sanitize_pattern_list_verbose( (array) $input['sensitive_read_denylist'] );
+			update_option( self::OPTION_SENSITIVE_READ_DENYLIST, $sanitized );
+			foreach ( $drops as $drop ) {
+				$skipped[] = array(
+					'field'  => 'sensitive_read_denylist',
+					'value'  => $drop['value'],
+					'reason' => $drop['reason'],
+				);
+			}
 		}
 		if ( array_key_exists( 'strict_filename_filter', $input ) ) {
 			update_option( self::OPTION_STRICT_FILENAME_FILTER, self::coerce_bool( $input['strict_filename_filter'] ) );
@@ -197,7 +222,11 @@ final class Hardening_Settings {
 		if ( array_key_exists( 'mime_type_check', $input ) ) {
 			update_option( self::OPTION_MIME_TYPE_CHECK, self::coerce_bool( $input['mime_type_check'] ) );
 		}
-		return self::get_content_filters();
+
+		return array(
+			'config'  => self::get_content_filters(),
+			'skipped' => $skipped,
+		);
 	}
 
 	/**
@@ -333,63 +362,122 @@ final class Hardening_Settings {
 	}
 
 	/**
-	 * Sanitise a caller-supplied extension list — lowercase, no dot, no
-	 * whitespace, no empties, deduped, up to 100 entries.
+	 * Sanitise a caller-supplied extension list. Convenience wrapper around
+	 * {@see sanitize_extension_list_verbose()} that drops the skipped-entry
+	 * report — use the verbose form when surfacing rejections to the caller.
 	 *
 	 * @param array<int|string,mixed> $raw Raw list.
 	 * @return array<int,string>
 	 */
 	private static function sanitize_extension_list( array $raw ): array {
-		$out = array();
-		foreach ( $raw as $item ) {
-			if ( ! is_string( $item ) ) {
-				continue;
-			}
-			$item = strtolower( trim( $item, ". \t\n\r\0\x0B" ) );
-			if ( '' === $item ) {
-				continue;
-			}
-			if ( ! preg_match( '/^[a-z0-9]{1,16}$/', $item ) ) {
-				continue;
-			}
-			$out[] = $item;
-			if ( count( $out ) >= 100 ) {
-				break;
-			}
-		}
-		return array_values( array_unique( $out ) );
+		list( $stored ) = self::sanitize_extension_list_verbose( $raw );
+		return $stored;
 	}
 
 	/**
-	 * Sanitise a caller-supplied pattern list — plain basenames or `*.ext`
-	 * globs. Strips whitespace and empties, deduped, up to 200 entries.
+	 * Sanitise an extension list AND report which raw entries were dropped.
+	 *
+	 * Rules:
+	 *   - non-string → skipped as `not_a_string`
+	 *   - blank after trim → silently ignored (not reported)
+	 *   - fails /^[a-z0-9]{1,16}$/ after normalisation → skipped as `invalid_format`
+	 *   - duplicates of an already-stored entry → skipped as `duplicate`
+	 *   - past the 100-entry cap → skipped as `list_cap_reached`
+	 *
+	 * @param array<int|string,mixed> $raw Raw list.
+	 * @return array{0: array<int,string>, 1: array<int,array{value:string,reason:string}>}
+	 */
+	private static function sanitize_extension_list_verbose( array $raw ): array {
+		$out     = array();
+		$skipped = array();
+		$seen    = array();
+		foreach ( $raw as $item ) {
+			if ( ! is_string( $item ) ) {
+				$skipped[] = array( 'value' => is_scalar( $item ) ? (string) $item : '(non-string)', 'reason' => 'not_a_string' );
+				continue;
+			}
+			$original = $item;
+			$item     = strtolower( trim( $item, ". \t\n\r\0\x0B" ) );
+			if ( '' === $item ) {
+				continue;
+			}
+			if ( count( $out ) >= 100 ) {
+				$skipped[] = array( 'value' => $original, 'reason' => 'list_cap_reached' );
+				continue;
+			}
+			if ( ! preg_match( '/^[a-z0-9]{1,16}$/', $item ) ) {
+				$skipped[] = array( 'value' => $original, 'reason' => 'invalid_format' );
+				continue;
+			}
+			if ( isset( $seen[ $item ] ) ) {
+				$skipped[] = array( 'value' => $original, 'reason' => 'duplicate' );
+				continue;
+			}
+			$seen[ $item ] = true;
+			$out[]         = $item;
+		}
+		return array( $out, $skipped );
+	}
+
+	/**
+	 * Sanitise a caller-supplied pattern list. Convenience wrapper around
+	 * {@see sanitize_pattern_list_verbose()}.
 	 *
 	 * @param array<int|string,mixed> $raw Raw list.
 	 * @return array<int,string>
 	 */
 	private static function sanitize_pattern_list( array $raw ): array {
-		$out = array();
+		list( $stored ) = self::sanitize_pattern_list_verbose( $raw );
+		return $stored;
+	}
+
+	/**
+	 * Sanitise a pattern list AND report which raw entries were dropped.
+	 *
+	 * Rules:
+	 *   - non-string → `not_a_string`
+	 *   - blank after trim → silently ignored
+	 *   - contains `/` or `\` → `path_segment_not_allowed` (basenames only)
+	 *   - contains NUL / control chars → `control_char`
+	 *   - duplicate → `duplicate`
+	 *   - past the 200-entry cap → `list_cap_reached`
+	 *
+	 * @param array<int|string,mixed> $raw Raw list.
+	 * @return array{0: array<int,string>, 1: array<int,array{value:string,reason:string}>}
+	 */
+	private static function sanitize_pattern_list_verbose( array $raw ): array {
+		$out     = array();
+		$skipped = array();
+		$seen    = array();
 		foreach ( $raw as $item ) {
 			if ( ! is_string( $item ) ) {
+				$skipped[] = array( 'value' => is_scalar( $item ) ? (string) $item : '(non-string)', 'reason' => 'not_a_string' );
 				continue;
 			}
-			$item = trim( $item );
+			$original = $item;
+			$item     = trim( $item );
 			if ( '' === $item ) {
 				continue;
 			}
-			// Reject any path segments — these are basenames only.
-			if ( false !== strpos( $item, '/' ) || false !== strpos( $item, '\\' ) ) {
-				continue;
-			}
-			// Reject NUL and control chars.
-			if ( preg_match( '/[\x00-\x1F\x7F]/', $item ) ) {
-				continue;
-			}
-			$out[] = $item;
 			if ( count( $out ) >= 200 ) {
-				break;
+				$skipped[] = array( 'value' => $original, 'reason' => 'list_cap_reached' );
+				continue;
 			}
+			if ( false !== strpos( $item, '/' ) || false !== strpos( $item, '\\' ) ) {
+				$skipped[] = array( 'value' => $original, 'reason' => 'path_segment_not_allowed' );
+				continue;
+			}
+			if ( preg_match( '/[\x00-\x1F\x7F]/', $item ) ) {
+				$skipped[] = array( 'value' => $original, 'reason' => 'control_char' );
+				continue;
+			}
+			if ( isset( $seen[ $item ] ) ) {
+				$skipped[] = array( 'value' => $original, 'reason' => 'duplicate' );
+				continue;
+			}
+			$seen[ $item ] = true;
+			$out[]         = $item;
 		}
-		return array_values( array_unique( $out ) );
+		return array( $out, $skipped );
 	}
 }

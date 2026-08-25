@@ -328,6 +328,11 @@ final class File_Manager_Settings_Controller {
 	/**
 	 * POST /file-manager-settings/content-filters
 	 *
+	 * Response merges the freshly-persisted snapshot with any per-entry
+	 * rejections the sanitiser reported (empty array when nothing was
+	 * dropped). The React panel renders `skipped` as a warning notice so
+	 * admins see exactly which entries didn't persist and why.
+	 *
 	 * @param \WP_REST_Request $request Incoming request.
 	 * @return \WP_REST_Response|\WP_Error
 	 */
@@ -336,8 +341,20 @@ final class File_Manager_Settings_Controller {
 		if ( ! is_array( $payload ) ) {
 			$payload = $request->get_params();
 		}
-		Hardening_Settings::set_content_filters( (array) $payload );
-		return $this->get_content_filters();
+		$result = Hardening_Settings::set_content_filters( (array) $payload );
+		return new \WP_REST_Response(
+			array(
+				'config'         => $result['config'],
+				'skipped'        => $result['skipped'],
+				'scaffold_only'  => true,
+				'follow_up_spec' => '093-file-manager-hardening',
+				'limits'         => array(
+					'write_max_bytes_min' => Hardening_Settings::MIN_WRITE_MAX_BYTES,
+					'write_max_bytes_max' => Hardening_Settings::MAX_WRITE_MAX_BYTES,
+				),
+			),
+			200
+		);
 	}
 
 	/* -------------------------------------------------------------------- */

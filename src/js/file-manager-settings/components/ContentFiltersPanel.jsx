@@ -36,6 +36,7 @@ const ContentFiltersPanel = ( { data, onSave } ) => {
 	const [ mimeCheck, setMimeCheck ]           = useState( !! cfg.mime_type_check );
 	const [ saving, setSaving ]                 = useState( false );
 	const [ status, setStatus ]                 = useState( '' );
+	const [ skipped, setSkipped ]               = useState( [] );
 
 	useEffect( () => {
 		const c = data.config || {};
@@ -47,14 +48,50 @@ const ContentFiltersPanel = ( { data, onSave } ) => {
 		setDenylist( ( c.sensitive_read_denylist || [] ).join( '\n' ) );
 		setStrictName( !! c.strict_filename_filter );
 		setMimeCheck( !! c.mime_type_check );
+		setSkipped( data.skipped || [] );
 	}, [ data ] );
+
+	// Human-readable rejection reasons — kept in sync with Hardening_Settings.
+	const reasonLabel = ( r ) => {
+		switch ( r ) {
+			case 'invalid_format':
+				return __( 'must be lowercase a–z 0–9, up to 16 chars, no dots or spaces', 'acrossai-abilities-manager' );
+			case 'path_segment_not_allowed':
+				return __( 'basenames only — no `/` or `\\` allowed', 'acrossai-abilities-manager' );
+			case 'control_char':
+				return __( 'contains a NUL or control character', 'acrossai-abilities-manager' );
+			case 'duplicate':
+				return __( 'duplicate of another entry in the same list', 'acrossai-abilities-manager' );
+			case 'list_cap_reached':
+				return __( 'exceeds the per-list entry limit', 'acrossai-abilities-manager' );
+			case 'not_a_string':
+				return __( 'not a string value', 'acrossai-abilities-manager' );
+			default:
+				return r;
+		}
+	};
+
+	const fieldLabel = ( f ) => {
+		switch ( f ) {
+			case 'dangerous_extensions':
+				return __( 'Extension blocklist', 'acrossai-abilities-manager' );
+			case 'sensitive_read_denylist':
+				return __( 'Sensitive-read denylist', 'acrossai-abilities-manager' );
+			default:
+				return f;
+		}
+	};
 
 	const doSave = () => {
 		setSaving( true );
 		setStatus( '' );
+		setSkipped( [] );
+		// Deliberately DON'T pre-filter here — send everything the admin
+		// typed and let the backend sanitiser report which entries got
+		// dropped. Pre-filtering would silently hide bad input.
 		const dangerous_extensions = dangerous
-			.split( /[\s,]+/ )
-			.map( ( s ) => s.trim().replace( /^\./, '' ).toLowerCase() )
+			.split( /[,\n]+/ )
+			.map( ( s ) => s.trim() )
 			.filter( Boolean );
 		const sensitive_read_denylist = denylist
 			.split( /\r?\n/ )
@@ -70,9 +107,19 @@ const ContentFiltersPanel = ( { data, onSave } ) => {
 			strict_filename_filter: strictName,
 			mime_type_check: mimeCheck,
 		} )
-			.then( () => {
+			.then( ( resp ) => {
 				setSaving( false );
-				setStatus( __( 'Saved.', 'acrossai-abilities-manager' ) );
+				const drops = resp?.skipped || [];
+				if ( drops.length ) {
+					setSkipped( drops );
+					setStatus( sprintf(
+						/* translators: %d: number of dropped entries */
+						__( 'Saved with %d entry dropped.', 'acrossai-abilities-manager' ),
+						drops.length
+					) );
+				} else {
+					setStatus( __( 'Saved.', 'acrossai-abilities-manager' ) );
+				}
 			} )
 			.catch( ( err ) => {
 				setSaving( false );
@@ -193,6 +240,31 @@ const ContentFiltersPanel = ( { data, onSave } ) => {
 				</button>
 				{ status && <span className="acrossai-fm-status"> { status }</span> }
 			</p>
+
+			{ skipped.length > 0 && (
+				<div className="notice notice-warning inline" style={ { padding: '8px 12px' } }>
+					<p style={ { margin: '0 0 6px' } }>
+						<strong>
+							{ sprintf(
+								/* translators: %d: number of skipped entries */
+								__( '%d entry did not save:', 'acrossai-abilities-manager' ),
+								skipped.length
+							) }
+						</strong>
+					</p>
+					<ul style={ { margin: '0 0 0 1.5em', listStyle: 'disc' } }>
+						{ skipped.map( ( s, i ) => (
+							<li key={ i }>
+								<code>{ s.value }</code>
+								{ ' — ' }
+								<em>{ fieldLabel( s.field ) }</em>
+								{ ': ' }
+								{ reasonLabel( s.reason ) }
+							</li>
+						) ) }
+					</ul>
+				</div>
+			) }
 		</section>
 	);
 };
