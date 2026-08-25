@@ -17,6 +17,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups_Storage;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Zip_Target_Resolver;
 
 defined( 'ABSPATH' ) || exit;
@@ -109,6 +110,17 @@ class Create_Zip_Backup extends Ability_Definition {
 	 * @return array
 	 */
 	public function execute( array $input = array() ): array {
+		// Honour DISALLOW_FILE_MODS the same way every other write-side
+		// file-manager ability does. 'install' context (matches the other
+		// zip-related abilities: Upload_Zip_Backup, Extract_Zip_Backup,
+		// Delete_Zip_Backup) — checks DISALLOW_FILE_MODS only, not
+		// DISALLOW_FILE_EDIT, since creating a backup is not in-place
+		// theme/plugin editing.
+		$blocked = File_Mods_Guard::blocked_response( 'install' );
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+
 		if ( ! class_exists( '\ZipArchive' ) ) {
 			return array(
 				'success' => false,
