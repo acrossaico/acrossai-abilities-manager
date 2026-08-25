@@ -129,18 +129,14 @@ class Read_File extends Ability_Definition {
 			);
 		}
 
-		// Protected-file guard: refuse to return contents of secret-holding
-		// files at ABSPATH root regardless of the caller's capability.
-		$real_for_check = realpath( $abs_path );
-		if ( false !== $real_for_check
-			&& in_array( basename( $real_for_check ), self::PROTECTED_FILES, true )
-			&& dirname( $real_for_check ) === $base ) {
-			return array(
-				'success'        => false,
-				'blocked_reason' => 'protected_read',
-				/* translators: %s: filename */
-				'message'        => sprintf( __( 'File "%s" is protected and cannot be read.', 'acrossai-abilities-manager' ), basename( $real_for_check ) ),
-			);
+		// Feature 092: admin-controlled read allowlist gate. Resolves against
+		// the (possibly not-yet-existent) target — pass the composed absolute
+		// path so the guard's realpath resolution of allowed roots works even
+		// on paths that don't exist yet.
+		$abs_for_check = realpath( $abs_path ) ?: $abs_path;
+		$blocked       = Path_Allowlist_Guard::blocked_read_response( $abs_for_check );
+		if ( null !== $blocked ) {
+			return $blocked;
 		}
 
 		if ( ! $fs->is_file( $abs_path ) ) {
@@ -175,6 +171,7 @@ class Read_File extends Ability_Definition {
 		$real_path = realpath( $abs_path ) ?: $abs_path;
 
 		// Binary detection: return a distinct shape without the raw bytes.
+		// Binary content is never routed through the redactor.
 		if ( ! mb_check_encoding( $content, 'UTF-8' ) ) {
 			return array(
 				'success' => true,
@@ -185,12 +182,17 @@ class Read_File extends Ability_Definition {
 			);
 		}
 
+		// Feature 092: scrub secrets from the returned text content.
+		$scrubbed = Secret_Redactor::scrub( $content );
+
 		return array(
-			'success' => true,
-			'content' => $content,
-			'path'    => $real_path,
-			'size'    => $size,
-			'binary'  => false,
+			'success'         => true,
+			'content'         => $scrubbed['text'],
+			'path'            => $real_path,
+			'size'            => $size,
+			'binary'          => false,
+			'redacted'        => $scrubbed['redacted'],
+			'redaction_count' => $scrubbed['redaction_count'],
 		);
 	}
 }

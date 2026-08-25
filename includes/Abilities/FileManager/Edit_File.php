@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
@@ -139,6 +140,12 @@ class Edit_File extends Ability_Definition {
 				/* translators: %s: filename */
 				'message'        => sprintf( __( 'File "%s" is protected and cannot be written.', 'acrossai-abilities-manager' ), $target_basename ),
 			);
+		}
+
+		// Feature 092: admin-controlled write allowlist gate.
+		$blocked = Path_Allowlist_Guard::blocked_write_response( $abs_path );
+		if ( null !== $blocked ) {
+			return $blocked;
 		}
 
 		$result = $fs->put_contents( $abs_path, $content, FS_CHMOD_FILE );

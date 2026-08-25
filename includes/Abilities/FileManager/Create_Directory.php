@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
@@ -137,6 +138,12 @@ class Create_Directory extends Ability_Definition {
 				'blocked_reason' => 'path_is_file',
 				'message'        => __( 'Path exists as a file; cannot create a directory here.', 'acrossai-abilities-manager' ),
 			);
+		}
+
+		// Feature 092: admin-controlled write allowlist gate.
+		$blocked = Path_Allowlist_Guard::blocked_write_response( $abs );
+		if ( null !== $blocked ) {
+			return $blocked;
 		}
 
 		// Parent-scope check for the (not-yet-created) target.

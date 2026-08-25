@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
@@ -176,6 +177,16 @@ class Copy_File extends Ability_Definition {
 				);
 			}
 			$overwritten = true;
+		}
+
+		// Feature 092: admin-controlled write allowlist gate — both endpoints.
+		$blocked = Path_Allowlist_Guard::blocked_write_response( $src_real );
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$blocked = Path_Allowlist_Guard::blocked_write_response( $dest_abs );
+		if ( null !== $blocked ) {
+			return $blocked;
 		}
 
 		if ( ! $fs->copy( $src_real, $dest_abs, $overwrite, FS_CHMOD_FILE ) ) {

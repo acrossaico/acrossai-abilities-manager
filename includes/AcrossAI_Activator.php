@@ -11,6 +11,8 @@ namespace AcrossAI_Abilities_Manager\Includes;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Abilities\Database\AcrossAI_Abilities_Table;
 use AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Abilities_Access_Control;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Secret_Redactor;
 use WPBoilerplate\AccessControl\Database\Rule\RuleTable;
 
 // Exit if accessed directly.
@@ -43,6 +45,21 @@ class AcrossAI_Activator {
 		( new AcrossAI_Abilities_Table() )->maybe_upgrade();
 		( new RuleTable( AcrossAI_Abilities_Access_Control::TABLE_SLUG ) )->maybe_upgrade();
 		self::migrate_absorbed_options();
+		self::seed_file_manager_settings();
+	}
+
+	/**
+	 * Feature 092: seed the three file-manager settings options with sensible
+	 * defaults on activation. Uses add_option() so an existing value on
+	 * re-activation or upgrade is preserved.
+	 *
+	 * @since 0.1.0
+	 * @return void
+	 */
+	private static function seed_file_manager_settings(): void {
+		add_option( Path_Allowlist_Guard::OPTION_WRITE, Path_Allowlist_Guard::DEFAULT_WRITE_ALLOWLIST );
+		add_option( Path_Allowlist_Guard::OPTION_READ, Path_Allowlist_Guard::DEFAULT_READ_ALLOWLIST );
+		add_option( Secret_Redactor::OPTION, Secret_Redactor::default_config() );
 	}
 
 	/**
