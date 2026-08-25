@@ -8,6 +8,11 @@
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
+const AFFECTED_ABILITIES = [
+	'file-manager/read-file',
+	'file-manager/read-debug-log',
+];
+
 const RedactionPanel = ( { data, onSave } ) => {
 	const [ patterns, setPatterns ] = useState( () => ( data.config?.patterns || {} ) );
 	const [ literals, setLiterals ] = useState(
@@ -55,6 +60,18 @@ const RedactionPanel = ( { data, onSave } ) => {
 					'acrossai-abilities-manager'
 				) }
 			</p>
+
+			<div className="acrossai-fm-affects">
+				<strong>{ __( 'Affects these abilities:', 'acrossai-abilities-manager' ) }</strong>
+				<ul className="acrossai-fm-affects-list">
+					{ AFFECTED_ABILITIES.map( ( slug ) => (
+						<li key={ slug }><code>{ slug }</code></li>
+					) ) }
+				</ul>
+				<p className="description">
+					{ __( 'The wp-config-specific ability (file-manager/read-wp-config) and get-wp-config-constant already redact their output separately — they are not affected by this configuration.', 'acrossai-abilities-manager' ) }
+				</p>
+			</div>
 
 			<h3>{ __( 'Built-in patterns', 'acrossai-abilities-manager' ) }</h3>
 			<ul className="acrossai-fm-patterns">

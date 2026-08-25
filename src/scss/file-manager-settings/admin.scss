@@ -76,6 +76,46 @@
 		}
 	}
 
+	.acrossai-fm-affects {
+		background: #f6f7f7;
+		border-left: 3px solid #646970;
+		padding: 10px 14px;
+		margin: 0 0 20px 0;
+		font-size: 13px;
+
+		strong {
+			display: block;
+			margin-bottom: 6px;
+		}
+
+		.acrossai-fm-affects-list {
+			list-style: none;
+			padding: 0;
+			margin: 0 0 8px 0;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 6px;
+
+			li {
+				margin: 0;
+			}
+
+			code {
+				background: #fff;
+				border: 1px solid #dcdcde;
+				padding: 2px 8px;
+				border-radius: 3px;
+				font-size: 12px;
+			}
+		}
+
+		.description {
+			margin: 0;
+			color: #646970;
+			font-style: italic;
+		}
+	}
+
 	.acrossai-fm-connectors {
 		list-style: none;
 		padding: 0;

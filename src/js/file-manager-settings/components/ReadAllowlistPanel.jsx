@@ -10,6 +10,16 @@ import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import AllowlistTree from './AllowlistTree.jsx';
 
+const AFFECTED_ABILITIES = [
+	'file-manager/read-file',
+	'file-manager/read-debug-log',
+];
+
+const UNAFFECTED_ABILITIES = [
+	'file-manager/list-directory',
+	'file-manager/file-info',
+];
+
 const ReadAllowlistPanel = ( { data, onSave } ) => {
 	const [ paths, setPaths ]       = useState( data.allowed_paths || [] );
 	const [ restrict, setRestrict ] = useState( ( data.allowed_paths || [] ).length > 0 );
@@ -45,6 +55,24 @@ const ReadAllowlistPanel = ( { data, onSave } ) => {
 					'acrossai-abilities-manager'
 				) }
 			</p>
+
+			<div className="acrossai-fm-affects">
+				<strong>{ __( 'Affects these abilities:', 'acrossai-abilities-manager' ) }</strong>
+				<ul className="acrossai-fm-affects-list">
+					{ AFFECTED_ABILITIES.map( ( slug ) => (
+						<li key={ slug }><code>{ slug }</code></li>
+					) ) }
+				</ul>
+				<p className="description">
+					{ __( 'Metadata-only abilities are NOT gated by the read allowlist:', 'acrossai-abilities-manager' ) }{ ' ' }
+					{ UNAFFECTED_ABILITIES.map( ( slug, idx ) => (
+						<span key={ slug }>
+							{ idx > 0 && ', ' }
+							<code>{ slug }</code>
+						</span>
+					) ) }.
+				</p>
+			</div>
 
 			<p>
 				<label>

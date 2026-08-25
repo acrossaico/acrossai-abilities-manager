@@ -9,6 +9,17 @@ import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import AllowlistTree from './AllowlistTree.jsx';
 
+const AFFECTED_ABILITIES = [
+	'file-manager/create-file',
+	'file-manager/edit-file',
+	'file-manager/delete-file',
+	'file-manager/copy-file',
+	'file-manager/move-file',
+	'file-manager/append-file',
+	'file-manager/create-directory',
+	'file-manager/delete-directory',
+];
+
 const WriteAllowlistPanel = ( { data, onSave } ) => {
 	const [ paths, setPaths ]   = useState( data.allowed_paths || [] );
 	const [ saving, setSaving ] = useState( false );
@@ -41,6 +52,18 @@ const WriteAllowlistPanel = ( { data, onSave } ) => {
 					'acrossai-abilities-manager'
 				) }
 			</p>
+
+			<div className="acrossai-fm-affects">
+				<strong>{ __( 'Affects these abilities:', 'acrossai-abilities-manager' ) }</strong>
+				<ul className="acrossai-fm-affects-list">
+					{ AFFECTED_ABILITIES.map( ( slug ) => (
+						<li key={ slug }><code>{ slug }</code></li>
+					) ) }
+				</ul>
+				<p className="description">
+					{ __( 'Every other file-manager/* ability (metadata reads, zip backups, wp-config wrappers) is not affected by the write allowlist.', 'acrossai-abilities-manager' ) }
+				</p>
+			</div>
 
 			<AllowlistTree value={ paths } available={ data.available || {} } onChange={ setPaths } />
 
