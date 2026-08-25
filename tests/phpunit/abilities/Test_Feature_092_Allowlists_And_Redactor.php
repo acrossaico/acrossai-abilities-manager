@@ -118,7 +118,7 @@ class Test_Feature_092_Allowlists_And_Redactor extends WP_UnitTestCase {
 	public function test_secret_redactor_declares_expected_methods(): void {
 		$src = $this->read( 'includes/Abilities/Utilities/Secret_Redactor.php' );
 		foreach (
-			array( 'scrub', 'get_config', 'set_config', 'available_patterns', 'default_config' ) as $method
+			array( 'scrub', 'get_config', 'set_config', 'available_patterns', 'available_connector_sources', 'default_config' ) as $method
 		) {
 			$this->assertStringContainsString( "function $method(", $src, "Method $method must exist." );
 		}
@@ -130,21 +130,25 @@ class Test_Feature_092_Allowlists_And_Redactor extends WP_UnitTestCase {
 		$this->assertStringContainsString( "public const TOKEN = '***REDACTED***'", $src );
 	}
 
-	public function test_secret_redactor_ships_eight_built_in_patterns(): void {
+	public function test_secret_redactor_ships_only_wp_credentials_built_in_pattern(): void {
+		// Feature 092 refinement: third-party API-key regexes were dropped
+		// in favour of "wp_credentials only" — user adds anything else as
+		// custom literals. Two things must be true: (a) the default_config
+		// exposes exactly one pattern id, (b) it is wp_credentials.
 		$src = $this->read( 'includes/Abilities/Utilities/Secret_Redactor.php' );
-		foreach (
-			array(
-				'wp_credentials',
-				'stripe',
-				'aws_access_key',
-				'openai',
-				'anthropic',
-				'github',
-				'sendgrid',
-				'jwt',
-			) as $pattern_id
-		) {
-			$this->assertStringContainsString( "'$pattern_id'", $src, "Pattern $pattern_id must be present." );
+		$this->assertStringContainsString( "'wp_credentials' => true", $src );
+		// The dropped IDs must NOT appear as default_config keys.
+		foreach ( array( 'stripe', 'aws_access_key', 'openai_key', 'anthropic_key', 'github_key', 'sendgrid_key', 'jwt' ) as $dropped ) {
+			$this->assertStringNotContainsString(
+				"'$dropped' => true",
+				$src,
+				"Feature 092 refinement removed the $dropped built-in pattern."
+			);
+			$this->assertStringNotContainsString(
+				"'$dropped' => false",
+				$src,
+				"Feature 092 refinement removed the $dropped built-in pattern."
+			);
 		}
 	}
 
@@ -169,12 +173,21 @@ class Test_Feature_092_Allowlists_And_Redactor extends WP_UnitTestCase {
 		}
 	}
 
-	public function test_secret_redactor_jwt_default_is_off(): void {
+	public function test_secret_redactor_declares_ai_connector_option_map(): void {
+		// Feature 092 refinement: the redactor auto-reads the WordPress AI
+		// plugin's connectors_ai_<provider>_api_key options and scrubs any
+		// non-empty value transparently.
 		$src = $this->read( 'includes/Abilities/Utilities/Secret_Redactor.php' );
-		$this->assertMatchesRegularExpression(
-			"/'jwt'\s*=>\s*false/",
-			$src
-		);
+		$this->assertStringContainsString( 'private const AI_CONNECTOR_OPTIONS', $src );
+		$this->assertStringContainsString( "'openai'    => 'connectors_ai_openai_api_key'", $src );
+		$this->assertStringContainsString( "'anthropic' => 'connectors_ai_anthropic_api_key'", $src );
+		$this->assertStringContainsString( "'google'    => 'connectors_ai_google_api_key'", $src );
+	}
+
+	public function test_secret_redactor_scrub_reads_connector_options(): void {
+		$src = $this->read( 'includes/Abilities/Utilities/Secret_Redactor.php' );
+		$this->assertStringContainsString( 'collect_connector_key_values(', $src );
+		$this->assertStringContainsString( 'get_option( $option_name', $src );
 	}
 
 	/* -------------------------------------------------------------------- */

@@ -43,14 +43,15 @@ const RedactionPanel = ( { data, onSave } ) => {
 			} );
 	};
 
-	const available = data.available || {};
+	const available          = data.available || {};
+	const connectorSources   = data.connector_sources || {};
 
 	return (
 		<section className="acrossai-fm-panel">
 			<h2>{ __( 'Secret redaction', 'acrossai-abilities-manager' ) }</h2>
 			<p className="description">
 				{ __(
-					'Every file the AI reads is scrubbed for known secret patterns before the response leaves the site. Toggle any pattern class off if it produces false positives; add custom literal strings that should always be redacted.',
+					'Every file the AI reads is scrubbed for the WordPress credentials in wp-config.php by default. If the WordPress AI plugin is installed, its OpenAI, Anthropic, and Google API keys are automatically scrubbed too — no action needed. Add any other secrets you want stripped from read responses as custom literal strings below.',
 					'acrossai-abilities-manager'
 				) }
 			</p>
@@ -68,6 +69,27 @@ const RedactionPanel = ( { data, onSave } ) => {
 							<strong>{ info.label }</strong>
 						</label>
 						<p className="description">{ info.description }</p>
+					</li>
+				) ) }
+			</ul>
+
+			<h3>{ __( 'AI connector API keys (auto-scrubbed)', 'acrossai-abilities-manager' ) }</h3>
+			<p className="description">
+				{ __(
+					'When the WordPress AI plugin stores an API key for one of these providers, its value is added to the redactor automatically. No configuration needed here — this section only shows current status.',
+					'acrossai-abilities-manager'
+				) }
+			</p>
+			<ul className="acrossai-fm-connectors">
+				{ Object.entries( connectorSources ).map( ( [ id, info ] ) => (
+					<li key={ id }>
+						<strong>{ info.label }</strong>{ ' ' }
+						<span className={ info.present ? 'acrossai-fm-badge is-active' : 'acrossai-fm-badge is-inactive' }>
+							{ info.present
+								? __( 'key detected — will be scrubbed', 'acrossai-abilities-manager' )
+								: __( 'no key set', 'acrossai-abilities-manager' ) }
+						</span>{ ' ' }
+						<code>({ info.option })</code>
 					</li>
 				) ) }
 			</ul>

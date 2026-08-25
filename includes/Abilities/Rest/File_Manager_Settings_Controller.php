@@ -220,8 +220,9 @@ final class File_Manager_Settings_Controller {
 	public function get_redaction(): \WP_REST_Response {
 		return new \WP_REST_Response(
 			array(
-				'config'    => Secret_Redactor::get_config(),
-				'available' => Secret_Redactor::available_patterns(),
+				'config'             => Secret_Redactor::get_config(),
+				'available'          => Secret_Redactor::available_patterns(),
+				'connector_sources'  => Secret_Redactor::available_connector_sources(),
 			),
 			200
 		);

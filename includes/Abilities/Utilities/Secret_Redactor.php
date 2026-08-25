@@ -3,13 +3,21 @@
  * Secret redactor for file-manager read responses (Feature 092).
  *
  * Scrubs sensitive content from `read-file` and `read-debug-log` responses
- * before returning them to the caller. Ships eight built-in pattern classes;
- * admins toggle each on/off from the File Manager settings tab and may add
- * custom literal strings.
+ * before returning them to the caller.
  *
- * Pattern regexes are hardcoded — only their on/off state and the custom
- * literal list are user-editable. This keeps a bad regex from breaking the
- * redactor.
+ * Ships ONE built-in pattern by default (WordPress credentials — DB
+ * password, DB user, all 8 auth keys/salts, SECRET_KEY). Everything else
+ * is admin-supplied via the custom-literals list on the File Manager
+ * settings tab. This deliberately does NOT ship third-party API-key
+ * regexes; assumptions about someone else's key format belong in the
+ * user's own config, not in this plugin.
+ *
+ * Automatic integration with the WordPress "AI" plugin (v1.x): any API
+ * key stored in the well-known `connectors_ai_<provider>_api_key`
+ * options (OpenAI, Anthropic, Google) is added to the literal-scrub list
+ * transparently — the admin does not have to copy those keys into the
+ * custom-literals textarea. If the AI plugin is not installed those
+ * options don't exist and the integration is a no-op.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
@@ -27,7 +35,7 @@ defined( 'ABSPATH' ) || exit;
 final class Secret_Redactor {
 
 	/**
-	 * Option name.
+	 * Option name for the redaction config.
 	 */
 	public const OPTION = 'acrossai_file_manager_redaction_config';
 
@@ -37,7 +45,23 @@ final class Secret_Redactor {
 	public const TOKEN = '***REDACTED***';
 
 	/**
-	 * WordPress core secret constant names covered by the wp_credentials pattern.
+	 * WordPress AI plugin's connector API-key option-name map (feature 092
+	 * refinement — auto-scrub keys stored by that plugin). Non-existent
+	 * options resolve to empty strings and are skipped at scrub time.
+	 *
+	 * Source: `wp-content/plugins/ai/includes/Admin/Upgrades/V0_5_0.php`.
+	 *
+	 * @var array<string,string>
+	 */
+	private const AI_CONNECTOR_OPTIONS = array(
+		'openai'    => 'connectors_ai_openai_api_key',
+		'anthropic' => 'connectors_ai_anthropic_api_key',
+		'google'    => 'connectors_ai_google_api_key',
+	);
+
+	/**
+	 * WordPress core secret constant names covered by the wp_credentials
+	 * pattern.
 	 *
 	 * @var array<int,string>
 	 */
@@ -58,19 +82,16 @@ final class Secret_Redactor {
 	/**
 	 * Default redaction config applied on activation.
 	 *
+	 * Only wp_credentials ships default-on. Third-party API-key patterns
+	 * are the user's call — add them as custom literals via the settings
+	 * UI when needed.
+	 *
 	 * @return array{patterns: array<string,bool>, custom_literals: array<int,string>}
 	 */
 	public static function default_config(): array {
 		return array(
 			'patterns'        => array(
 				'wp_credentials' => true,
-				'stripe'         => true,
-				'aws_access_key' => true,
-				'openai'         => true,
-				'anthropic'      => true,
-				'github'         => true,
-				'sendgrid'       => true,
-				'jwt'            => false,
 			),
 			'custom_literals' => array(),
 		);
@@ -113,7 +134,8 @@ final class Secret_Redactor {
 	}
 
 	/**
-	 * Persist a config.
+	 * Persist a config. Ignores unknown pattern IDs so an attacker can't
+	 * seed junk keys through the REST endpoint.
 	 *
 	 * @param array{patterns?: array<string,bool>, custom_literals?: array<int,string>} $config New config.
 	 * @return bool
@@ -149,42 +171,34 @@ final class Secret_Redactor {
 				'description'     => __( "Replaces the value of define('DB_PASSWORD', …), define('DB_USER', …) and all eight WordPress auth keys/salts.", 'acrossai-abilities-manager' ),
 				'default_enabled' => true,
 			),
-			'stripe'         => array(
-				'label'           => __( 'Stripe API keys', 'acrossai-abilities-manager' ),
-				'description'     => __( 'Detects sk_live_, sk_test_, rk_live_, rk_test_ keys anywhere in the content.', 'acrossai-abilities-manager' ),
-				'default_enabled' => true,
-			),
-			'aws_access_key' => array(
-				'label'           => __( 'AWS access key IDs', 'acrossai-abilities-manager' ),
-				'description'     => __( 'Detects AKIA-prefixed 20-character access key IDs.', 'acrossai-abilities-manager' ),
-				'default_enabled' => true,
-			),
-			'openai'         => array(
-				'label'           => __( 'OpenAI API keys', 'acrossai-abilities-manager' ),
-				'description'     => __( "Detects sk- prefixed OpenAI-style keys (48+ characters).", 'acrossai-abilities-manager' ),
-				'default_enabled' => true,
-			),
-			'anthropic'      => array(
-				'label'           => __( 'Anthropic API keys', 'acrossai-abilities-manager' ),
-				'description'     => __( 'Detects sk-ant- prefixed Anthropic keys.', 'acrossai-abilities-manager' ),
-				'default_enabled' => true,
-			),
-			'github'         => array(
-				'label'           => __( 'GitHub tokens', 'acrossai-abilities-manager' ),
-				'description'     => __( 'Detects ghp_, gho_, ghu_, ghs_, ghr_ prefixed 40-character tokens.', 'acrossai-abilities-manager' ),
-				'default_enabled' => true,
-			),
-			'sendgrid'       => array(
-				'label'           => __( 'SendGrid API keys', 'acrossai-abilities-manager' ),
-				'description'     => __( 'Detects SG.xxx.yyy formatted keys.', 'acrossai-abilities-manager' ),
-				'default_enabled' => true,
-			),
-			'jwt'            => array(
-				'label'           => __( 'JWT tokens', 'acrossai-abilities-manager' ),
-				'description'     => __( 'Detects three-segment base64url JWTs. Off by default because legitimate token display content can match.', 'acrossai-abilities-manager' ),
-				'default_enabled' => false,
-			),
 		);
+	}
+
+	/**
+	 * Enumerate the AI-connector auto-scrub sources for the admin UI.
+	 *
+	 * Each entry reports whether the option currently has a non-empty
+	 * value on this install — the UI can render a checklist so the admin
+	 * knows the redactor will pick up those keys automatically.
+	 *
+	 * @return array<string,array{label: string, option: string, present: bool}>
+	 */
+	public static function available_connector_sources(): array {
+		$labels = array(
+			'openai'    => __( 'OpenAI', 'acrossai-abilities-manager' ),
+			'anthropic' => __( 'Anthropic (Claude)', 'acrossai-abilities-manager' ),
+			'google'    => __( 'Google (Gemini / Imagen)', 'acrossai-abilities-manager' ),
+		);
+		$out = array();
+		foreach ( self::AI_CONNECTOR_OPTIONS as $id => $option_name ) {
+			$value          = (string) get_option( $option_name, '' );
+			$out[ $id ]     = array(
+				'label'   => $labels[ $id ] ?? $id,
+				'option'  => $option_name,
+				'present' => '' !== trim( $value ),
+			);
+		}
+		return $out;
 	}
 
 	/* -------------------------------------------------------------------- */
@@ -193,6 +207,15 @@ final class Secret_Redactor {
 
 	/**
 	 * Scrub sensitive content from arbitrary text.
+	 *
+	 * Applies (in order):
+	 *   1. The wp_credentials regex (if enabled) — replaces values of
+	 *      well-known WordPress secret constants inside define() calls.
+	 *   2. Any non-empty API-key value stored in the WordPress AI plugin's
+	 *      connectors_ai_<provider>_api_key options (transparent
+	 *      integration; no admin action required).
+	 *   3. Every admin-supplied custom literal — case-sensitive string
+	 *      match.
 	 *
 	 * @param string $content Original file content (text; do not call on binary bytes).
 	 * @return array{text: string, redacted: bool, redaction_count: int}
@@ -213,22 +236,16 @@ final class Secret_Redactor {
 		if ( ! empty( $config['patterns']['wp_credentials'] ) ) {
 			$text = self::apply_wp_credentials( $text, $count );
 		}
-		foreach ( self::third_party_patterns() as $id => $pattern_info ) {
-			if ( empty( $config['patterns'][ $id ] ) ) {
-				continue;
-			}
-			$text = self::apply_regex( $text, $pattern_info['regex'], $pattern_info['replacement'], $count );
+
+		// Auto-scrub AI-connector API keys. Read the current values every
+		// scrub call so newly-added connector keys take effect without a
+		// plugin reload.
+		foreach ( self::collect_connector_key_values() as $literal ) {
+			$text = self::apply_literal( $text, $literal, $count );
 		}
 
 		foreach ( $config['custom_literals'] as $literal ) {
-			if ( '' === $literal ) {
-				continue;
-			}
-			$replaced = str_replace( $literal, self::TOKEN, $text, $lit_count );
-			if ( $lit_count > 0 ) {
-				$text  = $replaced;
-				$count = $count + (int) $lit_count;
-			}
+			$text = self::apply_literal( $text, $literal, $count );
 		}
 
 		return array(
@@ -241,6 +258,31 @@ final class Secret_Redactor {
 	/* -------------------------------------------------------------------- */
 	/* Internal helpers                                                      */
 	/* -------------------------------------------------------------------- */
+
+	/**
+	 * Read the current API-key value from each configured connector option.
+	 *
+	 * @return array<int,string> Non-empty API-key strings.
+	 */
+	private static function collect_connector_key_values(): array {
+		$out = array();
+		foreach ( self::AI_CONNECTOR_OPTIONS as $option_name ) {
+			$raw = get_option( $option_name, '' );
+			if ( ! is_string( $raw ) ) {
+				continue;
+			}
+			$trimmed = trim( $raw );
+			// Short strings would produce absurd numbers of false-positive
+			// matches; require at least 8 chars to treat a value as a real
+			// key. WordPress AI plugin stores plaintext keys that are much
+			// longer than this.
+			if ( strlen( $trimmed ) < 8 ) {
+				continue;
+			}
+			$out[] = $trimmed;
+		}
+		return $out;
+	}
 
 	/**
 	 * Apply the WordPress-credentials pattern. Replaces the value in
@@ -262,42 +304,23 @@ final class Secret_Redactor {
 	}
 
 	/**
-	 * The third-party API-key pattern map.
+	 * Apply a literal-string replacement. Increments $count by the number
+	 * of occurrences replaced.
 	 *
-	 * @return array<string,array{regex: string, replacement: string}>
+	 * @param string $content Content to scrub.
+	 * @param string $literal Literal string to redact.
+	 * @param int    $count   Running total (by reference).
+	 * @return string
 	 */
-	private static function third_party_patterns(): array {
-		return array(
-			'stripe'         => array(
-				'regex'       => '/\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{24,}/',
-				'replacement' => self::TOKEN,
-			),
-			'aws_access_key' => array(
-				'regex'       => '/\bAKIA[0-9A-Z]{16}\b/',
-				'replacement' => 'AKIA' . self::TOKEN,
-			),
-			// Anthropic must run BEFORE openai because sk-ant-... would also match sk-...{48+}.
-			'anthropic'      => array(
-				'regex'       => '/\bsk-ant-[A-Za-z0-9_\-]{80,}/',
-				'replacement' => 'sk-ant-' . self::TOKEN,
-			),
-			'openai'         => array(
-				'regex'       => '/\bsk-[A-Za-z0-9]{48,}/',
-				'replacement' => 'sk-' . self::TOKEN,
-			),
-			'github'         => array(
-				'regex'       => '/\bgh[posru]_[A-Za-z0-9]{36}\b/',
-				'replacement' => 'gh_' . self::TOKEN,
-			),
-			'sendgrid'       => array(
-				'regex'       => '/\bSG\.[A-Za-z0-9_\-]{22}\.[A-Za-z0-9_\-]{43}\b/',
-				'replacement' => 'SG.' . self::TOKEN,
-			),
-			'jwt'            => array(
-				'regex'       => '/\beyJ[A-Za-z0-9_\-]+\.eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+/',
-				'replacement' => 'eyJ' . self::TOKEN,
-			),
-		);
+	private static function apply_literal( string $content, string $literal, int &$count ): string {
+		if ( '' === $literal ) {
+			return $content;
+		}
+		$replaced = str_replace( $literal, self::TOKEN, $content, $hits );
+		if ( $hits > 0 ) {
+			$count = $count + (int) $hits;
+		}
+		return $replaced;
 	}
 
 	/**
