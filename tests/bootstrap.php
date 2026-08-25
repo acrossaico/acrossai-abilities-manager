@@ -225,6 +225,63 @@ if ( ! function_exists( 'delete_option' ) ) {
 	}
 }
 
+if ( ! function_exists( 'sanitize_file_name' ) ) {
+	/**
+	 * Stub: mirrors WP sanitize_file_name() closely enough for Feature 093
+	 * hardening tests. Replaces disallowed characters with `-` and collapses
+	 * repeats. Real WP also normalises Unicode, but the test surface only
+	 * needs the ASCII space + colon + control-char behaviours.
+	 *
+	 * @param  string $filename Raw filename.
+	 * @return string
+	 */
+	function sanitize_file_name( string $filename ): string {
+		$special_chars = array( '?', '[', ']', '/', '\\', '=', '<', '>', ':', ';', ',', "'", '"', '&', '$', '#', '*', '(', ')', '|', '~', '`', '!', '{', '}', '%', '+', chr( 0 ) );
+		$filename      = str_replace( $special_chars, '', $filename );
+		$filename      = str_replace( array( '%20', '+' ), '-', $filename );
+		$filename      = preg_replace( '/[\r\n\t -]+/', '-', $filename );
+		$filename      = trim( $filename, '.-_' );
+		return $filename;
+	}
+}
+
+if ( ! function_exists( 'wp_check_filetype' ) ) {
+	/**
+	 * Stub: minimal MIME-type check for Feature 093 tests. Returns the
+	 * matching MIME for a hardcoded subset of common extensions and empty
+	 * for anything else. Test callers should not rely on this reflecting
+	 * a live wp_check_filetype()'s full mime map.
+	 *
+	 * @param  string $filename Basename with extension.
+	 * @param  mixed  $mimes    Ignored in the stub.
+	 * @return array{ext:string|false, type:string|false}
+	 */
+	function wp_check_filetype( string $filename, $mimes = null ): array {
+		$ext_lower = strtolower( (string) pathinfo( $filename, PATHINFO_EXTENSION ) );
+		$map       = array(
+			'txt'  => 'text/plain',
+			'md'   => 'text/markdown',
+			'json' => 'application/json',
+			'log'  => 'text/plain',
+			'css'  => 'text/css',
+			'js'   => 'application/javascript',
+			'html' => 'text/html',
+			'htm'  => 'text/html',
+			'xml'  => 'application/xml',
+			'jpg'  => 'image/jpeg',
+			'jpeg' => 'image/jpeg',
+			'png'  => 'image/png',
+			'gif'  => 'image/gif',
+			'php'  => 'application/x-httpd-php',
+			'htaccess' => 'text/plain',
+		);
+		if ( isset( $map[ $ext_lower ] ) ) {
+			return array( 'ext' => $ext_lower, 'type' => $map[ $ext_lower ] );
+		}
+		return array( 'ext' => false, 'type' => false );
+	}
+}
+
 if ( ! function_exists( 'sanitize_key' ) ) {
 	/**
 	 * Stub: lowercases and strips to [a-z0-9_-] only.
