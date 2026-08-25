@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -22,10 +23,11 @@ defined( 'ABSPATH' ) || exit;
  * under ABSPATH. Refuses missing files (use create-file instead) and
  * refuses wp-config.php or .htaccess at ABSPATH root.
  *
- * Append uses FILE_APPEND | LOCK_EX for atomic-ish tail-writes.
- * Prepend reads then rewrites the entire file — not atomic; a concurrent
- * writer between the read and write would win. Callers are warned in the
- * ability description to avoid prepending to large files.
+ * Both append and prepend read the current contents via WP_Filesystem,
+ * concatenate in memory, then write back — not atomic. A concurrent
+ * writer between the read and the write would win. Callers are warned
+ * in the ability description to avoid this ability on
+ * very-high-throughput logs.
  */
 class Append_File extends Ability_Definition {
 
@@ -51,7 +53,7 @@ class Append_File extends Ability_Definition {
 			'name' => 'file-manager/append-file',
 			'args' => array(
 				'label'               => __( 'Append to File', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Append (default) or prepend caller-supplied bytes to an existing file inside the WordPress installation. Path must be relative to ABSPATH. Refuses missing files (use create-file instead) and refuses wp-config.php or .htaccess at ABSPATH root. Append uses FILE_APPEND | LOCK_EX; prepend reads then rewrites (not atomic; avoid on large files).', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Append (default) or prepend caller-supplied bytes to an existing file inside the WordPress installation. Path must be relative to ABSPATH. Refuses missing files (use create-file instead) and refuses wp-config.php or .htaccess at ABSPATH root. Both append and prepend read the current contents and rewrite the file via WP_Filesystem (not atomic — a concurrent writer may win; avoid on very-high-throughput logs).', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-abilities-manager-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -123,6 +125,11 @@ class Append_File extends Ability_Definition {
 		if ( null !== $blocked ) {
 			return $blocked;
 		}
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
 
 		$rel_path = sanitize_text_field( $input['path'] ?? '' );
 		$content  = isset( $input['content'] ) ? (string) $input['content'] : '';
@@ -152,7 +159,7 @@ class Append_File extends Ability_Definition {
 			);
 		}
 
-		if ( ! is_file( $real ) ) {
+		if ( ! $fs->is_file( $real ) ) {
 			return array(
 				'success'        => false,
 				'blocked_reason' => 'source_not_found',
@@ -160,18 +167,19 @@ class Append_File extends Ability_Definition {
 			);
 		}
 
-		if ( $prepend ) {
-			$existing = file_get_contents( $real ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-			if ( false === $existing ) {
-				return array(
-					'success' => false,
-					'message' => __( 'Could not read file for prepend.', 'acrossai-abilities-manager' ),
-				);
-			}
-			$result = file_put_contents( $real, $content . $existing, LOCK_EX ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-		} else {
-			$result = file_put_contents( $real, $content, FILE_APPEND | LOCK_EX ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		// WP_Filesystem exposes no direct-append operation, so both append
+		// and prepend paths use read + concat + write. Not atomic — a
+		// concurrent writer between the read and the write would win.
+		// Callers on very-high-throughput logs should not use this ability.
+		$existing = $fs->get_contents( $real );
+		if ( false === $existing ) {
+			return array(
+				'success' => false,
+				'message' => __( 'Could not read file for append/prepend.', 'acrossai-abilities-manager' ),
+			);
 		}
+		$new_bytes = $prepend ? ( $content . $existing ) : ( $existing . $content );
+		$result    = $fs->put_contents( $real, $new_bytes, FS_CHMOD_FILE );
 
 		if ( false === $result ) {
 			return array(
@@ -180,13 +188,11 @@ class Append_File extends Ability_Definition {
 			);
 		}
 
-		clearstatcache( true, $real );
-
 		return array(
 			'success'       => true,
 			'path'          => $real,
 			'bytes_written' => strlen( $content ),
-			'new_size'      => (int) filesize( $real ),
+			'new_size'      => (int) $fs->size( $real ),
 			'prepended'     => $prepend,
 			'message'       => $prepend
 				? __( 'Content prepended.', 'acrossai-abilities-manager' )

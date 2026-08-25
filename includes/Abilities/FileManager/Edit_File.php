@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -108,6 +109,11 @@ class Edit_File extends Ability_Definition {
 		if ( null !== $blocked ) {
 			return $blocked;
 		}
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
 
 		$rel_path = sanitize_text_field( $input['path'] ?? '' );
 		$content  = $input['content'] ?? '';
@@ -135,7 +141,7 @@ class Edit_File extends Ability_Definition {
 			);
 		}
 
-		$result = file_put_contents( $abs_path, $content ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		$result = $fs->put_contents( $abs_path, $content, FS_CHMOD_FILE );
 
 		if ( false === $result ) {
 			return array(

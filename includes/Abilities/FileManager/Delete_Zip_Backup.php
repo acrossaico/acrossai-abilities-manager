@@ -13,6 +13,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups_Storage;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -52,10 +53,11 @@ class Delete_Zip_Backup extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'      => array( 'type' => 'boolean' ),
-						'deleted_path' => array( 'type' => 'string' ),
-						'existed'      => array( 'type' => 'boolean' ),
-						'message'      => array( 'type' => 'string' ),
+						'success'        => array( 'type' => 'boolean' ),
+						'deleted_path'   => array( 'type' => 'string' ),
+						'existed'        => array( 'type' => 'boolean' ),
+						'message'        => array( 'type' => 'string' ),
+						'blocked_reason' => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -92,6 +94,11 @@ class Delete_Zip_Backup extends Ability_Definition {
 		if ( null !== $blocked ) {
 			return $blocked;
 		}
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
 
 		$file_path = sanitize_text_field( (string) ( $input['file_path'] ?? '' ) );
 
@@ -104,7 +111,7 @@ class Delete_Zip_Backup extends Ability_Definition {
 		}
 
 		$rel      = Backups_Storage::to_abspath_relative( $resolved );
-		$existed  = is_file( $resolved );
+		$existed  = $fs->is_file( $resolved );
 
 		if ( ! $existed ) {
 			return array(
@@ -115,9 +122,9 @@ class Delete_Zip_Backup extends Ability_Definition {
 			);
 		}
 
-		wp_delete_file( $resolved );
+		$fs->delete( $resolved );
 
-		if ( is_file( $resolved ) ) {
+		if ( $fs->is_file( $resolved ) ) {
 			return array(
 				'success'      => false,
 				'deleted_path' => $rel,

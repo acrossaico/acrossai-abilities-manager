@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -114,6 +115,11 @@ class Delete_File extends Ability_Definition {
 		if ( null !== $blocked ) {
 			return $blocked;
 		}
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
 
 		$rel_path = sanitize_text_field( $input['path'] ?? '' );
 		$base     = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
@@ -138,7 +144,7 @@ class Delete_File extends Ability_Definition {
 			);
 		}
 
-		if ( ! is_file( $real ) ) {
+		if ( ! $fs->is_file( $real ) ) {
 			return array(
 				'success' => false,
 				'message' => __( 'File does not exist.', 'acrossai-abilities-manager' ),
@@ -149,11 +155,11 @@ class Delete_File extends Ability_Definition {
 		// deleting. If the copy fails we still proceed with the delete —
 		// backup is a convenience, not a hard prerequisite.
 		$backup = $real . '.bak.' . time();
-		if ( ! @copy( $real, $backup ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		if ( ! $fs->copy( $real, $backup, false, FS_CHMOD_FILE ) ) {
 			$backup = null;
 		}
 
-		if ( ! wp_delete_file( $real ) ) {
+		if ( ! $fs->delete( $real ) ) {
 			return array(
 				'success' => false,
 				'backup'  => $backup,

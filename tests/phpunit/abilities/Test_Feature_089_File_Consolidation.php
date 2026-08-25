@@ -67,7 +67,10 @@ class Test_Feature_089_File_Consolidation extends WP_UnitTestCase {
 	}
 
 	public function test_list_directory_enforces_max_depth_and_max_entries(): void {
-		$this->assertStringContainsString( 'setMaxDepth', $this->files['list_directory'] );
+		// Feature 091: replaced setMaxDepth() SPL iterator with a recursive
+		// $fs->dirlist() walk whose depth is bounded via a $current_depth
+		// counter passed through the walker.
+		$this->assertStringContainsString( '$current_depth', $this->files['list_directory'] );
 		$this->assertStringContainsString( 'DEFAULT_MAX_DEPTH', $this->files['list_directory'] );
 		$this->assertStringContainsString( 'DEFAULT_MAX_ENTRIES', $this->files['list_directory'] );
 		$this->assertStringContainsString( 'HARD_CAP_MAX_ENTRIES', $this->files['list_directory'] );
@@ -84,10 +87,10 @@ class Test_Feature_089_File_Consolidation extends WP_UnitTestCase {
 	}
 
 	public function test_list_directory_does_not_follow_symlinks(): void {
-		// The iterator setup uses SKIP_DOTS but no FOLLOW_SYMLINKS flag, and
-		// the loop explicitly skips isLink().
+		// Feature 091: WP_Filesystem dirlist() returns 'l' as the type flag
+		// for symlinks; the walk explicitly skips those entries.
 		$this->assertStringNotContainsString( 'FOLLOW_SYMLINKS', $this->files['list_directory'] );
-		$this->assertStringContainsString( '->isLink()', $this->files['list_directory'] );
+		$this->assertStringContainsString( "'l' === \$info['type']", $this->files['list_directory'] );
 	}
 
 	public function test_list_directory_annotations_are_readonly_and_idempotent(): void {
@@ -129,9 +132,10 @@ class Test_Feature_089_File_Consolidation extends WP_UnitTestCase {
 	}
 
 	public function test_copy_file_refuses_when_destination_exists_without_overwrite(): void {
+		// Feature 091: file_exists() → $fs->exists().
 		$this->assertStringContainsString( "'blocked_reason' => 'destination_exists'", $this->files['copy_file'] );
 		$this->assertMatchesRegularExpression(
-			"/file_exists\\(\\s*\\\$dest_abs\\s*\\)/",
+			"/\\\$fs->exists\\(\\s*\\\$dest_abs\\s*\\)/",
 			$this->files['copy_file']
 		);
 	}
@@ -144,9 +148,10 @@ class Test_Feature_089_File_Consolidation extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'File_Mods_Guard::blocked_response()', $this->files['copy_file'] );
 	}
 
-	public function test_copy_file_uses_native_copy_function(): void {
+	public function test_copy_file_uses_wp_filesystem_copy(): void {
+		// Feature 091: native copy() → $fs->copy() with overwrite flag + FS_CHMOD_FILE.
 		$this->assertMatchesRegularExpression(
-			"/copy\\(\\s*\\\$src_real,\\s*\\\$dest_abs\\s*\\)/",
+			"/\\\$fs->copy\\(\\s*\\\$src_real,\\s*\\\$dest_abs,\\s*\\\$overwrite,\\s*FS_CHMOD_FILE\\s*\\)/",
 			$this->files['copy_file']
 		);
 	}
@@ -198,9 +203,10 @@ class Test_Feature_089_File_Consolidation extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'File_Mods_Guard::blocked_response()', $this->files['move_file'] );
 	}
 
-	public function test_move_file_uses_native_rename_function(): void {
+	public function test_move_file_uses_wp_filesystem_move(): void {
+		// Feature 091: native rename() → $fs->move() with overwrite flag.
 		$this->assertMatchesRegularExpression(
-			"/rename\\(\\s*\\\$src_real,\\s*\\\$dest_abs\\s*\\)/",
+			"/\\\$fs->move\\(\\s*\\\$src_real,\\s*\\\$dest_abs,\\s*\\\$overwrite\\s*\\)/",
 			$this->files['move_file']
 		);
 	}

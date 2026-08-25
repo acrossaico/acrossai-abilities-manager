@@ -113,6 +113,11 @@ class List_Zip_Backups extends Ability_Definition {
 	 * @return array
 	 */
 	public function execute( array $input = array() ): array {
+		// Feature 091 note: this ability performs no direct filesystem I/O of
+		// its own. All disk access is delegated to Backups_Storage, which
+		// currently uses native PHP (glob/filesize/filemtime). Backups_Storage
+		// migration to WP_Filesystem is deferred to feature 092 together with
+		// the ZipArchive-based backup abilities.
 		$dir    = sanitize_key( (string) ( $input['dir'] ?? Backups_Storage::BACKUPS_DIR ) );
 		$limit  = isset( $input['limit'] ) ? (int) $input['limit'] : 50;
 		$offset = isset( $input['offset'] ) ? (int) $input['offset'] : 0;

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "ability": "file-manager/file-info",
+  "change_type": "BREAKING — response schema shrink",
+  "removed_fields": [
+    { "name": "ctime", "type": "integer", "reason": "Not exposed by WP_Filesystem_Base — remote transports cannot report ctime consistently." },
+    { "name": "atime", "type": "integer", "reason": "Same as ctime." }
+  ],
+  "unchanged_fields": [
+    "success", "path", "type", "size", "mtime", "mode_octal", "owner_uid", "owner_name", "group_gid", "group_name", "readable", "writable", "is_link", "message", "blocked_reason"
+  ],
+  "widened_enum": {
+    "blocked_reason": ["invalid_path", "path_not_found", "filesystem_unavailable"]
+  },
+  "migration_notes": "Callers that programmatically read `.ctime` or `.atime` from file-info responses must update to derive from `.mtime` or accept the loss. No other file-manager/* ability's response schema changes as part of this feature."
+}

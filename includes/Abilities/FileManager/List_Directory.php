@@ -11,8 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -127,6 +126,12 @@ class List_Directory extends Ability_Definition {
 	 * @return array
 	 */
 	public function execute( array $input = array() ): array {
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
+
 		$rel_path    = sanitize_text_field( $input['path'] ?? '' );
 		$max_depth   = isset( $input['max_depth'] ) ? (int) $input['max_depth'] : self::DEFAULT_MAX_DEPTH;
 		$max_entries = isset( $input['max_entries'] ) ? (int) $input['max_entries'] : self::DEFAULT_MAX_ENTRIES;
@@ -155,7 +160,7 @@ class List_Directory extends Ability_Definition {
 			);
 		}
 
-		if ( ! is_dir( $real ) ) {
+		if ( ! $fs->is_dir( $real ) ) {
 			return array(
 				'success'        => false,
 				'blocked_reason' => 'not_a_directory',
@@ -163,36 +168,9 @@ class List_Directory extends Ability_Definition {
 			);
 		}
 
-		$iterator = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator( $real, RecursiveDirectoryIterator::SKIP_DOTS ),
-			RecursiveIteratorIterator::SELF_FIRST
-		);
-		$iterator->setMaxDepth( $max_depth - 1 );
-
 		$entries   = array();
 		$truncated = false;
-		$base_len  = strlen( $base ) + 1;
-
-		foreach ( $iterator as $file_info ) {
-			// Never follow symlinks — belt-and-braces beyond the entry-time realpath.
-			if ( $file_info->isLink() ) {
-				continue;
-			}
-
-			$abs = $file_info->getPathname();
-
-			$entries[] = array(
-				'path'  => substr( $abs, $base_len ),
-				'type'  => $file_info->isDir() ? 'dir' : 'file',
-				'size'  => $file_info->isDir() ? 0 : (int) $file_info->getSize(),
-				'mtime' => (int) $file_info->getMTime(),
-			);
-
-			if ( count( $entries ) >= $max_entries ) {
-				$truncated = true;
-				break;
-			}
-		}
+		$this->walk( $fs, $real, $base, 1, $max_depth, $max_entries, $entries, $truncated );
 
 		return array(
 			'success'   => true,
@@ -211,5 +189,70 @@ class List_Directory extends Ability_Definition {
 				$truncated ? 'true' : 'false'
 			),
 		);
+	}
+
+	/**
+	 * Recursive pre-order walk using WP_Filesystem dirlist().
+	 *
+	 * Replaces the SPL-iterator pattern from feature 089 with a
+	 * WP_Filesystem-compatible $fs->dirlist() walk. Preserves depth cap,
+	 * entry cap, and symlink-skip semantics.
+	 *
+	 * @param \WP_Filesystem_Base  $fs           Initialised filesystem transport.
+	 * @param string               $dir_abs      Absolute directory path being walked.
+	 * @param string               $base         ABSPATH root (rtrimmed).
+	 * @param int                  $current_depth Current walk depth (1-indexed).
+	 * @param int                  $max_depth    Maximum walk depth.
+	 * @param int                  $max_entries  Maximum entries to collect.
+	 * @param array<int,array<string,mixed>> $entries Output collector.
+	 * @param bool                 $truncated    Output flag, true when max_entries reached.
+	 * @return void
+	 */
+	private function walk( \WP_Filesystem_Base $fs, string $dir_abs, string $base, int $current_depth, int $max_depth, int $max_entries, array &$entries, bool &$truncated ): void {
+		if ( $current_depth > $max_depth || $truncated ) {
+			return;
+		}
+
+		$dirlist = $fs->dirlist( $dir_abs );
+		if ( ! is_array( $dirlist ) ) {
+			return;
+		}
+
+		// Deterministic ordering: alphabetical within each directory.
+		ksort( $dirlist, SORT_STRING );
+
+		$base_len = strlen( $base ) + 1;
+
+		foreach ( $dirlist as $name => $info ) {
+			if ( $truncated ) {
+				return;
+			}
+
+			// Skip symlinks — never followed. dirlist() reports 'l' for links.
+			if ( isset( $info['type'] ) && 'l' === $info['type'] ) {
+				continue;
+			}
+
+			$entry_abs   = rtrim( $dir_abs, '/' ) . '/' . $name;
+			$is_dir      = isset( $info['type'] ) && 'd' === $info['type'];
+			$size        = $is_dir ? 0 : (int) ( $info['size'] ?? 0 );
+			$mtime       = (int) ( $info['lastmodunix'] ?? 0 );
+
+			$entries[] = array(
+				'path'  => substr( $entry_abs, $base_len ),
+				'type'  => $is_dir ? 'dir' : 'file',
+				'size'  => $size,
+				'mtime' => $mtime,
+			);
+
+			if ( count( $entries ) >= $max_entries ) {
+				$truncated = true;
+				return;
+			}
+
+			if ( $is_dir ) {
+				$this->walk( $fs, $entry_abs, $base, $current_depth + 1, $max_depth, $max_entries, $entries, $truncated );
+			}
+		}
 	}
 }

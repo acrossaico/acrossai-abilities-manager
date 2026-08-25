@@ -113,6 +113,10 @@ class Get_Wp_Config_Constant extends Ability_Definition {
 	 * @return array
 	 */
 	public function execute( array $input = array() ): array {
+		// Feature 091 note: this ability reads the RUNTIME PHP constant table
+		// via defined()/constant(). It performs no filesystem I/O, so the
+		// WP_Filesystem migration is a no-op for this class — no
+		// Wp_Filesystem_Init call is needed.
 		$constant = isset( $input['constant'] ) ? sanitize_text_field( (string) $input['constant'] ) : '';
 
 		if ( '' === $constant ) {

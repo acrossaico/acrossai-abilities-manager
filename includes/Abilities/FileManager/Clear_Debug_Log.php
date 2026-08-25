@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -45,8 +46,9 @@ class Clear_Debug_Log extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success' => array( 'type' => 'boolean' ),
-						'message' => array( 'type' => 'string' ),
+						'success'        => array( 'type' => 'boolean' ),
+						'message'        => array( 'type' => 'string' ),
+						'blocked_reason' => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -83,17 +85,22 @@ class Clear_Debug_Log extends Ability_Definition {
 		if ( null !== $blocked ) {
 			return $blocked;
 		}
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
 
 		$log_path = WP_CONTENT_DIR . '/debug.log';
 
-		if ( ! is_file( $log_path ) ) {
+		if ( ! $fs->is_file( $log_path ) ) {
 			return array(
 				'success' => true,
 				'message' => __( 'debug.log does not exist; nothing to clear.', 'acrossai-abilities-manager' ),
 			);
 		}
 
-		if ( false === file_put_contents( $log_path, '' ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		if ( false === $fs->put_contents( $log_path, '', FS_CHMOD_FILE ) ) {
 			return array(
 				'success' => false,
 				'message' => __( 'Could not clear debug.log.', 'acrossai-abilities-manager' ),

@@ -243,6 +243,10 @@
 		<testsuite name="feature-090-unit">
 			<file>tests/phpunit/abilities/Test_Feature_090_File_Manager_Additions.php</file>
 		</testsuite>
+		<!-- Feature 091 — WP_Filesystem migration. -->
+		<testsuite name="feature-091-unit">
+			<file>tests/phpunit/abilities/Test_Feature_091_Wp_Filesystem_Migration.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

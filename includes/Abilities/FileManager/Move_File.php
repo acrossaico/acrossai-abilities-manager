@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -117,6 +118,11 @@ class Move_File extends Ability_Definition {
 		if ( null !== $blocked ) {
 			return $blocked;
 		}
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
 
 		$rel_source  = sanitize_text_field( $input['source'] ?? '' );
 		$rel_dest    = sanitize_text_field( $input['destination'] ?? '' );
@@ -135,7 +141,7 @@ class Move_File extends Ability_Definition {
 			);
 		}
 
-		if ( ! is_file( $src_real ) ) {
+		if ( ! $fs->is_file( $src_real ) ) {
 			return array(
 				'success'        => false,
 				'blocked_reason' => 'source_not_found',
@@ -173,7 +179,7 @@ class Move_File extends Ability_Definition {
 		}
 
 		$overwritten = false;
-		if ( file_exists( $dest_abs ) ) {
+		if ( $fs->exists( $dest_abs ) ) {
 			if ( ! $overwrite ) {
 				return array(
 					'success'        => false,
@@ -184,7 +190,7 @@ class Move_File extends Ability_Definition {
 			$overwritten = true;
 		}
 
-		if ( ! rename( $src_real, $dest_abs ) ) {
+		if ( ! $fs->move( $src_real, $dest_abs, $overwrite ) ) {
 			return array(
 				'success' => false,
 				'message' => __( 'Could not move file.', 'acrossai-abilities-manager' ),

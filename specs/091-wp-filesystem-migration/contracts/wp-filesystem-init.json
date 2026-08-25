@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "component": "AcrossAI_Abilities_Manager\\Includes\\Abilities\\Utilities\\Wp_Filesystem_Init",
+  "description": "Shared utility that initialises WordPress's WP_Filesystem for the current request and returns the resulting transport object or an ability-response envelope on failure.",
+  "public_methods": [
+    {
+      "name": "get",
+      "signature": "public static function get(): \\WP_Filesystem_Base|\\WP_Error",
+      "behaviour": "Ensures WP_Filesystem is bootstrapped (require_once wp-admin/includes/file.php + WP_Filesystem() call). Returns the global $wp_filesystem when it is a valid WP_Filesystem_Base instance. Returns WP_Error(code='filesystem_unavailable') when initialisation fails.",
+      "idempotent": true
+    },
+    {
+      "name": "blocked_response",
+      "signature": "public static function blocked_response(): ?array",
+      "behaviour": "Convenience for ability classes. Returns the standard ability response envelope {success:false, blocked_reason:'filesystem_unavailable', message:<string>} when initialisation fails, or null when the caller may proceed.",
+      "return_shape_on_failure": {
+        "success": false,
+        "blocked_reason": "filesystem_unavailable",
+        "message": "<string>"
+      },
+      "return_on_success": null
+    }
+  ],
+  "no_side_effects_beyond": [
+    "Setting the WordPress-standard global $wp_filesystem when it wasn't already set."
+  ],
+  "consumed_by": [
+    "All 19 migrated file-manager/* ability classes (see spec §FR-004)."
+  ]
+}

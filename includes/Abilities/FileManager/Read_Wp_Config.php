@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -61,10 +62,11 @@ class Read_Wp_Config extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'      => array( 'type' => 'boolean' ),
-						'constants'    => array( 'type' => 'object' ),
-						'table_prefix' => array( 'type' => 'string' ),
-						'message'      => array( 'type' => 'string' ),
+						'success'        => array( 'type' => 'boolean' ),
+						'constants'      => array( 'type' => 'object' ),
+						'table_prefix'   => array( 'type' => 'string' ),
+						'message'        => array( 'type' => 'string' ),
+						'blocked_reason' => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -97,7 +99,13 @@ class Read_Wp_Config extends Ability_Definition {
 	 * @return array
 	 */
 	public function execute( array $input = array() ): array {
-		$config_path = $this->locate_wp_config();
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
+
+		$config_path = $this->locate_wp_config( $fs );
 
 		if ( null === $config_path ) {
 			return array(
@@ -106,7 +114,7 @@ class Read_Wp_Config extends Ability_Definition {
 			);
 		}
 
-		$raw = file_get_contents( $config_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$raw = $fs->get_contents( $config_path );
 
 		if ( false === $raw ) {
 			return array(
@@ -143,17 +151,18 @@ class Read_Wp_Config extends Ability_Definition {
 	}
 
 	/**
-	 * Locate wp config.
+	 * Locate wp config via the initialised filesystem transport.
 	 *
+	 * @param \WP_Filesystem_Base $fs Initialised filesystem transport.
 	 * @return ?string
 	 */
-	private function locate_wp_config(): ?string {
+	private function locate_wp_config( \WP_Filesystem_Base $fs ): ?string {
 		$candidates = array(
 			ABSPATH . 'wp-config.php',
 			dirname( rtrim( ABSPATH, '/' ) ) . '/wp-config.php',
 		);
 		foreach ( $candidates as $path ) {
-			if ( is_file( $path ) ) {
+			if ( $fs->is_file( $path ) ) {
 				return $path;
 			}
 		}

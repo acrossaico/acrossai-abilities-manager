@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "change_type": "Additive — every migrated ability gains one enum value",
+  "new_blocked_reason_value": "filesystem_unavailable",
+  "applies_to": [
+    "file-manager/read-file",
+    "file-manager/create-file",
+    "file-manager/edit-file",
+    "file-manager/delete-file",
+    "file-manager/copy-file",
+    "file-manager/move-file",
+    "file-manager/append-file",
+    "file-manager/create-directory",
+    "file-manager/delete-directory",
+    "file-manager/list-directory",
+    "file-manager/file-info",
+    "file-manager/read-wp-config",
+    "file-manager/edit-wp-config",
+    "file-manager/get-wp-config-constant",
+    "file-manager/read-debug-log",
+    "file-manager/clear-debug-log",
+    "file-manager/download-zip-backup",
+    "file-manager/list-zip-backups",
+    "file-manager/delete-zip-backup"
+  ],
+  "not_applies_to": [
+    "file-manager/create-zip-backup",
+    "file-manager/extract-zip-backup",
+    "file-manager/upload-zip-backup"
+  ],
+  "envelope_when_returned": {
+    "success": false,
+    "blocked_reason": "filesystem_unavailable",
+    "message": "WordPress could not initialise its filesystem transport. On hosts that require FTP or SSH credentials, ensure FTP_HOST / FTP_USER / FTP_PASS (or the equivalent) are defined in wp-config.php."
+  }
+}

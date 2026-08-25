@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -100,6 +101,11 @@ class Create_Directory extends Ability_Definition {
 		if ( null !== $blocked ) {
 			return $blocked;
 		}
+		$blocked = Wp_Filesystem_Init::blocked_response();
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+		$fs = Wp_Filesystem_Init::get();
 
 		$rel_path  = sanitize_text_field( $input['path'] ?? '' );
 		$recursive = array_key_exists( 'recursive', $input ) ? (bool) $input['recursive'] : true;
@@ -108,7 +114,7 @@ class Create_Directory extends Ability_Definition {
 		$abs  = $base . '/' . ltrim( $rel_path, '/' );
 
 		// If the target already exists as a directory, treat as idempotent success.
-		if ( is_dir( $abs ) ) {
+		if ( $fs->is_dir( $abs ) ) {
 			$real = realpath( $abs );
 			if ( false === $real || ( $real !== $base && 0 !== strpos( $real, $base . '/' ) ) ) {
 				return array(
@@ -125,7 +131,7 @@ class Create_Directory extends Ability_Definition {
 			);
 		}
 
-		if ( file_exists( $abs ) ) {
+		if ( $fs->exists( $abs ) ) {
 			return array(
 				'success'        => false,
 				'blocked_reason' => 'path_is_file',
@@ -166,7 +172,7 @@ class Create_Directory extends Ability_Definition {
 					'message'        => __( 'Invalid or disallowed directory path.', 'acrossai-abilities-manager' ),
 				);
 			}
-			if ( ! mkdir( $abs ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
+			if ( ! $fs->mkdir( $abs ) ) {
 				return array(
 					'success' => false,
 					'message' => __( 'Could not create directory.', 'acrossai-abilities-manager' ),
