@@ -149,6 +149,8 @@ No data is sent to any external server without an explicit administrator action.
 
 **Panel banner update** — the Content Filters panel drops its yellow "Scaffold only" `notice-warning` (added in PR #144) and replaces it with a small `notice-info` reading "This list now gates create-file / edit-file / append-file / copy-file / move-file." The Backup & Audit panel keeps its scaffold banner but the text now references `094-file-manager-audit-log` explicitly. REST GET `/acrossai/v1/file-manager-settings/content-filters` flips `scaffold_only:true → false` and `follow_up_spec` becomes `null`; `/backup-audit` unchanged.
 
+**Dotfile carve-out for `sanitize_filename_check`.** Legitimate WordPress-adjacent dotfiles (`.htaccess`, `.htpasswd`, `.user.ini`) are exempted from the sanitize-filename roundtrip check because real WP's `sanitize_file_name()` strips leading dots — applied literally, the check would refuse every valid dotfile and starve the htaccess-directive scanner of any target. Other dotfiles (`.gitignore`, `.env`, etc.) are still refused when the check is on; admins who need them disable the check.
+
 **Not touched.** `Delete_File`, `Delete_Directory`, `Create_Directory`, `File_Info`, `Read_Debug_Log` (fixed target), `Read_Wp_Config`, `Get_Wp_Config_Constant`, `Edit_Wp_Config`, all six zip abilities — spec explicitly excludes these.
 
 **Feature 092 — File Manager admin tab: per-folder read/write allowlists + configurable secret redactor.** New "File Manager" tab at `admin.php?page=acrossai-settings` gives site admins three per-folder controls over what MCP clients can do via `file-manager/*` abilities. Also introduces a hardened secret-scrubber that runs on every read response.

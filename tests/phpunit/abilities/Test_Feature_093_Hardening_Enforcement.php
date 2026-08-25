@@ -223,6 +223,62 @@ class Test_Feature_093_Hardening_Enforcement extends WP_UnitTestCase {
 		$this->assertNull( Hardening_Enforcer::check_write( self::ABSPATH_FIXTURE . '/clean-name.txt', 'x' ) );
 	}
 
+	/**
+	 * Regression: sanitize_filename_check MUST NOT refuse legitimate WP dotfiles.
+	 *
+	 * Real WP's sanitize_file_name() strips leading dots via trim($filename, '.-_'),
+	 * which would make `.htaccess` become `htaccess` and refuse the write. That
+	 * killed the FR-004 htaccess-directive scan (never reachable) and blocked
+	 * legitimate .user.ini / .htpasswd writes on every site. Mirrors the
+	 * reference plugin's $allowed_dotfiles carve-out.
+	 */
+	public function test_filename_sanitize_allows_wp_adjacent_dotfiles(): void {
+		update_option( Hardening_Settings::OPTION_SANITIZE_FILENAME_CHECK, true );
+		foreach ( array( '.htaccess', '.htpasswd', '.user.ini' ) as $dotfile ) {
+			$this->assertNull(
+				Hardening_Enforcer::check_write( self::ABSPATH_FIXTURE . '/' . $dotfile, 'x' ),
+				"Dotfile {$dotfile} must pass the sanitize check — the enforcer carve-out is missing"
+			);
+		}
+	}
+
+	/**
+	 * Dotfiles NOT on the carve-out list still get refused when the check is on.
+	 * This keeps the check meaningful for unknown dotfiles (.gitignore etc.) —
+	 * admins who need those can disable the check.
+	 */
+	public function test_filename_sanitize_still_refuses_other_dotfiles(): void {
+		update_option( Hardening_Settings::OPTION_SANITIZE_FILENAME_CHECK, true );
+		$result = Hardening_Enforcer::check_write( self::ABSPATH_FIXTURE . '/.gitignore', 'x' );
+		$this->assertNotNull( $result );
+		$this->assertSame( 'filename_sanitize_failed', $result['blocked_reason'] );
+	}
+
+	/**
+	 * With the carve-out in place, an admin can now create .htaccess AND
+	 * write clean content. Verifies the FR-004 htaccess-directive scanner
+	 * is reachable — with a clean body, the write succeeds.
+	 */
+	public function test_htaccess_write_reaches_directive_scan_after_sanitize_carveout(): void {
+		update_option( Hardening_Settings::OPTION_SANITIZE_FILENAME_CHECK, true );
+		update_option( Hardening_Settings::OPTION_HTACCESS_DIRECTIVE_SCAN, true );
+
+		// Clean .htaccess body — no dangerous directives, so both checks pass.
+		$this->assertNull( Hardening_Enforcer::check_write(
+			self::ABSPATH_FIXTURE . '/.htaccess',
+			"# Redirect to https\nRewriteEngine On\n"
+		) );
+
+		// Dirty .htaccess body — sanitize passes (carve-out), directive scan refuses.
+		$result = Hardening_Enforcer::check_write(
+			self::ABSPATH_FIXTURE . '/.htaccess',
+			'php_value display_errors 1'
+		);
+		$this->assertNotNull( $result );
+		$this->assertSame( 'htaccess_directive_blocked', $result['blocked_reason'] );
+		$this->assertSame( 'php_value', $result['directive'] );
+	}
+
 	/* --- FR-006 write_size_exceeded -------------------------------------- */
 
 	// Use MIN_WRITE_MAX_BYTES (1024 bytes) as the smallest valid cap — the

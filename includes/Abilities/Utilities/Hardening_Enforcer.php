@@ -75,6 +75,24 @@ final class Hardening_Enforcer {
 	);
 
 	/**
+	 * Dotfile basenames the sanitize-filename check treats as always-allowed.
+	 *
+	 * WordPress's own sanitize_file_name() strips leading dots via
+	 * `trim($filename, '.-_')`, so `.htaccess` → `htaccess`. Applied literally,
+	 * the FR-005 roundtrip check would refuse every legitimate WP-adjacent
+	 * dotfile — including `.htaccess`, blocking the FR-004 htaccess-directive
+	 * scan from ever running. Mirrors the reference plugin's `$allowed_dotfiles`
+	 * carve-out in `mcp-abilities-filesystem.php:221`.
+	 *
+	 * @var array<int,string>
+	 */
+	private const ALLOWED_DOTFILES = array(
+		'.htaccess',
+		'.htpasswd',
+		'.user.ini',
+	);
+
+	/**
 	 * Extensions the MIME check treats as always-allowed even when
 	 * wp_check_filetype() returns an empty type. Config-only / code / plain-text
 	 * formats WordPress core historically leaves out of the default MIME
@@ -163,7 +181,11 @@ final class Hardening_Enforcer {
 		}
 
 		// 3) sanitize_file_name roundtrip.
-		if ( ! empty( $snapshot['sanitize_filename_check'] ) ) {
+		//    Legitimate WP-adjacent dotfiles (.htaccess, .htpasswd, .user.ini)
+		//    are exempted — real WP's sanitize_file_name() strips the leading
+		//    dot, so the check would otherwise refuse every valid dotfile and
+		//    starve the .htaccess-directive scanner (FR-004) of any target.
+		if ( ! empty( $snapshot['sanitize_filename_check'] ) && ! in_array( $basename, self::ALLOWED_DOTFILES, true ) ) {
 			$sanitized = sanitize_file_name( $basename );
 			if ( $sanitized !== $basename ) {
 				return array(

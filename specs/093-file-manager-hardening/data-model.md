@@ -13,7 +13,7 @@ The value returned by `Hardening_Settings::get_content_filters()` is treated as 
 | `dangerous_extensions` | `string[]` | ≤100 entries, each `[a-z0-9]{1,16}` | Extension blocklist; case-insensitive match against target extension |
 | `block_double_extensions` | `bool` | true/false | Refuse target basenames matching `/\.(php\|phtml\|phar)\.[^.]+$/i` |
 | `htaccess_directive_scan` | `bool` | true/false | Refuse `.htaccess` writes whose content contains any of the six directive names (case-insensitive substring) |
-| `sanitize_filename_check` | `bool` | true/false | Refuse when `sanitize_file_name($basename) !== $basename` |
+| `sanitize_filename_check` | `bool` | true/false | Refuse when `sanitize_file_name($basename) !== $basename`. Exempts a small allowlist of legitimate WP-adjacent dotfiles: `.htaccess`, `.htpasswd`, `.user.ini`. |
 | `write_max_bytes` | `int` | 1024 ≤ n ≤ 104857600 | Cap on write size (bytes) |
 | `sensitive_read_denylist` | `string[]` | ≤200 entries, basenames only | Literal or `*.EXT` glob; deny reads |
 | `strict_filename_filter` | `bool` | true/false | Refuse basenames containing any of nine webshell markers |
