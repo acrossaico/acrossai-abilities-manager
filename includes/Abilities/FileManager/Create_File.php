@@ -80,6 +80,7 @@ class Create_File extends Ability_Definition {
 						'path'           => array( 'type' => 'string' ),
 						'message'        => array( 'type' => 'string' ),
 						'blocked_reason' => array( 'type' => 'string' ),
+						'allowed_roots'  => array( 'type' => 'array' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,

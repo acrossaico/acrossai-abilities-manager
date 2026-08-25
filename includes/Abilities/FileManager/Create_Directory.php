@@ -66,6 +66,7 @@ class Create_Directory extends Ability_Definition {
 						'created'        => array( 'type' => 'boolean' ),
 						'message'        => array( 'type' => 'string' ),
 						'blocked_reason' => array( 'type' => 'string' ),
+						'allowed_roots'  => array( 'type' => 'array' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,

@@ -11,6 +11,8 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Secret_Redactor;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
@@ -65,14 +67,17 @@ class Read_File extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'        => array( 'type' => 'boolean' ),
-						'content'        => array( 'type' => 'string' ),
-						'path'           => array( 'type' => 'string' ),
-						'size'           => array( 'type' => 'integer' ),
-						'binary'         => array( 'type' => 'boolean' ),
-						'max_bytes'      => array( 'type' => 'integer' ),
-						'blocked_reason' => array( 'type' => 'string' ),
-						'message'        => array( 'type' => 'string' ),
+						'success'         => array( 'type' => 'boolean' ),
+						'content'         => array( 'type' => 'string' ),
+						'path'            => array( 'type' => 'string' ),
+						'size'            => array( 'type' => 'integer' ),
+						'binary'          => array( 'type' => 'boolean' ),
+						'redacted'        => array( 'type' => 'boolean' ),
+						'redaction_count' => array( 'type' => 'integer' ),
+						'max_bytes'       => array( 'type' => 'integer' ),
+						'blocked_reason'  => array( 'type' => 'string' ),
+						'allowed_roots'   => array( 'type' => 'array' ),
+						'message'         => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,

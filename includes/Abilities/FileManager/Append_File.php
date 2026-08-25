@@ -90,6 +90,7 @@ class Append_File extends Ability_Definition {
 						'prepended'      => array( 'type' => 'boolean' ),
 						'message'        => array( 'type' => 'string' ),
 						'blocked_reason' => array( 'type' => 'string' ),
+						'allowed_roots'  => array( 'type' => 'array' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,

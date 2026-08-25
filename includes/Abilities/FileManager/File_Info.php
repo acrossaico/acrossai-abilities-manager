@@ -132,7 +132,9 @@ class File_Info extends Ability_Definition {
 			);
 		}
 
-		$is_link_ref = $fs->is_link( $candidate );
+		// WP_Filesystem_Direct has no is_link(); the base class doesn't define one either.
+		// Use PHP's native check — file-info operates on local paths under ABSPATH.
+		$is_link_ref = is_link( $candidate );
 		if ( ! $fs->exists( $candidate ) && ! $is_link_ref ) {
 			return array(
 				'success'        => false,

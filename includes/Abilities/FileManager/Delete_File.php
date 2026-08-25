@@ -71,6 +71,8 @@ class Delete_File extends Ability_Definition {
 						'backup'         => array( 'type' => array( 'string', 'null' ) ),
 						'message'        => array( 'type' => 'string' ),
 						'blocked_reason' => array( 'type' => 'string' ),
+						'allowed_roots'  => array( 'type' => 'array' ),
+						'path'           => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,

@@ -83,6 +83,8 @@ class Move_File extends Ability_Definition {
 						'overwritten'    => array( 'type' => 'boolean' ),
 						'message'        => array( 'type' => 'string' ),
 						'blocked_reason' => array( 'type' => 'string' ),
+						'allowed_roots'  => array( 'type' => 'array' ),
+						'path'           => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,

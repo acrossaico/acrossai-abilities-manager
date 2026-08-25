@@ -92,6 +92,7 @@ class Delete_Directory extends Ability_Definition {
 						'entries_removed' => array( 'type' => 'integer' ),
 						'message'         => array( 'type' => 'string' ),
 						'blocked_reason'  => array( 'type' => 'string' ),
+						'allowed_roots'   => array( 'type' => 'array' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -150,16 +151,22 @@ class Delete_Directory extends Ability_Definition {
 		$abs  = $base . '/' . ltrim( $rel_path, '/' );
 		$real = realpath( $abs );
 
-		// Missing target: idempotent success.
+		// Missing target: idempotent success — but still enforce ABSPATH scope
+		// and the write allowlist so the ability doesn't report success for a
+		// path a caller isn't permitted to touch. This matters when an admin
+		// tightens the allowlist and then checks whether a stale target path is
+		// still reachable — reporting success would be misleading.
 		if ( false === $real ) {
-			// Still enforce scope on the requested path so a caller can't
-			// probe outside ABSPATH by asking us to "delete" a path there.
 			if ( 0 !== strpos( $abs, $base . '/' ) && $abs !== $base ) {
 				return array(
 					'success'        => false,
 					'blocked_reason' => 'invalid_path',
 					'message'        => __( 'Invalid or disallowed directory path.', 'acrossai-abilities-manager' ),
 				);
+			}
+			$blocked = Path_Allowlist_Guard::blocked_write_response( $abs );
+			if ( null !== $blocked ) {
+				return $blocked;
 			}
 			return array(
 				'success'         => true,
