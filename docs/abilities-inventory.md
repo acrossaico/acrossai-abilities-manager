@@ -436,4 +436,14 @@ Sorted by namespace → sub-group → slug.
 
 All 19 non-zip `file-manager/*` abilities perform their filesystem I/O through WordPress's `WP_Filesystem` transport. That means they work on every host WordPress itself can write to — `direct` filesystems (Local, wp-env, most managed WP hosts, containers, VPS setups) as well as hosts configured with `FS_METHOD='ftpext'` / `'ftpsockets'` / `'ssh2'` where the web-server process cannot write files directly. When `WP_Filesystem()` initialisation fails (typically missing FTP/SSH credentials), the ability responds `{success:false, blocked_reason:"filesystem_unavailable"}` with a message identifying the credential requirement.
 
-Three `file-manager/*` abilities remain on native PHP for now: `create-zip-backup`, `extract-zip-backup`, `upload-zip-backup`. `ZipArchive` and chunked `fopen()` upload have no `WP_Filesystem` equivalent. Feature 092 will address the design question (refuse on non-`direct`, stage via a temp local copy, or rewrite the chunked upload to buffer + `put_contents`). Until then those three work on `direct` transports and fail on non-`direct` transports.
+Three `file-manager/*` abilities remain on native PHP for now: `create-zip-backup`, `extract-zip-backup`, `upload-zip-backup`. `ZipArchive` and chunked `fopen()` upload have no `WP_Filesystem` equivalent. A follow-up feature will address the design question (refuse on non-`direct`, stage via a temp local copy, or rewrite the chunked upload to buffer + `put_contents`). Until then those three work on `direct` transports and fail on non-`direct` transports.
+
+## Path allowlists + secret redactor (Feature 092)
+
+Site admins control which folders the file-manager abilities may touch via a **File Manager** tab at `admin.php?page=acrossai-settings`.
+
+- **Write allowlist** — gates `create-file`, `edit-file`, `delete-file`, `copy-file`, `move-file`, `append-file`, `create-directory`, `delete-directory`. Default `['wp-content']`. Empty = deny all writes.
+- **Read allowlist** — gates `read-file`, `read-debug-log`. Default `[]` (unrestricted sentinel). Non-empty = only listed paths readable.
+- **Secret redactor** — every text response from `read-file` and `read-debug-log` is scrubbed of WordPress credentials + common third-party API keys before return. Admin-configurable pattern set with custom-literal support.
+
+The write allowlist enforcement is one line per ability (via `Path_Allowlist_Guard::blocked_write_response()`); the read allowlist + redactor are enforced inside `Read_File` and `Read_Debug_Log` respectively. `list-directory` and `file-info` return metadata only and are not gated by either allowlist.

@@ -328,6 +328,18 @@ final class Main {
 		// bottom of the Abilities tab.
 		$this->loader->add_action( 'admin_init', $settings_menu, 'register_uninstall_settings', 20 );
 
+		// Feature 092 — File Manager settings tab (write allowlist + read
+		// allowlist + configurable secret redactor). Registers a new tab on
+		// the shared AcrossAI settings page and enqueues the React bundle.
+		$file_manager_settings = \AcrossAI_Abilities_Manager\Admin\Partials\File_Manager_Settings_Menu::instance();
+		$this->loader->add_filter( 'acrossai_settings_tabs', $file_manager_settings, 'register_tab' );
+		$this->loader->add_action( 'admin_init', $file_manager_settings, 'register_settings' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $file_manager_settings, 'enqueue_assets' );
+
+		// Feature 092 — REST endpoints backing the File Manager settings tab.
+		$file_manager_rest = \AcrossAI_Abilities_Manager\Includes\Abilities\Rest\File_Manager_Settings_Controller::instance();
+		$this->loader->add_action( 'rest_api_init', $file_manager_rest, 'register_routes' );
+
 		// Add-ons submenu page (Feature 026 → 030 → 039 → 053).
 		// As of acrossai-co/main-menu 0.0.21 the `\AcrossAI_Addon\AddonsPage`
 		// entry-class is removed and the Add-ons submenu is registered

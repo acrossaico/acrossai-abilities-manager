@@ -11,26 +11,22 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Secret_Redactor;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Read_File ability class (absorbed).
+ *
+ * Feature 092: the previous outright refusal of wp-config.php / .htaccess
+ * (blocked_reason:'protected_read') was removed. Those files are now
+ * readable; sensitive content is scrubbed by Secret_Redactor before the
+ * response leaves the site. Reads are also gated by the admin-configurable
+ * read allowlist (Path_Allowlist_Guard).
  */
 class Read_File extends Ability_Definition {
-
-	/**
-	 * Hardcoded filenames (at ABSPATH root) whose contents must never be
-	 * returned. wp-config.php holds the DB password and eight auth constants;
-	 * .htaccess can leak rewrite rules and access-control secrets.
-	 *
-	 * @var array<int,string>
-	 */
-	private const PROTECTED_FILES = array(
-		'wp-config.php',
-		'.htaccess',
-	);
 
 	/**
 	 * Maximum file size (bytes) that read-file will return as text. Files
@@ -51,7 +47,7 @@ class Read_File extends Ability_Definition {
 			'name' => 'file-manager/read-file',
 			'args' => array(
 				'label'               => __( 'Read File', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Reads the contents of a file within the WordPress installation. Path must be relative to ABSPATH. Refuses wp-config.php and .htaccess, refuses files larger than 5 MB, and reports binary content without returning raw bytes.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Reads the contents of a file within the WordPress installation. Path must be relative to ABSPATH. Refuses files larger than 5 MB and reports binary content without returning raw bytes. Text content is scrubbed through the configurable secret redactor before return; response includes redacted:bool and redaction_count:int. When a read allowlist is configured, reads outside it return blocked_reason:"path_not_allowed_for_read".', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-abilities-manager-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -71,14 +67,17 @@ class Read_File extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'        => array( 'type' => 'boolean' ),
-						'content'        => array( 'type' => 'string' ),
-						'path'           => array( 'type' => 'string' ),
-						'size'           => array( 'type' => 'integer' ),
-						'binary'         => array( 'type' => 'boolean' ),
-						'max_bytes'      => array( 'type' => 'integer' ),
-						'blocked_reason' => array( 'type' => 'string' ),
-						'message'        => array( 'type' => 'string' ),
+						'success'         => array( 'type' => 'boolean' ),
+						'content'         => array( 'type' => 'string' ),
+						'path'            => array( 'type' => 'string' ),
+						'size'            => array( 'type' => 'integer' ),
+						'binary'          => array( 'type' => 'boolean' ),
+						'redacted'        => array( 'type' => 'boolean' ),
+						'redaction_count' => array( 'type' => 'integer' ),
+						'max_bytes'       => array( 'type' => 'integer' ),
+						'blocked_reason'  => array( 'type' => 'string' ),
+						'allowed_roots'   => array( 'type' => 'array' ),
+						'message'         => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -129,18 +128,14 @@ class Read_File extends Ability_Definition {
 			);
 		}
 
-		// Protected-file guard: refuse to return contents of secret-holding
-		// files at ABSPATH root regardless of the caller's capability.
-		$real_for_check = realpath( $abs_path );
-		if ( false !== $real_for_check
-			&& in_array( basename( $real_for_check ), self::PROTECTED_FILES, true )
-			&& dirname( $real_for_check ) === $base ) {
-			return array(
-				'success'        => false,
-				'blocked_reason' => 'protected_read',
-				/* translators: %s: filename */
-				'message'        => sprintf( __( 'File "%s" is protected and cannot be read.', 'acrossai-abilities-manager' ), basename( $real_for_check ) ),
-			);
+		// Feature 092: admin-controlled read allowlist gate. Resolves against
+		// the (possibly not-yet-existent) target — pass the composed absolute
+		// path so the guard's realpath resolution of allowed roots works even
+		// on paths that don't exist yet.
+		$abs_for_check = realpath( $abs_path ) ?: $abs_path;
+		$blocked       = Path_Allowlist_Guard::blocked_read_response( $abs_for_check );
+		if ( null !== $blocked ) {
+			return $blocked;
 		}
 
 		if ( ! $fs->is_file( $abs_path ) ) {
@@ -175,6 +170,7 @@ class Read_File extends Ability_Definition {
 		$real_path = realpath( $abs_path ) ?: $abs_path;
 
 		// Binary detection: return a distinct shape without the raw bytes.
+		// Binary content is never routed through the redactor.
 		if ( ! mb_check_encoding( $content, 'UTF-8' ) ) {
 			return array(
 				'success' => true,
@@ -185,12 +181,17 @@ class Read_File extends Ability_Definition {
 			);
 		}
 
+		// Feature 092: scrub secrets from the returned text content.
+		$scrubbed = Secret_Redactor::scrub( $content );
+
 		return array(
-			'success' => true,
-			'content' => $content,
-			'path'    => $real_path,
-			'size'    => $size,
-			'binary'  => false,
+			'success'         => true,
+			'content'         => $scrubbed['text'],
+			'path'            => $real_path,
+			'size'            => $size,
+			'binary'          => false,
+			'redacted'        => $scrubbed['redacted'],
+			'redaction_count' => $scrubbed['redaction_count'],
 		);
 	}
 }

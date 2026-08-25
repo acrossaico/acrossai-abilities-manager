@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
@@ -89,6 +90,7 @@ class Append_File extends Ability_Definition {
 						'prepended'      => array( 'type' => 'boolean' ),
 						'message'        => array( 'type' => 'string' ),
 						'blocked_reason' => array( 'type' => 'string' ),
+						'allowed_roots'  => array( 'type' => 'array' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -165,6 +167,12 @@ class Append_File extends Ability_Definition {
 				'blocked_reason' => 'source_not_found',
 				'message'        => __( 'File does not exist. Use file-manager/create-file to create it first.', 'acrossai-abilities-manager' ),
 			);
+		}
+
+		// Feature 092: admin-controlled write allowlist gate.
+		$blocked = Path_Allowlist_Guard::blocked_write_response( $real );
+		if ( null !== $blocked ) {
+			return $blocked;
 		}
 
 		// WP_Filesystem exposes no direct-append operation, so both append

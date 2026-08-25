@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
@@ -70,6 +71,8 @@ class Delete_File extends Ability_Definition {
 						'backup'         => array( 'type' => array( 'string', 'null' ) ),
 						'message'        => array( 'type' => 'string' ),
 						'blocked_reason' => array( 'type' => 'string' ),
+						'allowed_roots'  => array( 'type' => 'array' ),
+						'path'           => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -149,6 +152,12 @@ class Delete_File extends Ability_Definition {
 				'success' => false,
 				'message' => __( 'File does not exist.', 'acrossai-abilities-manager' ),
 			);
+		}
+
+		// Feature 092: admin-controlled write allowlist gate.
+		$blocked = Path_Allowlist_Guard::blocked_write_response( $real );
+		if ( null !== $blocked ) {
+			return $blocked;
 		}
 
 		// Best-effort backup: copy the file to <path>.bak.<timestamp> before

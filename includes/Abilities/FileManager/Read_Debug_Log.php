@@ -11,6 +11,8 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Secret_Redactor;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
@@ -52,11 +54,15 @@ class Read_Debug_Log extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'        => array( 'type' => 'boolean' ),
-						'content'        => array( 'type' => 'string' ),
-						'size'           => array( 'type' => 'integer' ),
-						'message'        => array( 'type' => 'string' ),
-						'blocked_reason' => array( 'type' => 'string' ),
+						'success'         => array( 'type' => 'boolean' ),
+						'content'         => array( 'type' => 'string' ),
+						'size'            => array( 'type' => 'integer' ),
+						'redacted'        => array( 'type' => 'boolean' ),
+						'redaction_count' => array( 'type' => 'integer' ),
+						'message'         => array( 'type' => 'string' ),
+						'blocked_reason'  => array( 'type' => 'string' ),
+						'allowed_roots'   => array( 'type' => 'array' ),
+						'path'            => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -97,6 +103,12 @@ class Read_Debug_Log extends Ability_Definition {
 
 		$log_path = WP_CONTENT_DIR . '/debug.log';
 
+		// Feature 092: admin-controlled read allowlist gate.
+		$blocked = Path_Allowlist_Guard::blocked_read_response( $log_path );
+		if ( null !== $blocked ) {
+			return $blocked;
+		}
+
 		if ( ! $fs->is_file( $log_path ) ) {
 			$logging_on = ( defined( 'WP_DEBUG_LOG' ) && \WP_DEBUG_LOG ) && ( defined( 'WP_DEBUG' ) && \WP_DEBUG );
 			$reason     = $logging_on
@@ -125,10 +137,15 @@ class Read_Debug_Log extends Ability_Definition {
 			$content   = implode( "\n", array_slice( $all_lines, -$lines ) );
 		}
 
+		// Feature 092: scrub secrets from the returned log content.
+		$scrubbed = Secret_Redactor::scrub( $content );
+
 		return array(
-			'success' => true,
-			'content' => $content,
-			'size'    => strlen( $content ),
+			'success'         => true,
+			'content'         => $scrubbed['text'],
+			'size'            => strlen( $scrubbed['text'] ),
+			'redacted'        => $scrubbed['redacted'],
+			'redaction_count' => $scrubbed['redaction_count'],
 		);
 	}
 }
