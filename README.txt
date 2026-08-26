@@ -5,7 +5,7 @@ Tags: abilities, ability management, access control, site management, ai
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.0.30
+Stable tag: 0.0.31
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -139,6 +139,10 @@ No data is sent to any external server without an explicit administrator action.
 == Changelog ==
 
 = Unreleased =
+
+= 0.0.31 - 2026-08-26 =
+**Release theme: File Manager consolidation + hardening + audit log.** Bundles the six-feature series (089 → 094) that turned `file-manager/*` from a loose collection of read/write primitives into a self-contained subsystem with an admin tab, allowlist-and-content-filter enforcement, and an append-only audit log with pre-image backups. Also cuts the inline `.bak.<timestamp>` scheme in `Delete_File` (BREAKING for callers of `response.backup` — new canonical field is `response.backup_path`).
+
 **Feature 094 — File Manager Audit Log + Backup Harness (partial).** Consumes the four Backup & Audit option keys shipped as scaffold in PR #144 and enforced-toggle-only in PR #146. New `Audit_Trail` utility owns pre-image backups (into `wp-content/acrossai-file-manager-backups/<YYYY-MM-DD>/`) + append-only log (into `wp-content/acrossai-file-manager-logs/acrossai-file-manager.log`) + amortised 1-in-10 cleanup + stats. Both storage locations get a `Deny from all` `.htaccess` on first creation. All I/O goes through `WP_Filesystem`.
 
 **New ability:** `file-manager/get-changelog` — tails the last N entries (default 100, max 500) via MCP. Honours the read allowlist. Empty log returns a friendly message, not an error. `manage_options` gated.
