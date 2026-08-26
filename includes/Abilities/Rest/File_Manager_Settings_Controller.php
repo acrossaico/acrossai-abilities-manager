@@ -26,6 +26,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Rest;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Abilities\Rest\AcrossAI_Abilities_Rest_Controller;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Secret_Redactor;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Settings;
@@ -195,6 +196,19 @@ final class File_Manager_Settings_Controller {
 				),
 			)
 		);
+
+		// Feature 094: point-in-time stats for the Backup & Audit panel info line.
+		register_rest_route(
+			AcrossAI_Abilities_Rest_Controller::REST_NAMESPACE,
+			'/' . self::REST_BASE . '/backup-audit-stats',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_backup_audit_stats' ),
+					'permission_callback' => $permission,
+				),
+			)
+		);
 	}
 
 	/* -------------------------------------------------------------------- */
@@ -360,7 +374,7 @@ final class File_Manager_Settings_Controller {
 	}
 
 	/* -------------------------------------------------------------------- */
-	/* Backup + audit (feature 094 scope — scaffold only)                    */
+	/* Backup + audit (feature 094 — live)                                   */
 	/* -------------------------------------------------------------------- */
 
 	/**
@@ -372,8 +386,10 @@ final class File_Manager_Settings_Controller {
 		return new \WP_REST_Response(
 			array(
 				'config'         => Hardening_Settings::get_backup_audit(),
-				'scaffold_only'  => true,
-				'follow_up_spec' => '094-file-manager-audit-log',
+				// Feature 094 flipped scaffold_only → false: every toggle
+				// here is now consumed at runtime by Audit_Trail.
+				'scaffold_only'  => false,
+				'follow_up_spec' => null,
 				'limits'         => array(
 					'retention_days_min' => Hardening_Settings::MIN_RETENTION_DAYS,
 					'retention_days_max' => Hardening_Settings::MAX_RETENTION_DAYS,
@@ -396,6 +412,23 @@ final class File_Manager_Settings_Controller {
 		}
 		Hardening_Settings::set_backup_audit( (array) $payload );
 		return $this->get_backup_audit();
+	}
+
+	/* -------------------------------------------------------------------- */
+	/* Backup + audit stats (feature 094 — panel info line)                  */
+	/* -------------------------------------------------------------------- */
+
+	/**
+	 * GET /file-manager-settings/backup-audit-stats
+	 *
+	 * Returns point-in-time backup dir + log stats for the panel's info line.
+	 * Delegates to Audit_Trail::stats() which reads the filesystem via
+	 * WP_Filesystem.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function get_backup_audit_stats(): \WP_REST_Response {
+		return new \WP_REST_Response( Audit_Trail::stats(), 200 );
 	}
 
 	/* -------------------------------------------------------------------- */

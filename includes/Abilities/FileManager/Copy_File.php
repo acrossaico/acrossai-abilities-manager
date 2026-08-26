@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Enforcer;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
@@ -70,6 +71,11 @@ class Copy_File extends Ability_Definition {
 							'default'     => false,
 							'description' => __( 'When true, an existing destination file is replaced. wp-config.php and .htaccess are still refused.', 'acrossai-abilities-manager' ),
 						),
+						'context'     => array(
+							'type'        => 'string',
+							'maxLength'   => 2000,
+							'description' => __( 'Optional caller-supplied reason for this copy. Captured in the audit log. Truncated to 500 chars in the persisted entry.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'source', 'destination' ),
 					'additionalProperties' => false,
@@ -94,6 +100,8 @@ class Copy_File extends Ability_Definition {
 						'size'           => array( 'type' => 'integer' ),
 						'max_bytes'      => array( 'type' => 'integer' ),
 						'marker'         => array( 'type' => 'string' ),
+						// Feature 094 audit-trail addition.
+						'backup_path'    => array( 'type' => array( 'string', 'null' ) ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -222,21 +230,65 @@ class Copy_File extends Ability_Definition {
 			return $blocked;
 		}
 
+		// Feature 094: pre-image backup captures the destination's PRIOR
+		// content (only when overwriting an existing file); source is not
+		// touched by copy.
+		$dest_existed  = $fs->exists( $dest_abs );
+		$size_before   = $dest_existed ? (int) $fs->size( $dest_abs ) : null;
+		$backup_result = $dest_existed ? Audit_Trail::write_backup( $dest_abs ) : null;
+		$backup_path   = is_string( $backup_result ) ? $backup_result : null;
+		$backup_status = is_string( $backup_result )
+			? 'written'
+			: ( false === $backup_result ? 'failed' : ( $dest_existed ? 'disabled' : 'skipped' ) );
+
 		if ( ! $fs->copy( $src_real, $dest_abs, $overwrite, FS_CHMOD_FILE ) ) {
+			Audit_Trail::write_log(
+				'COPY',
+				$src_real,
+				array(
+					'ability_slug'  => 'file-manager/copy-file',
+					'size_before'   => $size_before,
+					'size_after'    => null,
+					'destination'   => $dest_abs,
+					'backup_status' => $backup_status,
+					'backup_path'   => $backup_path,
+					'backup_reason' => 'primary copy failed',
+					'context'       => (string) ( $input['context'] ?? '' ),
+				)
+			);
 			return array(
-				'success' => false,
-				'message' => __( 'Could not copy file.', 'acrossai-abilities-manager' ),
+				'success'     => false,
+				'message'     => __( 'Could not copy file.', 'acrossai-abilities-manager' ),
+				'backup_path' => $backup_path,
 			);
 		}
+
+		$dest_final = realpath( $dest_abs ) ?: $dest_abs;
+
+		Audit_Trail::write_log(
+			'COPY',
+			$src_real,
+			array(
+				'ability_slug'  => 'file-manager/copy-file',
+				'size_before'   => $size_before,
+				'size_after'    => (int) $fs->size( $dest_final ),
+				'destination'   => $dest_final,
+				'backup_status' => $backup_status,
+				'backup_path'   => $backup_path,
+				'backup_reason' => ( 'skipped' === $backup_status ) ? 'destination did not exist' : '',
+				'context'       => (string) ( $input['context'] ?? '' ),
+			)
+		);
 
 		return array(
 			'success'     => true,
 			'source'      => $src_real,
-			'destination' => realpath( $dest_abs ) ?: $dest_abs,
+			'destination' => $dest_final,
 			'overwritten' => $overwritten,
 			'message'     => $overwritten
 				? __( 'File copied (destination replaced).', 'acrossai-abilities-manager' )
 				: __( 'File copied.', 'acrossai-abilities-manager' ),
+			'backup_path' => $backup_path,
 		);
 	}
 }

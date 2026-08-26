@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
@@ -67,6 +68,11 @@ class Edit_Wp_Config extends Ability_Definition {
 							'type'        => 'string',
 							'description' => __( 'New string value for the constant.', 'acrossai-abilities-manager' ),
 						),
+						'context'       => array(
+							'type'        => 'string',
+							'maxLength'   => 2000,
+							'description' => __( 'Optional caller-supplied reason for this wp-config edit. Captured in the audit log. Truncated to 500 chars in the persisted entry.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'constant_name', 'value' ),
 					'additionalProperties' => false,
@@ -77,6 +83,8 @@ class Edit_Wp_Config extends Ability_Definition {
 						'success'        => array( 'type' => 'boolean' ),
 						'message'        => array( 'type' => 'string' ),
 						'blocked_reason' => array( 'type' => 'string' ),
+						// Feature 094 audit-trail addition.
+						'backup_path'    => array( 'type' => array( 'string', 'null' ) ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -157,17 +165,53 @@ class Edit_Wp_Config extends Ability_Definition {
 			);
 		}
 
+		// Feature 094: pre-image backup + audit log.
+		$size_before   = strlen( $raw );
+		$backup_result = Audit_Trail::write_backup( $config_path );
+		$backup_path   = is_string( $backup_result ) ? $backup_result : null;
+		$backup_status = is_string( $backup_result )
+			? 'written'
+			: ( false === $backup_result ? 'failed' : 'disabled' );
+
 		if ( false === $fs->put_contents( $config_path, $updated, FS_CHMOD_FILE ) ) {
+			Audit_Trail::write_log(
+				'EDIT_WP_CONFIG',
+				$config_path,
+				array(
+					'ability_slug'  => 'file-manager/edit-wp-config',
+					'size_before'   => $size_before,
+					'size_after'    => null,
+					'backup_status' => $backup_status,
+					'backup_path'   => $backup_path,
+					'backup_reason' => 'primary write failed',
+					'context'       => (string) ( $input['context'] ?? '' ),
+				)
+			);
 			return array(
-				'success' => false,
-				'message' => __( 'Could not write wp-config.php.', 'acrossai-abilities-manager' ),
+				'success'     => false,
+				'message'     => __( 'Could not write wp-config.php.', 'acrossai-abilities-manager' ),
+				'backup_path' => $backup_path,
 			);
 		}
 
+		Audit_Trail::write_log(
+			'EDIT_WP_CONFIG',
+			$config_path,
+			array(
+				'ability_slug'  => 'file-manager/edit-wp-config',
+				'size_before'   => $size_before,
+				'size_after'    => strlen( $updated ),
+				'backup_status' => $backup_status,
+				'backup_path'   => $backup_path,
+				'context'       => (string) ( $input['context'] ?? '' ),
+			)
+		);
+
 		return array(
-			'success' => true,
+			'success'     => true,
 			/* translators: constant name */
-			'message' => sprintf( __( 'Constant %s updated.', 'acrossai-abilities-manager' ), $name ),
+			'message'     => sprintf( __( 'Constant %s updated.', 'acrossai-abilities-manager' ), $name ),
+			'backup_path' => $backup_path,
 		);
 	}
 

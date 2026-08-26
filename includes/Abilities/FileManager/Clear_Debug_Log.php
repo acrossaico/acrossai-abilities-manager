@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
@@ -40,7 +41,13 @@ class Clear_Debug_Log extends Ability_Definition {
 				'input_schema'        => array(
 					'type'                 => 'object',
 					'default'              => array(),
-					'properties'           => array(),
+					'properties'           => array(
+						'context' => array(
+							'type'        => 'string',
+							'maxLength'   => 2000,
+							'description' => __( 'Optional caller-supplied reason for clearing debug.log. Captured in the audit log. Truncated to 500 chars in the persisted entry.', 'acrossai-abilities-manager' ),
+						),
+					),
 					'additionalProperties' => false,
 				),
 				'output_schema'       => array(
@@ -49,6 +56,8 @@ class Clear_Debug_Log extends Ability_Definition {
 						'success'        => array( 'type' => 'boolean' ),
 						'message'        => array( 'type' => 'string' ),
 						'blocked_reason' => array( 'type' => 'string' ),
+						// Feature 094 audit-trail addition.
+						'backup_path'    => array( 'type' => array( 'string', 'null' ) ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -94,22 +103,73 @@ class Clear_Debug_Log extends Ability_Definition {
 		$log_path = WP_CONTENT_DIR . '/debug.log';
 
 		if ( ! $fs->is_file( $log_path ) ) {
+			Audit_Trail::write_log(
+				'CLEAR_DEBUG_LOG',
+				$log_path,
+				array(
+					'ability_slug'  => 'file-manager/clear-debug-log',
+					'size_before'   => null,
+					'size_after'    => null,
+					'backup_status' => 'skipped',
+					'backup_reason' => 'debug.log does not exist',
+					'context'       => (string) ( $input['context'] ?? '' ),
+				)
+			);
 			return array(
-				'success' => true,
-				'message' => __( 'debug.log does not exist; nothing to clear.', 'acrossai-abilities-manager' ),
+				'success'     => true,
+				'message'     => __( 'debug.log does not exist; nothing to clear.', 'acrossai-abilities-manager' ),
+				'backup_path' => null,
 			);
 		}
+
+		// Feature 094: pre-image backup captures the debug log content
+		// before truncation, so admins who accidentally cleared away
+		// diagnostics can recover.
+		$size_before   = (int) $fs->size( $log_path );
+		$backup_result = Audit_Trail::write_backup( $log_path );
+		$backup_path   = is_string( $backup_result ) ? $backup_result : null;
+		$backup_status = is_string( $backup_result )
+			? 'written'
+			: ( false === $backup_result ? 'failed' : 'disabled' );
 
 		if ( false === $fs->put_contents( $log_path, '', FS_CHMOD_FILE ) ) {
+			Audit_Trail::write_log(
+				'CLEAR_DEBUG_LOG',
+				$log_path,
+				array(
+					'ability_slug'  => 'file-manager/clear-debug-log',
+					'size_before'   => $size_before,
+					'size_after'    => null,
+					'backup_status' => $backup_status,
+					'backup_path'   => $backup_path,
+					'backup_reason' => 'primary truncation failed',
+					'context'       => (string) ( $input['context'] ?? '' ),
+				)
+			);
 			return array(
-				'success' => false,
-				'message' => __( 'Could not clear debug.log.', 'acrossai-abilities-manager' ),
+				'success'     => false,
+				'message'     => __( 'Could not clear debug.log.', 'acrossai-abilities-manager' ),
+				'backup_path' => $backup_path,
 			);
 		}
 
+		Audit_Trail::write_log(
+			'CLEAR_DEBUG_LOG',
+			$log_path,
+			array(
+				'ability_slug'  => 'file-manager/clear-debug-log',
+				'size_before'   => $size_before,
+				'size_after'    => 0,
+				'backup_status' => $backup_status,
+				'backup_path'   => $backup_path,
+				'context'       => (string) ( $input['context'] ?? '' ),
+			)
+		);
+
 		return array(
-			'success' => true,
-			'message' => __( 'debug.log cleared.', 'acrossai-abilities-manager' ),
+			'success'     => true,
+			'message'     => __( 'debug.log cleared.', 'acrossai-abilities-manager' ),
+			'backup_path' => $backup_path,
 		);
 	}
 }

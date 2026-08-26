@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Enforcer;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
@@ -77,6 +78,11 @@ class Append_File extends Ability_Definition {
 							'default'     => false,
 							'description' => __( 'When true, content is written to the head of the file; otherwise appended to the tail.', 'acrossai-abilities-manager' ),
 						),
+						'context' => array(
+							'type'        => 'string',
+							'maxLength'   => 2000,
+							'description' => __( 'Optional caller-supplied reason for this append. Captured in the audit log for accountability. Truncated to 500 chars in the persisted entry.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'path', 'content' ),
 					'additionalProperties' => false,
@@ -101,6 +107,8 @@ class Append_File extends Ability_Definition {
 						'size'           => array( 'type' => 'integer' ),
 						'max_bytes'      => array( 'type' => 'integer' ),
 						'marker'         => array( 'type' => 'string' ),
+						// Feature 094 audit-trail addition.
+						'backup_path'    => array( 'type' => array( 'string', 'null' ) ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -200,36 +208,88 @@ class Append_File extends Ability_Definition {
 			return $blocked;
 		}
 
+		// Feature 094: pre-image backup captures the pre-append content.
+		$size_before   = (int) $fs->size( $real );
+		$backup_result = Audit_Trail::write_backup( $real );
+		$backup_path   = is_string( $backup_result ) ? $backup_result : null;
+		$backup_status = is_string( $backup_result )
+			? 'written'
+			: ( false === $backup_result ? 'failed' : 'disabled' );
+
 		// WP_Filesystem exposes no direct-append operation, so both append
 		// and prepend paths use read + concat + write. Not atomic — a
 		// concurrent writer between the read and the write would win.
 		// Callers on very-high-throughput logs should not use this ability.
 		$existing = $fs->get_contents( $real );
 		if ( false === $existing ) {
+			Audit_Trail::write_log(
+				'APPEND',
+				$real,
+				array(
+					'ability_slug'  => 'file-manager/append-file',
+					'size_before'   => $size_before,
+					'size_after'    => null,
+					'backup_status' => $backup_status,
+					'backup_path'   => $backup_path,
+					'backup_reason' => 'could not read file for append',
+					'context'       => (string) ( $input['context'] ?? '' ),
+				)
+			);
 			return array(
-				'success' => false,
-				'message' => __( 'Could not read file for append/prepend.', 'acrossai-abilities-manager' ),
+				'success'     => false,
+				'message'     => __( 'Could not read file for append/prepend.', 'acrossai-abilities-manager' ),
+				'backup_path' => $backup_path,
 			);
 		}
 		$new_bytes = $prepend ? ( $content . $existing ) : ( $existing . $content );
 		$result    = $fs->put_contents( $real, $new_bytes, FS_CHMOD_FILE );
 
 		if ( false === $result ) {
+			Audit_Trail::write_log(
+				'APPEND',
+				$real,
+				array(
+					'ability_slug'  => 'file-manager/append-file',
+					'size_before'   => $size_before,
+					'size_after'    => null,
+					'backup_status' => $backup_status,
+					'backup_path'   => $backup_path,
+					'backup_reason' => 'primary write failed',
+					'context'       => (string) ( $input['context'] ?? '' ),
+				)
+			);
 			return array(
-				'success' => false,
-				'message' => __( 'Could not write file.', 'acrossai-abilities-manager' ),
+				'success'     => false,
+				'message'     => __( 'Could not write file.', 'acrossai-abilities-manager' ),
+				'backup_path' => $backup_path,
 			);
 		}
+
+		$new_size = (int) $fs->size( $real );
+
+		Audit_Trail::write_log(
+			'APPEND',
+			$real,
+			array(
+				'ability_slug'  => 'file-manager/append-file',
+				'size_before'   => $size_before,
+				'size_after'    => $new_size,
+				'backup_status' => $backup_status,
+				'backup_path'   => $backup_path,
+				'context'       => (string) ( $input['context'] ?? '' ),
+			)
+		);
 
 		return array(
 			'success'       => true,
 			'path'          => $real,
 			'bytes_written' => strlen( $content ),
-			'new_size'      => (int) $fs->size( $real ),
+			'new_size'      => $new_size,
 			'prepended'     => $prepend,
 			'message'       => $prepend
 				? __( 'Content prepended.', 'acrossai-abilities-manager' )
 				: __( 'Content appended.', 'acrossai-abilities-manager' ),
+			'backup_path'   => $backup_path,
 		);
 	}
 }

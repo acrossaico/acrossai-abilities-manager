@@ -543,12 +543,24 @@ class Test_Feature_093_Hardening_Enforcement extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_backup_audit_panel_banner_references_094(): void {
+	/**
+	 * Feature 094-complete flipped the Backup & Audit panel from "Scaffold
+	 * only, feature 094 pending" to a live info line. This assertion was
+	 * inverted during that flip — the banner NO LONGER references 094
+	 * because 094 is done. Kept as a regression check so we don't
+	 * accidentally reintroduce a scaffold-pointing banner.
+	 */
+	public function test_backup_audit_panel_no_longer_scaffold(): void {
 		$src = $this->read_source( 'src/js/file-manager-settings/components/BackupAuditPanel.jsx' );
-		$this->assertStringContainsString(
-			'094-file-manager-audit-log',
+		$this->assertStringNotContainsString(
+			'Scaffold only.',
 			$src,
-			'Backup & Audit panel banner should reference 094-file-manager-audit-log'
+			'BackupAuditPanel should not carry a "Scaffold only." banner now that feature 094 is live'
+		);
+		$this->assertStringContainsString(
+			'notice notice-info',
+			$src,
+			'BackupAuditPanel should render a live-status notice-info line'
 		);
 	}
 
