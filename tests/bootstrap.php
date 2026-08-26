@@ -628,6 +628,173 @@ if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
 	define( 'HOUR_IN_SECONDS', 60 * 60 );
 }
 
+if ( ! function_exists( 'wp_unslash' ) ) {
+	/** Feature 094 stub — strips leading slashes WP core adds via magic-quotes. */
+	function wp_unslash( $value ) {
+		if ( is_string( $value ) ) {
+			return stripslashes( $value );
+		}
+		return $value;
+	}
+}
+
+if ( ! function_exists( 'wp_mkdir_p' ) ) {
+	/**
+	 * Feature 094 stub — recursive mkdir with mode 0755. Returns true on
+	 * success (or if the directory already exists), false on failure.
+	 */
+	function wp_mkdir_p( string $target ): bool {
+		if ( is_dir( $target ) ) {
+			return true;
+		}
+		return @mkdir( $target, 0755, true ) || is_dir( $target );
+	}
+}
+
+if ( ! function_exists( 'wp_delete_file' ) ) {
+	/** Feature 094 stub — native unlink wrapped. */
+	function wp_delete_file( string $file ): void {
+		if ( is_file( $file ) ) {
+			@unlink( $file );
+		}
+	}
+}
+
+if ( ! function_exists( 'wp_get_current_user' ) ) {
+	/**
+	 * Feature 094 stub — returns a fake current user with the fields
+	 * Audit_Trail reads (user_email, ID). Tests can override by seeding
+	 * $__acrossai_test_current_user before invoking the SUT.
+	 */
+	function wp_get_current_user(): object {
+		global $__acrossai_test_current_user;
+		if ( is_object( $__acrossai_test_current_user ) ) {
+			return $__acrossai_test_current_user;
+		}
+		return (object) array( 'ID' => 0, 'user_email' => '' );
+	}
+}
+
+if ( ! class_exists( 'WP_Filesystem_Base' ) ) {
+	/**
+	 * Feature 094 stub — minimal abstract for `instanceof` checks the
+	 * plugin's Wp_Filesystem_Init::get() uses. The concrete
+	 * Test_Fake_WP_Filesystem below is the actual test-time transport.
+	 */
+	abstract class WP_Filesystem_Base {}
+}
+
+if ( ! class_exists( 'Test_Fake_WP_Filesystem' ) ) {
+	/**
+	 * Native-PHP-backed WP_Filesystem shim for behavioural tests. Implements
+	 * the subset of the WP_Filesystem interface that Audit_Trail and the
+	 * ability classes actually call. Tests seed $wp_filesystem with an
+	 * instance of this before calling the SUT — Wp_Filesystem_Init::get()
+	 * then short-circuits at its `instanceof` check.
+	 */
+	// phpcs:ignore Generic.Files.OneObjectStructurePerFile.MultipleFound -- test helper co-located with WP shims
+	class Test_Fake_WP_Filesystem extends WP_Filesystem_Base {
+		public function exists( string $file ): bool {
+			return file_exists( $file );
+		}
+		public function is_file( string $file ): bool {
+			return is_file( $file );
+		}
+		public function is_dir( string $path ): bool {
+			return is_dir( $path );
+		}
+		public function size( string $file ) {
+			return is_file( $file ) ? filesize( $file ) : 0;
+		}
+		public function get_contents( string $file ) {
+			return is_file( $file ) ? file_get_contents( $file ) : false;
+		}
+		public function put_contents( string $file, string $contents, $mode = false ): bool {
+			$ok = false !== file_put_contents( $file, $contents );
+			if ( $ok && is_int( $mode ) ) {
+				@chmod( $file, $mode );
+			}
+			return $ok;
+		}
+		public function copy( string $source, string $destination, $overwrite = false, $mode = false ): bool {
+			if ( ! $overwrite && file_exists( $destination ) ) {
+				return false;
+			}
+			$ok = copy( $source, $destination );
+			if ( $ok && is_int( $mode ) ) {
+				@chmod( $destination, $mode );
+			}
+			return $ok;
+		}
+		public function mkdir( string $path, $chmod = false, $chown = false, $chgrp = false ): bool {
+			return @mkdir( $path, is_int( $chmod ) ? $chmod : 0755, true );
+		}
+		public function rmdir( string $path, bool $recursive = false ): bool {
+			if ( ! is_dir( $path ) ) {
+				return false;
+			}
+			if ( $recursive ) {
+				$iter = new \RecursiveIteratorIterator(
+					new \RecursiveDirectoryIterator( $path, \FilesystemIterator::SKIP_DOTS ),
+					\RecursiveIteratorIterator::CHILD_FIRST
+				);
+				foreach ( $iter as $entry ) {
+					if ( $entry->isDir() ) {
+						@rmdir( $entry->getPathname() );
+					} else {
+						@unlink( $entry->getPathname() );
+					}
+				}
+			}
+			return @rmdir( $path );
+		}
+		public function delete( string $file, bool $recursive = false, $type = false ): bool {
+			if ( is_dir( $file ) ) {
+				return $this->rmdir( $file, $recursive );
+			}
+			return @unlink( $file );
+		}
+		public function dirlist( string $path, bool $include_hidden = true, bool $recursive = false ): array {
+			if ( ! is_dir( $path ) ) {
+				return array();
+			}
+			$out     = array();
+			$entries = @scandir( $path );
+			foreach ( (array) $entries as $name ) {
+				if ( '.' === $name || '..' === $name ) {
+					continue;
+				}
+				if ( ! $include_hidden && '.' === $name[0] ) {
+					continue;
+				}
+				$full     = $path . DIRECTORY_SEPARATOR . $name;
+				$out[ $name ] = array(
+					'name' => $name,
+					'type' => is_dir( $full ) ? 'd' : 'f',
+					'size' => is_file( $full ) ? filesize( $full ) : 0,
+				);
+			}
+			return $out;
+		}
+	}
+}
+
+if ( ! defined( 'FS_CHMOD_FILE' ) ) {
+	define( 'FS_CHMOD_FILE', 0644 );
+}
+if ( ! defined( 'FS_CHMOD_DIR' ) ) {
+	define( 'FS_CHMOD_DIR', 0755 );
+}
+if ( ! defined( 'WP_CONTENT_DIR' ) ) {
+	// Point tests' WP_CONTENT_DIR into a unique temp workspace so
+	// Audit_Trail's real backup + log paths land inside the test sandbox.
+	// A single per-test-run dir keeps the ability × trail matrix consistent.
+	define( 'WP_CONTENT_DIR', sys_get_temp_dir() . '/acrossai-094-tests-' . getmypid() );
+	if ( ! is_dir( WP_CONTENT_DIR ) ) {
+		mkdir( WP_CONTENT_DIR, 0777, true );
+	}
+}
+
 if ( ! class_exists( 'WP_UnitTestCase' ) ) {
 	/**
 	 * Alias: in unit-only mode WP_UnitTestCase is a plain PHPUnit TestCase.
