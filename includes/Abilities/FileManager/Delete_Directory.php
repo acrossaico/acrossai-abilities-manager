@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
@@ -79,6 +80,11 @@ class Delete_Directory extends Ability_Definition {
 						'confirm'   => array(
 							'type'        => 'boolean',
 							'description' => __( 'Must be true to proceed. Guards against accidental deletes.', 'acrossai-abilities-manager' ),
+						),
+						'context'   => array(
+							'type'        => 'string',
+							'maxLength'   => 2000,
+							'description' => __( 'Optional caller-supplied reason for this rmdir. Captured in the audit log. Truncated to 500 chars in the persisted entry.', 'acrossai-abilities-manager' ),
 						),
 					),
 					'required'             => array( 'path', 'confirm' ),
@@ -223,6 +229,18 @@ class Delete_Directory extends Ability_Definition {
 					'message'         => __( 'Directory is not empty. Pass recursive:true to delete its contents.', 'acrossai-abilities-manager' ),
 				);
 			}
+			Audit_Trail::write_log(
+				'RMDIR',
+				$real,
+				array(
+					'ability_slug'    => 'file-manager/delete-directory',
+					'size_before'     => null,
+					'size_after'      => null,
+					'backup_status'   => 'disabled',
+					'entries_removed' => 1,
+					'context'         => (string) ( $input['context'] ?? '' ),
+				)
+			);
 			return array(
 				'success'         => true,
 				'path'            => $real,
@@ -254,6 +272,19 @@ class Delete_Directory extends Ability_Definition {
 			);
 		}
 		++$entries_removed;
+
+		Audit_Trail::write_log(
+			'RMDIR',
+			$real,
+			array(
+				'ability_slug'    => 'file-manager/delete-directory',
+				'size_before'     => null,
+				'size_after'      => null,
+				'backup_status'   => 'disabled',
+				'entries_removed' => $entries_removed,
+				'context'         => (string) ( $input['context'] ?? '' ),
+			)
+		);
 
 		return array(
 			'success'         => true,

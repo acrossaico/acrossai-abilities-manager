@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Enforcer;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
@@ -71,6 +72,11 @@ class Move_File extends Ability_Definition {
 							'default'     => false,
 							'description' => __( 'When true, an existing destination file is replaced. wp-config.php and .htaccess are still refused.', 'acrossai-abilities-manager' ),
 						),
+						'context'     => array(
+							'type'        => 'string',
+							'maxLength'   => 2000,
+							'description' => __( 'Optional caller-supplied reason for this move. Captured in the audit log. Truncated to 500 chars in the persisted entry.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'source', 'destination' ),
 					'additionalProperties' => false,
@@ -95,6 +101,8 @@ class Move_File extends Ability_Definition {
 						'size'           => array( 'type' => 'integer' ),
 						'max_bytes'      => array( 'type' => 'integer' ),
 						'marker'         => array( 'type' => 'string' ),
+						// Feature 094 audit-trail addition.
+						'backup_path'    => array( 'type' => array( 'string', 'null' ) ),
 					),
 					'required'             => array( 'success', 'message' ),
 					'additionalProperties' => false,
@@ -233,18 +241,59 @@ class Move_File extends Ability_Definition {
 			return $blocked;
 		}
 
+		// Feature 094: pre-image backup captures the SOURCE (about to be
+		// moved away — its content vanishes at the source path).
+		$size_before   = (int) $fs->size( $src_real );
+		$backup_result = Audit_Trail::write_backup( $src_real );
+		$backup_path   = is_string( $backup_result ) ? $backup_result : null;
+		$backup_status = is_string( $backup_result )
+			? 'written'
+			: ( false === $backup_result ? 'failed' : 'disabled' );
+
 		if ( ! $fs->move( $src_real, $dest_abs, $overwrite ) ) {
+			Audit_Trail::write_log(
+				'MOVE',
+				$src_real,
+				array(
+					'ability_slug'  => 'file-manager/move-file',
+					'size_before'   => $size_before,
+					'size_after'    => null,
+					'destination'   => $dest_abs,
+					'backup_status' => $backup_status,
+					'backup_path'   => $backup_path,
+					'backup_reason' => 'primary move failed',
+					'context'       => (string) ( $input['context'] ?? '' ),
+				)
+			);
 			return array(
-				'success' => false,
-				'message' => __( 'Could not move file.', 'acrossai-abilities-manager' ),
+				'success'     => false,
+				'message'     => __( 'Could not move file.', 'acrossai-abilities-manager' ),
+				'backup_path' => $backup_path,
 			);
 		}
+
+		$dest_final = realpath( $dest_abs ) ?: $dest_abs;
+
+		Audit_Trail::write_log(
+			'MOVE',
+			$src_real,
+			array(
+				'ability_slug'  => 'file-manager/move-file',
+				'size_before'   => $size_before,
+				'size_after'    => (int) $fs->size( $dest_final ),
+				'destination'   => $dest_final,
+				'backup_status' => $backup_status,
+				'backup_path'   => $backup_path,
+				'context'       => (string) ( $input['context'] ?? '' ),
+			)
+		);
 
 		return array(
 			'success'     => true,
 			'source'      => $src_real,
-			'destination' => realpath( $dest_abs ) ?: $dest_abs,
+			'destination' => $dest_final,
 			'overwritten' => $overwritten,
+			'backup_path' => $backup_path,
 			'message'     => $overwritten
 				? __( 'File moved (destination replaced).', 'acrossai-abilities-manager' )
 				: __( 'File moved.', 'acrossai-abilities-manager' ),

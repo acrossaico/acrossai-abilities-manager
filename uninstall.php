@@ -74,4 +74,53 @@ if ( $acrossai_delete_data ) {
 
 	// Feature 088 — Ability-level suggested-plugins kill-switch.
 	\delete_option( 'acrossai_disable_plugin_suggestions' );
+
+	// Feature 092 — File Manager path allowlists + secret redactor options.
+	\delete_option( 'acrossai_file_manager_write_allowlist' );
+	\delete_option( 'acrossai_file_manager_read_allowlist' );
+	\delete_option( 'acrossai_file_manager_redaction_config' );
+
+	// Feature 093 — Content Filters options.
+	\delete_option( 'acrossai_file_manager_dangerous_extensions' );
+	\delete_option( 'acrossai_file_manager_block_double_extensions' );
+	\delete_option( 'acrossai_file_manager_htaccess_directive_scan' );
+	\delete_option( 'acrossai_file_manager_sanitize_filename_check' );
+	\delete_option( 'acrossai_file_manager_write_max_bytes' );
+	\delete_option( 'acrossai_file_manager_sensitive_read_denylist' );
+	\delete_option( 'acrossai_file_manager_strict_filename_filter' );
+	\delete_option( 'acrossai_file_manager_mime_type_check' );
+
+	// Feature 094 — Backup & Audit toggle options.
+	\delete_option( 'acrossai_file_manager_backup_enabled' );
+	\delete_option( 'acrossai_file_manager_backup_retention_days' );
+	\delete_option( 'acrossai_file_manager_audit_log_enabled' );
+	\delete_option( 'acrossai_file_manager_audit_log_retention_days' );
+
+	// Feature 094 — recursively delete on-disk backup + log dirs. The dirs
+	// live under wp-content/ with Deny-from-all .htaccess guards inside.
+	// Uses native PHP filesystem here because uninstall.php runs BEFORE the
+	// plugin autoloader — WP_Filesystem_Init isn't reachable.
+	$acrossai_dirs_to_purge = array(
+		WP_CONTENT_DIR . '/acrossai-file-manager-backups',
+		WP_CONTENT_DIR . '/acrossai-file-manager-logs',
+	);
+	foreach ( $acrossai_dirs_to_purge as $acrossai_dir ) {
+		if ( ! is_dir( $acrossai_dir ) ) {
+			continue;
+		}
+		$acrossai_iter = new \RecursiveIteratorIterator(
+			new \RecursiveDirectoryIterator( $acrossai_dir, \FilesystemIterator::SKIP_DOTS ),
+			\RecursiveIteratorIterator::CHILD_FIRST
+		);
+		foreach ( $acrossai_iter as $acrossai_path ) {
+			if ( $acrossai_path->isDir() ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir, WordPress.PHP.NoSilencedErrors.Discouraged -- WP_Filesystem is not available during uninstall; @ suppresses expected "not empty" races.
+				@rmdir( $acrossai_path->getPathname() );
+			} else {
+				\wp_delete_file( $acrossai_path->getPathname() );
+			}
+		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir, WordPress.PHP.NoSilencedErrors.Discouraged -- WP_Filesystem is not available during uninstall; @ suppresses expected "not empty" races.
+		@rmdir( $acrossai_dir );
+	}
 }

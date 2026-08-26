@@ -126,7 +126,7 @@ const FileManagerSettings = ( { restNamespace, restBase } ) => {
 			<ReadAllowlistPanel data={ readData } onSave={ saveRead } />
 			<RedactionPanel data={ redaction } onSave={ saveRedaction } />
 			<ContentFiltersPanel data={ contentFilters } onSave={ saveContentFilters } />
-			<BackupAuditPanel data={ backupAudit } onSave={ saveBackupAudit } />
+			<BackupAuditPanel data={ backupAudit } onSave={ saveBackupAudit } statsPath={ `${ base }/backup-audit-stats` } />
 		</div>
 	);
 };

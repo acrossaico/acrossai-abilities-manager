@@ -2,8 +2,10 @@
  * BackupAuditPanel — enable/disable pre-write backups + audit log, plus
  * retention windows for each.
  *
- * SCAFFOLD ONLY. Saves persist to wp_options but no ability writes a backup
- * or emits a log entry yet — that lands in feature 094.
+ * Feature 094 (2026-08-26) went live: enforcement now writes backups and
+ * emits log entries when the toggles are on. Panel drops its scaffold
+ * banner and shows an info line sourced from the /backup-audit-stats
+ * endpoint with the current log path + line count + backup dir size.
  *
  * @package AcrossAI_Abilities_Manager
  * @since   0.1.0
@@ -11,6 +13,7 @@
 
 import { useState, useEffect } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 
 const AFFECTED_ABILITIES = [
 	'file-manager/create-file',
@@ -21,9 +24,27 @@ const AFFECTED_ABILITIES = [
 	'file-manager/move-file',
 	'file-manager/create-directory',
 	'file-manager/delete-directory',
+	'file-manager/edit-wp-config',
+	'file-manager/clear-debug-log',
 ];
 
-const BackupAuditPanel = ( { data, onSave } ) => {
+const formatBytes = ( bytes ) => {
+	if ( ! bytes ) {
+		return '0 B';
+	}
+	if ( bytes < 1024 ) {
+		return bytes + ' B';
+	}
+	if ( bytes < 1024 * 1024 ) {
+		return ( bytes / 1024 ).toFixed( 1 ) + ' KiB';
+	}
+	if ( bytes < 1024 * 1024 * 1024 ) {
+		return ( bytes / ( 1024 * 1024 ) ).toFixed( 1 ) + ' MiB';
+	}
+	return ( bytes / ( 1024 * 1024 * 1024 ) ).toFixed( 2 ) + ' GiB';
+};
+
+const BackupAuditPanel = ( { data, onSave, statsPath } ) => {
 	const cfg = data.config || {};
 
 	const [ auditEnabled, setAuditEnabled ]     = useState( !! cfg.audit_log_enabled );
@@ -32,6 +53,7 @@ const BackupAuditPanel = ( { data, onSave } ) => {
 	const [ backupRetention, setBackupRetention ] = useState( cfg.backup_retention_days || 7 );
 	const [ saving, setSaving ]                 = useState( false );
 	const [ status, setStatus ]                 = useState( '' );
+	const [ stats, setStats ]                   = useState( null );
 
 	useEffect( () => {
 		const c = data.config || {};
@@ -40,6 +62,25 @@ const BackupAuditPanel = ( { data, onSave } ) => {
 		setBackupEnabled( !! c.backup_enabled );
 		setBackupRetention( c.backup_retention_days || 7 );
 	}, [ data ] );
+
+	useEffect( () => {
+		if ( ! statsPath ) {
+			return;
+		}
+		let cancelled = false;
+		apiFetch( { path: statsPath } )
+			.then( ( result ) => {
+				if ( ! cancelled ) {
+					setStats( result );
+				}
+			} )
+			.catch( () => {
+				/* stats are informational; failures are silent */
+			} );
+		return () => {
+			cancelled = true;
+		};
+	}, [ statsPath, auditEnabled, backupEnabled ] );
 
 	const doSave = () => {
 		setSaving( true );
@@ -67,15 +108,27 @@ const BackupAuditPanel = ( { data, onSave } ) => {
 		<section className="acrossai-fm-panel">
 			<h2>{ __( 'Backup & audit log', 'acrossai-abilities-manager' ) }</h2>
 
-			<div className="notice notice-warning inline" style={ { padding: '8px 12px', marginTop: 0 } }>
+			<div className="notice notice-info inline" style={ { padding: '8px 12px', marginTop: 0 } }>
 				<p style={ { margin: 0 } }>
-					<strong>{ __( 'Scaffold only.', 'acrossai-abilities-manager' ) }</strong>{ ' ' }
-					{ __( 'Values save but no backup is written and no log entry is emitted yet. Enforcement lands in feature 094-file-manager-audit-log.', 'acrossai-abilities-manager' ) }
+					{ __( 'Backup + audit are now live. Toggles save into the database and take effect on the very next ability call.', 'acrossai-abilities-manager' ) }
+					{ stats && (
+						<>
+							<br />
+							<strong>{ __( 'Current storage:', 'acrossai-abilities-manager' ) }</strong>{ ' ' }
+							{ sprintf(
+								/* translators: 1: number of log entries, 2: backup dir human size, 3: number of day dirs */
+								__( '%1$d log entries; %2$s across %3$d backup day(s).', 'acrossai-abilities-manager' ),
+								stats.log_total_lines || 0,
+								formatBytes( stats.backup_total_size_bytes || 0 ),
+								stats.backup_days_present || 0
+							) }
+						</>
+					) }
 				</p>
 			</div>
 
 			<div className="acrossai-fm-affects">
-				<strong>{ __( 'Will affect these abilities once enforced:', 'acrossai-abilities-manager' ) }</strong>
+				<strong>{ __( 'Affects these abilities:', 'acrossai-abilities-manager' ) }</strong>
 				<ul className="acrossai-fm-affects-list">
 					{ AFFECTED_ABILITIES.map( ( slug ) => (
 						<li key={ slug }><code>{ slug }</code></li>

@@ -224,9 +224,18 @@ class Test_Feature_094_Audit_Log_And_Backups extends WP_UnitTestCase {
 	 */
 	public static function wired_ability_provider(): array {
 		return array(
+			// Feature 094 PR #147 (initial).
 			'delete-file'      => array( 'includes/Abilities/FileManager/Delete_File.php' ),
 			'edit-file'        => array( 'includes/Abilities/FileManager/Edit_File.php' ),
 			'create-directory' => array( 'includes/Abilities/FileManager/Create_Directory.php' ),
+			// Feature 094-complete (this PR).
+			'create-file'      => array( 'includes/Abilities/FileManager/Create_File.php' ),
+			'append-file'      => array( 'includes/Abilities/FileManager/Append_File.php' ),
+			'copy-file'        => array( 'includes/Abilities/FileManager/Copy_File.php' ),
+			'move-file'        => array( 'includes/Abilities/FileManager/Move_File.php' ),
+			'delete-directory' => array( 'includes/Abilities/FileManager/Delete_Directory.php' ),
+			'edit-wp-config'   => array( 'includes/Abilities/FileManager/Edit_Wp_Config.php' ),
+			'clear-debug-log'  => array( 'includes/Abilities/FileManager/Clear_Debug_Log.php' ),
 		);
 	}
 
@@ -283,36 +292,133 @@ class Test_Feature_094_Audit_Log_And_Backups extends WP_UnitTestCase {
 	/* Structural — non-goals + surface lock                                 */
 	/* ==================================================================== */
 
-	/**
-	 * The 5 remaining mutation abilities (Create_File, Append_File, Copy_File,
-	 * Move_File, plus 3 log-only ones from Phase 6/7 of tasks.md — Edit_Wp_Config,
-	 * Clear_Debug_Log, Delete_Directory) are DEFERRED to a follow-up PR per
-	 * the scope cut on this PR. Verify they do NOT accidentally reference
-	 * Audit_Trail (which would suggest incomplete wiring).
-	 *
-	 * @dataProvider deferred_ability_provider
-	 */
-	public function test_deferred_ability_not_yet_wired( string $relative_path ): void {
-		$src = $this->read_source( $relative_path );
-		$this->assertStringNotContainsString(
-			'Audit_Trail',
+	/* ==================================================================== */
+	/* Feature 094-complete additions                                        */
+	/* ==================================================================== */
+
+	public function test_all_ten_mutation_abilities_wired_to_audit_trail(): void {
+		// The complete list — every mutation ability MUST reference Audit_Trail
+		// now that the harness is fully wired. Regression protection against
+		// removing a wiring.
+		foreach ( array( 'Create_File', 'Edit_File', 'Append_File', 'Copy_File', 'Move_File', 'Delete_File', 'Create_Directory', 'Delete_Directory', 'Edit_Wp_Config', 'Clear_Debug_Log' ) as $file ) {
+			$src = $this->read_source( "includes/Abilities/FileManager/{$file}.php" );
+			$this->assertStringContainsString(
+				'Audit_Trail::write_log(',
+				$src,
+				"{$file} must call Audit_Trail::write_log() — mutation abilities are all wired now"
+			);
+		}
+	}
+
+	public function test_backup_capable_abilities_call_write_backup(): void {
+		// mkdir + rmdir don't back up (no content); everyone else does.
+		foreach ( array( 'Create_File', 'Edit_File', 'Append_File', 'Copy_File', 'Move_File', 'Delete_File', 'Edit_Wp_Config', 'Clear_Debug_Log' ) as $file ) {
+			$src = $this->read_source( "includes/Abilities/FileManager/{$file}.php" );
+			$this->assertStringContainsString(
+				'Audit_Trail::write_backup(',
+				$src,
+				"{$file} must call Audit_Trail::write_backup() — this ability mutates file content"
+			);
+		}
+	}
+
+	public function test_backup_capable_abilities_declare_backup_path_output(): void {
+		foreach ( array( 'Create_File', 'Edit_File', 'Append_File', 'Copy_File', 'Move_File', 'Delete_File', 'Edit_Wp_Config', 'Clear_Debug_Log' ) as $file ) {
+			$src = $this->read_source( "includes/Abilities/FileManager/{$file}.php" );
+			$this->assertMatchesRegularExpression(
+				"/'backup_path'\\s*=>\\s*array\\(\\s*'type'\\s*=>\\s*array\\(\\s*'string'\\s*,\\s*'null'\\s*\\)/",
+				$src,
+				"{$file} output_schema must declare backup_path:['string','null']"
+			);
+		}
+	}
+
+	public function test_delete_directory_logs_rmdir_operation(): void {
+		$src = $this->read_source( 'includes/Abilities/FileManager/Delete_Directory.php' );
+		$this->assertStringContainsString( "'RMDIR'", $src );
+		$this->assertStringContainsString( "'entries_removed'", $src );
+	}
+
+	public function test_edit_wp_config_logs_edit_wp_config_operation(): void {
+		$src = $this->read_source( 'includes/Abilities/FileManager/Edit_Wp_Config.php' );
+		$this->assertStringContainsString( "'EDIT_WP_CONFIG'", $src );
+	}
+
+	public function test_clear_debug_log_logs_clear_debug_log_operation(): void {
+		$src = $this->read_source( 'includes/Abilities/FileManager/Clear_Debug_Log.php' );
+		$this->assertStringContainsString( "'CLEAR_DEBUG_LOG'", $src );
+	}
+
+	public function test_rest_controller_flips_backup_audit_scaffold_only(): void {
+		$src = $this->read_source( 'includes/Abilities/Rest/File_Manager_Settings_Controller.php' );
+		// The `/backup-audit` GET response now sets scaffold_only:false + follow_up_spec:null.
+		$this->assertMatchesRegularExpression(
+			"/get_backup_audit.+?'scaffold_only'\\s*=>\\s*false.+?'follow_up_spec'\\s*=>\\s*null/s",
 			$src,
-			"{$relative_path} references Audit_Trail — this ability is scoped to a follow-up PR. Either complete the wiring or move it out of the deferred list."
+			'get_backup_audit MUST report scaffold_only:false and follow_up_spec:null now that 094 is live'
 		);
 	}
 
-	/**
-	 * @return array<string, array{0:string}>
-	 */
-	public static function deferred_ability_provider(): array {
-		return array(
-			'create-file'      => array( 'includes/Abilities/FileManager/Create_File.php' ),
-			'append-file'      => array( 'includes/Abilities/FileManager/Append_File.php' ),
-			'copy-file'        => array( 'includes/Abilities/FileManager/Copy_File.php' ),
-			'move-file'        => array( 'includes/Abilities/FileManager/Move_File.php' ),
-			'delete-directory' => array( 'includes/Abilities/FileManager/Delete_Directory.php' ),
-			'edit-wp-config'   => array( 'includes/Abilities/FileManager/Edit_Wp_Config.php' ),
-			'clear-debug-log'  => array( 'includes/Abilities/FileManager/Clear_Debug_Log.php' ),
+	public function test_rest_controller_registers_backup_audit_stats_route(): void {
+		$src = $this->read_source( 'includes/Abilities/Rest/File_Manager_Settings_Controller.php' );
+		$this->assertStringContainsString( "'/' . self::REST_BASE . '/backup-audit-stats'", $src );
+		$this->assertStringContainsString( 'get_backup_audit_stats', $src );
+		$this->assertStringContainsString( 'Audit_Trail::stats()', $src );
+	}
+
+	public function test_backup_audit_panel_dropped_scaffold_banner(): void {
+		$src = $this->read_source( 'src/js/file-manager-settings/components/BackupAuditPanel.jsx' );
+		$this->assertStringNotContainsString(
+			'Scaffold only.',
+			$src,
+			'BackupAuditPanel should no longer show the yellow "Scaffold only." banner'
 		);
+		$this->assertStringContainsString(
+			'notice notice-info',
+			$src,
+			'BackupAuditPanel should render a notice-info line now that 094 is live'
+		);
+		$this->assertStringContainsString(
+			'statsPath',
+			$src,
+			'BackupAuditPanel should accept and consume a statsPath prop'
+		);
+	}
+
+	public function test_orchestrator_passes_stats_path_to_panel(): void {
+		$src = $this->read_source( 'src/js/file-manager-settings/components/FileManagerSettings.jsx' );
+		$this->assertStringContainsString( 'backup-audit-stats', $src );
+		$this->assertStringContainsString( 'statsPath=', $src );
+	}
+
+	public function test_uninstall_deletes_all_094_options(): void {
+		$src = $this->read_source( 'uninstall.php' );
+		foreach ( array(
+			'acrossai_file_manager_backup_enabled',
+			'acrossai_file_manager_backup_retention_days',
+			'acrossai_file_manager_audit_log_enabled',
+			'acrossai_file_manager_audit_log_retention_days',
+		) as $option ) {
+			$this->assertStringContainsString( "delete_option( '{$option}' )", $src );
+		}
+	}
+
+	public function test_uninstall_purges_backup_and_log_dirs(): void {
+		$src = $this->read_source( 'uninstall.php' );
+		$this->assertStringContainsString( 'acrossai-file-manager-backups', $src );
+		$this->assertStringContainsString( 'acrossai-file-manager-logs', $src );
+		$this->assertStringContainsString( 'RecursiveDirectoryIterator', $src );
+		$this->assertStringContainsString( 'wp_delete_file', $src );
+	}
+
+	public function test_all_ten_mutation_abilities_declare_context_input(): void {
+		foreach ( array( 'Create_File', 'Edit_File', 'Append_File', 'Copy_File', 'Move_File', 'Delete_File', 'Create_Directory', 'Delete_Directory', 'Edit_Wp_Config', 'Clear_Debug_Log' ) as $file ) {
+			$src = $this->read_source( "includes/Abilities/FileManager/{$file}.php" );
+			$this->assertMatchesRegularExpression(
+				"/'context'\\s*=>\\s*array\\(\\s*'type'\\s*=>\\s*'string'\\s*,\\s*'maxLength'\\s*=>\\s*2000/",
+				$src,
+				"{$file} input_schema must declare context:{type:string, maxLength:2000}"
+			);
+		}
 	}
 }
