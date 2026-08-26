@@ -114,13 +114,13 @@ if ( $acrossai_delete_data ) {
 		);
 		foreach ( $acrossai_iter as $acrossai_path ) {
 			if ( $acrossai_path->isDir() ) {
-				// phpcs:ignore WordPress.WP.AlternativeFunctions.rmdir_rmdir -- WP_Filesystem is not available during uninstall.
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir, WordPress.PHP.NoSilencedErrors.Discouraged -- WP_Filesystem is not available during uninstall; @ suppresses expected "not empty" races.
 				@rmdir( $acrossai_path->getPathname() );
 			} else {
 				\wp_delete_file( $acrossai_path->getPathname() );
 			}
 		}
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.rmdir_rmdir -- WP_Filesystem is not available during uninstall.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir, WordPress.PHP.NoSilencedErrors.Discouraged -- WP_Filesystem is not available during uninstall; @ suppresses expected "not empty" races.
 		@rmdir( $acrossai_dir );
 	}
 }
