@@ -83,6 +83,23 @@ class Get_Post_Blocks extends Ability_Definition {
 	}
 
 	/**
+	 * Feature 095 — hint that when the caller only needs to locate a block,
+	 * the outline ability returns kilobytes instead of the full parsed tree
+	 * (which includes every block's innerHTML).
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'blocks/outline-post-blocks',
+				'reason' => __( 'If you only need block paths, types, and short previews, this returns kilobytes even for pages that get-post-blocks would return as hundreds — same path convention, so the returned paths are drop-in usable with add-block / update-post-block / remove-block.', 'acrossai-abilities-manager' ),
+				'saves'  => __( '~28K tokens on a 97 KB page', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array<string,mixed> $input Ability input payload.

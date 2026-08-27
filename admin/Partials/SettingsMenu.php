@@ -151,6 +151,17 @@ class SettingsMenu {
 			)
 		);
 
+		// Feature 095 — Ability-level suggested-abilities kill-switch.
+		register_setting(
+			$page_slug,
+			'acrossai_disable_ability_suggestions',
+			array(
+				'type'              => 'boolean',
+				'sanitize_callback' => array( $this, 'sanitize_disable_ability_suggestions' ),
+				'default'           => 0,
+			)
+		);
+
 		// Section 1 of 3 (rendered first): Display settings.
 		//
 		// The Uninstall Settings section is registered separately by
@@ -186,6 +197,25 @@ class SettingsMenu {
 			array( $this, 'render_disable_plugin_suggestions_field' ),
 			$page_slug,
 			'acrossai_plugin_suggestions_section'
+		);
+
+		// Feature 095 — Ability Suggestions section (rendered between
+		// "Plugin Suggestions" and "Uninstall Settings"; declaration order
+		// controls display order because the Uninstall section is registered
+		// separately at admin_init priority 20).
+		add_settings_section(
+			'acrossai_ability_suggestions_settings_section',
+			__( 'Ability Suggestions', 'acrossai-abilities-manager' ),
+			'__return_false',
+			$page_slug
+		);
+
+		add_settings_field(
+			'acrossai_disable_ability_suggestions',
+			__( 'Disable ability suggestions', 'acrossai-abilities-manager' ),
+			array( $this, 'render_disable_ability_suggestions_field' ),
+			$page_slug,
+			'acrossai_ability_suggestions_settings_section'
 		);
 	}
 
@@ -316,6 +346,42 @@ class SettingsMenu {
 			checked( $checked, true, false ),
 			esc_html__( 'Disable the Plugin suggestion', 'acrossai-abilities-manager' ),
 			esc_html__( 'When enabled, no suggested-plugin cards appear on the Library page and no suggested_plugins field is emitted in ability payloads (REST + MCP). Ability behaviour is unaffected.', 'acrossai-abilities-manager' )
+		);
+	}
+
+	/**
+	 * Sanitizes the disable-ability-suggestions checkbox value.
+	 *
+	 * Returns 1 when the checkbox is checked, 0 when unchecked or absent.
+	 * Per PATTERN-CHECKBOX-SANITIZE — named public method, not closure.
+	 *
+	 * Feature 095.
+	 *
+	 * @since 0.0.34
+	 * @param mixed $value Raw submitted value.
+	 * @return int
+	 */
+	public function sanitize_disable_ability_suggestions( $value ): int {
+		return empty( $value ) ? 0 : 1;
+	}
+
+	/**
+	 * Renders the disable-ability-suggestions checkbox field.
+	 *
+	 * When checked, no ability's payload includes `meta.acrossai.suggested_abilities`
+	 * (REST + MCP). Advisory hints stop reaching AI callers immediately on
+	 * the next request. Default: unchecked (suggestions surfaced). Feature 095.
+	 *
+	 * @since 0.0.34
+	 * @return void
+	 */
+	public function render_disable_ability_suggestions_field(): void {
+		$checked = (bool) get_option( 'acrossai_disable_ability_suggestions', 0 );
+		printf(
+			'<label><input type="checkbox" id="acrossai_disable_ability_suggestions" name="acrossai_disable_ability_suggestions" value="1" %1$s /> %2$s</label><p class="description"><span style="color: #d63638;">%3$s</span></p>',
+			checked( $checked, true, false ),
+			esc_html__( 'Disable ability suggestions', 'acrossai-abilities-manager' ),
+			esc_html__( '⚠ When checked, no ability payload includes suggested-alternative-ability entries (REST + MCP). AI callers will not see hints like "consider blocks/outline-post-blocks + blocks/update-post-block instead of content/update-page for small edits". Ability behaviour is unaffected.', 'acrossai-abilities-manager' )
 		);
 	}
 }

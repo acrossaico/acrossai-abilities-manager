@@ -92,6 +92,27 @@ class Update_Cpt_Item extends Ability_Definition {
 	}
 
 	/**
+	 * Feature 095 — hint that narrow edits can be done far more cheaply
+	 * through the block-outline + surgical-write pair instead of shipping
+	 * a full replacement post_content.
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'blocks/outline-post-blocks',
+				'reason' => __( 'For narrow edits, outline first to locate the target block cheaply — the outline is kilobytes even when the item body is hundreds.', 'acrossai-abilities-manager' ),
+				'saves'  => __( '~29K tokens vs full item rewrite on a 97 KB body', 'acrossai-abilities-manager' ),
+			),
+			array(
+				'slug'   => 'blocks/update-post-block',
+				'reason' => __( 'Update just the located block without re-serializing the whole post_content.', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.

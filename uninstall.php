@@ -75,6 +75,9 @@ if ( $acrossai_delete_data ) {
 	// Feature 088 — Ability-level suggested-plugins kill-switch.
 	\delete_option( 'acrossai_disable_plugin_suggestions' );
 
+	// Feature 095 — Ability-level suggested-abilities kill-switch.
+	\delete_option( 'acrossai_disable_ability_suggestions' );
+
 	// Feature 092 — File Manager path allowlists + secret redactor options.
 	\delete_option( 'acrossai_file_manager_write_allowlist' );
 	\delete_option( 'acrossai_file_manager_read_allowlist' );

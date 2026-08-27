@@ -165,7 +165,9 @@ class AcrossAI_Ability_Library_Registry {
 	 * @return array<int, array<string, mixed>>
 	 */
 	public function get_definitions(): array {
-		return self::apply_suggested_plugins_decoration( self::$definitions ?? array() );
+		$definitions = self::apply_suggested_plugins_decoration( self::$definitions ?? array() );
+		$definitions = self::apply_suggested_abilities_decoration( $definitions );
+		return $definitions;
 	}
 
 	/**
@@ -220,6 +222,43 @@ class AcrossAI_Ability_Library_Registry {
 				unset( $row['args']['meta']['acrossai']['suggested_plugins'] );
 			} else {
 				$row['args']['meta']['acrossai']['suggested_plugins'] = $decorated;
+			}
+		}
+		unset( $row );
+
+		return $definitions;
+	}
+
+	/**
+	 * Feature 095: strip suggested_abilities from every row's payload when the
+	 * kill-switch option is on.
+	 *
+	 * Behaviour:
+	 *   - When `acrossai_disable_ability_suggestions` is truthy, every row's
+	 *     `args.meta.acrossai.suggested_abilities` key is unset. Other
+	 *     `meta.acrossai.*` keys (including Feature 088's `suggested_plugins`)
+	 *     are untouched.
+	 *   - When the option is unset or `0`, rows pass through unchanged —
+	 *     the ability's declared entries surface verbatim in the response.
+	 *
+	 * Public + static so unit tests can call it against seeded rows without
+	 * standing up the whole Registry state (Feature 088's equivalent is
+	 * private because it enriches with runtime is_plugin_active data — this
+	 * one is a pure filter).
+	 *
+	 * @since  0.0.34
+	 * @param  array<int, array<string, mixed>> $definitions Cached rows.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function apply_suggested_abilities_decoration( array $definitions ): array {
+		$kill_switch = (bool) get_option( 'acrossai_disable_ability_suggestions', 0 );
+		if ( ! $kill_switch ) {
+			return $definitions;
+		}
+
+		foreach ( $definitions as &$row ) {
+			if ( isset( $row['args']['meta']['acrossai']['suggested_abilities'] ) ) {
+				unset( $row['args']['meta']['acrossai']['suggested_abilities'] );
 			}
 		}
 		unset( $row );
