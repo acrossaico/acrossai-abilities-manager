@@ -139,6 +139,13 @@ No data is sent to any external server without an explicit administrator action.
 == Changelog ==
 
 = Unreleased =
+**Token-efficiency default for six content writers.** `content/create-page`, `content/update-page`, `content/create-post`, `content/update-post`, `content/create-cpt-item`, `content/update-cpt-item` gain a new optional input `return_content:boolean, default:false`. When false (the default), the response's `page` / `post` / `item` object strips three large fields — `post_content`, `post_content_filtered`, `post_excerpt` — and adds `content_bytes:integer` so callers still see the saved payload size at a glance.
+
+**Why.** A single-word edit on a ~97 KB page via `content/update-page` previously round-tripped ~60 K LLM tokens (the caller sent the whole new body and the ability echoed the same body back). With this default, the echo drops to ~0 tokens — the caller pays only for the upload it already had to make. Fine-grained edits via `blocks/update-post-block` remain ~10× cheaper still because they never touch the surrounding content.
+
+**BREAKING for callers reading `response.page.post_content` (or `.post` / `.item` equivalents).** Existing callers that need the saved content back — e.g. to diff against what they sent — must pass `return_content:true` explicitly. The three stripped fields remain queryable via `content/get-page` / `content/get-post` after the write.
+
+**Not affected.** Every other content ability (get / list / delete / block-tree operations / meta ops) is unchanged. The block-tree writers (`blocks/update-post-block`, `blocks/add-block`, etc.) already returned just the modified block, not the whole page — nothing to strip.
 
 = 0.0.31 - 2026-08-26 =
 **Release theme: File Manager consolidation + hardening + audit log.** Bundles the six-feature series (089 → 094) that turned `file-manager/*` from a loose collection of read/write primitives into a self-contained subsystem with an admin tab, allowlist-and-content-filter enforcement, and an append-only audit log with pre-image backups. Also cuts the inline `.bak.<timestamp>` scheme in `Delete_File` (BREAKING for callers of `response.backup` — new canonical field is `response.backup_path`).

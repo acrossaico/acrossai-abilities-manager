@@ -51,6 +51,11 @@ class Create_Cpt_Item extends Ability_Definition {
 						'slug'      => array( 'type' => 'string' ),
 						'author'    => array( 'type' => 'integer' ),
 						'meta'      => array( 'type' => 'object' ),
+						'return_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'When true, the response includes the saved post_content / post_excerpt / post_content_filtered fields. Default false: those large fields are stripped and content_bytes is returned instead.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'post_type', 'title' ),
 					'additionalProperties' => false,
@@ -58,10 +63,11 @@ class Create_Cpt_Item extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success' => array( 'type' => 'boolean' ),
-						'id'      => array( 'type' => 'integer' ),
-						'item'    => array( 'type' => 'object' ),
-						'message' => array( 'type' => 'string' ),
+						'success'       => array( 'type' => 'boolean' ),
+						'id'            => array( 'type' => 'integer' ),
+						'item'          => array( 'type' => 'object' ),
+						'content_bytes' => array( 'type' => 'integer' ),
+						'message'       => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -136,12 +142,24 @@ class Create_Cpt_Item extends Ability_Definition {
 			);
 		}
 
+		$fetched        = (array) get_post( (int) $id, ARRAY_A );
+		$content_bytes  = strlen( (string) ( $fetched['post_content'] ?? '' ) );
+		$return_content = ! empty( $input['return_content'] );
+		if ( ! $return_content ) {
+			unset(
+				$fetched['post_content'],
+				$fetched['post_content_filtered'],
+				$fetched['post_excerpt']
+			);
+		}
+
 		return array(
-			'success' => true,
-			'id'      => (int) $id,
-			'item'    => (array) get_post( (int) $id, ARRAY_A ),
+			'success'       => true,
+			'id'            => (int) $id,
+			'item'          => $fetched,
+			'content_bytes' => $content_bytes,
 			/* translators: 1: post type, 2: ID */
-			'message' => sprintf( __( 'Created %1$s #%2$d.', 'acrossai-abilities-manager' ), $post_type, $id ),
+			'message'       => sprintf( __( 'Created %1$s #%2$d.', 'acrossai-abilities-manager' ), $post_type, $id ),
 		);
 	}
 }
