@@ -49,6 +49,11 @@ class Update_Page extends Ability_Definition {
 						'menu_order' => array( 'type' => 'integer' ),
 						'slug'       => array( 'type' => 'string' ),
 						'meta'       => array( 'type' => 'object' ),
+						'return_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'When true, the response includes the saved post_content / post_excerpt / post_content_filtered fields. Default false: those large fields are stripped and content_bytes is returned instead, so a "one-word edit" round-trip does not echo the whole page body back through the tunnel. Callers who need the saved bytes should pass true explicitly.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'id' ),
 					'additionalProperties' => false,
@@ -56,10 +61,11 @@ class Update_Page extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success' => array( 'type' => 'boolean' ),
-						'id'      => array( 'type' => 'integer' ),
-						'page'    => array( 'type' => 'object' ),
-						'message' => array( 'type' => 'string' ),
+						'success'       => array( 'type' => 'boolean' ),
+						'id'            => array( 'type' => 'integer' ),
+						'page'          => array( 'type' => 'object' ),
+						'content_bytes' => array( 'type' => 'integer' ),
+						'message'       => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -132,12 +138,27 @@ class Update_Page extends Ability_Definition {
 			);
 		}
 
+		$fetched        = (array) get_post( (int) $result, ARRAY_A );
+		$content_bytes  = strlen( (string) ( $fetched['post_content'] ?? '' ) );
+		$return_content = ! empty( $input['return_content'] );
+		if ( ! $return_content ) {
+			// Strip the three large fields so a one-word edit doesn't echo the
+			// whole page body back to the caller. Callers who need the saved
+			// bytes pass return_content:true explicitly.
+			unset(
+				$fetched['post_content'],
+				$fetched['post_content_filtered'],
+				$fetched['post_excerpt']
+			);
+		}
+
 		return array(
-			'success' => true,
-			'id'      => (int) $result,
-			'page'    => (array) get_post( (int) $result, ARRAY_A ),
+			'success'       => true,
+			'id'            => (int) $result,
+			'page'          => $fetched,
+			'content_bytes' => $content_bytes,
 			/* translators: %d: page ID */
-			'message' => sprintf( __( 'Updated page #%d.', 'acrossai-abilities-manager' ), $result ),
+			'message'       => sprintf( __( 'Updated page #%d.', 'acrossai-abilities-manager' ), $result ),
 		);
 	}
 }

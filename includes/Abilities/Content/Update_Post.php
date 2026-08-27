@@ -51,6 +51,11 @@ class Update_Post extends Ability_Definition {
 						'author'  => array( 'type' => 'integer' ),
 						'date'    => array( 'type' => 'string' ),
 						'meta'    => array( 'type' => 'object' ),
+						'return_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'When true, the response includes the saved post_content / post_excerpt / post_content_filtered fields. Default false: those large fields are stripped and content_bytes is returned instead, so a "one-word edit" round-trip does not echo the whole post body back through the tunnel.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'id' ),
 					'additionalProperties' => false,
@@ -61,6 +66,7 @@ class Update_Post extends Ability_Definition {
 						'success'           => array( 'type' => 'boolean' ),
 						'id'                => array( 'type' => 'integer' ),
 						'post'              => array( 'type' => 'object' ),
+						'content_bytes'     => array( 'type' => 'integer' ),
 						'dropped_meta_keys' => array(
 							'type'  => 'array',
 							'items' => array( 'type' => 'string' ),
@@ -198,10 +204,22 @@ class Update_Post extends Ability_Definition {
 			);
 		}
 
+		$fetched        = (array) get_post( (int) $result, ARRAY_A );
+		$content_bytes  = strlen( (string) ( $fetched['post_content'] ?? '' ) );
+		$return_content = ! empty( $input['return_content'] );
+		if ( ! $return_content ) {
+			unset(
+				$fetched['post_content'],
+				$fetched['post_content_filtered'],
+				$fetched['post_excerpt']
+			);
+		}
+
 		return array(
 			'success'           => true,
 			'id'                => (int) $result,
-			'post'              => (array) get_post( (int) $result, ARRAY_A ),
+			'post'              => $fetched,
+			'content_bytes'     => $content_bytes,
 			'dropped_meta_keys' => $dropped_meta_keys,
 			/* translators: %d: post ID */
 			'message'           => sprintf( __( 'Updated post #%d.', 'acrossai-abilities-manager' ), $result ),

@@ -29,6 +29,7 @@
 			<file>tests/phpunit/abilities/Test_Feature_093_Hardening_Enforcement.php</file>
 			<file>tests/phpunit/abilities/Test_Feature_094_Audit_Log_And_Backups.php</file>
 			<file>tests/phpunit/abilities/Test_File_Manager_Tab_Integration.php</file>
+			<file>tests/phpunit/abilities/Test_Return_Content_Default_False.php</file>
 		</testsuite>
 		<testsuite name="library-unit">
 			<file>tests/phpunit/Modules/Library/Test_Ability_Definition.php</file>
