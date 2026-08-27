@@ -139,6 +139,8 @@ No data is sent to any external server without an explicit administrator action.
 == Changelog ==
 
 = Unreleased =
+**`blocks/get-post-blocks` gains scoping inputs.** Three new optional inputs close the "read one block's markup" gap between `blocks/get-post-blocks` (full tree, full content) and `blocks/outline-post-blocks` (scoped but never returns content). `path: int[]` scopes the response to a subtree (uses the same raw parse_blocks() index scheme as add-block / update-post-block / remove-block, so returned paths interchange). `depth: integer` bounds descent below the subtree root (-1 unlimited, 0 subtree root only, N below). `include_html: boolean` (default true = backwards-compat) strips innerHTML + innerContent from every returned node when false. Backwards-compatible: existing callers passing only `post_id` see identical responses. An unresolvable `path` returns a standard error envelope with `error_code: invalid_path` naming which depth failed and how many blocks exist at that level.
+
 
 = 0.0.32 - 2026-08-28 =
 **Release theme: token-efficient AI callers.** Two closely related shifts. First, response payloads shrink dramatically for the common "small edit" and "just tell me the block structure" intents. Second, ability descriptions gain author-declared hints pointing AI callers at cheaper sibling abilities when their intent maps to one. Every change is either strictly additive or opt-out only via an admin toggle — no ability's execute() behaviour changes.
