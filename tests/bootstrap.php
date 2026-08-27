@@ -779,6 +779,26 @@ if ( ! class_exists( 'Test_Fake_WP_Filesystem' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	/**
+	 * Stub: mirrors WP wp_strip_all_tags — strip every tag and also drop any
+	 * script/style content. Feature 066 outline uses this for text previews;
+	 * unit tests need the same behaviour without a WP install.
+	 *
+	 * @param string $text          Raw text/HTML.
+	 * @param bool   $remove_breaks If true, collapse newlines/tabs to spaces.
+	 * @return string
+	 */
+	function wp_strip_all_tags( string $text, bool $remove_breaks = false ): string {
+		$text = (string) preg_replace( '@<(script|style)[^>]*?>.*?</\\1>@si', '', $text );
+		$text = strip_tags( $text );
+		if ( $remove_breaks ) {
+			$text = (string) preg_replace( '/[\r\n\t ]+/', ' ', $text );
+		}
+		return trim( $text );
+	}
+}
+
 if ( ! function_exists( 'wp_get_object_terms' ) ) {
 	/**
 	 * Stub for the block-editor Db helper tests. Returns an empty term list
