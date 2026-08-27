@@ -1862,3 +1862,28 @@ Feature 060 introduced the second abstract base class in this plugin (after `Abi
 - `includes/Modules/Library/AcrossAI_Ability_Library_Registry.php` — `apply_suggested_plugins_decoration()` (kill-switch + is_active enrichment)
 - `admin/Partials/SettingsMenu.php` — "Disable the Plugin suggestion" checkbox owning the `acrossai_disable_plugin_suggestions` option
 - `specs/088-ability-suggested-plugins-framework/contracts/*.md` — full contract text
+
+---
+
+### 2026-08-28 — DEC-ABILITY-SUGGESTED-ABILITIES-CONTRACT — meta.acrossai.suggested_abilities[] framework contract mirrors the Feature 088 shape
+
+**Status**: Active
+**Scope**: Ability_Definition / Library payload
+**Tags**: framework-contract, meta-acrossai, suggested-abilities, backwards-compatible, feature-095
+
+**Decision**: The `meta.acrossai.suggested_abilities[]` field is a framework-level contract owned by `Ability_Definition` + `AcrossAI_Ability_Library_Registry`. Ability authors opt in by overriding the optional `protected suggested_abilities(): array` template method; the base class auto-injects into meta only when the return is non-empty. Each entry declares 2 required strings (`slug`, `reason`) + 1 optional free-form string (`saves`). The kill-switch (`acrossai_disable_ability_suggestions`, default `0` — negative-framed to match `acrossai_disable_plugin_suggestions`) is honored exactly once inside `Registry::get_definitions()` as a pure strip; the ability's canonical `args` on registration always carries the declared entries so the switch takes effect on the very next request without cache invalidation. `push_definition()` never mutates `args.description` — hints surface only through `mcp-adapter-get-ability-info` and the Library REST endpoint, never through `discover-abilities`, so discovery-time payloads stay small.
+
+**Why this is durable**: This is the second framework field in `meta.acrossai.*` — the pattern of "silent-default meta field + template-method opt-in + Registry-time kill-switch" is now a codebase convention. Any future ability-facing hint field (deprecation notices, alternative-payload hints, benchmarking suggestions) should follow the same three-part shape. When a third occurrence lands, the `push_definition()` injection blocks and the Registry strip blocks should be extracted into a shared helper — three copies is the maintenance-risk threshold.
+
+**Tradeoffs**:
+- Gained: byte-identical payloads for the ~325 existing abilities that don't override (spec SC-004 guarantee); one gate covers REST + MCP + Library UI; the ability's canonical registration state remains authoritative so debugging tools can always inspect declared-but-hidden suggestions
+- Gained: no framework-level slug validation matches Feature 088 — third-party ability plugins can ship suggestions pointing at abilities the user hasn't installed without a hard failure
+- Reconsider: only if a future consumer needs suggestions to appear in `discover-abilities` (currently intentionally omitted to keep listing payloads small). If that arrives, the addition should be a discovery-side transform, not a description mutation
+
+**References**:
+- `includes/Modules/Library/Ability_Definition.php` — `suggested_abilities()` template method + `push_definition()` auto-inject block (parallel to `suggested_plugins()`)
+- `includes/Modules/Library/AcrossAI_Ability_Library_Registry.php` — `apply_suggested_abilities_decoration()` (pure kill-switch strip)
+- `admin/Partials/SettingsMenu.php` — "Disable ability suggestions" checkbox owning `acrossai_disable_ability_suggestions`
+- `uninstall.php` — cleanup of the toggle option
+- `specs/095-suggested-abilities-framework/contracts/ability-payload.md` — full contract text
+- Sibling: [[DEC-ABILITY-SUGGESTED-PLUGINS-CONTRACT]] (Feature 088)
