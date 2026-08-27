@@ -273,6 +273,22 @@ class List_Users extends Ability_Definition {
 	}
 
 	/**
+	 * Feature 095 follow-up — hint that known-ID reads should skip the
+	 * pagination entirely.
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'users/get-user',
+				'reason' => __( 'If you already know the user ID, a targeted get-user read is far cheaper than paging through every user.', 'acrossai-abilities-manager' ),
+				'saves'  => __( '~10-20x fewer tokens for known-ID reads', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.

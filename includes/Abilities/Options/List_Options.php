@@ -94,6 +94,22 @@ class List_Options extends Ability_Definition {
 	}
 
 	/**
+	 * Feature 095 follow-up — hint that known-name reads should skip the
+	 * enumeration entirely.
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'options/get-option',
+				'reason' => __( 'If you already know the option name, a targeted get-option read is far cheaper than enumerating every option in wp_options. List is for discovery; get is for retrieval.', 'acrossai-abilities-manager' ),
+				'saves'  => __( '~15-30x fewer tokens for known-name reads', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.

@@ -111,6 +111,22 @@ class List_Global_Styles extends Ability_Definition {
 	}
 
 	/**
+	 * Feature 095 follow-up — hint that active-theme reads should skip the
+	 * cross-source enumeration.
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'blocks/read-global-style',
+				'reason' => __( 'If you want the active theme\'s effective styles rather than every theme.json across every theme/plugin, a targeted read-global-style is far cheaper.', 'acrossai-abilities-manager' ),
+				'saves'  => __( '~10x fewer tokens for active-theme reads', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.

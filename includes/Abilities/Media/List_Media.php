@@ -88,6 +88,22 @@ class List_Media extends Ability_Definition {
 	}
 
 	/**
+	 * Feature 095 follow-up — hint that known-ID reads should skip the
+	 * pagination entirely.
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'media/get-media',
+				'reason' => __( 'If you already know the attachment ID, a targeted get-media read is far cheaper than paging through the media library.', 'acrossai-abilities-manager' ),
+				'saves'  => __( '~10-15x fewer tokens for known-ID reads', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.

@@ -228,10 +228,29 @@ class Test_Ability_Suggestions_Framework extends WP_UnitTestCase {
 	 */
 	public static function initial_batch_provider(): array {
 		return array(
+			// Feature 095 initial batch (PR #155).
 			'update-page'     => array( 'includes/Abilities/Content/Update_Page.php', 'content/update-page' ),
 			'update-post'     => array( 'includes/Abilities/Content/Update_Post.php', 'content/update-post' ),
 			'update-cpt-item' => array( 'includes/Abilities/Content/Update_Cpt_Item.php', 'content/update-cpt-item' ),
 			'get-post-blocks' => array( 'includes/Abilities/Content/Get_Post_Blocks.php', 'blocks/get-post-blocks' ),
+
+			// Feature 095 follow-up batch: content/get-* → outline
+			'get-page'        => array( 'includes/Abilities/Content/Get_Page.php', 'content/get-page' ),
+			'get-post'        => array( 'includes/Abilities/Content/Get_Post.php', 'content/get-post' ),
+			'get-cpt-item'    => array( 'includes/Abilities/Content/Get_Cpt_Item.php', 'content/get-cpt-item' ),
+
+			// Design system — normalized vs raw
+			'read-theme-json' => array( 'includes/Abilities/Block/Read_Theme_Json.php', 'blocks/read-theme-json' ),
+
+			// List-all vs get-by-id
+			'list-options'    => array( 'includes/Abilities/Options/List_Options.php', 'options/list-options' ),
+			'list-media'      => array( 'includes/Abilities/Media/List_Media.php', 'media/list-media' ),
+			'list-users'      => array( 'includes/Abilities/Users/List_Users.php', 'users/list-users' ),
+
+			// Block namespace — list vs targeted read (known identifier)
+			'list-block-templates' => array( 'includes/Abilities/Block/List_Block_Templates.php', 'blocks/list-block-templates' ),
+			'list-block-patterns'  => array( 'includes/Abilities/Block/List_Block_Patterns.php', 'blocks/list-block-patterns' ),
+			'list-global-styles'   => array( 'includes/Abilities/Block/List_Global_Styles.php', 'blocks/list-global-styles' ),
 		);
 	}
 

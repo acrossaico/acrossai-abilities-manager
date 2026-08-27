@@ -105,6 +105,22 @@ class List_Block_Patterns extends Ability_Definition {
 	}
 
 	/**
+	 * Feature 095 follow-up — hint that known-slug reads should skip the
+	 * cross-source enumeration.
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'blocks/read-block-pattern',
+				'reason' => __( 'If you already know the pattern slug, a targeted read-block-pattern is far cheaper than enumerating patterns across every source. List is for discovery; read is for retrieval.', 'acrossai-abilities-manager' ),
+				'saves'  => __( '~8x fewer tokens for known-slug reads', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.

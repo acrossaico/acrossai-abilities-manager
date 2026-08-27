@@ -89,6 +89,23 @@ class Read_Theme_Json extends Ability_Definition {
 	}
 
 	/**
+	 * Feature 095 follow-up — hint that a normalized design-token summary is
+	 * far cheaper than the full theme.json when the caller wants design system
+	 * info, not the raw spec.
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'blocks/get-style-guide',
+				'reason' => __( 'If you only need design tokens — palette, typography scale, spacing scale, gradients, duotones — the style guide returns a normalized summary without the full theme.json tree and WordPress internals.', 'acrossai-abilities-manager' ),
+				'saves'  => __( '~5-8x fewer tokens for typical design-system reads', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.
