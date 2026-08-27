@@ -191,7 +191,7 @@ final class Main {
 		$this->define( 'ACROSSAI_ABILITIES_MANAGER_PLUGIN_URL', plugin_dir_url( \ACROSSAI_ABILITIES_MANAGER_PLUGIN_FILE ) );
 		$this->define( 'ACROSSAI_ABILITIES_MANAGER_PLUGIN_NAME_SLUG', $this->plugin_name );
 		$this->define( 'ACROSSAI_ABILITIES_MANAGER_PLUGIN_NAME', 'AcrossAI Abilities Manager' );
-		$this->define( 'ACROSSAI_ABILITIES_MANAGER_VERSION', '0.0.32' );
+		$this->define( 'ACROSSAI_ABILITIES_MANAGER_VERSION', '0.0.33' );
 	}
 
 	/**
