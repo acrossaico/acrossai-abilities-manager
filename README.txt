@@ -5,7 +5,7 @@ Tags: abilities, ability management, access control, site management, ai
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.0.32
+Stable tag: 0.0.33
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -139,6 +139,10 @@ No data is sent to any external server without an explicit administrator action.
 == Changelog ==
 
 = Unreleased =
+
+= 0.0.33 - 2026-08-28 =
+**Release theme: closing the cheap-edit loop.** A follow-up to 0.0.32 that closes the last two gaps between "locate a block cheaply" and "modify it cheaply". Two changes, both surgical and backwards-compatible.
+
 **`return_content:false` default now covers the two block-tree writers.** `blocks/add-block` and `blocks/update-post-block` gain the same `return_content:{boolean, default:false}` input as the six content writers (PR #152) and nine block-editor writers (PR #153). When false (default), the response's `block` object strips its `innerHTML`, `innerContent`, and `innerBlocks` — leaving `blockName`, `attrs`, and `path` — and `content_bytes` reports the saved `innerHTML` size. Container blocks (columns, cover, group) previously echoed their entire innerBlocks subtree; now they don't unless the caller passes `return_content:true`. BREAKING for callers reading `response.block.innerHTML` on these two abilities — pass `return_content:true` explicitly. Every other block-tree read/write (mutate-block-tree, replace-block-text, remove-block, duplicate-block, move-block) already returned lightweight envelopes and is unchanged.
 
 **`blocks/get-post-blocks` gains scoping inputs.** Three new optional inputs close the "read one block's markup" gap between `blocks/get-post-blocks` (full tree, full content) and `blocks/outline-post-blocks` (scoped but never returns content). `path: int[]` scopes the response to a subtree (uses the same raw parse_blocks() index scheme as add-block / update-post-block / remove-block, so returned paths interchange). `depth: integer` bounds descent below the subtree root (-1 unlimited, 0 subtree root only, N below). `include_html: boolean` (default true = backwards-compat) strips innerHTML + innerContent from every returned node when false. Backwards-compatible: existing callers passing only `post_id` see identical responses. An unresolvable `path` returns a standard error envelope with `error_code: invalid_path` naming which depth failed and how many blocks exist at that level.
