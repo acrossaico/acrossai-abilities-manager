@@ -112,6 +112,11 @@ class Update_Block_Template_Part extends Ability_Definition {
 							'default'     => false,
 							'description' => __( 'Required when this part is referenced by other templates. Set true to acknowledge the change affects every template that includes it.', 'acrossai-abilities-manager' ),
 						),
+						'return_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'When true, the response includes the saved part.content field. Default false: the large block markup is stripped and content_bytes is returned instead, so a small edit does not echo the whole template part body back through the tunnel.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'slug' ),
 					'additionalProperties' => false,
@@ -119,14 +124,15 @@ class Update_Block_Template_Part extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'    => array( 'type' => 'boolean' ),
-						'part'       => array( 'type' => 'object' ),
-						'migrated'   => array( 'type' => 'boolean' ),
-						'used_by'    => array( 'type' => 'array' ),
-						'warnings'   => array( 'type' => 'array' ),
-						'locations'  => array( 'type' => 'array' ),
-						'candidates' => array( 'type' => 'array' ),
-						'message'    => array( 'type' => 'string' ),
+						'success'       => array( 'type' => 'boolean' ),
+						'part'          => array( 'type' => 'object' ),
+						'content_bytes' => array( 'type' => 'integer' ),
+						'migrated'      => array( 'type' => 'boolean' ),
+						'used_by'       => array( 'type' => 'array' ),
+						'warnings'      => array( 'type' => 'array' ),
+						'locations'     => array( 'type' => 'array' ),
+						'candidates'    => array( 'type' => 'array' ),
+						'message'       => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -271,14 +277,22 @@ class Update_Block_Template_Part extends Ability_Definition {
 			);
 		}
 
-		$updated = get_post( (int) $result );
+		$updated        = get_post( (int) $result );
+		$content_bytes  = $updated ? strlen( (string) $updated->post_content ) : 0;
+		$return_content = ! empty( $input['return_content'] );
+		$row            = $updated ? Template_Part_Db::to_row( $updated ) : array();
+		if ( ! $return_content ) {
+			unset( $row['content'] );
+		}
+
 		return array(
-			'success'  => true,
+			'success'       => true,
 			/* translators: %s: slug */
-			'message'  => sprintf( __( 'Updated DB template part "%s".', 'acrossai-abilities-manager' ), $updated ? $updated->post_name : '' ),
-			'part'     => $updated ? Template_Part_Db::to_row( $updated ) : array(),
-			'used_by'  => $used_by,
-			'warnings' => array(),
+			'message'       => sprintf( __( 'Updated DB template part "%s".', 'acrossai-abilities-manager' ), $updated ? $updated->post_name : '' ),
+			'part'          => $row,
+			'content_bytes' => $content_bytes,
+			'used_by'       => $used_by,
+			'warnings'      => array(),
 		);
 	}
 
@@ -474,14 +488,22 @@ class Update_Block_Template_Part extends Ability_Definition {
 				$warnings[] = __( 'Skipped deleting source — parent-theme and plugin files are preserved.', 'acrossai-abilities-manager' );
 			}
 
+			$content_bytes  = $new_post ? strlen( (string) $new_post->post_content ) : 0;
+			$return_content = ! empty( $input['return_content'] );
+			$row            = $new_post ? Template_Part_Db::to_row( $new_post ) : array();
+			if ( ! $return_content ) {
+				unset( $row['content'] );
+			}
+
 			return array(
-				'success'  => true,
+				'success'       => true,
 				/* translators: %s: slug */
-				'message'  => sprintf( __( 'Migrated "%s" from file to database.', 'acrossai-abilities-manager' ), $slug ),
-				'part'     => $new_post ? Template_Part_Db::to_row( $new_post ) : array(),
-				'migrated' => true,
-				'used_by'  => $used_by,
-				'warnings' => $warnings,
+				'message'       => sprintf( __( 'Migrated "%s" from file to database.', 'acrossai-abilities-manager' ), $slug ),
+				'part'          => $row,
+				'content_bytes' => $content_bytes,
+				'migrated'      => true,
+				'used_by'       => $used_by,
+				'warnings'      => $warnings,
 			);
 		}
 

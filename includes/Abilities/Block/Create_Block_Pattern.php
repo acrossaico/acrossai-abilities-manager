@@ -121,6 +121,11 @@ class Create_Block_Pattern extends Ability_Definition {
 							'enum'    => array( 'synced', 'unsynced' ),
 							'default' => 'unsynced',
 						),
+						'return_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'When true, the response includes the saved pattern.content field. Default false: the large block markup is stripped and content_bytes is returned instead, so a small edit does not echo the whole pattern body back through the tunnel.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'slug', 'title', 'content' ),
 					'additionalProperties' => false,
@@ -128,10 +133,11 @@ class Create_Block_Pattern extends Ability_Definition {
 				'output_schema'       => array(
 					'type'       => 'object',
 					'properties' => array(
-						'success'    => array( 'type' => 'boolean' ),
-						'message'    => array( 'type' => 'string' ),
-						'error_code' => array( 'type' => 'string' ),
-						'pattern'    => array( 'type' => 'object' ),
+						'success'       => array( 'type' => 'boolean' ),
+						'message'       => array( 'type' => 'string' ),
+						'error_code'    => array( 'type' => 'string' ),
+						'pattern'       => array( 'type' => 'object' ),
+						'content_bytes' => array( 'type' => 'integer' ),
 					),
 					'required'   => array( 'success' ),
 				),
@@ -230,15 +236,23 @@ class Create_Block_Pattern extends Ability_Definition {
 			);
 		}
 
-		$post = get_post( (int) $result );
+		$post           = get_post( (int) $result );
+		$content_bytes  = $post ? strlen( (string) $post->post_content ) : 0;
+		$return_content = ! empty( $input['return_content'] );
+		$row            = $post ? Pattern_Db::to_row( $post ) : array(
+			'source'  => 'db',
+			'slug'    => $slug,
+			'post_id' => (int) $result,
+		);
+		if ( ! $return_content ) {
+			unset( $row['content'] );
+		}
+
 		return array(
-			'success' => true,
-			'message' => __( 'Pattern created in the database.', 'acrossai-abilities-manager' ),
-			'pattern' => $post ? Pattern_Db::to_row( $post ) : array(
-				'source'  => 'db',
-				'slug'    => $slug,
-				'post_id' => (int) $result,
-			),
+			'success'       => true,
+			'message'       => __( 'Pattern created in the database.', 'acrossai-abilities-manager' ),
+			'pattern'       => $row,
+			'content_bytes' => $content_bytes,
 		);
 	}
 

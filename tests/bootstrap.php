@@ -779,6 +779,77 @@ if ( ! class_exists( 'Test_Fake_WP_Filesystem' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_get_object_terms' ) ) {
+	/**
+	 * Stub for the block-editor Db helper tests. Returns an empty term list
+	 * so `to_row()` implementations that call `wp_get_object_terms` to
+	 * resolve a theme term don't require a live taxonomy layer.
+	 *
+	 * @param int|int[]   $object_ids Ignored.
+	 * @param string      $taxonomy   Ignored.
+	 * @param array<mixed> $args      Ignored.
+	 * @return array<mixed>
+	 */
+	function wp_get_object_terms( $object_ids, $taxonomy, array $args = array() ): array {
+		return array();
+	}
+}
+
+if ( ! function_exists( 'get_post_meta' ) ) {
+	/**
+	 * Stub for helpers that read post meta (pattern sync status, active
+	 * variation marker). Returns '' for any lookup. Tests that need a specific
+	 * value can override by defining $__acrossai_test_post_meta[$post_id][$key].
+	 *
+	 * @param int    $post_id Post ID.
+	 * @param string $key     Meta key.
+	 * @param bool   $single  Whether to return a single scalar (mirrored, but ignored in stub).
+	 * @return mixed
+	 */
+	function get_post_meta( int $post_id, string $key = '', bool $single = false ): mixed {
+		global $__acrossai_test_post_meta;
+		if ( is_array( $__acrossai_test_post_meta )
+			&& isset( $__acrossai_test_post_meta[ $post_id ][ $key ] ) ) {
+			return $__acrossai_test_post_meta[ $post_id ][ $key ];
+		}
+		return '';
+	}
+}
+
+if ( ! function_exists( 'get_stylesheet' ) ) {
+	/** Stub: return an empty stylesheet so is_active_theme comparisons resolve to false. */
+	function get_stylesheet(): string {
+		return '';
+	}
+}
+
+if ( ! function_exists( 'get_posts' ) ) {
+	/** Stub: returns an empty array (no seeded DB posts in unit-test bootstrap). */
+	function get_posts( array $args = array() ): array {
+		return array();
+	}
+}
+
+if ( ! class_exists( 'WP_Post' ) ) {
+	/**
+	 * Data-bag stub for the four block-editor Db helpers' `to_row()` methods.
+	 * Only public properties — no behaviour, no factory. Tests instantiate this
+	 * directly and set the fields the SUT reads.
+	 */
+	class WP_Post {
+		public int $ID = 0;
+		public string $post_content = '';
+		public string $post_title = '';
+		public string $post_name = '';
+		public string $post_status = 'publish';
+		public string $post_type = '';
+		public string $post_excerpt = '';
+		public string $post_modified_gmt = '';
+		public int $post_parent = 0;
+		public int $post_author = 0;
+	}
+}
+
 if ( ! defined( 'FS_CHMOD_FILE' ) ) {
 	define( 'FS_CHMOD_FILE', 0644 );
 }

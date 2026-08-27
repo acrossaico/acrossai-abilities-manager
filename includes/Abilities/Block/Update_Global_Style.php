@@ -98,19 +98,25 @@ class Update_Global_Style extends Ability_Definition {
 							'type'    => 'boolean',
 							'default' => false,
 						),
+						'return_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'When true, the response includes the saved theme.json JSON as record.data. Default false: the large JSON blob is stripped and content_bytes is returned instead, so a small edit does not echo the whole record back through the tunnel.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'additionalProperties' => false,
 				),
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'    => array( 'type' => 'boolean' ),
-						'record'     => array( 'type' => 'object' ),
-						'migrated'   => array( 'type' => 'boolean' ),
-						'warnings'   => array( 'type' => 'array' ),
-						'locations'  => array( 'type' => 'array' ),
-						'candidates' => array( 'type' => 'array' ),
-						'message'    => array( 'type' => 'string' ),
+						'success'       => array( 'type' => 'boolean' ),
+						'record'        => array( 'type' => 'object' ),
+						'content_bytes' => array( 'type' => 'integer' ),
+						'migrated'      => array( 'type' => 'boolean' ),
+						'warnings'      => array( 'type' => 'array' ),
+						'locations'     => array( 'type' => 'array' ),
+						'candidates'    => array( 'type' => 'array' ),
+						'message'       => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -186,8 +192,10 @@ class Update_Global_Style extends Ability_Definition {
 			return $this->error_response( $payload );
 		}
 
+		$return_content = ! empty( $input['return_content'] );
+
 		if ( '' !== $migrate_to ) {
-			return $this->migrate( $selected, $migrate_to, $delete_source, $payload );
+			return $this->migrate( $selected, $migrate_to, $delete_source, $payload, $return_content );
 		}
 
 		// Scenario 3 — refuse parent theme write.
@@ -201,7 +209,7 @@ class Update_Global_Style extends Ability_Definition {
 
 		switch ( $selected_src ) {
 			case 'db':
-				return $this->update_db( $selected, $payload, $merge );
+				return $this->update_db( $selected, $payload, $merge, $return_content );
 			case 'theme':
 			case 'plugin':
 				return $this->update_file( $selected, $payload, $merge );
@@ -219,9 +227,10 @@ class Update_Global_Style extends Ability_Definition {
 	 * @param array $loc
 	 * @param array $payload
 	 * @param bool $merge
+	 * @param bool $return_content
 	 * @return array
 	 */
-	private function update_db( array $loc, array $payload, bool $merge ): array {
+	private function update_db( array $loc, array $payload, bool $merge, bool $return_content ): array {
 		$post = get_post( (int) ( $loc['post_id'] ?? 0 ) );
 		if ( ! $post ) {
 			return array(
@@ -235,12 +244,15 @@ class Update_Global_Style extends Ability_Definition {
 			return $this->error_response( $result );
 		}
 
-		$updated = get_post( (int) $result );
+		$updated       = get_post( (int) $result );
+		$content_bytes = $updated ? strlen( (string) $updated->post_content ) : 0;
+
 		return array(
-			'success'  => true,
-			'message'  => __( 'Updated DB Global Styles record.', 'acrossai-abilities-manager' ),
-			'record'   => $updated ? Global_Styles_Db::to_row( $updated, true ) : array(),
-			'warnings' => array(),
+			'success'       => true,
+			'message'       => __( 'Updated DB Global Styles record.', 'acrossai-abilities-manager' ),
+			'record'        => $updated ? Global_Styles_Db::to_row( $updated, $return_content ) : array(),
+			'content_bytes' => $content_bytes,
+			'warnings'      => array(),
 		);
 	}
 
@@ -305,9 +317,10 @@ class Update_Global_Style extends Ability_Definition {
 	 * @param string $migrate_to
 	 * @param bool $delete_source
 	 * @param array $payload
+	 * @param bool $return_content
 	 * @return array
 	 */
-	private function migrate( array $loc, string $migrate_to, bool $delete_source, array $payload ): array {
+	private function migrate( array $loc, string $migrate_to, bool $delete_source, array $payload, bool $return_content ): array {
 		$src      = (string) ( $loc['source'] ?? '' );
 		$theme    = (string) ( $loc['theme'] ?? get_stylesheet() );
 		$warnings = array();
@@ -366,13 +379,16 @@ class Update_Global_Style extends Ability_Definition {
 				$warnings[] = __( 'Skipped deleting source — parent-theme and plugin files are preserved.', 'acrossai-abilities-manager' );
 			}
 
+			$content_bytes = $new_post ? strlen( (string) $new_post->post_content ) : 0;
+
 			return array(
-				'success'  => true,
+				'success'       => true,
 				/* translators: %s: theme */
-				'message'  => sprintf( __( 'Migrated Global Styles for "%s" from file to database.', 'acrossai-abilities-manager' ), $theme ),
-				'record'   => $new_post ? Global_Styles_Db::to_row( $new_post, true ) : array(),
-				'migrated' => true,
-				'warnings' => $warnings,
+				'message'       => sprintf( __( 'Migrated Global Styles for "%s" from file to database.', 'acrossai-abilities-manager' ), $theme ),
+				'record'        => $new_post ? Global_Styles_Db::to_row( $new_post, $return_content ) : array(),
+				'content_bytes' => $content_bytes,
+				'migrated'      => true,
+				'warnings'      => $warnings,
 			);
 		}
 
