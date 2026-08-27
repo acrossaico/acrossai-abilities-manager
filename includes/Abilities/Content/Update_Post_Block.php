@@ -67,6 +67,11 @@ class Update_Post_Block extends Ability_Definition {
 						),
 						'attributes'  => array( 'type' => 'object' ),
 						'inner_html'  => array( 'type' => 'string' ),
+						'return_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'When true, the response includes the saved block\'s innerHTML, innerContent, and innerBlocks. Default false: those fields are stripped and content_bytes reports the saved innerHTML size, so a small edit does not echo the whole block payload back through the tunnel. Callers who need to inspect the resolved block should pass true.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'post_id' ),
 					'additionalProperties' => false,
@@ -74,10 +79,11 @@ class Update_Post_Block extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success' => array( 'type' => 'boolean' ),
-						'post_id' => array( 'type' => 'integer' ),
-						'block'   => array( 'type' => 'object' ),
-						'message' => array( 'type' => 'string' ),
+						'success'       => array( 'type' => 'boolean' ),
+						'post_id'       => array( 'type' => 'integer' ),
+						'block'         => array( 'type' => 'object' ),
+						'content_bytes' => array( 'type' => 'integer' ),
+						'message'       => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -190,13 +196,19 @@ class Update_Post_Block extends Ability_Definition {
 					'message' => $updated->get_error_message(),
 				);
 			}
-			$target['path'] = $path;
+			$target['path']  = $path;
+			$content_bytes   = strlen( (string) ( $target['innerHTML'] ?? '' ) );
+			$return_content  = ! empty( $input['return_content'] );
+			if ( ! $return_content ) {
+				unset( $target['innerHTML'], $target['innerContent'], $target['innerBlocks'] );
+			}
 			return array(
-				'success' => true,
-				'post_id' => $post_id,
-				'block'   => $target,
+				'success'       => true,
+				'post_id'       => $post_id,
+				'block'         => $target,
+				'content_bytes' => $content_bytes,
 				/* translators: 1: path string, 2: post ID */
-				'message' => sprintf( __( 'Updated block at path [%1$s] on post #%2$d.', 'acrossai-abilities-manager' ), implode( ',', $path ), $post_id ),
+				'message'       => sprintf( __( 'Updated block at path [%1$s] on post #%2$d.', 'acrossai-abilities-manager' ), implode( ',', $path ), $post_id ),
 			);
 		}
 
@@ -263,12 +275,20 @@ class Update_Post_Block extends Ability_Definition {
 			);
 		}
 
+		$updated_block   = $blocks[ $target_index ];
+		$content_bytes   = strlen( (string) ( $updated_block['innerHTML'] ?? '' ) );
+		$return_content  = ! empty( $input['return_content'] );
+		if ( ! $return_content ) {
+			unset( $updated_block['innerHTML'], $updated_block['innerContent'], $updated_block['innerBlocks'] );
+		}
+
 		return array(
-			'success' => true,
-			'post_id' => $post_id,
-			'block'   => $blocks[ $target_index ],
+			'success'       => true,
+			'post_id'       => $post_id,
+			'block'         => $updated_block,
+			'content_bytes' => $content_bytes,
 			/* translators: 1: index, 2: post ID */
-			'message' => sprintf( __( 'Updated block #%1$d on post #%2$d.', 'acrossai-abilities-manager' ), $target_index, $post_id ),
+			'message'       => sprintf( __( 'Updated block #%1$d on post #%2$d.', 'acrossai-abilities-manager' ), $target_index, $post_id ),
 		);
 	}
 

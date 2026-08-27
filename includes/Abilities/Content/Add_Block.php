@@ -65,6 +65,11 @@ class Add_Block extends Ability_Definition {
 							),
 							'required'   => array( 'name' ),
 						),
+						'return_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'When true, the response includes the inserted block\'s innerHTML, innerContent, and innerBlocks. Default false: those fields are stripped and content_bytes reports the saved innerHTML size, so a small insertion does not echo the whole block payload back through the tunnel. Callers who need to inspect the resolved block should pass true.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'post_id', 'parent_path', 'index', 'block' ),
 					'additionalProperties' => false,
@@ -72,10 +77,11 @@ class Add_Block extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success' => array( 'type' => 'boolean' ),
-						'post_id' => array( 'type' => 'integer' ),
-						'block'   => array( 'type' => 'object' ),
-						'message' => array( 'type' => 'string' ),
+						'success'       => array( 'type' => 'boolean' ),
+						'post_id'       => array( 'type' => 'integer' ),
+						'block'         => array( 'type' => 'object' ),
+						'content_bytes' => array( 'type' => 'integer' ),
+						'message'       => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -155,12 +161,19 @@ class Add_Block extends Ability_Definition {
 			$inserted['path'] = $new_path;
 		}
 
+		$content_bytes  = is_array( $inserted ) ? strlen( (string) ( $inserted['innerHTML'] ?? '' ) ) : 0;
+		$return_content = ! empty( $input['return_content'] );
+		if ( ! $return_content && is_array( $inserted ) ) {
+			unset( $inserted['innerHTML'], $inserted['innerContent'], $inserted['innerBlocks'] );
+		}
+
 		return array(
-			'success' => true,
-			'post_id' => $post_id,
-			'block'   => $inserted,
+			'success'       => true,
+			'post_id'       => $post_id,
+			'block'         => $inserted,
+			'content_bytes' => $content_bytes,
 			/* translators: 1: block name, 2: post ID */
-			'message' => sprintf( __( 'Inserted %1$s into post #%2$d.', 'acrossai-abilities-manager' ), $block_name, $post_id ),
+			'message'       => sprintf( __( 'Inserted %1$s into post #%2$d.', 'acrossai-abilities-manager' ), $block_name, $post_id ),
 		);
 	}
 
