@@ -5,7 +5,7 @@ Tags: abilities, ability management, access control, site management, ai
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.0.31
+Stable tag: 0.0.32
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -139,6 +139,10 @@ No data is sent to any external server without an explicit administrator action.
 == Changelog ==
 
 = Unreleased =
+
+= 0.0.32 - 2026-08-28 =
+**Release theme: token-efficient AI callers.** Two closely related shifts. First, response payloads shrink dramatically for the common "small edit" and "just tell me the block structure" intents. Second, ability descriptions gain author-declared hints pointing AI callers at cheaper sibling abilities when their intent maps to one. Every change is either strictly additive or opt-out only via an admin toggle — no ability's execute() behaviour changes.
+
 **Token-efficiency default for six content writers.** `content/create-page`, `content/update-page`, `content/create-post`, `content/update-post`, `content/create-cpt-item`, `content/update-cpt-item` gain a new optional input `return_content:boolean, default:false`. When false (the default), the response's `page` / `post` / `item` object strips three large fields — `post_content`, `post_content_filtered`, `post_excerpt` — and adds `content_bytes:integer` so callers still see the saved payload size at a glance.
 
 **Why.** A single-word edit on a ~97 KB page via `content/update-page` previously round-tripped ~60 K LLM tokens (the caller sent the whole new body and the ability echoed the same body back). With this default, the echo drops to ~0 tokens — the caller pays only for the upload it already had to make. Fine-grained edits via `blocks/update-post-block` remain ~10× cheaper still because they never touch the surrounding content.

@@ -23,7 +23,7 @@ namespace AcrossAI_Abilities_Manager;
  * Plugin Name:       AcrossAI Abilities Manager
  * Plugin URI:        https://acrossai.co/
  * Description:       Manage and customize the abilities of AcrossAI on your WordPress site. Tailor the AI's capabilities to suit your needs, enhancing user experience and engagement.
- * Version:           0.0.31
+ * Version:           0.0.32
  * Requires PHP:      8.1
  * Requires at least: 6.9
  * Tested up to:      7.0
