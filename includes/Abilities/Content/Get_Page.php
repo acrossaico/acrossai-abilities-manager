@@ -78,6 +78,22 @@ class Get_Page extends Ability_Definition {
 	}
 
 	/**
+	 * Feature 095 follow-up — hint that block-structure lookups are far cheaper
+	 * via the outline ability than fetching the whole page.
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'blocks/outline-post-blocks',
+				'reason' => __( 'If you only need the block structure or want to locate a specific block, outline returns paths + short text previews without the full post_content — kilobytes instead of hundreds.', 'acrossai-abilities-manager' ),
+				'saves'  => __( '~20x fewer tokens on a 97 KB page', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.

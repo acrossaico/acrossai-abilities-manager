@@ -116,6 +116,22 @@ class List_Block_Templates extends Ability_Definition {
 	}
 
 	/**
+	 * Feature 095 follow-up — hint that known-slug reads should skip the
+	 * cross-source enumeration.
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'blocks/read-block-template',
+				'reason' => __( 'If you already know the template slug, a targeted read-block-template is far cheaper than enumerating templates across every source (db + theme + plugin). List is for discovery; read is for retrieval.', 'acrossai-abilities-manager' ),
+				'saves'  => __( '~5-15x fewer tokens for known-slug reads', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.
