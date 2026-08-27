@@ -85,6 +85,11 @@ class Create_Block_Template_Part extends Ability_Definition {
 							'enum'    => array( 'publish', 'draft', 'private', 'pending' ),
 							'default' => 'publish',
 						),
+						'return_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'When true, the response includes the saved part.content field. Default false: the large block markup is stripped and content_bytes is returned instead, so a small edit does not echo the whole template part body back through the tunnel.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'slug', 'content' ),
 					'additionalProperties' => false,
@@ -92,11 +97,12 @@ class Create_Block_Template_Part extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'   => array( 'type' => 'boolean' ),
-						'part'      => array( 'type' => 'object' ),
-						'warnings'  => array( 'type' => 'array' ),
-						'message'   => array( 'type' => 'string' ),
-						'locations' => array(
+						'success'       => array( 'type' => 'boolean' ),
+						'part'          => array( 'type' => 'object' ),
+						'content_bytes' => array( 'type' => 'integer' ),
+						'warnings'      => array( 'type' => 'array' ),
+						'message'       => array( 'type' => 'string' ),
+						'locations'     => array(
 							'type'        => 'array',
 							'description' => __( 'Existing locations of the same slug (populated only when the request is rejected because a copy already exists).', 'acrossai-abilities-manager' ),
 						),
@@ -229,16 +235,24 @@ class Create_Block_Template_Part extends Ability_Definition {
 			$warnings[] = __( 'On multisite, this DB template part is scoped to the current site only.', 'acrossai-abilities-manager' );
 		}
 
+		$content_bytes  = $post ? strlen( (string) $post->post_content ) : 0;
+		$return_content = ! empty( $input['return_content'] );
+		$row            = $post ? Template_Part_Db::to_row( $post ) : array(
+			'source'  => 'db',
+			'slug'    => $slug,
+			'post_id' => (int) $result,
+		);
+		if ( ! $return_content ) {
+			unset( $row['content'] );
+		}
+
 		return array(
-			'success'  => true,
+			'success'       => true,
 			/* translators: %s: slug */
-			'message'  => sprintf( __( 'Created DB template part "%s".', 'acrossai-abilities-manager' ), $slug ),
-			'part'     => $post ? Template_Part_Db::to_row( $post ) : array(
-				'source'  => 'db',
-				'slug'    => $slug,
-				'post_id' => (int) $result,
-			),
-			'warnings' => $warnings,
+			'message'       => sprintf( __( 'Created DB template part "%s".', 'acrossai-abilities-manager' ), $slug ),
+			'part'          => $row,
+			'content_bytes' => $content_bytes,
+			'warnings'      => $warnings,
 		);
 	}
 

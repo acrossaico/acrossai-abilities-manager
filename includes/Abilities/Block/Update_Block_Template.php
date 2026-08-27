@@ -101,6 +101,11 @@ class Update_Block_Template extends Ability_Definition {
 							'default'     => false,
 							'description' => __( 'After migration, remove the source copy. Parent-theme and plugin files are never deleted.', 'acrossai-abilities-manager' ),
 						),
+						'return_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'When true, the response includes the saved template.content field. Default false: the large block markup is stripped and content_bytes is returned instead, so a small edit does not echo the whole template body back through the tunnel.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'slug' ),
 					'additionalProperties' => false,
@@ -108,13 +113,14 @@ class Update_Block_Template extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'    => array( 'type' => 'boolean' ),
-						'template'   => array( 'type' => 'object' ),
-						'migrated'   => array( 'type' => 'boolean' ),
-						'warnings'   => array( 'type' => 'array' ),
-						'locations'  => array( 'type' => 'array' ),
-						'candidates' => array( 'type' => 'array' ),
-						'message'    => array( 'type' => 'string' ),
+						'success'       => array( 'type' => 'boolean' ),
+						'template'      => array( 'type' => 'object' ),
+						'content_bytes' => array( 'type' => 'integer' ),
+						'migrated'      => array( 'type' => 'boolean' ),
+						'warnings'      => array( 'type' => 'array' ),
+						'locations'     => array( 'type' => 'array' ),
+						'candidates'    => array( 'type' => 'array' ),
+						'message'       => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -242,13 +248,21 @@ class Update_Block_Template extends Ability_Definition {
 			);
 		}
 
-		$updated = get_post( (int) $result );
+		$updated        = get_post( (int) $result );
+		$content_bytes  = $updated ? strlen( (string) $updated->post_content ) : 0;
+		$return_content = ! empty( $input['return_content'] );
+		$row            = $updated ? Template_Db::to_row( $updated ) : array();
+		if ( ! $return_content ) {
+			unset( $row['content'] );
+		}
+
 		return array(
-			'success'  => true,
+			'success'       => true,
 			/* translators: %s: slug */
-			'message'  => sprintf( __( 'Updated DB template "%s".', 'acrossai-abilities-manager' ), $updated ? $updated->post_name : '' ),
-			'template' => $updated ? Template_Db::to_row( $updated ) : array(),
-			'warnings' => array(),
+			'message'       => sprintf( __( 'Updated DB template "%s".', 'acrossai-abilities-manager' ), $updated ? $updated->post_name : '' ),
+			'template'      => $row,
+			'content_bytes' => $content_bytes,
+			'warnings'      => array(),
 		);
 	}
 
@@ -436,13 +450,21 @@ class Update_Block_Template extends Ability_Definition {
 				$warnings[] = __( 'Skipped deleting source — parent-theme and plugin files are preserved.', 'acrossai-abilities-manager' );
 			}
 
+			$content_bytes  = $new_post ? strlen( (string) $new_post->post_content ) : 0;
+			$return_content = ! empty( $input['return_content'] );
+			$row            = $new_post ? Template_Db::to_row( $new_post ) : array();
+			if ( ! $return_content ) {
+				unset( $row['content'] );
+			}
+
 			return array(
-				'success'  => true,
+				'success'       => true,
 				/* translators: %s: slug */
-				'message'  => sprintf( __( 'Migrated "%s" from file to database.', 'acrossai-abilities-manager' ), $slug ),
-				'template' => $new_post ? Template_Db::to_row( $new_post ) : array(),
-				'migrated' => true,
-				'warnings' => $warnings,
+				'message'       => sprintf( __( 'Migrated "%s" from file to database.', 'acrossai-abilities-manager' ), $slug ),
+				'template'      => $row,
+				'content_bytes' => $content_bytes,
+				'migrated'      => true,
+				'warnings'      => $warnings,
 			);
 		}
 

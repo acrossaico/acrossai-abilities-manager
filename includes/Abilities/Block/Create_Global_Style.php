@@ -86,17 +86,23 @@ class Create_Global_Style extends Ability_Definition {
 							'type'        => array( 'string', 'object' ),
 							'description' => __( 'Section data (string or object). Required when "section" is provided; ignored otherwise.', 'acrossai-abilities-manager' ),
 						),
+						'return_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'When true, the response includes the saved theme.json JSON as record.data. Default false: the large JSON blob is stripped and content_bytes is returned instead, so a small edit does not echo the whole record back through the tunnel.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'additionalProperties' => false,
 				),
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'   => array( 'type' => 'boolean' ),
-						'record'    => array( 'type' => 'object' ),
-						'warnings'  => array( 'type' => 'array' ),
-						'locations' => array( 'type' => 'array' ),
-						'message'   => array( 'type' => 'string' ),
+						'success'       => array( 'type' => 'boolean' ),
+						'record'        => array( 'type' => 'object' ),
+						'content_bytes' => array( 'type' => 'integer' ),
+						'warnings'      => array( 'type' => 'array' ),
+						'locations'     => array( 'type' => 'array' ),
+						'message'       => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -159,9 +165,11 @@ class Create_Global_Style extends Ability_Definition {
 			);
 		}
 
+		$return_content = ! empty( $input['return_content'] );
+
 		switch ( $source ) {
 			case 'db':
-				return $this->create_db( $theme, $payload );
+				return $this->create_db( $theme, $payload, $return_content );
 
 			case 'child_theme':
 				return $this->create_theme_file( $payload, true, '' );
@@ -240,9 +248,10 @@ class Create_Global_Style extends Ability_Definition {
 	 *
 	 * @param string $theme
 	 * @param array $payload
+	 * @param bool $return_content
 	 * @return array
 	 */
-	private function create_db( string $theme, array $payload ): array {
+	private function create_db( string $theme, array $payload, bool $return_content ): array {
 		$theme = '' !== $theme ? $theme : (string) get_stylesheet();
 
 		$id = Global_Styles_Db::create( $theme, $payload );
@@ -259,12 +268,15 @@ class Create_Global_Style extends Ability_Definition {
 			$warnings[] = __( 'You are creating styles for a non-active theme. Site visitors will only see them after that theme is activated.', 'acrossai-abilities-manager' );
 		}
 
+		$content_bytes = $post ? strlen( (string) $post->post_content ) : 0;
+
 		return array(
-			'success'  => true,
+			'success'       => true,
 			/* translators: %s: theme */
-			'message'  => sprintf( __( 'Created Global Styles record for theme "%s".', 'acrossai-abilities-manager' ), $theme ),
-			'record'   => $post ? Global_Styles_Db::to_row( $post, true ) : array(),
-			'warnings' => $warnings,
+			'message'       => sprintf( __( 'Created Global Styles record for theme "%s".', 'acrossai-abilities-manager' ), $theme ),
+			'record'        => $post ? Global_Styles_Db::to_row( $post, $return_content ) : array(),
+			'content_bytes' => $content_bytes,
+			'warnings'      => $warnings,
 		);
 	}
 

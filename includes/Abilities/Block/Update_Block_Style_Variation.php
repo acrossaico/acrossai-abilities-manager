@@ -101,6 +101,11 @@ class Update_Block_Style_Variation extends Ability_Definition {
 							'type'    => 'boolean',
 							'default' => false,
 						),
+						'return_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'When true, the response includes the saved variation JSON as variation.data. Default false: the large JSON blob is stripped and content_bytes is returned instead, so a small edit does not echo the whole variation back through the tunnel.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'slug' ),
 					'additionalProperties' => false,
@@ -108,13 +113,14 @@ class Update_Block_Style_Variation extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'    => array( 'type' => 'boolean' ),
-						'variation'  => array( 'type' => 'object' ),
-						'migrated'   => array( 'type' => 'boolean' ),
-						'warnings'   => array( 'type' => 'array' ),
-						'locations'  => array( 'type' => 'array' ),
-						'candidates' => array( 'type' => 'array' ),
-						'message'    => array( 'type' => 'string' ),
+						'success'       => array( 'type' => 'boolean' ),
+						'variation'     => array( 'type' => 'object' ),
+						'content_bytes' => array( 'type' => 'integer' ),
+						'migrated'      => array( 'type' => 'boolean' ),
+						'warnings'      => array( 'type' => 'array' ),
+						'locations'     => array( 'type' => 'array' ),
+						'candidates'    => array( 'type' => 'array' ),
+						'message'       => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -197,8 +203,10 @@ class Update_Block_Style_Variation extends Ability_Definition {
 			return $this->error_response( $payload );
 		}
 
+		$return_content = ! empty( $input['return_content'] );
+
 		if ( '' !== $migrate_to ) {
-			return $this->migrate( $selected, $migrate_to, $delete_source, $payload, $input );
+			return $this->migrate( $selected, $migrate_to, $delete_source, $payload, $input, $return_content );
 		}
 
 		if ( 'theme' === $selected_src && 'parent' === ( $selected['theme_type'] ?? '' ) ) {
@@ -211,7 +219,7 @@ class Update_Block_Style_Variation extends Ability_Definition {
 
 		switch ( $selected_src ) {
 			case 'db':
-				return $this->update_db( $selected, $payload, $merge, $input );
+				return $this->update_db( $selected, $payload, $merge, $input, $return_content );
 			case 'theme':
 			case 'plugin':
 				return $this->update_file( $selected, $payload, $merge, $input );
@@ -230,9 +238,10 @@ class Update_Block_Style_Variation extends Ability_Definition {
 	 * @param array $payload
 	 * @param bool $merge
 	 * @param array $input
+	 * @param bool $return_content
 	 * @return array
 	 */
-	private function update_db( array $loc, array $payload, bool $merge, array $input ): array {
+	private function update_db( array $loc, array $payload, bool $merge, array $input, bool $return_content ): array {
 		$post = get_post( (int) ( $loc['post_id'] ?? 0 ) );
 		if ( ! $post ) {
 			return array(
@@ -253,12 +262,15 @@ class Update_Block_Style_Variation extends Ability_Definition {
 			return $this->error_response( $result );
 		}
 
-		$updated = get_post( (int) $result );
+		$updated       = get_post( (int) $result );
+		$content_bytes = $updated ? strlen( (string) $updated->post_content ) : 0;
+
 		return array(
-			'success'   => true,
-			'message'   => __( 'Updated DB variation.', 'acrossai-abilities-manager' ),
-			'variation' => $updated ? Variation_Db::to_row( $updated, true ) : array(),
-			'warnings'  => array(),
+			'success'       => true,
+			'message'       => __( 'Updated DB variation.', 'acrossai-abilities-manager' ),
+			'variation'     => $updated ? Variation_Db::to_row( $updated, $return_content ) : array(),
+			'content_bytes' => $content_bytes,
+			'warnings'      => array(),
 		);
 	}
 
@@ -353,7 +365,7 @@ class Update_Block_Style_Variation extends Ability_Definition {
 	/**
 	 * Cross-source migration (Scenarios 30, 31).
 	 */
-	private function migrate( array $loc, string $migrate_to, bool $delete_source, array $payload, array $input ): array {
+	private function migrate( array $loc, string $migrate_to, bool $delete_source, array $payload, array $input, bool $return_content ): array {
 		$slug     = (string) ( $loc['slug'] ?? '' );
 		$src      = (string) ( $loc['source'] ?? '' );
 		$theme    = sanitize_key( $input['theme'] ?? '' );
@@ -418,14 +430,17 @@ class Update_Block_Style_Variation extends Ability_Definition {
 				$warnings[] = __( 'Skipped deleting source — parent-theme and plugin files are preserved.', 'acrossai-abilities-manager' );
 			}
 
-			$new_post = get_post( (int) $id );
+			$new_post      = get_post( (int) $id );
+			$content_bytes = $new_post ? strlen( (string) $new_post->post_content ) : 0;
+
 			return array(
-				'success'   => true,
+				'success'       => true,
 				/* translators: %s: slug */
-				'message'   => sprintf( __( 'Migrated variation "%s" from file to database.', 'acrossai-abilities-manager' ), $slug ),
-				'variation' => $new_post ? Variation_Db::to_row( $new_post, true ) : array(),
-				'migrated'  => true,
-				'warnings'  => $warnings,
+				'message'       => sprintf( __( 'Migrated variation "%s" from file to database.', 'acrossai-abilities-manager' ), $slug ),
+				'variation'     => $new_post ? Variation_Db::to_row( $new_post, $return_content ) : array(),
+				'content_bytes' => $content_bytes,
+				'migrated'      => true,
+				'warnings'      => $warnings,
 			);
 		}
 

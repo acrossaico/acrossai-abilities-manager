@@ -88,6 +88,11 @@ class Create_Block_Style_Variation extends Ability_Definition {
 							'type'        => array( 'string', 'object' ),
 							'description' => __( 'Section data; required when "section" is provided.', 'acrossai-abilities-manager' ),
 						),
+						'return_content' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'When true, the response includes the saved variation JSON as variation.data. Default false: the large JSON blob is stripped and content_bytes is returned instead, so a small edit does not echo the whole variation back through the tunnel.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'slug' ),
 					'additionalProperties' => false,
@@ -95,11 +100,12 @@ class Create_Block_Style_Variation extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'   => array( 'type' => 'boolean' ),
-						'variation' => array( 'type' => 'object' ),
-						'warnings'  => array( 'type' => 'array' ),
-						'locations' => array( 'type' => 'array' ),
-						'message'   => array( 'type' => 'string' ),
+						'success'       => array( 'type' => 'boolean' ),
+						'variation'     => array( 'type' => 'object' ),
+						'content_bytes' => array( 'type' => 'integer' ),
+						'warnings'      => array( 'type' => 'array' ),
+						'locations'     => array( 'type' => 'array' ),
+						'message'       => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -169,9 +175,11 @@ class Create_Block_Style_Variation extends Ability_Definition {
 			);
 		}
 
+		$return_content = ! empty( $input['return_content'] );
+
 		switch ( $source ) {
 			case 'db':
-				return $this->create_db( $slug, $payload, $theme, $input );
+				return $this->create_db( $slug, $payload, $theme, $input, $return_content );
 			case 'child_theme':
 				return $this->create_theme_file( $slug, $payload, true, '', $input );
 			case 'theme':
@@ -243,9 +251,10 @@ class Create_Block_Style_Variation extends Ability_Definition {
 	 * @param array $payload
 	 * @param string $theme
 	 * @param array $input
+	 * @param bool $return_content
 	 * @return array
 	 */
-	private function create_db( string $slug, array $payload, string $theme, array $input ): array {
+	private function create_db( string $slug, array $payload, string $theme, array $input, bool $return_content ): array {
 		$theme = '' !== $theme ? $theme : (string) get_stylesheet();
 		$id    = Variation_Db::create(
 			$theme,
@@ -269,12 +278,15 @@ class Create_Block_Style_Variation extends Ability_Definition {
 			$warnings[] = __( 'You are creating a variation for a non-active theme — it will only appear after that theme is activated.', 'acrossai-abilities-manager' );
 		}
 
+		$content_bytes = $post ? strlen( (string) $post->post_content ) : 0;
+
 		return array(
-			'success'   => true,
+			'success'       => true,
 			/* translators: 1: slug, 2: theme */
-			'message'   => sprintf( __( 'Created variation "%1$s" for theme "%2$s".', 'acrossai-abilities-manager' ), $slug, $theme ),
-			'variation' => $post ? Variation_Db::to_row( $post, true ) : array(),
-			'warnings'  => $warnings,
+			'message'       => sprintf( __( 'Created variation "%1$s" for theme "%2$s".', 'acrossai-abilities-manager' ), $slug, $theme ),
+			'variation'     => $post ? Variation_Db::to_row( $post, $return_content ) : array(),
+			'content_bytes' => $content_bytes,
+			'warnings'      => $warnings,
 		);
 	}
 
