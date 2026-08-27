@@ -98,6 +98,39 @@ abstract class Ability_Definition {
 	}
 
 	/**
+	 * Return other abilities an AI caller might use instead of this one.
+	 *
+	 * Optional; default is an empty list. Override in subclasses that want to
+	 * hint AI callers at cheaper alternatives — e.g. `content/update-page`
+	 * pointing at `blocks/outline-post-blocks` + `blocks/update-post-block`
+	 * for narrow edits that don't need a full-body rewrite.
+	 *
+	 * Each entry SHOULD include:
+	 *   - 'slug'   (string, required) another ability's registered name
+	 *   - 'reason' (string, required) one-line hint the AI reads
+	 *
+	 * And MAY include:
+	 *   - 'saves'  (string) free-form savings hint, e.g.
+	 *              "~29K tokens vs full page rewrite on a 97 KB page".
+	 *
+	 * The framework does NOT validate that the slug points at a registered
+	 * ability (third-party ability plugins ship suggestions pointing at
+	 * abilities their users may not have installed — validation would break
+	 * that pattern). It also does NOT enforce field-level shape; ability
+	 * tests should guard entries with empty slug or reason.
+	 *
+	 * Feature 095. Mirror of `suggested_plugins()` (Feature 088). Advisory
+	 * only — no ability's execution depends on which suggestion the AI does
+	 * or does not take.
+	 *
+	 * @since 0.0.34
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array();
+	}
+
+	/**
 	 * Filter callback — wired automatically by the constructor.
 	 *
 	 * Derives Library grouping fields from ability() so subclasses only need
@@ -124,6 +157,20 @@ abstract class Ability_Definition {
 				$args['meta']['acrossai'] = array();
 			}
 			$args['meta']['acrossai']['suggested_plugins'] = array_values( $suggested );
+		}
+
+		// Feature 095: auto-inject subclass-declared suggested abilities into
+		// meta.acrossai.suggested_abilities. Same silent-default behaviour —
+		// empty override yields byte-identical payload to pre-Feature-095.
+		$suggested_abilities = $this->suggested_abilities();
+		if ( ! empty( $suggested_abilities ) && is_array( $suggested_abilities ) ) {
+			if ( ! isset( $args['meta'] ) || ! is_array( $args['meta'] ) ) {
+				$args['meta'] = array();
+			}
+			if ( ! isset( $args['meta']['acrossai'] ) || ! is_array( $args['meta']['acrossai'] ) ) {
+				$args['meta']['acrossai'] = array();
+			}
+			$args['meta']['acrossai']['suggested_abilities'] = array_values( $suggested_abilities );
 		}
 
 		$category = $args['category'] ?? '';
