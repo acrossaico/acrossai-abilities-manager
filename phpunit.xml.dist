@@ -37,6 +37,7 @@
 			<file>tests/phpunit/abilities/Test_Ability_Suggestions_Framework.php</file>
 			<file>tests/phpunit/abilities/Test_Ability_Suggestions_Kill_Switch.php</file>
 			<file>tests/phpunit/abilities/Test_Get_Post_Blocks_Scoping.php</file>
+			<file>tests/phpunit/abilities/Test_Block_Writers_Return_Content_Flag.php</file>
 		</testsuite>
 		<testsuite name="library-unit">
 			<file>tests/phpunit/Modules/Library/Test_Ability_Definition.php</file>
