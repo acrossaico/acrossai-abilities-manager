@@ -84,6 +84,7 @@ class Create_Comment extends Ability_Definition {
 						'destructive' => false,
 						'idempotent'  => false,
 					),
+					'input_flags'  => Slash_Input::meta_flags(),
 				),
 			),
 		);

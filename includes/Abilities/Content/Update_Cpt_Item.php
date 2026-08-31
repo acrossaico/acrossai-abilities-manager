@@ -88,6 +88,7 @@ class Update_Cpt_Item extends Ability_Definition {
 						'destructive' => false,
 						'idempotent'  => true,
 					),
+					'input_flags'  => Slash_Input::meta_flags(),
 				),
 			),
 		);

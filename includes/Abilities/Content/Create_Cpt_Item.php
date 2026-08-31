@@ -90,6 +90,7 @@ class Create_Cpt_Item extends Ability_Definition {
 						'destructive' => false,
 						'idempotent'  => false,
 					),
+					'input_flags'  => Slash_Input::meta_flags(),
 				),
 			),
 		);

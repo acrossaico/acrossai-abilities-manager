@@ -39,6 +39,26 @@ class Slash_Input {
 	}
 
 	/**
+	 * Meta annotation advertising the flag on the ability's `meta` block. Lets
+	 * discovery tooling and AI clients see that this ability supports the
+	 * apply_wp_slash opt-out without fetching the full input_schema.
+	 *
+	 * Merge into an ability's top-level `meta` array as
+	 *   'input_flags' => Slash_Input::meta_flags(),
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	public static function meta_flags(): array {
+		return array(
+			'apply_wp_slash' => array(
+				'default'     => true,
+				'summary'     => __( 'Toggle wp_slash() on caller-supplied strings before the core write. Default true preserves backslashes; false skips escaping.', 'acrossai-abilities-manager' ),
+				'schema_path' => 'input_schema.properties.apply_wp_slash',
+			),
+		);
+	}
+
+	/**
 	 * Wrap $value with wp_slash() unless the ability input explicitly opts out.
 	 *
 	 * Missing key OR true → slash. Only literal boolean false skips.

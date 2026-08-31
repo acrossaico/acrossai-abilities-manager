@@ -100,6 +100,7 @@ class Add_Post_Meta extends Ability_Definition {
 						'destructive' => false,
 						'idempotent'  => false,
 					),
+					'input_flags'  => Slash_Input::meta_flags(),
 				),
 			),
 		);
