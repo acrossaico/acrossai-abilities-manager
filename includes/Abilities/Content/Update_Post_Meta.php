@@ -120,7 +120,7 @@ class Update_Post_Meta extends Ability_Definition {
 		}
 
 		$value  = array_key_exists( 'value', $input ) ? $input['value'] : ( $input['meta_value'] ?? '' );
-		$result = update_post_meta( $post_id, $key, $value );
+		$result = update_post_meta( $post_id, $key, wp_slash( $value ) );
 
 		return array(
 			'success' => true,

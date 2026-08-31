@@ -216,7 +216,7 @@ class Update_Post extends Ability_Definition {
 			}
 		}
 
-		$result = wp_update_post( $args, true );
+		$result = wp_update_post( wp_slash( $args ), true );
 		if ( is_wp_error( $result ) ) {
 			return array(
 				'success'           => false,

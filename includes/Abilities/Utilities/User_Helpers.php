@@ -155,7 +155,7 @@ class User_Helpers {
 				continue;
 			}
 			$value  = self::maybe_decode_json( $value );
-			$result = update_user_meta( $user_id, $key, $value );
+			$result = update_user_meta( $user_id, $key, wp_slash( $value ) );
 			if ( false === $result ) {
 				$failed[] = $key;
 			} else {

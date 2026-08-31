@@ -174,7 +174,7 @@ class Create_User extends Ability_Definition {
 			$user_data['role'] = $role;
 		}
 
-		$user_id = wp_insert_user( $user_data );
+		$user_id = wp_insert_user( wp_slash( $user_data ) );
 
 		if ( is_wp_error( $user_id ) ) {
 			return array(
