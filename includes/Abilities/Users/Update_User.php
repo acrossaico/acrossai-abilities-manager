@@ -198,7 +198,7 @@ class Update_User extends Ability_Definition {
 		$meta_updated = array();
 		$meta_failed  = array();
 		if ( ! empty( $input['meta'] ) && ( is_array( $input['meta'] ) || is_object( $input['meta'] ) ) ) {
-			$meta_result  = User_Helpers::apply_meta( $user_id, (array) $input['meta'], false !== ( $input['apply_wp_slash'] ?? true ) );
+			$meta_result  = User_Helpers::apply_meta( $user_id, (array) $input['meta'], $input );
 			$meta_updated = $meta_result['updated'];
 			$meta_failed  = $meta_result['failed'];
 		}
