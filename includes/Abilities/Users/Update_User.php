@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\Users;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\User_Helpers;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -84,6 +85,7 @@ class Update_User extends Ability_Definition {
 							'default'     => false,
 							'description' => __( 'Destroy every active login session for this user after the update completes.', 'acrossai-abilities-manager' ),
 						),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'required'             => array( 'user' ),
 					'additionalProperties' => false,
@@ -180,7 +182,7 @@ class Update_User extends Ability_Definition {
 
 		// Apply core-field update only if at least one field was supplied.
 		if ( $has_field ) {
-			$result = wp_update_user( wp_slash( $update ) );
+			$result = wp_update_user( Slash_Input::slash( $update, $input ) );
 
 			if ( is_wp_error( $result ) ) {
 				return array(
@@ -196,7 +198,7 @@ class Update_User extends Ability_Definition {
 		$meta_updated = array();
 		$meta_failed  = array();
 		if ( ! empty( $input['meta'] ) && ( is_array( $input['meta'] ) || is_object( $input['meta'] ) ) ) {
-			$meta_result  = User_Helpers::apply_meta( $user_id, (array) $input['meta'] );
+			$meta_result  = User_Helpers::apply_meta( $user_id, (array) $input['meta'], false !== ( $input['apply_wp_slash'] ?? true ) );
 			$meta_updated = $meta_result['updated'];
 			$meta_failed  = $meta_result['failed'];
 		}

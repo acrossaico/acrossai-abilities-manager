@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Taxonomies;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -47,6 +48,7 @@ class Update_Term extends Ability_Definition {
 						'slug'        => array( 'type' => 'string' ),
 						'description' => array( 'type' => 'string' ),
 						'parent'      => array( 'type' => 'integer' ),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'required'             => array( 'taxonomy', 'id' ),
 					'additionalProperties' => false,
@@ -133,7 +135,7 @@ class Update_Term extends Ability_Definition {
 			);
 		}
 
-		$result = wp_update_term( $id, $taxonomy, wp_slash( $args ) );
+		$result = wp_update_term( $id, $taxonomy, Slash_Input::slash( $args, $input ) );
 		if ( is_wp_error( $result ) ) {
 			return Term_Formatter::error_from(
 				$result,

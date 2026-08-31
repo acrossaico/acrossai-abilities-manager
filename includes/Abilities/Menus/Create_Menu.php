@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Menus;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -45,6 +46,7 @@ class Create_Menu extends Ability_Definition {
 							'type'  => 'array',
 							'items' => array( 'type' => 'string' ),
 						),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'required'             => array( 'name' ),
 					'additionalProperties' => false,
@@ -103,13 +105,13 @@ class Create_Menu extends Ability_Definition {
 			$args['description'] = (string) $input['description'];
 		}
 
-		$menu_id = wp_create_nav_menu( wp_slash( $name ) );
+		$menu_id = wp_create_nav_menu( Slash_Input::slash( $name, $input ) );
 		if ( is_wp_error( $menu_id ) ) {
 			return Menu_Formatter::error_from( $menu_id, __( 'Could not create menu.', 'acrossai-abilities-manager' ) );
 		}
 
 		if ( ! empty( $args ) ) {
-			wp_update_nav_menu_object( (int) $menu_id, wp_slash( $args ) );
+			wp_update_nav_menu_object( (int) $menu_id, Slash_Input::slash( $args, $input ) );
 		}
 
 		if ( ! empty( $input['locations'] ) && is_array( $input['locations'] ) ) {

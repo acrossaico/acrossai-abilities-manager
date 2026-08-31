@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Comments;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -47,6 +48,7 @@ class Update_Comment extends Ability_Definition {
 						'author_name'  => array( 'type' => 'string' ),
 						'author_email' => array( 'type' => 'string' ),
 						'author_url'   => array( 'type' => 'string' ),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'required'             => array( 'id' ),
 					'additionalProperties' => false,
@@ -128,7 +130,7 @@ class Update_Comment extends Ability_Definition {
 			);
 		}
 
-		$result = wp_update_comment( wp_slash( $data ), true );
+		$result = wp_update_comment( Slash_Input::slash( $data, $input ), true );
 		if ( is_wp_error( $result ) || false === $result ) {
 			return Comment_Formatter::error_from(
 				$result,

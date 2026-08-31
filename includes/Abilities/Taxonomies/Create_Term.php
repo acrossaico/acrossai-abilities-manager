@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Taxonomies;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -46,6 +47,7 @@ class Create_Term extends Ability_Definition {
 							'type'    => 'integer',
 							'default' => 0,
 						),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'required'             => array( 'taxonomy', 'name' ),
 					'additionalProperties' => false,
@@ -116,7 +118,7 @@ class Create_Term extends Ability_Definition {
 			$args['parent'] = (int) $input['parent'];
 		}
 
-		$result = wp_insert_term( wp_slash( $name ), $taxonomy, wp_slash( $args ) );
+		$result = wp_insert_term( Slash_Input::slash( $name, $input ), $taxonomy, Slash_Input::slash( $args, $input ) );
 		if ( is_wp_error( $result ) ) {
 			return Term_Formatter::error_from( $result, __( 'Could not create term.', 'acrossai-abilities-manager' ) );
 		}

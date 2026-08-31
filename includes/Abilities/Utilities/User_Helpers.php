@@ -144,9 +144,10 @@ class User_Helpers {
 	 *
 	 * @param int                  $user_id
 	 * @param array<string, mixed> $meta
+	 * @param bool                 $apply_slash Whether to wp_slash values before writing. Default true (matches WP core wp_unslash contract).
 	 * @return array{updated: string[], failed: string[]}
 	 */
-	public static function apply_meta( int $user_id, array $meta ): array {
+	public static function apply_meta( int $user_id, array $meta, bool $apply_slash = true ): array {
 		$updated = array();
 		$failed  = array();
 		foreach ( $meta as $key => $value ) {
@@ -155,7 +156,7 @@ class User_Helpers {
 				continue;
 			}
 			$value  = self::maybe_decode_json( $value );
-			$result = update_user_meta( $user_id, $key, wp_slash( $value ) );
+			$result = update_user_meta( $user_id, $key, $apply_slash ? wp_slash( $value ) : $value );
 			if ( false === $result ) {
 				$failed[] = $key;
 			} else {

@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Menus;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -69,6 +70,7 @@ class Create_Menu_Item extends Ability_Definition {
 							'type'  => 'array',
 							'items' => array( 'type' => 'string' ),
 						),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'required'             => array( 'title' ),
 					'additionalProperties' => false,
@@ -134,7 +136,7 @@ class Create_Menu_Item extends Ability_Definition {
 
 		$args = self::build_item_args( $title, $input );
 
-		$new_id = wp_update_nav_menu_item( $menu_id, 0, wp_slash( $args ) );
+		$new_id = wp_update_nav_menu_item( $menu_id, 0, Slash_Input::slash( $args, $input ) );
 		if ( is_wp_error( $new_id ) || 0 === $new_id ) {
 			return Menu_Formatter::error_from( $new_id, __( 'Could not create menu item.', 'acrossai-abilities-manager' ) );
 		}

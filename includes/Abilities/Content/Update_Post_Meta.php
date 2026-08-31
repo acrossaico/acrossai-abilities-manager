@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -52,6 +53,7 @@ class Update_Post_Meta extends Ability_Definition {
 							'type'        => array( 'string', 'integer', 'number', 'boolean', 'array', 'object', 'null' ),
 							'description' => __( 'Alias for "value" (matches WordPress core naming). If both are provided, "value" wins.', 'acrossai-abilities-manager' ),
 						),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'allOf'                => array(
 						array( 'required' => array( 'post_id' ) ),
@@ -120,7 +122,7 @@ class Update_Post_Meta extends Ability_Definition {
 		}
 
 		$value  = array_key_exists( 'value', $input ) ? $input['value'] : ( $input['meta_value'] ?? '' );
-		$result = update_post_meta( $post_id, $key, wp_slash( $value ) );
+		$result = update_post_meta( $post_id, $key, Slash_Input::slash( $value, $input ) );
 
 		return array(
 			'success' => true,
