@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Media;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -46,6 +47,7 @@ class Update_Media extends Ability_Definition {
 						'caption'     => array( 'type' => 'string' ),
 						'description' => array( 'type' => 'string' ),
 						'alt_text'    => array( 'type' => 'string' ),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'required'             => array( 'id' ),
 					'additionalProperties' => false,
@@ -80,6 +82,7 @@ class Update_Media extends Ability_Definition {
 						'destructive' => false,
 						'idempotent'  => true,
 					),
+					'input_flags'  => Slash_Input::meta_flags(),
 				),
 			),
 		);
@@ -128,7 +131,7 @@ class Update_Media extends Ability_Definition {
 		}
 
 		if ( $has_change ) {
-			$result = wp_update_post( wp_slash( $post_data ), true );
+			$result = wp_update_post( Slash_Input::slash( $post_data, $input ), true );
 			if ( is_wp_error( $result ) || 0 === $result ) {
 				return Media_Formatter::error_from(
 					$result,
@@ -139,7 +142,7 @@ class Update_Media extends Ability_Definition {
 		}
 
 		if ( isset( $input['alt_text'] ) ) {
-			update_post_meta( $id, '_wp_attachment_image_alt', wp_slash( (string) $input['alt_text'] ) );
+			update_post_meta( $id, '_wp_attachment_image_alt', Slash_Input::slash( (string) $input['alt_text'], $input ) );
 			$updated[] = 'alt_text';
 		}
 

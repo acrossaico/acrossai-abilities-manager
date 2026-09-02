@@ -54,7 +54,7 @@ class Test_Add_Post_Meta extends WP_UnitTestCase {
 	}
 
 	public function test_calls_add_post_meta_with_unique_flag(): void {
-		$this->assertStringContainsString( 'add_post_meta( $post_id, $key, wp_slash( $value ), $unique )', $this->src );
+		$this->assertStringContainsString( 'add_post_meta( $post_id, $key, Slash_Input::slash( $value, $input ), $unique )', $this->src );
 	}
 
 	public function test_accepts_key_and_meta_key_aliases(): void {

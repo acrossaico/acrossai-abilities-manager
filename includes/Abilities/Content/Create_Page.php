@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -60,6 +61,7 @@ class Create_Page extends Ability_Definition {
 							'default'     => false,
 							'description' => __( 'When true, the response includes the saved post_content / post_excerpt / post_content_filtered fields. Default false: those large fields are stripped and content_bytes is returned instead.', 'acrossai-abilities-manager' ),
 						),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'required'             => array( 'title' ),
 					'additionalProperties' => false,
@@ -92,6 +94,7 @@ class Create_Page extends Ability_Definition {
 						'destructive' => false,
 						'idempotent'  => false,
 					),
+					'input_flags'  => Slash_Input::meta_flags(),
 				),
 			),
 		);
@@ -122,7 +125,7 @@ class Create_Page extends Ability_Definition {
 			$args['meta_input'] = $input['meta'];
 		}
 
-		$id = wp_insert_post( wp_slash( $args ), true );
+		$id = wp_insert_post( Slash_Input::slash( $args, $input ), true );
 		if ( is_wp_error( $id ) ) {
 			return array(
 				'success' => false,

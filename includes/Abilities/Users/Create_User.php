@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Users;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -62,6 +63,7 @@ class Create_User extends Ability_Definition {
 							'type'        => 'string',
 							'description' => __( 'Role slug to assign (defaults to default_role option).', 'acrossai-abilities-manager' ),
 						),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'required'             => array( 'username', 'email' ),
 					'additionalProperties' => false,
@@ -92,6 +94,7 @@ class Create_User extends Ability_Definition {
 						'destructive' => false,
 						'idempotent'  => false,
 					),
+					'input_flags'  => Slash_Input::meta_flags(),
 				),
 			),
 		);
@@ -174,7 +177,7 @@ class Create_User extends Ability_Definition {
 			$user_data['role'] = $role;
 		}
 
-		$user_id = wp_insert_user( wp_slash( $user_data ) );
+		$user_id = wp_insert_user( Slash_Input::slash( $user_data, $input ) );
 
 		if ( is_wp_error( $user_id ) ) {
 			return array(

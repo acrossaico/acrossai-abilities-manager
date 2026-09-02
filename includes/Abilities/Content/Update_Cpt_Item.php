@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -54,6 +55,7 @@ class Update_Cpt_Item extends Ability_Definition {
 							'default'     => false,
 							'description' => __( 'When true, the response includes the saved post_content / post_excerpt / post_content_filtered fields. Default false: those large fields are stripped and content_bytes is returned instead.', 'acrossai-abilities-manager' ),
 						),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'required'             => array( 'post_type', 'id' ),
 					'additionalProperties' => false,
@@ -86,6 +88,7 @@ class Update_Cpt_Item extends Ability_Definition {
 						'destructive' => false,
 						'idempotent'  => true,
 					),
+					'input_flags'  => Slash_Input::meta_flags(),
 				),
 			),
 		);
@@ -156,7 +159,7 @@ class Update_Cpt_Item extends Ability_Definition {
 			$args['meta_input'] = $input['meta'];
 		}
 
-		$result = wp_update_post( wp_slash( $args ), true );
+		$result = wp_update_post( Slash_Input::slash( $args, $input ), true );
 		if ( is_wp_error( $result ) ) {
 			return array(
 				'success' => false,

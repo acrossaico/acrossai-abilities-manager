@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Comments;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -52,6 +53,7 @@ class Create_Comment extends Ability_Definition {
 							'default' => 0,
 						),
 						'status'       => array( 'type' => 'string' ),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'required'             => array( 'post', 'content' ),
 					'additionalProperties' => false,
@@ -82,6 +84,7 @@ class Create_Comment extends Ability_Definition {
 						'destructive' => false,
 						'idempotent'  => false,
 					),
+					'input_flags'  => Slash_Input::meta_flags(),
 				),
 			),
 		);
@@ -123,7 +126,7 @@ class Create_Comment extends Ability_Definition {
 			$data['comment_author_url'] = (string) $input['author_url'];
 		}
 
-		$new_id = wp_insert_comment( wp_slash( $data ) );
+		$new_id = wp_insert_comment( Slash_Input::slash( $data, $input ) );
 		if ( ! $new_id ) {
 			return Comment_Formatter::error_from( false, __( 'Could not create comment.', 'acrossai-abilities-manager' ) );
 		}

@@ -10,6 +10,8 @@
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities;
 
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -144,9 +146,10 @@ class User_Helpers {
 	 *
 	 * @param int                  $user_id
 	 * @param array<string, mixed> $meta
+	 * @param array<mixed,mixed>   $input Ability input payload; forwarded to Slash_Input::slash() so the caller's apply_wp_slash flag governs whether values are slashed. Defaults to empty (= slash on, matches WP core wp_unslash contract).
 	 * @return array{updated: string[], failed: string[]}
 	 */
-	public static function apply_meta( int $user_id, array $meta ): array {
+	public static function apply_meta( int $user_id, array $meta, array $input = array() ): array {
 		$updated = array();
 		$failed  = array();
 		foreach ( $meta as $key => $value ) {
@@ -155,7 +158,7 @@ class User_Helpers {
 				continue;
 			}
 			$value  = self::maybe_decode_json( $value );
-			$result = update_user_meta( $user_id, $key, wp_slash( $value ) );
+			$result = update_user_meta( $user_id, $key, Slash_Input::slash( $value, $input ) );
 			if ( false === $result ) {
 				$failed[] = $key;
 			} else {

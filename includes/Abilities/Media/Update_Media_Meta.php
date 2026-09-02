@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Media;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -46,6 +47,7 @@ class Update_Media_Meta extends Ability_Definition {
 							'type'        => 'object',
 							'description' => __( 'Object of meta keys → values to write.', 'acrossai-abilities-manager' ),
 						),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'required'             => array( 'id', 'meta' ),
 					'additionalProperties' => false,
@@ -76,6 +78,7 @@ class Update_Media_Meta extends Ability_Definition {
 						'destructive' => false,
 						'idempotent'  => true,
 					),
+					'input_flags'  => Slash_Input::meta_flags(),
 				),
 			),
 		);
@@ -111,7 +114,7 @@ class Update_Media_Meta extends Ability_Definition {
 				continue;
 			}
 			$sanitized = sanitize_meta( $key, $value, 'post' );
-			update_post_meta( $id, $key, wp_slash( $sanitized ) );
+			update_post_meta( $id, $key, Slash_Input::slash( $sanitized, $input ) );
 		}
 
 		return array(

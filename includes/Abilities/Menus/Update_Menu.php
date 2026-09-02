@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Menus;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -49,6 +50,7 @@ class Update_Menu extends Ability_Definition {
 							'type'  => 'array',
 							'items' => array( 'type' => 'string' ),
 						),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'required'             => array( 'id' ),
 					'additionalProperties' => false,
@@ -79,6 +81,7 @@ class Update_Menu extends Ability_Definition {
 						'destructive' => false,
 						'idempotent'  => true,
 					),
+					'input_flags'  => Slash_Input::meta_flags(),
 				),
 			),
 		);
@@ -119,7 +122,7 @@ class Update_Menu extends Ability_Definition {
 		}
 
 		if ( ! empty( $args ) ) {
-			$result = wp_update_nav_menu_object( $id, wp_slash( $args ) );
+			$result = wp_update_nav_menu_object( $id, Slash_Input::slash( $args, $input ) );
 			if ( is_wp_error( $result ) ) {
 				return Menu_Formatter::error_from(
 					$result,

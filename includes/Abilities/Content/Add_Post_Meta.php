@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -60,6 +61,7 @@ class Add_Post_Meta extends Ability_Definition {
 							'type'    => 'boolean',
 							'default' => false,
 						),
+						'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 					),
 					'allOf'                => array(
 						array( 'required' => array( 'post_id' ) ),
@@ -98,6 +100,7 @@ class Add_Post_Meta extends Ability_Definition {
 						'destructive' => false,
 						'idempotent'  => false,
 					),
+					'input_flags'  => Slash_Input::meta_flags(),
 				),
 			),
 		);
@@ -134,7 +137,7 @@ class Add_Post_Meta extends Ability_Definition {
 		$value  = array_key_exists( 'value', $input ) ? $input['value'] : ( $input['meta_value'] ?? '' );
 		$unique = ! empty( $input['unique'] );
 
-		$meta_id = add_post_meta( $post_id, $key, wp_slash( $value ), $unique );
+		$meta_id = add_post_meta( $post_id, $key, Slash_Input::slash( $value, $input ), $unique );
 
 		return array(
 			'success' => true,
