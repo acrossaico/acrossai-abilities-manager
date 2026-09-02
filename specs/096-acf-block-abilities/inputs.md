@@ -37,6 +37,43 @@ All under the `blocks/` topic namespace (per project convention — block-editor
 - **Modifying ACF's own registered abilities** — we do not touch `acf/*` slugs; ACF owns that namespace.
 - **Block.json generation on disk** — abilities operate at the runtime `acf_register_block_type()` layer. Filesystem-based `block.json` scaffolding is a separate concern (see the file-manager abilities cluster) and would be a follow-up.
 
+## Prior-art check (2026-09-02)
+
+Verified against installed ACF 6.8.9 + web/GitHub search — nobody occupies this space via the WP Abilities API today:
+
+- **ACF itself** ships 6 fixed abilities (`FieldGroup.php`, `PostType.php`, `Taxonomy.php`) + 5N dynamic per registered CPT + 5M dynamic per registered taxonomy. **No `BlockType.php`. No field-value abilities. No introspection beyond `list`.**
+- **[elementor/angie-acf-mcp](https://github.com/elementor/angie-acf-mcp)** (8★) — uses REST controllers, not the Abilities API. Legacy pattern.
+- **[Easy MCP AI](https://wordpress.org/plugins/easy-mcp-ai/)** — ships 6 ACF MCP tools (`wp_acf_update_fields`, `wp_acf_get_fields`, `wp_acf_get_term_fields`, `wp_acf_get_user_fields`, `wp_acf_list_field_groups`, `wp_acf_update_user_fields`). MCP tools, **not WP Abilities API**. Doesn't touch blocks.
+- **[Enable Abilities for MCP](https://wordpress.org/plugins/enable-abilities-for-mcp/)** — passthrough adapter, not ACF-specific.
+- **[MCP Content Manager Lite](https://wordpress.org/plugins/mcp-content-manager-lite/)** — auto-discovers ACF metadata for read-only surfacing.
+
+**Implication:** feature 096's 5 block abilities are the first Abilities-API-native ACF block coverage. No naming or namespace collisions to worry about.
+
+## Reuse ACF 6.8.1's inline field-group shape
+
+ACF 6.8.1 changelog: *"ACF PRO Blocks can now define their field group inline via an `acf.fields` array in `block.json`"*. Our `blocks/register-acf-block` ability's input schema **should mirror that `acf.fields` shape verbatim** rather than inventing a new binding format — reduces cognitive load for the AI (block.json is the current best practice per ACF docs) and simplifies validation (we can reuse ACF's own field validators).
+
+Reference the two changelog entries that shape this:
+- ACF 6.8.1 — `acf.fields` inline in `block.json`
+- ACF 6.8.9 — blocks default to v3 on WP 7.1+; `renderPreview` in `block.json`
+
+## Persistence — choose during /speckit-plan
+
+`acf_register_block_type()` is runtime-only; registrations vanish on next request unless re-fired. Two persistence options for the AI's newly-registered blocks:
+
+**Option A — option-backed runtime re-registration** *(recommended for MVP)*
+- Store block configs in a new option (e.g. `acrossai_acf_blocks_registry`)
+- Re-register on `init` P20 (before ACF's `acf/init` P25) via `acf_register_block_type()`
+- No filesystem writes; ACF-Pro-only guard; option-editor read/write path lives entirely inside the plugin
+- Trade-off: block metadata lives in the DB, not in code — harder to version-control; won't show in `wp acf json` sync output
+
+**Option B — `block.json` on disk**
+- Write `block.json` + `render.php` into a themes/plugins subdirectory using the existing file-manager module (specs 088–094)
+- Persistence and version control come for free
+- Trade-off: filesystem writes; must decide target directory (theme? mu-plugin? new dir under this plugin?); more moving parts
+
+Recommendation: ship **Option A** first, then follow-up ability `blocks/export-acf-block-to-json` if callers ask for on-disk persistence later.
+
 ## Constraints
 
 - **ACF Pro required** — ACF blocks are a Pro-only feature (`acf_register_block_type` is undefined in free ACF). Guard every ability's `permission_callback` on `defined('ACF_VERSION') && function_exists('acf_register_block_type')`; return a clean "ACF Pro not active" error rather than a fatal when the function is missing.
