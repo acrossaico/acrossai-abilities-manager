@@ -134,7 +134,7 @@ class Add_Post_Meta extends Ability_Definition {
 		$value  = array_key_exists( 'value', $input ) ? $input['value'] : ( $input['meta_value'] ?? '' );
 		$unique = ! empty( $input['unique'] );
 
-		$meta_id = add_post_meta( $post_id, $key, $value, $unique );
+		$meta_id = add_post_meta( $post_id, $key, wp_slash( $value ), $unique );
 
 		return array(
 			'success' => true,

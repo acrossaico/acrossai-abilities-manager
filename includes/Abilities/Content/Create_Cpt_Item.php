@@ -134,7 +134,7 @@ class Create_Cpt_Item extends Ability_Definition {
 			$args['meta_input'] = $input['meta'];
 		}
 
-		$id = wp_insert_post( $args, true );
+		$id = wp_insert_post( wp_slash( $args ), true );
 		if ( is_wp_error( $id ) ) {
 			return array(
 				'success' => false,

@@ -180,7 +180,7 @@ class Update_User extends Ability_Definition {
 
 		// Apply core-field update only if at least one field was supplied.
 		if ( $has_field ) {
-			$result = wp_update_user( $update );
+			$result = wp_update_user( wp_slash( $update ) );
 
 			if ( is_wp_error( $result ) ) {
 				return array(
