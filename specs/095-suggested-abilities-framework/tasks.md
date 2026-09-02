@@ -103,7 +103,7 @@ _No tasks — no new Composer dependencies, no scaffolding, no build-tool change
 - [X] T018 Run `./vendor/bin/phpcs` on every changed file: `includes/Modules/Library/Ability_Definition.php`, `includes/Modules/Library/AcrossAI_Ability_Library_Registry.php`, `admin/Partials/SettingsMenu.php`, `uninstall.php`, all four `includes/Abilities/Content/Update_*.php` and `Get_Post_Blocks.php`, both test files.
 - [X] T019 Run `./vendor/bin/phpstan analyse --no-progress` on the same file set. Zero errors expected at level 8.
 - [X] T020 Live MCP smoke against `wordpress-7-0-default-mcp-server`: (a) call `mcp-adapter-get-ability-info` for `content/update-page` — assert response includes `meta.acrossai.suggested_abilities` with `blocks/outline-post-blocks`; (b) admin visits `?page=acrossai-settings&tab=abilities`, ticks "Disable ability suggestions", saves; re-call — assert field absent; (c) untick + re-call — assert field returns.
-- [ ] T021 Commit staged changes on branch `095-suggested-abilities-framework`. Push to origin. Open PR against `main` with body summarizing framework + 4 overrides + kill-switch. Wait for CI (8 checks). Merge with `gh pr merge --squash --delete-branch` once green.
+- [X] T021 Commit staged changes on branch `095-suggested-abilities-framework`. Push to origin. Open PR against `main` with body summarizing framework + 4 overrides + kill-switch. Wait for CI (8 checks). Merge with `gh pr merge --squash --delete-branch` once green. — shipped via PR #155 (`ce76d9c`); follow-up PR #156 (`d6ceaf1`) added 10 more overrides on the hint catalog.
 
 ---
 
