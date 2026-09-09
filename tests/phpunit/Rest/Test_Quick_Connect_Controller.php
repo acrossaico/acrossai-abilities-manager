@@ -35,6 +35,10 @@ class Test_Quick_Connect_Controller extends TestCase {
 		$GLOBALS['acrossai_test_active_plugins']    = array();
 		$GLOBALS['acrossai_test_registered_routes'] = array();
 		unset( $GLOBALS['acrossai_test_reject_nonce'] );
+
+		// The install lock is a transient; a leak from one test would make the
+		// next one fail with 409 for reasons that have nothing to do with it.
+		$GLOBALS['acrossai_transients'] = array();
 	}
 
 	/**
@@ -223,5 +227,114 @@ class Test_Quick_Connect_Controller extends TestCase {
 		$this->assertArrayHasKey( 'mcpManager', $data['plugins'] );
 		$this->assertArrayHasKey( 'mcpAdapter', $data['plugins'] );
 		$this->assertArrayHasKey( 'mcpManagerWizardUrl', $data['plugins'] );
+	}
+
+	/**
+	 * SEC-006 / FR-031 — a second install cannot start while one is running.
+	 *
+	 * FR-031 previously lived only in the browser, so a direct caller could set
+	 * several downloads and unzips running over the same directory. These tests
+	 * hold the server-side guard to the two things that actually matter: that it
+	 * refuses a concurrent call, and that it never stays shut afterwards.
+	 */
+	public function test_concurrent_install_is_refused_with_409(): void {
+		$this->grant_install_capabilities();
+
+		// Stand in for a request that is still running.
+		set_transient( 'acrossai_quick_connect_install_lock', time(), 120 );
+
+		$result = Controller::instance()->install_plugin(
+			$this->make_install_request( 'acrossai-mcp-manager' )
+		);
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'acrossai_quick_connect_install_in_progress', $result->get_error_code() );
+		$this->assertSame( 409, $result->get_error_data()['status'] );
+	}
+
+	/**
+	 * Invoke the install route, swallowing the environment's own noise.
+	 *
+	 * The handler requires wp-admin files this WP-less harness does not have, so
+	 * PHP emits a warning before throwing. That warning is a fact about the
+	 * harness, not about the code under test, and letting it into the suite
+	 * output teaches everyone to scroll past warnings.
+	 *
+	 * @param  string $slug Slug parameter value.
+	 * @return mixed  Handler result, or null when it threw.
+	 */
+	private function install_ignoring_harness_warnings( string $slug ) {
+		set_error_handler( static fn(): bool => true ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.prevent_path_disclosure_set_error_handler
+
+		try {
+			return Controller::instance()->install_plugin( $this->make_install_request( $slug ) );
+		} catch ( \Throwable $e ) {
+			unset( $e );
+
+			return null;
+		} finally {
+			restore_error_handler();
+		}
+	}
+
+	/**
+	 * The regression `finally` exists for.
+	 *
+	 * The install has several exit paths and can also throw out of the upgrader.
+	 * A lock that leaks on one uncommon path is worse than no lock, because the
+	 * endpoint then stays shut until the TTL expires and the administrator is
+	 * told an install is running when none is.
+	 *
+	 * This harness has no wp-admin/, so the handler's require throws — which is
+	 * precisely the escaping-throwable case the release has to survive. Asserting
+	 * through the throw tests the unwind rather than the happy path.
+	 */
+	public function test_lock_is_released_when_the_install_throws(): void {
+		$this->grant_install_capabilities();
+		$GLOBALS['acrossai_test_installed_plugins'] = array();
+
+		$this->install_ignoring_harness_warnings( 'acrossai-mcp-manager' );
+
+		$this->assertFalse(
+			get_transient( 'acrossai_quick_connect_install_lock' ),
+			'The lock must be released even when the install throws.'
+		);
+	}
+
+	/**
+	 * A rejected slug must not take the lock. It does no work, so holding the
+	 * endpoint shut over it would be denial of service via a typo.
+	 */
+	public function test_invalid_slug_does_not_take_the_lock(): void {
+		$this->grant_install_capabilities();
+
+		$result = Controller::instance()->install_plugin(
+			$this->make_install_request( 'some-other-plugin' )
+		);
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 400, $result->get_error_data()['status'] );
+		$this->assertFalse(
+			get_transient( 'acrossai_quick_connect_install_lock' ),
+			'A rejected slug must leave the endpoint open.'
+		);
+	}
+
+	/**
+	 * With no lock held the request gets past the guard, or the check would be
+	 * indistinguishable from an endpoint that never works. It cannot complete an
+	 * install in this harness, so the assertion is that it is not refused as
+	 * concurrent — it fails later, for environmental reasons, not at the gate.
+	 */
+	public function test_no_lock_means_the_request_gets_past_the_guard(): void {
+		$this->grant_install_capabilities();
+		$GLOBALS['acrossai_test_installed_plugins'] = array();
+
+		$this->assertFalse( get_transient( 'acrossai_quick_connect_install_lock' ) );
+
+		$result = $this->install_ignoring_harness_warnings( 'acrossai-mcp-manager' );
+		$code   = $result instanceof WP_Error ? $result->get_error_code() : null;
+
+		$this->assertNotSame( 'acrossai_quick_connect_install_in_progress', $code );
 	}
 }

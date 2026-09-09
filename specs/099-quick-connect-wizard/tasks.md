@@ -193,7 +193,7 @@ activates, and hands off to MCP Manager's own Quick Connect.
 ## Phase 8: Polish & Cross-Cutting Concerns
 
 - [x] T065 [P] Register DEV-099-1, DEV-099-2, and DEV-099-3 in `docs/memory/INDEX.md` under `## Accepted Deviations` (required by `DEC-DESIGN-OVERRIDES-DATAVIEWS`; DEV-099-3 cites `DEC-ADMIN-UI-NOT-MODULE` and carries the promote-to-module review trigger)
-- [ ] T066 [P] **[SEC-006, optional]** Add a short-lived in-flight transient guard to the install route returning `409` while an install is running, making FR-031 authoritative server-side
+- [x] T066 [P] **[SEC-006, optional]** Add a short-lived in-flight transient guard to the install route returning `409` while an install is running, making FR-031 authoritative server-side
 - [x] T067 [P] Add a `Development` note to `README.txt` describing the wizard and its re-entry points
 - [x] T068 Run the full quality gate: `composer run phpstan` (level 8, zero errors), PHPCS on changed production files, `npx jest src/js/quick-connect`, `vendor/bin/phpunit --filter QuickConnect`
 - [x] T069 Confirm asset gating (SC-010): load the Abilities, Settings, and Integrations pages and verify `quick-connect.js` loads on none of them
