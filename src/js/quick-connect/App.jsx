@@ -17,35 +17,17 @@ import { __ } from '@wordpress/i18n';
 
 import StepLayout from './StepLayout.jsx';
 import Notice from './components/Notice.jsx';
-import StepPlaceholder from './steps/StepPlaceholder.jsx';
 import Step1AbilitiesOverview from './steps/Step1AbilitiesOverview.jsx';
 import Step2EditAbility from './steps/Step2EditAbility.jsx';
 import Step3BulkActions from './steps/Step3BulkActions.jsx';
 import Step4Integrations from './steps/Step4Integrations.jsx';
 import Step5ConnectTransport from './steps/Step5ConnectTransport.jsx';
 import Step6AdapterInstall from './steps/Step6AdapterInstall.jsx';
+import Step7AdapterAbilities from './steps/Step7AdapterAbilities.jsx';
 import Completion from './steps/Completion.jsx';
 import useWizardRouter, { STEP_ORDER } from './hooks/useWizardRouter.js';
 import useWizardState, { useHasHydratedOnce } from './hooks/useWizardState.js';
 import { WizardGuardContext } from './hooks/useAdvanceGuard.js';
-
-/**
- * Screens still to be implemented, by phase.
- *
- * Replace an entry in `stepRegistry` as each phase lands.
- *
- * @type {Object<string, string>}
- */
-const PLACEHOLDER_TITLES = {
-	1: __('Your abilities', 'acrossai-abilities-manager'),
-	2: __('Editing an ability', 'acrossai-abilities-manager'),
-	3: __('Bulk actions', 'acrossai-abilities-manager'),
-	4: __('Integrations', 'acrossai-abilities-manager'),
-	5: __('Connect a transport', 'acrossai-abilities-manager'),
-	6: __('Install MCP Adapter', 'acrossai-abilities-manager'),
-	7: __('Enable abilities for MCP Adapter', 'acrossai-abilities-manager'),
-	done: __('All set', 'acrossai-abilities-manager'),
-};
 
 /**
  * Step id to component factory.
@@ -62,7 +44,7 @@ const stepRegistry = {
 	4: () => <Step4Integrations />,
 	5: () => <Step5ConnectTransport />,
 	6: () => <Step6AdapterInstall />,
-	7: () => <StepPlaceholder step="7" title={PLACEHOLDER_TITLES[7]} />,
+	7: () => <Step7AdapterAbilities />,
 	done: () => <Completion />,
 };
 

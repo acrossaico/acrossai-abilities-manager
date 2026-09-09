@@ -1711,3 +1711,44 @@ and gate with a dedicated Yoda helper (`PATTERN-ENQUEUE-PAGE-GUARD`).
 **Corrects**: the earlier `AC-ENQUEUE-ADMIN` phrasing, which asserted a restriction that the
 Constitution does not contain. Verified 2026-09-08 against CONSTITUTION.md v1.4.8 and the
 File Manager settings precedent.
+
+---
+
+## PATTERN-CONDITIONAL-FLOW-POSITION
+
+In a multi-step flow where any step can be skipped, **every statement about position derives from
+one visibility table — never from the step id**. That covers the visible total, the "N of M" index,
+and whether the current screen is the last one.
+
+The id is a tempting shortcut because it is right on the longest path, which is the path a developer
+walks while building. It is wrong on every shorter one, and the flow still works — so the failure is
+cosmetic, silent, and survives manual testing.
+
+**Shape** (`src/js/quick-connect/App.jsx`):
+
+```
+computeSkips(selection, state)        → skip flags
+buildVisibilityTable(skips)           → [{ id, skip }] — the single source of truth
+computeTotalSteps(table)              → visible count
+computeDisplayIndex(step, table, n)   → 1-based position among visible rows
+isTerminal = <derived from skips>     → passed to the shell as a prop
+```
+
+Adding a screen is then one row plus one registry entry, and nothing else needs updating.
+
+**Two failures this prevents, both seen on Feature 099:**
+
+- `StepLayout` inferred the last screen as `step === '7' || step === '5'`. On the adapter path,
+  screen 5 still had two screens ahead, so Continue read **"Finish"** in the middle of the flow.
+  Fixed by computing `isTerminal` once in `App` from the skip flags and passing it down — the shell
+  renders position, it does not get to decide it.
+- With the install screen skipped (adapter already active), a naive index reports **"7 of 6"**.
+  `computeDisplayIndex` walks only unskipped rows, so the gap closes instead.
+
+**Test at the table, not the screen.** These are invisible failures — a wrong "N of M" looks like a
+working wizard — so assert the visible id sequence and the index for every path, including deep
+links into screens the current path skips. See
+`tests/jest/quick-connect/adapter-path.test.js` (three paths: 5 / 7 / 6 screens).
+
+**Related**: `BUG-EFFECT-OBJECT-IDENTITY-LOOP` — same category of defect, where the screen looks
+correct and only a measurement disagrees.
