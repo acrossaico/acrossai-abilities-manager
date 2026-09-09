@@ -1897,3 +1897,44 @@ Site returns the standard "Briefly unavailable for scheduled maintenance" 503 fo
 **References**:
 - `tests/phpunit/abilities/Test_Delete_Expired_Transients.php` — the fixed assertion using strpos/strrpos.
 - `includes/Abilities/Cache/Delete_Expired_Transients.php` — the additively-hardened source.
+
+---
+
+### 2026-09-09 — BUG-EFFECT-OBJECT-IDENTITY-LOOP — A useEffect keyed on an object prop self-sustains, and the page looks perfect while it does
+
+**Status**: Active
+**Scope**: React (any hook that stores a caller-supplied object in parent state)
+**Tags**: react, useeffect, dependency-array, object-identity, render-loop, invisible-failure, usememo, feature-099
+
+**Bug**: `useFooterAction` stored its `action` argument in shell state and listed that object in its dependency array. `useEffect` compares dependencies by identity, so a caller passing an object literal — the obvious way to write it — produced a new identity every render: effect runs → sets shell state → re-render → new literal → dependency "changed" → effect runs. Measured on Feature 099 screen 6: **14,750 renders accumulated, +3,227 over three seconds (~1,076/sec)**. After the fix, 2 renders and none thereafter.
+
+**Why it survived review**: every render produced identical output. The button rendered, clicks worked, nothing flickered. The only symptom was a CPU core pinned at 100%, which points at nothing in particular. The screen was loaded by hand several times across the feature's development and looked correct every time. Eyes cannot find this class of bug — only a counter can.
+
+**Prevention**:
+- A hook that stores a caller's object in state MUST key its effect on **content**, not on the object. Build a signature string from the fields the consumer actually renders and depend on that; a string compares by value, so identical input settles after one pass.
+- Exclude function props (`onClick`) from the signature — a fresh arrow each render reintroduces the identical churn. Hold them in a `useRef` and let the effect re-capture when a rendered field changes (`isLoading`, `disabled`), which is when a stale closure would actually matter.
+- Fix this in the hook, not the callers. Requiring every caller to `useMemo` makes the correct usage the non-obvious one and leaves the trap armed for the next one — and because the failure is invisible, they will not discover it.
+- When touching a hook of this shape, verify with a render counter (`window.__x = (window.__x||0)+1`) rather than by looking at the screen.
+
+**References**:
+- `src/js/quick-connect/hooks/useAdvanceGuard.js` — `useFooterAction`, the content-signature + ref implementation.
+- `src/js/quick-connect/steps/Step6AdapterInstall.jsx` — the caller that tripped it, passing an inline literal.
+
+---
+
+### 2026-09-09 — BUG-SUBMENU-POSITION-SHARED-PARENT — add_submenu_page() $position cannot place an item relative to another, and drifts on a shared parent menu
+
+**Status**: Active
+**Scope**: Admin/Menu (any plugin registering into a parent menu shared with sibling plugins)
+**Tags**: admin-menu, add_submenu_page, position, shared-menu, acrossai-parent, collision, ordering, feature-099
+
+**Bug**: `add_submenu_page()`'s `$position` is an absolute slot, not "after this other item". When the slot is already taken, WordPress nudges the entry to a fractional key, so the rendered order depends on which sibling plugins are active and the order in which they registered. On the shared `acrossai` parent — which this plugin, MCP Manager and the host menu package all register into — the Abilities page asks for position `1` and renders **sixth**. A new Quick Connect entry requested at `0`, then at `1.5`, landed at the top of the group both times, detached from the Abilities item it belongs beside.
+
+**Prevention**:
+- `$position` is only reliable when your plugin owns the parent menu. On a shared parent, treat any number as a hint, not a placement.
+- To place an item *relative* to another, reorder the finished array: hook `admin_menu` at a late priority (999), locate both entries in `$GLOBALS['submenu'][$parent]` by their menu slugs, and splice. This states the actual requirement instead of guessing a number that happens to work on one site's activation order.
+- Cover it with tests over the array rather than by eye — the failure is purely cosmetic ordering, which no functional test notices and a reviewer will not spot.
+
+**References**:
+- `admin/Partials/Menu.php` — `reorder_submenu()` and `find_submenu_index()`.
+- `tests/phpunit/Admin/QuickConnect/Test_Quick_Connect_Submenu_Order.php` — six cases: parked at top, parked at end, already correct, item absent, anchor missing, empty menu.
