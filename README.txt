@@ -47,6 +47,19 @@ This plugin's own code makes no external HTTP requests. One admin-only surface c
 2. Activate the plugin through the **Plugins** menu in WordPress.
 3. Navigate to **AcrossAI Abilities Manager** in the WordPress admin menu.
 
+**Quick Connect setup wizard:**
+
+On activation the plugin opens a short setup wizard once — how many abilities the site has, how to
+edit them, how to act on many at once, what they cover, and how to connect them to an AI assistant.
+It does not open on sites already running AcrossAI MCP Manager, which provides its own wizard.
+
+The wizard is re-runnable at any time and is reachable from four places: **AcrossAI → Quick
+Connect** in the sidebar, the **Quick Connect via AcrossAI** entry in the admin toolbar, the
+**Quick Connect via AcrossAI** link on the Plugins screen, and a button under **Setup** on the
+AcrossAI → Settings → Abilities tab. Those entries are hidden when AcrossAI MCP Manager is active,
+to avoid two wizards competing for the same surfaces; the wizard itself stays reachable at
+`/wp-admin/admin.php?page=acrossai-abilities-manager&quick-connect=1&step=1`.
+
 **Add-ons:**
 
 1. Go to **AcrossAI → Add-ons** to browse available companion plugins.
@@ -123,6 +136,50 @@ This plugin connects to the following external services on your behalf. Each con
 **3. WordPress.org core version-check API (`api.wordpress.org/core/version-check/1.7/`)**
 
 Called only when an administrator invokes the `core/rollback-wp-core` ability (registered under the Core category) and the local core-version cache has expired. Rate-bounded to at most one request per day per locale per site via a site-transient cache. This is a WordPress-core-hosted API — no data beyond the standard WordPress core version-check request payload is transmitted. Same wp.org terms + privacy policy as service #2 above.
+
+**4. YouTube walkthrough videos (`youtube-nocookie.com`, `youtube.com`)**
+
+*What it is:* The Quick Connect setup wizard embeds short walkthrough recordings that explain how to
+edit an ability, how to use bulk actions, and how to reach abilities through the MCP Adapter's
+default server. Embeds use YouTube's privacy-enhanced host, `www.youtube-nocookie.com`.
+
+*When it is contacted:* Only on the wizard's own screens, and never anywhere else in wp-admin — the
+wizard's assets are gated on the `quick-connect` request parameter and load on no other admin page.
+On two of those screens the recording begins on its own, so YouTube is contacted when the screen
+renders rather than on a click. On the remaining screens nothing is requested from YouTube until the
+administrator presses play: a locally-hosted placeholder is shown first and the embed is inserted
+only on that click.
+
+*What data is transmitted:* Nothing by this plugin. Loading an embed causes the administrator's own
+browser to send standard metadata to YouTube (IP address, User-Agent) together with a `Referer`
+limited to the site's origin — the `strict-origin-when-cross-origin` referrer policy means the
+wp-admin path and query string are never disclosed. The privacy-enhanced host does not set tracking
+cookies unless playback begins. This plugin transmits no site content, user data, or ability data to
+YouTube.
+
+*Avoiding it entirely:* Every embed is paired with a plain external link, so the wizard remains
+usable when the embed is blocked by connectivity, a privacy tool, or a regional restriction. The
+wizard can also simply be skipped — it is optional and every screen offers Exit setup.
+
+*Terms of service:* https://www.youtube.com/t/terms
+*Privacy policy:* https://policies.google.com/privacy
+
+**5. GitHub release page (`github.com`)**
+
+*What it is:* MCP Adapter is distributed from GitHub rather than the WordPress plugin directory. The
+wizard's adapter screen links to that project's latest release page so the administrator can
+download the plugin archive.
+
+*When it is contacted:* Never on page render. The screen shows a plain link; GitHub is contacted
+only if the administrator clicks it, at which point their browser navigates to
+`https://github.com/WordPress/mcp-adapter/releases/latest` in a new tab. The plugin performs no
+HTTP request to GitHub and does not download or install anything from it.
+
+*What data is transmitted:* Nothing by this plugin. Standard browser metadata only, as with any
+external hyperlink.
+
+*Terms of service:* https://docs.github.com/site-policy/github-terms/github-terms-of-service
+*Privacy policy:* https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
 
 == Privacy Policy ==
 
