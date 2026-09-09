@@ -197,9 +197,9 @@ activates, and hands off to MCP Manager's own Quick Connect.
 - [x] T067 [P] Add a `Development` note to `README.txt` describing the wizard and its re-entry points
 - [x] T068 Run the full quality gate: `composer run phpstan` (level 8, zero errors), PHPCS on changed production files, `npx jest src/js/quick-connect`, `vendor/bin/phpunit --filter QuickConnect`
 - [x] T069 Confirm asset gating (SC-010): load the Abilities, Settings, and Integrations pages and verify `quick-connect.js` loads on none of them
-- [ ] T070 Side-by-side visual parity check against `admin.php?page=acrossai_mcp_manager&quick-connect=1&step=1` at desktop and below 640px — header, progress bar, typography, buttons, cards, notices (SC-005)
+- [x] T070 Side-by-side visual parity check against `admin.php?page=acrossai_mcp_manager&quick-connect=1&step=1` at desktop and below 640px — header, progress bar, typography, buttons, cards, notices (SC-005)
 - [x] T071 Accessibility pass: complete the wizard keyboard-only, verify each step change is announced, and confirm focus moves into each new screen (SC-007)
-- [ ] T072 Run the `quickstart.md` verification checklist end to end on the `wordpress-7-0` site
+- [x] T072 Run the `quickstart.md` verification checklist end to end on the `wordpress-7-0` site
 
 ---
 
