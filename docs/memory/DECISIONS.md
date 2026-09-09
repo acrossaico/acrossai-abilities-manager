@@ -2030,3 +2030,46 @@ Feature 099: SC-009 required it, the server enforced it (tasks T040/T046), and n
 the UI half until the task security review caught it (SEC-T02 → T073). Prior art:
 `acrossai-pro/admin/Partials/QuickSetup/QuickSetupPage.php` renders "Ask a site administrator" when
 `install_plugins` is absent.
+
+---
+
+### 2026-09-09 — Changing *when* a third party is contacted is a disclosure change (DEC-EXTERNAL-SERVICE-DISCLOSURE-TRIGGER)
+
+**Status**: Active
+
+**Why this is durable**
+`README.txt`'s `== External Services ==` section does not merely name the services this plugin
+touches — it states *when* each one is contacted, and the existing Calendly entry leads with "Never
+on page render." That phrasing is the disclosure. So a change to the trigger is a change to the
+disclosure even when the service, the code path and the transmitted data are all identical, and even
+when the diff looks purely like a UI tweak.
+
+Feature 099 made exactly that change without noticing: two wizard screens moved from a click-to-load
+facade to autoplay, which moved the YouTube request from click-time to render-time. YouTube was not
+disclosed at all at that point, and the autoplay change is what made the omission matter under
+WordPress.org Guideline 7 (external requests without consent) rather than merely being incomplete.
+
+**Decision**
+Any change to **whether or when** an external service is contacted requires revisiting
+`README.txt` `== External Services ==` in the same change — not only new services. Treat these as
+disclosure-affecting:
+- a facade, lazy-load or consent gate being removed, or autoplay being added;
+- a request moving from a user action to page render, or from one screen to many;
+- a referrer, host or cookie posture changing (e.g. privacy-enhanced host swapped for the default).
+
+Each entry states what the service is, when it is contacted, what data leaves the browser, how to
+avoid it, and links to terms and privacy policy.
+
+**Tradeoffs**
+- Gained: the disclosure keeps matching the code, which is the only version of it that matters at
+  review time.
+- Made harder: a UI-only change can now carry a README edit, which is easy to forget precisely
+  because the code diff looks unrelated.
+- Reconsider: never while this plugin ships on WordPress.org.
+
+**Evidence**
+Feature 099 Phase 8 (PR #177). YouTube and the GitHub release link were both undisclosed; added
+alongside the autoplay change that made the YouTube contact render-time. Related:
+[[DEC-ADMIN-THIRD-PARTY-EMBED]] (how to embed) and
+[[DEC-ADMIN-EMBED-AUTOPLAY-EXCEPTION]] (when autoplay is permitted) — this entry is the reporting
+obligation the second one triggers.
