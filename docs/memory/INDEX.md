@@ -68,6 +68,7 @@ This is a compact routing map for durable memory. Keep it short. It points to so
 ## Implementation Patterns
 | ID | Pattern | Scope | Tags | Source |
 |---|---|---|---|---|
+| PATTERN-CONDITIONAL-FLOW-POSITION | In a skippable multi-step flow, total / index / is-last all derive from one visibility table, never from the step id; the shell renders position, it does not decide it | UI/Multi-step flows | wizard, skip-logic, progress-indicator, visibility-table, invisible-failure, feature-099 | ARCHITECTURE.md |
 | PATTERN-ADMIN-NOTICE-SELF-CONTAINED | Degraded-mode admin notices use only WP globals inside the closure; no plugin FQCNs / $this / self / static / use($this); always gate on manage_options | Plugin-wide/Admin | admin-notice, autoloader, vendor-missing, esc_html, capability-gate, closure | ARCHITECTURE.md |
 | PATTERN-ACTIVATION-HOOK-EARLY-PRIORITY | Vendor-precondition activation guards register at add_action('activate_<basename>', $cb, 1) — priority 1, before default-10 callbacks that depend on the prerequisite | Plugin-wide | activation-hook, priority, vendor, wp_die, prerequisite, fail-fast | ARCHITECTURE.md |
 | PATTERN-SHARED-MENU-CONSUMER-IDEMPOTENCY | Shared-package consumers use paired class_exists($fqcn, false) + did_action() guards and fire do_action() after instantiation — prevents double-declare fatals across require paths | Plugin-wide | shared-package, jetpack-autoloader, class_exists, did_action, require_once, fatal-prevention | ARCHITECTURE.md |
