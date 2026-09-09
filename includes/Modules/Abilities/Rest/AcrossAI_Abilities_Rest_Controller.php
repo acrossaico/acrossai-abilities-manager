@@ -75,6 +75,7 @@ class AcrossAI_Abilities_Rest_Controller {
 		AcrossAI_Abilities_Write_Controller::instance()->register_routes();
 		AcrossAI_Abilities_Read_Controller::instance()->register_routes();
 		AcrossAI_Abilities_Exposure_Controller::instance()->register_routes();
+		AcrossAI_Quick_Connect_Controller::instance()->register_routes();
 	}
 
 	/**

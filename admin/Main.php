@@ -421,6 +421,22 @@ class Main {
 	public function plugin_action_links( $links, $file ) {
 		if ( 'acrossai-abilities-manager/acrossai-abilities-manager.php' === $file ) {
 			$settings_link = '<a href="' . esc_url( admin_url( 'admin.php?page=acrossai-abilities-manager' ) ) . '">' . esc_html__( 'Settings', 'acrossai-abilities-manager' ) . '</a>';
+
+			// Feature 099: the Plugins screen is where someone lands right after
+			// activating, so it is the most likely place they go looking for
+			// setup. Unshifted after Settings so the row reads
+			// "Settings | Quick Connect via AcrossAI | Deactivate".
+			//
+			// Omitted on sites running AcrossAI MCP Manager, which offers its own
+			// Quick Connect from its own row two lines up.
+			if ( \AcrossAI_Abilities_Manager\Admin\Partials\QuickConnect\EntryPoints::is_available() ) {
+				$quick_connect_link = '<a href="' . esc_url(
+					\AcrossAI_Abilities_Manager\Admin\Partials\QuickConnect\EntryPoints::wizard_url()
+				) . '">' . esc_html__( 'Quick Connect via AcrossAI', 'acrossai-abilities-manager' ) . '</a>';
+
+				array_unshift( $links, $quick_connect_link );
+			}
+
 			array_unshift( $links, $settings_link );
 		}
 		return $links;

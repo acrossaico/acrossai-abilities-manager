@@ -71,6 +71,13 @@ if ( ! function_exists( 'esc_url_raw' ) ) {
 	}
 }
 
+if ( ! function_exists( 'esc_url' ) ) {
+	/** Stub: pass-through for unit tests (no HTML entity encoding needed). */
+	function esc_url( string $url, array $protocols = array(), string $context = 'display' ): string {
+		return $url;
+	}
+}
+
 if ( ! function_exists( 'wp_json_encode' ) ) {
 	/** Stub: delegates to json_encode. */
 	function wp_json_encode( mixed $data, int $options = 0, int $depth = 512 ): string|false {
@@ -100,8 +107,28 @@ if ( ! function_exists( 'add_filter' ) ) {
 }
 
 if ( ! function_exists( 'apply_filters' ) ) {
-	/** Stub: returns the first value unchanged (no filters registered). */
+	/**
+	 * Stub: returns the first value unchanged unless a test supplies one.
+	 *
+	 * Feature 099 made this fixture-aware. There is no hook registry here, so a
+	 * test that needs to stand in for a filter *provider* (for example the
+	 * Library module publishing its tab-group summary) seeds the value directly:
+	 *
+	 *     $GLOBALS['acrossai_test_filter_values']['some_hook'] = $payload;
+	 *
+	 * With no fixture set the historical pass-through behaviour is unchanged,
+	 * so existing tests are unaffected.
+	 *
+	 * @param  string $hook  Filter name.
+	 * @param  mixed  $value Value being filtered.
+	 * @param  mixed  ...$args Additional arguments (unused).
+	 * @return mixed Fixture value when one is registered, else $value.
+	 */
 	function apply_filters( string $hook, mixed $value, mixed ...$args ): mixed {
+		if ( isset( $GLOBALS['acrossai_test_filter_values'][ $hook ] ) ) {
+			return $GLOBALS['acrossai_test_filter_values'][ $hook ];
+		}
+
 		return $value;
 	}
 }
@@ -393,9 +420,21 @@ if ( ! function_exists( 'user_can' ) ) {
 }
 
 if ( ! function_exists( 'current_user_can' ) ) {
-	/** Stub: returns false. */
+	/**
+	 * Stub: capability-driven, defaulting to false.
+	 *
+	 * Feature 099 made this fixture-driven so authorization branches can be
+	 * tested. A test grants capabilities by populating
+	 * $GLOBALS['acrossai_test_capabilities']. The global defaults to an empty
+	 * array, so the historical "always false" behaviour is unchanged for every
+	 * test that does not opt in.
+	 *
+	 * @param  string $capability Capability to check.
+	 * @param  mixed  ...$args    Unused.
+	 * @return bool True only when the capability was explicitly granted.
+	 */
 	function current_user_can( string $capability, mixed ...$args ): bool {
-		return false;
+		return in_array( $capability, (array) ( $GLOBALS['acrossai_test_capabilities'] ?? array() ), true );
 	}
 }
 
@@ -584,6 +623,36 @@ if ( ! class_exists( 'WP_REST_Request' ) ) {
 
 		public function get_route(): string {
 			return $this->route;
+		}
+
+		/**
+		 * Feature 099: header support.
+		 *
+		 * Shared REST permission callbacks read the X-WP-Nonce header, so any
+		 * test exercising an authorization branch needs headers to exist.
+		 *
+		 * @var array<string,string>
+		 */
+		private array $headers = array();
+
+		/**
+		 * Set a request header (case-insensitive key).
+		 *
+		 * @param string $key   Header name.
+		 * @param string $value Header value.
+		 */
+		public function set_header( string $key, string $value ): void {
+			$this->headers[ strtolower( $key ) ] = $value;
+		}
+
+		/**
+		 * Retrieve a request header.
+		 *
+		 * @param  string $key Header name.
+		 * @return string|null Header value, or null when unset.
+		 */
+		public function get_header( string $key ): ?string {
+			return $this->headers[ strtolower( $key ) ] ?? null;
 		}
 	}
 }
@@ -900,5 +969,392 @@ if ( ! class_exists( 'WP_UnitTestCase' ) ) {
 		public static function assertWPError( $value, string $message = '' ): void {
 			static::assertInstanceOf( WP_Error::class, $value, $message );
 		}
+	}
+}
+
+/*
+ * Feature 099 — WordPress plugin-API stubs.
+ *
+ * AcrossAI_Mcp_Transport_Detector asks WordPress which plugins are installed and
+ * which are active. In the WP-less test bootstrap these are backed by two
+ * globals so a test can describe any site state without a database:
+ *
+ *   $GLOBALS['acrossai_test_installed_plugins']  basename => header array
+ *   $GLOBALS['acrossai_test_active_plugins']     list of active basenames
+ */
+if ( ! isset( $GLOBALS['acrossai_test_installed_plugins'] ) ) {
+	$GLOBALS['acrossai_test_installed_plugins'] = array();
+}
+
+if ( ! isset( $GLOBALS['acrossai_test_active_plugins'] ) ) {
+	$GLOBALS['acrossai_test_active_plugins'] = array();
+}
+
+if ( ! function_exists( 'get_plugins' ) ) {
+	/**
+	 * Stub of get_plugins().
+	 *
+	 * Two fixture globals are honoured, in priority order:
+	 *
+	 * 1. `$__acrossai_debug_test_get_plugins` — predates Feature 099 and is used
+	 *    by DependencyResolverTest and OverridesStoreTest, which previously
+	 *    declared this function themselves. Now that the bootstrap declares it
+	 *    first (single process, no isolation), their `function_exists` guards
+	 *    never fire, so their fixture must still be respected here or those
+	 *    suites silently read an empty plugin list.
+	 * 2. `$GLOBALS['acrossai_test_installed_plugins']` — the Feature 099 fixture.
+	 *
+	 * Feature 099 tests unset the older global in setUp(), so the two suites are
+	 * order-independent.
+	 *
+	 * @param  string $plugin_folder Unused; matches the WordPress signature.
+	 * @return array<string, array<string, string>> Installed plugins keyed by basename.
+	 */
+	function get_plugins( string $plugin_folder = '' ): array {
+		global $__acrossai_debug_test_get_plugins;
+
+		if ( is_array( $__acrossai_debug_test_get_plugins ) ) {
+			return $__acrossai_debug_test_get_plugins;
+		}
+
+		return (array) ( $GLOBALS['acrossai_test_installed_plugins'] ?? array() );
+	}
+}
+
+if ( ! function_exists( 'is_plugin_active' ) ) {
+	/**
+	 * Stub of is_plugin_active().
+	 *
+	 * @param  string $basename Plugin basename.
+	 * @return bool True when the basename is in the active fixture.
+	 */
+	function is_plugin_active( string $basename ): bool {
+		return in_array( $basename, (array) ( $GLOBALS['acrossai_test_active_plugins'] ?? array() ), true );
+	}
+}
+
+if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
+	/**
+	 * Stub of is_plugin_active_for_network().
+	 *
+	 * Single-site by default; the wizard's automatic opening is single-site
+	 * scoped, so network activation is always false here unless a test opts in.
+	 *
+	 * @param  string $basename Plugin basename.
+	 * @return bool Always false in the default fixture.
+	 */
+	function is_plugin_active_for_network( string $basename ): bool {
+		return in_array( $basename, (array) ( $GLOBALS['acrossai_test_network_active_plugins'] ?? array() ), true );
+	}
+}
+
+/*
+ * Feature 099 — REST + ability-registry stubs.
+ *
+ * Enough of the WordPress REST surface to unit-test the Quick Connect
+ * controller without a database. Behaviour is driven by globals so each test
+ * can describe the site state it needs:
+ *
+ *   $GLOBALS['acrossai_test_capabilities']   list of capabilities the current user has
+ *   $GLOBALS['acrossai_test_abilities']      slug => object map returned by wp_get_abilities()
+ *   $GLOBALS['acrossai_test_registered_routes'] routes captured by register_rest_route()
+ */
+if ( ! isset( $GLOBALS['acrossai_test_capabilities'] ) ) {
+	$GLOBALS['acrossai_test_capabilities'] = array();
+}
+
+if ( ! isset( $GLOBALS['acrossai_test_abilities'] ) ) {
+	$GLOBALS['acrossai_test_abilities'] = array();
+}
+
+if ( ! isset( $GLOBALS['acrossai_test_registered_routes'] ) ) {
+	$GLOBALS['acrossai_test_registered_routes'] = array();
+}
+
+if ( ! class_exists( 'WP_REST_Response' ) ) {
+	/**
+	 * Minimal WP_REST_Response stub.
+	 */
+	class WP_REST_Response {
+
+		/**
+		 * Response payload.
+		 *
+		 * @var mixed
+		 */
+		private $data;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param mixed $data Response payload.
+		 */
+		public function __construct( $data = null ) {
+			$this->data = $data;
+		}
+
+		/**
+		 * Retrieve the payload.
+		 *
+		 * @return mixed
+		 */
+		public function get_data() {
+			return $this->data;
+		}
+	}
+}
+
+if ( ! class_exists( 'WP_REST_Server' ) ) {
+	/**
+	 * Minimal WP_REST_Server stub exposing the method constants.
+	 */
+	class WP_REST_Server {
+		const READABLE  = 'GET';
+		const CREATABLE = 'POST';
+	}
+}
+
+if ( ! function_exists( 'rest_ensure_response' ) ) {
+	/**
+	 * Stub of rest_ensure_response().
+	 *
+	 * @param  mixed $value Payload or response.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	function rest_ensure_response( $value ) {
+		if ( $value instanceof WP_REST_Response || $value instanceof WP_Error ) {
+			return $value;
+		}
+
+		return new WP_REST_Response( $value );
+	}
+}
+
+if ( ! function_exists( 'register_rest_route' ) ) {
+	/**
+	 * Stub of register_rest_route() that records registrations.
+	 *
+	 * @param  string $namespace Route namespace.
+	 * @param  string $route     Route path.
+	 * @param  array  $args      Route arguments.
+	 * @return bool Always true.
+	 */
+	function register_rest_route( string $namespace, string $route, array $args = array() ): bool {
+		$GLOBALS['acrossai_test_registered_routes'][ $namespace . $route ] = $args;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_verify_nonce' ) ) {
+	/**
+	 * Stub of wp_verify_nonce(); any non-empty nonce is valid unless a test says otherwise.
+	 *
+	 * @param  string $nonce  Nonce value.
+	 * @param  string $action Nonce action.
+	 * @return bool True when the nonce is non-empty and not explicitly rejected.
+	 */
+	function wp_verify_nonce( $nonce, $action = -1 ): bool {
+		if ( ! empty( $GLOBALS['acrossai_test_reject_nonce'] ) ) {
+			return false;
+		}
+
+		return ! empty( $nonce );
+	}
+}
+
+if ( ! function_exists( 'admin_url' ) ) {
+	/**
+	 * Stub of admin_url().
+	 *
+	 * @param  string $path Optional path.
+	 * @return string Absolute admin URL.
+	 */
+	function admin_url( string $path = '' ): string {
+		return 'https://example.test/wp-admin/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'rest_url' ) ) {
+	/**
+	 * Stub of rest_url().
+	 *
+	 * @param  string $path Optional path.
+	 * @return string Absolute REST URL.
+	 */
+	function rest_url( string $path = '' ): string {
+		return 'https://example.test/wp-json/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'wp_get_abilities' ) ) {
+	/**
+	 * Stub of wp_get_abilities().
+	 *
+	 * @return array<string, mixed> Slug => ability map.
+	 */
+	function wp_get_abilities(): array {
+		return (array) ( $GLOBALS['acrossai_test_abilities'] ?? array() );
+	}
+}
+
+/*
+ * Feature 099 — admin asset + page stubs.
+ *
+ * Recording stubs so a test can assert that a gated enqueue registers nothing
+ * when its guard is false (spec FR-042 / SC-010). Registrations land in
+ * $GLOBALS['acrossai_test_enqueued'].
+ */
+if ( ! isset( $GLOBALS['acrossai_test_enqueued'] ) ) {
+	$GLOBALS['acrossai_test_enqueued'] = array(
+		'scripts' => array(),
+		'styles'  => array(),
+		'localize' => array(),
+	);
+}
+
+if ( ! function_exists( 'wp_enqueue_script' ) ) {
+	/**
+	 * Recording stub of wp_enqueue_script().
+	 *
+	 * @param string $handle Script handle.
+	 * @param string $src    Source URL.
+	 * @param array  $deps   Dependencies.
+	 * @param string $ver    Version.
+	 * @param bool   $footer Whether to print in the footer.
+	 */
+	function wp_enqueue_script( string $handle, string $src = '', array $deps = array(), $ver = false, bool $footer = false ): void {
+		$GLOBALS['acrossai_test_enqueued']['scripts'][ $handle ] = $src;
+	}
+}
+
+if ( ! function_exists( 'wp_enqueue_style' ) ) {
+	/**
+	 * Recording stub of wp_enqueue_style().
+	 *
+	 * @param string $handle Style handle.
+	 * @param string $src    Source URL.
+	 * @param array  $deps   Dependencies.
+	 * @param string $ver    Version.
+	 */
+	function wp_enqueue_style( string $handle, string $src = '', array $deps = array(), $ver = false ): void {
+		$GLOBALS['acrossai_test_enqueued']['styles'][ $handle ] = $src;
+	}
+}
+
+if ( ! function_exists( 'wp_localize_script' ) ) {
+	/**
+	 * Recording stub of wp_localize_script().
+	 *
+	 * @param  string $handle Script handle.
+	 * @param  string $name   JS object name.
+	 * @param  array  $data   Payload.
+	 * @return bool Always true.
+	 */
+	function wp_localize_script( string $handle, string $name, array $data ): bool {
+		$GLOBALS['acrossai_test_enqueued']['localize'][ $name ] = $data;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_set_script_translations' ) ) {
+	/**
+	 * No-op stub of wp_set_script_translations().
+	 *
+	 * @param  string $handle Script handle.
+	 * @param  string $domain Text domain.
+	 * @return bool Always true.
+	 */
+	function wp_set_script_translations( string $handle, string $domain = 'default' ): bool {
+		return true;
+	}
+}
+
+if ( ! function_exists( 'plugins_url' ) ) {
+	/**
+	 * Stub of plugins_url().
+	 *
+	 * @param  string $path   Relative path.
+	 * @param  string $plugin Plugin file.
+	 * @return string Absolute URL.
+	 */
+	function plugins_url( string $path = '', string $plugin = '' ): string {
+		return 'https://example.test/wp-content/plugins/acrossai-abilities-manager/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'wp_create_nonce' ) ) {
+	/**
+	 * Deterministic stub of wp_create_nonce().
+	 *
+	 * @param  string $action Nonce action.
+	 * @return string Fake nonce.
+	 */
+	function wp_create_nonce( $action = -1 ): string {
+		return 'test-nonce';
+	}
+}
+
+if ( ! function_exists( 'remove_all_actions' ) ) {
+	/**
+	 * Recording stub of remove_all_actions().
+	 *
+	 * @param  string $hook     Hook name.
+	 * @param  int    $priority Priority.
+	 * @return bool Always true.
+	 */
+	function remove_all_actions( string $hook, int $priority = 0 ): bool {
+		$GLOBALS['acrossai_test_removed_actions'][] = $hook;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_die' ) ) {
+	/**
+	 * Stub of wp_die() that throws so tests can assert on it.
+	 *
+	 * @param  string $message Message.
+	 * @throws RuntimeException Always.
+	 * @return void
+	 */
+	function wp_die( string $message = '' ): void {
+		throw new RuntimeException( 'wp_die: ' . $message );
+	}
+}
+
+if ( ! function_exists( 'esc_html__' ) ) {
+	/**
+	 * Stub of esc_html__(): translate (no-op) then escape.
+	 *
+	 * @param  string $text   Text to translate and escape.
+	 * @param  string $domain Text domain.
+	 * @return string Escaped text.
+	 */
+	function esc_html__( string $text, string $domain = 'default' ): string {
+		return esc_html( $text );
+	}
+}
+
+if ( ! function_exists( 'esc_attr__' ) ) {
+	/**
+	 * Stub of esc_attr__(): translate (no-op) then escape for attributes.
+	 *
+	 * @param  string $text   Text to translate and escape.
+	 * @param  string $domain Text domain.
+	 * @return string Escaped text.
+	 */
+	function esc_attr__( string $text, string $domain = 'default' ): string {
+		return esc_attr( $text );
+	}
+}
+
+if ( ! function_exists( 'esc_html_e' ) ) {
+	/**
+	 * Stub of esc_html_e(): echo escaped text.
+	 *
+	 * @param string $text   Text to translate and escape.
+	 * @param string $domain Text domain.
+	 */
+	function esc_html_e( string $text, string $domain = 'default' ): void {
+		echo esc_html( $text );
 	}
 }

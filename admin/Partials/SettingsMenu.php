@@ -168,6 +168,24 @@ class SettingsMenu {
 		// register_uninstall_settings() at admin_init priority 20 so it always
 		// renders LAST — after Core_Settings_Menu's Upload Media Abilities
 		// section (Feature 046). Sections render in the order they were added.
+		// Feature 099: a Quick Connect prompt above the settings themselves.
+		//
+		// Someone on this tab is configuring the plugin, which is exactly when
+		// "have I actually connected this to anything?" is worth answering. The
+		// section renders first so it reads as an offer rather than a footnote.
+		//
+		// The whole section — heading included — is skipped on sites running
+		// AcrossAI MCP Manager. Registering it and rendering nothing would leave
+		// a bare "Setup" heading with no content under it.
+		if ( QuickConnect\EntryPoints::is_available() ) {
+			add_settings_section(
+				'acrossai_quick_connect_section',
+				__( 'Setup', 'acrossai-abilities-manager' ),
+				array( $this, 'render_quick_connect_prompt' ),
+				$page_slug
+			);
+		}
+
 		add_settings_section(
 			'acrossai_display_settings_section',
 			__( 'Display Settings', 'acrossai-abilities-manager' ),
@@ -382,6 +400,30 @@ class SettingsMenu {
 			checked( $checked, true, false ),
 			esc_html__( 'Disable ability suggestions', 'acrossai-abilities-manager' ),
 			esc_html__( '⚠ When checked, no ability payload includes suggested-alternative-ability entries (REST + MCP). AI callers will not see hints like "consider blocks/outline-post-blocks + blocks/update-post-block instead of content/update-page for small edits". Ability behaviour is unaffected.', 'acrossai-abilities-manager' )
+		);
+	}
+
+	/**
+	 * Render the Quick Connect prompt on the Abilities settings tab.
+	 *
+	 * Section-description callback for `acrossai_quick_connect_section`.
+	 *
+	 * Mirrors the sibling wizard's settings sub-nav entry: the settings screen is
+	 * a natural place to ask whether the site is actually connected, and it gives
+	 * the wizard a route back that does not depend on the toolbar being visible.
+	 *
+	 * @since  0.0.34
+	 * @return void
+	 */
+	public function render_quick_connect_prompt(): void {
+		printf(
+			'<p>%1$s</p><p><a href="%2$s" class="button button-secondary">%3$s</a></p>',
+			esc_html__(
+				'Walk through setup again — see how many abilities this site has, how to edit them, and connect them to an AI assistant.',
+				'acrossai-abilities-manager'
+			),
+			esc_url( QuickConnect\EntryPoints::wizard_url() ),
+			esc_html__( 'Quick Connect via AcrossAI', 'acrossai-abilities-manager' )
 		);
 	}
 }

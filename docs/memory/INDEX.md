@@ -5,6 +5,10 @@ This is a compact routing map for durable memory. Keep it short. It points to so
 ## Active Decisions
 | ID | Title | Scope | Tags | Status | Source |
 |---|---|---|---|---|---|
+| DEC-ADMIN-UI-NOT-MODULE | Admin-only UI over existing capability is not a §I module; use admin/Partials/ + Utilities + a sub-controller; cross-module data via filter only | Admin/Constitution | module-boundary, admin-ui, constitution, wizard, feature-099 | Active | DECISIONS.md |
+| DEC-CAPABILITY-AFFORDANCE-PARITY | Escalated capability checks must surface in state payloads; UI replaces the control with an explanatory message, never a bare disabled button | Admin/Security/UX | capability, affordance, ui, authorization, sc-009, feature-099 | Active | DECISIONS.md |
+| DEC-ADMIN-THIRD-PARTY-EMBED | Admin iframes: privacy host + strict-origin-when-cross-origin (NOT no-referrer, breaks playback) + click-to-load facade + external fallback link | Admin/Security/Privacy | iframe, embed, privacy, referrerpolicy, guideline-7, cwe-829, feature-099 | Active | DECISIONS.md |
+| DEC-ADMIN-EMBED-AUTOPLAY-EXCEPTION | Autoplay is a per-instance opt-out of the embed facade for recording-is-the-point screens only; muted + eager, never a component default (narrows DEC-ADMIN-THIRD-PARTY-EMBED) | Admin/Security/Privacy | iframe, embed, autoplay, privacy, exception, feature-099 | Active | DECISIONS.md |
 | DEC-EXTERNAL-PACKAGE-HOOK-CTOR-SHARED-MENU | Entry-file plugins_loaded P0 bootstrap allowed for shared top-level menu packages (Feature 038 extension of DEC-EXTERNAL-PACKAGE-HOOK-CTOR) | Plugin-wide/External | external-package, boot-flow-rule, entry-file, shared-menu, plugins_loaded-p0 | Active | DECISIONS.md |
 | DEC-STABLE-UPGRADE-WINDOW-INTERNAL-ORG | Internal AcrossAI-org packages exempt from "wait for v1.0.0" with audit + SHA pin (Feature 038 exception to DEC-STABLE-UPGRADE-WINDOW) | Dependencies | stable-release, internal-org, audit, sha-pin | Active | DECISIONS.md |
 | DEC-MENU-HOOK-SUFFIX-SUBMENU-DERIVATION | Submenu hook_suffix strings derive from sanitize_title(parent_menu_title), not parent slug (Feature 038 scope note on DEC-MENU-HOOK-SUFFIX) | Admin/Enqueue | hook-suffix, submenu, sanitize_title, parent-title, fragility | Active | DECISIONS.md |
@@ -53,7 +57,7 @@ This is a compact routing map for durable memory. Keep it short. It points to so
 | ID | Constraint | Scope | Tags | Source |
 |---|---|---|---|---|
 | AC-HOOKS-MAIN | Only Main.php calls loader->add_action/add_filter; variable-first pattern | Plugin-wide | hooks, loader, main | CONSTITUTION.md §I |
-| AC-ENQUEUE-ADMIN | wp_enqueue_script/style ONLY in Admin\Main::enqueue_scripts/styles | Admin | assets, admin-main | CONSTITUTION.md §I |
+| AC-ENQUEUE-ADMIN | Enqueue may live in any admin/Partials/ page class (self-enqueue), wired from Main.php; NOT restricted to Admin\Main::enqueue_scripts/styles — that restriction was never in CONSTITUTION §I | Admin | assets, admin-main, self-enqueue, partials | ARCHITECTURE.md |
 | AC-REST-SPLIT | REST controller split when >400 lines; orchestrator + sub-controllers in Rest/ | REST | rest, modularization | CONSTITUTION.md §I |
 | AC-REGISTRY-QUERY | Filter/sort/paginate via AcrossAI_Ability_Registry_Query::query() only | Sitewide | rest, utilities | plan.md T006b |
 | AC-MENU-IN-PLACE | admin/Partials/Menu.php updated in-place; no new menu class | Admin | menu, partials | FR-020 |
@@ -156,6 +160,8 @@ This is a compact routing map for durable memory. Keep it short. It points to so
 | PATTERN-ABILITY-BASE-OPTIONAL-TEMPLATE-AUTO-INJECT | Extend Ability_Definition with a new optional per-ability metadata field via: (1) new `protected function xxx(): array` template method defaulting to empty; (2) auto-inject non-empty return into `$args['meta']['acrossai']['xxx']` inside push_definition() behind a `! empty()` guard; (3) runtime enrichment/gating in Registry::get_definitions() (single-point decoration for REST + MCP + Library UI). 100% backwards-compatible for 500+ existing subclasses. | Framework/Ability_Definition | template-method, base-class, backwards-compatible, auto-inject, feature-088, framework-extension | ARCHITECTURE.md |
 
 ## Bug Patterns (continued)
+| BUG-EFFECT-OBJECT-IDENTITY-LOOP | useEffect keyed on an object prop self-sustains (~1,076 renders/sec, measured); key on a content signature, keep fn props in a ref, fix in the hook not the callers | React/Hooks | react, useeffect, object-identity, render-loop, invisible-failure, feature-099 | BUGS.md |
+| BUG-SUBMENU-POSITION-SHARED-PARENT | add_submenu_page() $position is an absolute slot that drifts on a parent shared with sibling plugins; place relatively by splicing $GLOBALS['submenu'] at admin_menu 999 | Admin/Menu | admin-menu, add_submenu_page, position, shared-menu, ordering, feature-099 | BUGS.md |
 | BUG-AC-NULL-RETURN-SILENT-FAIL | Access control permission checks silently fail when library returns null instead of false | Access Control | type-safety, null-return, silent-fail | BUGS.md |
 | BUG-PYTHON-STRREPLACE-PARTIAL-WRITE | Python str_replace scripts: write per-step, not once at end | Build/Tooling | python, str_replace, write, partial | BUGS.md |
 | BUG-ABILITYFORM-JSX-MIXED-DEPTHS | AbilityForm.jsx: inconsistent tab depths by element — verify before str_replace | React/UI | jsx, tabs, str_replace, abilityform | BUGS.md |
@@ -290,4 +296,6 @@ This is a compact routing map for durable memory. Keep it short. It points to so
 | specs/039-composer-package-updates/security-review-plan.md | plan | 2026-07-01 | LOW | C:0 H:0 M:0 L:1 I:4 | A01,A04,A05,A09 |
 | specs/039-composer-package-updates/security-review-staged.md | staged | 2026-07-01 | LOW | C:0 H:0 M:0 L:1 I:5 | A04,A05,A06 |
 | specs/040-remove-logs-module/security-review-plan.md | plan | 2026-07-01 | INFORMATIONAL | C:0 H:0 M:0 L:0 I:4 | A01,A05,A09 |
+| specs/099-quick-connect-wizard/security-review-plan.md | plan | 2026-09-08 | MODERATE | C:0 H:0 M:1 L:4 I:3 | A01,A03,A05,A08 |
+| specs/099-quick-connect-wizard/security-review-tasks.md | tasks | 2026-09-08 | MODERATE | C:0 H:0 M:2 L:3 I:1 | A01,A05,A08 |
 | specs/046-absorb-core-abilities-into-manager/security-review-plan.md | plan | 2026-07-13 | INFORMATIONAL | C:0 H:0 M:0 L:1 I:4 | A03,A05,A08 |

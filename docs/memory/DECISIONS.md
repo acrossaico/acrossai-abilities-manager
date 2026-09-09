@@ -1887,3 +1887,146 @@ Feature 060 introduced the second abstract base class in this plugin (after `Abi
 - `uninstall.php` — cleanup of the toggle option
 - `specs/095-suggested-abilities-framework/contracts/ability-payload.md` — full contract text
 - Sibling: [[DEC-ABILITY-SUGGESTED-PLUGINS-CONTRACT]] (Feature 088)
+
+---
+
+### 2026-09-08 — Admin-only UI features are not Constitution §I modules (DEC-ADMIN-UI-NOT-MODULE)
+
+**Status**: Active
+
+**Why this is durable**
+Constitution §I enumerates a fixed set of feature areas and the Directory Layout lists them, so any
+new `includes/Modules/<X>/` directory requires a PATCH amendment plus a sync impact report. That
+cost is justified for a new capability and wasteful for a UI surface over existing capability.
+
+**Decision**
+An admin surface that registers no abilities, owns no persisted data, and defines no domain is NOT
+a §I feature area. Place it in `admin/Partials/<Feature>/`, put shared logic in
+`includes/Utilities/`, and attach any REST routes as a sub-controller of the module whose data it
+serves. Reserve new module directories for genuine capability.
+
+**Tradeoffs**
+- Gained: no amendment churn; the five-area enumeration keeps meaning something.
+- Made harder: a feature's files span `admin/Partials/`, `includes/Utilities/`, and another
+  module's `Rest/` — locate it via the spec, not the directory tree.
+- Reconsider: if such a surface later grows domain data, promote it to a real module and amend §I.
+
+**Constraint that survives either way**
+Module Contract #3 still forbids sibling-module reach-through. If the UI needs another module's
+data, that module MUST expose it via a WordPress filter (Module Contract #4) — do not import its
+classes across the boundary.
+
+**Evidence**
+Feature 099 (`specs/099-quick-connect-wizard/research.md` R1). Sibling precedent:
+[[DEC-CATEGORY-FOLDER-NOT-MODULE]] (Feature 042).
+
+---
+
+### 2026-09-08 — Third-party embeds in wp-admin must be consent-safe (DEC-ADMIN-THIRD-PARTY-EMBED)
+
+**Status**: Active
+
+**Why this is durable**
+An `<iframe>` in an authenticated admin screen discloses the admin's IP, user agent, and a
+`Referer` revealing the site's admin URL to a third party — before any user action. It also runs
+against WordPress.org Guideline 7 (external requests without consent), which this plugin must keep
+clear of.
+
+**Decision**
+Any third-party embed on an admin screen MUST:
+1. use the privacy-enhanced host where one exists (`youtube-nocookie.com`, not `youtube.com`);
+2. set `referrerpolicy="strict-origin-when-cross-origin"` — **not** `no-referrer`, see the
+   2026-09-09 amendment below — and `loading="lazy"` unless the frame must begin playing at once;
+3. prefer a **click-to-load facade** — a locally-hosted still that swaps in the iframe on click, so
+   the third-party request is user-initiated;
+4. always pair with a plain external link, so the content stays reachable when the embed is blocked
+   by connectivity, a privacy tool, or regional restriction.
+
+**Tradeoffs**
+- Gained: no unconsented disclosure; graceful degradation; Guideline 7 clear.
+- Made harder: a facade is one extra click and needs a local still image.
+- Reconsider: if a first-party self-hosted player is introduced.
+
+**Evidence**
+Feature 099 security review SEC-001 (`specs/099-quick-connect-wizard/security-review-plan.md`),
+MODERATE / CWE-829. Introduced by the wizard's three walkthrough screens.
+
+**Amendment — 2026-09-09: `no-referrer` does not work and must not be used**
+Clause 2 originally mandated `referrerpolicy="no-referrer"`. Implementing it verbatim broke
+playback outright: YouTube refused the embed with *"Video player configuration error (Error 153)"*.
+The host needs a `Referer` to verify which origin is permitted to embed a video, and sends nothing
+back when it has none. A privacy rule that stops the content loading is not a privacy win — it is
+an outage that the next person will "fix" by deleting the whole clause.
+
+`strict-origin-when-cross-origin` is the correct setting and still satisfies the finding: it sends
+the bare origin (`https://example.com`) and never the full admin URL with its page and query string.
+The admin path — the thing SEC-001 was actually about — stays private. Verified in-browser on
+Feature 099 screen 2; `src/js/quick-connect/components/VideoEmbed.jsx` carries the same note so the
+policy is not "tightened" back into breakage.
+
+---
+
+### 2026-09-09 — Autoplay is a per-screen opt-out of the embed facade, never a default (DEC-ADMIN-EMBED-AUTOPLAY-EXCEPTION)
+
+**Status**: Active
+
+**Why this is durable**
+[[DEC-ADMIN-THIRD-PARTY-EMBED]] clause 3 requires a click-to-load facade, and the reason is the
+whole finding: with a facade, contact with the third party happens on a deliberate press; without
+one, it happens on page load, disclosing the admin's IP, user agent and origin to a party the
+operator never chose to contact. Product direction can legitimately want a recording to start on
+its own. What must not happen is that request arriving as a component default, spreading to screens
+where nobody weighed it, and quietly voiding the parent decision everywhere.
+
+**Decision**
+An admin embed MAY start on its own only when **all** of the following hold:
+1. the screen's purpose *is* the recording — not a screen that merely contains one;
+2. autoplay is passed per-instance (`<VideoEmbed autoPlay />`), never baked into the component's
+   own default, so every autoplaying screen is greppable and each one was a decision;
+3. playback is muted — browsers block audible autoplay outright, so an unmuted autoplay is a still
+   frame, not a feature;
+4. `loading` is `eager` for that instance, since `lazy` defers the request and stalls the start;
+5. the external fallback link of clause 4 is still present.
+
+Every other embed keeps the facade. A screen that shares one recording with sibling screens does
+**not** qualify: several copies of one video autoplaying across a single flow is worse than a click.
+
+**Tradeoffs**
+- Gained: the parent decision holds by default; each exception is deliberate, narrow and findable.
+- Made harder: two ways to render one component, so reviewers must check which is in use.
+- Reconsider: if a first-party self-hosted player lands, the disclosure disappears and this
+  exception becomes unnecessary rather than merely narrow.
+
+**Evidence**
+Feature 099 screens 2 and 3, on explicit product instruction (PR #174). Implemented as an opt-in
+`autoPlay` prop on `src/js/quick-connect/components/VideoEmbed.jsx`, seeded into `useState` so an
+autoplaying screen renders the iframe on its first pass with no facade flash. Screens 4-7 keep the
+facade. Supersedes the parent's FR-019 "nothing autoplays" claim for these two screens only.
+
+---
+
+### 2026-09-08 — Server-side capability checks need a matching UI affordance (DEC-CAPABILITY-AFFORDANCE-PARITY)
+
+**Status**: Active
+
+**Why this is durable**
+Escalated capabilities (`install_plugins`, `activate_plugins`, `edit_files`) are enforced server-side
+and then forgotten client-side. The endpoint is safe, but a user holding `manage_options` without the
+escalated capability is shown a control that always fails. The bug is invisible to the developer, who
+tests as an administrator with every capability.
+
+**Decision**
+Any action gated by a capability stricter than the page's own MUST surface that capability in the
+state payload the UI reads, and the UI MUST replace — not merely disable — the control when it is
+false. Prefer an explanatory "Ask a site administrator" message over a disabled button with no reason.
+
+**Tradeoffs**
+- Gained: no dead controls; the reason is legible to the user who cannot act.
+- Made harder: one extra boolean in each state endpoint that gates an escalated action.
+- Reconsider: never — this is strictly additive.
+
+**Evidence**
+Feature 099: SC-009 required it, the server enforced it (tasks T040/T046), and no task implemented
+the UI half until the task security review caught it (SEC-T02 → T073). Prior art:
+`acrossai-pro/admin/Partials/QuickSetup/QuickSetupPage.php` renders "Ask a site administrator" when
+`install_plugins` is absent.
