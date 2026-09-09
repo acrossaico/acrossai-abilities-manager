@@ -36,7 +36,10 @@
 			"AcrossAI_Abilities_Manager\\Includes\\": "includes/",
 			"AcrossAI_Abilities_Manager\\Admin\\": "admin/",
 			"AcrossAI_Abilities_Manager\\Front\\": "public/"
-		}
+		},
+		"exclude-from-classmap": [
+			"/tests/"
+		]
 	},
 	"require-dev": {
 		"wp-coding-standards/wpcs": "*",
