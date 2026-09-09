@@ -171,9 +171,9 @@ activates, and hands off to MCP Manager's own Quick Connect.
 
 - [x] T056 [US4] Create `src/js/quick-connect/steps/Step6AdapterInstall.jsx` — GitHub obtaining/installing instructions with a link to `https://github.com/WordPress/mcp-adapter`, plus an "I installed it — reload" action (FR-026, FR-027)
 - [x] T057 [US4] Add the "not detected yet" state and re-check affordance to `Step6_AdapterInstall.jsx`; advance only once the transport is detected as present (FR-027a)
-- [ ] T058 [P] [US4] Create `src/js/quick-connect/steps/Step7_AdapterAbilities.jsx` using `VideoEmbed` — how to enable abilities for the adapter's default server
-- [ ] T059 [US4] Implement `skipAdapterInstall` in `App.jsx` as `method !== 'mcp-adapter' || plugins.mcpAdapter === 'active'` so an already-present adapter skips straight to the walkthrough (FR-011a)
-- [ ] T060 [P] [US4] Jest test `tests/jest/quick-connect/adapter-path.test.js` — step counts are 5 / 7 / 6 for the three paths; deep link to step 6 without `method` auto-skips forward
+- [x] T058 [P] [US4] Create `src/js/quick-connect/steps/Step7_AdapterAbilities.jsx` using `VideoEmbed` — how to enable abilities for the adapter's default server
+- [x] T059 [US4] Implement `skipAdapterInstall` in `App.jsx` as `method !== 'mcp-adapter' || plugins.mcpAdapter === 'active'` so an already-present adapter skips straight to the walkthrough (FR-011a)
+- [x] T060 [P] [US4] Jest test `tests/jest/quick-connect/adapter-path.test.js` — step counts are 5 / 7 / 6 for the three paths; deep link to step 6 without `method` auto-skips forward
 
 ---
 

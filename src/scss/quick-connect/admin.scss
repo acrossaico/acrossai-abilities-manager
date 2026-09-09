@@ -888,6 +888,15 @@ html.wp-toolbar:has(body.acrossai-quick-connect-fullpage) {
 	display: flex;
 	flex-direction: column;
 	gap: 28px;
+
+	// Body copy here sits between a centered card and a centered button row.
+	// Left-aligned it reads as a stray fragment rather than part of the summary,
+	// which is most visible on the not-connected variant where the warning
+	// paragraph is the widest thing on screen. Scoped to this screen: the same
+	// class is left-aligned elsewhere on purpose.
+	.qs__gate-copy {
+		text-align: center;
+	}
 }
 
 // Centered under the actions and quieter than the body copy — it is an aside
