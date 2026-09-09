@@ -39,8 +39,8 @@ const Step3BulkActions = () => {
 	// operator out of the wizard mid-flow. href rather than onClick +
 	// window.open, which popup blockers kill silently, leaving a dead button.
 	//
-	// Memoised because useFooterAction stores the object in shell state; a fresh
-	// literal every render would set state, re-render, and set it again.
+	// useFooterAction compares content rather than identity, so a literal here
+	// would be safe; memoised anyway to avoid rebuilding the object each render.
 	const footerAction = useMemo(
 		() => ({
 			label: __('Open Abilities page ↗', 'acrossai-abilities-manager'),
