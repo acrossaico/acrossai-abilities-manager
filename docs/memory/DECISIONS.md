@@ -1935,7 +1935,8 @@ clear of.
 **Decision**
 Any third-party embed on an admin screen MUST:
 1. use the privacy-enhanced host where one exists (`youtube-nocookie.com`, not `youtube.com`);
-2. set `referrerpolicy="no-referrer"` and `loading="lazy"`;
+2. set `referrerpolicy="strict-origin-when-cross-origin"` — **not** `no-referrer`, see the
+   2026-09-09 amendment below — and `loading="lazy"` unless the frame must begin playing at once;
 3. prefer a **click-to-load facade** — a locally-hosted still that swaps in the iframe on click, so
    the third-party request is user-initiated;
 4. always pair with a plain external link, so the content stays reachable when the embed is blocked
@@ -1949,6 +1950,58 @@ Any third-party embed on an admin screen MUST:
 **Evidence**
 Feature 099 security review SEC-001 (`specs/099-quick-connect-wizard/security-review-plan.md`),
 MODERATE / CWE-829. Introduced by the wizard's three walkthrough screens.
+
+**Amendment — 2026-09-09: `no-referrer` does not work and must not be used**
+Clause 2 originally mandated `referrerpolicy="no-referrer"`. Implementing it verbatim broke
+playback outright: YouTube refused the embed with *"Video player configuration error (Error 153)"*.
+The host needs a `Referer` to verify which origin is permitted to embed a video, and sends nothing
+back when it has none. A privacy rule that stops the content loading is not a privacy win — it is
+an outage that the next person will "fix" by deleting the whole clause.
+
+`strict-origin-when-cross-origin` is the correct setting and still satisfies the finding: it sends
+the bare origin (`https://example.com`) and never the full admin URL with its page and query string.
+The admin path — the thing SEC-001 was actually about — stays private. Verified in-browser on
+Feature 099 screen 2; `src/js/quick-connect/components/VideoEmbed.jsx` carries the same note so the
+policy is not "tightened" back into breakage.
+
+---
+
+### 2026-09-09 — Autoplay is a per-screen opt-out of the embed facade, never a default (DEC-ADMIN-EMBED-AUTOPLAY-EXCEPTION)
+
+**Status**: Active
+
+**Why this is durable**
+[[DEC-ADMIN-THIRD-PARTY-EMBED]] clause 3 requires a click-to-load facade, and the reason is the
+whole finding: with a facade, contact with the third party happens on a deliberate press; without
+one, it happens on page load, disclosing the admin's IP, user agent and origin to a party the
+operator never chose to contact. Product direction can legitimately want a recording to start on
+its own. What must not happen is that request arriving as a component default, spreading to screens
+where nobody weighed it, and quietly voiding the parent decision everywhere.
+
+**Decision**
+An admin embed MAY start on its own only when **all** of the following hold:
+1. the screen's purpose *is* the recording — not a screen that merely contains one;
+2. autoplay is passed per-instance (`<VideoEmbed autoPlay />`), never baked into the component's
+   own default, so every autoplaying screen is greppable and each one was a decision;
+3. playback is muted — browsers block audible autoplay outright, so an unmuted autoplay is a still
+   frame, not a feature;
+4. `loading` is `eager` for that instance, since `lazy` defers the request and stalls the start;
+5. the external fallback link of clause 4 is still present.
+
+Every other embed keeps the facade. A screen that shares one recording with sibling screens does
+**not** qualify: several copies of one video autoplaying across a single flow is worse than a click.
+
+**Tradeoffs**
+- Gained: the parent decision holds by default; each exception is deliberate, narrow and findable.
+- Made harder: two ways to render one component, so reviewers must check which is in use.
+- Reconsider: if a first-party self-hosted player lands, the disclosure disappears and this
+  exception becomes unnecessary rather than merely narrow.
+
+**Evidence**
+Feature 099 screens 2 and 3, on explicit product instruction (PR #174). Implemented as an opt-in
+`autoPlay` prop on `src/js/quick-connect/components/VideoEmbed.jsx`, seeded into `useState` so an
+autoplaying screen renders the iframe on its first pass with no facade flash. Screens 4-7 keep the
+facade. Supersedes the parent's FR-019 "nothing autoplays" claim for these two screens only.
 
 ---
 
