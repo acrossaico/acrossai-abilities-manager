@@ -183,23 +183,23 @@ activates, and hands off to MCP Manager's own Quick Connect.
 
 **Independent test**: Exit, then re-open from each entry point; the wizard restarts at screen 1.
 
-- [ ] T061 [P] [US5] Add a `Quick Connect` submenu entry in `admin/Partials/Menu.php` — URL-literal `menu_slug`, empty callback, position 0
-- [ ] T062 [P] [US5] Create `admin/Partials/QuickConnect/AdminBarEntry.php` — node on `admin_bar_menu` priority 100, gated on `manage_options`
-- [ ] T063 [P] [US5] Add a `Quick Connect` entry to `plugin_action_links()` in `admin/Main.php` beside the existing Settings link
-- [ ] T064 [US5] Wire `AdminBarEntry` in `includes/Main.php::define_admin_hooks()` (variable-first)
+- [x] T061 [P] [US5] Add a `Quick Connect` submenu entry in `admin/Partials/Menu.php` — URL-literal `menu_slug`, empty callback, position 0
+- [x] T062 [P] [US5] Create `admin/Partials/QuickConnect/AdminBarEntry.php` — node on `admin_bar_menu` priority 100, gated on `manage_options`
+- [x] T063 [P] [US5] Add a `Quick Connect` entry to `plugin_action_links()` in `admin/Main.php` beside the existing Settings link
+- [x] T064 [US5] Wire `AdminBarEntry` in `includes/Main.php::define_admin_hooks()` (variable-first)
 
 ---
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T065 [P] Register DEV-099-1, DEV-099-2, and DEV-099-3 in `docs/memory/INDEX.md` under `## Accepted Deviations` (required by `DEC-DESIGN-OVERRIDES-DATAVIEWS`; DEV-099-3 cites `DEC-ADMIN-UI-NOT-MODULE` and carries the promote-to-module review trigger)
-- [ ] T066 [P] **[SEC-006, optional]** Add a short-lived in-flight transient guard to the install route returning `409` while an install is running, making FR-031 authoritative server-side
-- [ ] T067 [P] Add a `Development` note to `README.txt` describing the wizard and its re-entry points
-- [ ] T068 Run the full quality gate: `composer run phpstan` (level 8, zero errors), PHPCS on changed production files, `npx jest src/js/quick-connect`, `vendor/bin/phpunit --filter QuickConnect`
-- [ ] T069 Confirm asset gating (SC-010): load the Abilities, Settings, and Integrations pages and verify `quick-connect.js` loads on none of them
-- [ ] T070 Side-by-side visual parity check against `admin.php?page=acrossai_mcp_manager&quick-connect=1&step=1` at desktop and below 640px — header, progress bar, typography, buttons, cards, notices (SC-005)
-- [ ] T071 Accessibility pass: complete the wizard keyboard-only, verify each step change is announced, and confirm focus moves into each new screen (SC-007)
-- [ ] T072 Run the `quickstart.md` verification checklist end to end on the `wordpress-7-0` site
+- [x] T065 [P] Register DEV-099-1, DEV-099-2, and DEV-099-3 in `docs/memory/INDEX.md` under `## Accepted Deviations` (required by `DEC-DESIGN-OVERRIDES-DATAVIEWS`; DEV-099-3 cites `DEC-ADMIN-UI-NOT-MODULE` and carries the promote-to-module review trigger)
+- [x] T066 [P] **[SEC-006, optional]** Add a short-lived in-flight transient guard to the install route returning `409` while an install is running, making FR-031 authoritative server-side
+- [x] T067 [P] Add a `Development` note to `README.txt` describing the wizard and its re-entry points
+- [x] T068 Run the full quality gate: `composer run phpstan` (level 8, zero errors), PHPCS on changed production files, `npx jest src/js/quick-connect`, `vendor/bin/phpunit --filter QuickConnect`
+- [x] T069 Confirm asset gating (SC-010): load the Abilities, Settings, and Integrations pages and verify `quick-connect.js` loads on none of them
+- [x] T070 Side-by-side visual parity check against `admin.php?page=acrossai_mcp_manager&quick-connect=1&step=1` at desktop and below 640px — header, progress bar, typography, buttons, cards, notices (SC-005)
+- [x] T071 Accessibility pass: complete the wizard keyboard-only, verify each step change is announced, and confirm focus moves into each new screen (SC-007)
+- [x] T072 Run the `quickstart.md` verification checklist end to end on the `wordpress-7-0` site
 
 ---
 

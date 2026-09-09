@@ -228,6 +228,14 @@ html.wp-toolbar:has(body.acrossai-quick-connect-fullpage) {
 	}
 }
 
+// Focused programmatically on every step change so the new screen is announced
+// from its title. tabindex="-1" keeps it out of the tab order, so it is never
+// focused by keyboard navigation and a ring here would only ever be a flash of
+// chrome the user did not ask for. Genuine keyboard focus is unaffected.
+.qs__step-title:focus {
+	outline: none;
+}
+
 .qs__step-title {
 	font-size: 28px;
 	font-weight: 600;

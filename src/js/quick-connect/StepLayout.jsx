@@ -75,6 +75,8 @@ const StepLayout = ({
 		? [].concat(footerAction).filter(Boolean)
 		: [];
 	const loadingAction = footerActions.find((action) => action.isLoading);
+	// Declared before renderFooterAction, which closes over it.
+	const busy = isLoading || !!loadingAction;
 
 	// A secondary action is an aside — "go and look at this" — so it sits between
 	// Back and Continue, leaving Continue the primary, rightmost button. A footer
@@ -130,7 +132,6 @@ const StepLayout = ({
 				{action.label}
 			</button>
 		);
-	const busy = isLoading || !!loadingAction;
 
 	const progressPct = Math.min(
 		100,
@@ -141,10 +142,29 @@ const StepLayout = ({
 	// render before the live region is written, otherwise the announcement can
 	// be swallowed.
 	useEffect(() => {
-		const focusable = contentRef.current?.querySelector(
-			'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-		);
-		focusable?.focus();
+		// The heading, not the first focusable. Focusing whatever happens to be
+		// first put the user on screen 2's "Watch on YouTube ↗" link — pressing
+		// Enter straight after Continue would have left the site — and told them
+		// nothing about where they had arrived. A heading reads the screen's
+		// title and starts them at the top of the new content.
+		//
+		// tabindex is applied here rather than in each step so no screen can
+		// forget it. -1 keeps the heading out of the tab order; it is a focus
+		// target, not a stop.
+		const heading = contentRef.current?.querySelector('.qs__step-title');
+
+		if (heading) {
+			heading.setAttribute('tabindex', '-1');
+			heading.focus();
+		} else {
+			// A screen with no title still needs focus moved out of the footer,
+			// or the next Tab would resume from the button that was just left.
+			contentRef.current
+				?.querySelector(
+					'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+				)
+				?.focus();
+		}
 
 		const timer = setTimeout(() => {
 			if (!liveRef.current) {

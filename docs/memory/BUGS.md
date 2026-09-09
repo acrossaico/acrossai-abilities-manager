@@ -1938,3 +1938,39 @@ Site returns the standard "Briefly unavailable for scheduled maintenance" 503 fo
 **References**:
 - `admin/Partials/Menu.php` — `reorder_submenu()` and `find_submenu_index()`.
 - `tests/phpunit/Admin/QuickConnect/Test_Quick_Connect_Submenu_Order.php` — six cases: parked at top, parked at end, already correct, item absent, anchor missing, empty menu.
+
+---
+
+### 2026-09-09 — BUG-SPA-FOCUS-FIRST-FOCUSABLE — Focusing the first focusable on a step change can hand the user an exit link
+
+**Status**: Active
+**Scope**: React (any multi-screen flow that moves focus on navigation)
+**Tags**: react, accessibility, focus-management, spa-navigation, keyboard, sc-007, feature-099
+
+**Bug**: `StepLayout` moved focus into each new screen with
+`contentRef.current.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')`.
+That reads as "put the user at the start of the new content", and on most screens it does. On screen
+2 the first match was the **"Watch on YouTube ↗" link** — so a keyboard user who pressed Continue and
+then Enter left the site entirely, and a screen-reader user was dropped onto a tangential outbound
+link with nothing said about which screen they had arrived on.
+
+**Why it survived**: focus *was* moving, and into the right container, so every check of the form
+"does focus move into the new screen?" passed. Nothing is visibly wrong with a mouse. The defect is
+only in *which* element, which needs the active element inspected by name rather than by whether it
+is inside the content region.
+
+**Prevention**:
+- Focus the **heading** of the new screen, not the first focusable. It announces the screen's title
+  and starts the user at the top of its content, which is what "move focus into the new screen"
+  actually means.
+- Apply `tabindex="-1"` from the shell, not from each screen, so no screen can forget it. `-1` keeps
+  the heading out of the tab order — it is a focus target, not a stop.
+- Suppress the focus ring on that heading only. It is never reached by keyboard navigation, so a ring
+  there is a flash of chrome nobody asked for; do NOT generalise that to focusable controls.
+- Keep a first-focusable fallback for a screen with no heading, or focus stays in the footer and the
+  next Tab resumes from the button just left.
+- Assert the focused element by name (`H2.qs__step-title`), not merely that it is inside the content.
+
+**References**:
+- `src/js/quick-connect/StepLayout.jsx` — the focus/announce effect.
+- `src/scss/quick-connect/admin.scss` — `.qs__step-title:focus { outline: none; }` and why it is safe.

@@ -101,6 +101,7 @@ stricter than the shared callback, in addition to the nonce check.
 |---|---|---|---|
 | `400` | `acrossai_quick_connect_invalid_plugin` | "That plugin cannot be installed from here." | — |
 | `403` | `rest_forbidden` | Capability or nonce failure | — |
+| `409` | `acrossai_quick_connect_install_in_progress` | "An installation is already running. Wait for it to finish before trying again." | In-flight lock held (SEC-006 / FR-031). Taken after slug validation, released in a `finally`, 120s TTL so a killed request cannot bolt the endpoint shut. |
 | `500` | `acrossai_quick_connect_install_failed` | "Installation failed. Try installing manually from Plugins → Add New." | Raw `Plugin_Upgrader` message → `error_log()` |
 | `500` | `acrossai_quick_connect_activate_failed` | "Activation failed. Try activating from Plugins." | Raw `activate_plugin()` error → `error_log()` |
 | `502` | `acrossai_quick_connect_install_failed` | "Could not find that plugin on WordPress.org. Try installing it manually from Plugins → Add New." | Raw `plugins_api` error → `error_log()` |
@@ -131,5 +132,7 @@ uninstall.
 | `POST /install-plugin` with `mcp-adapter` | `400` |
 | `POST /install-plugin` lacking `install_plugins` | `403` |
 | `POST /install-plugin` lacking `activate_plugins` | `403` |
+| `POST /install-plugin` while another install holds the lock | `409` |
+| `POST /install-plugin` with a rejected slug while no lock is held | `400`, and the lock is **not** taken |
 | Any failure path | Response body contains no filesystem path |
 | `permission_callback` return | Only `true`, `false`, or `WP_Error` — never a response object |

@@ -60,6 +60,29 @@ class AcrossAI_Quick_Connect_Controller {
 	private const INSTALLABLE_SLUGS = array( 'acrossai-mcp-manager' );
 
 	/**
+	 * Transient holding the in-flight install lock.
+	 *
+	 * @since 0.0.34
+	 * @var   string
+	 */
+	private const INSTALL_LOCK_TRANSIENT = 'acrossai_quick_connect_install_lock';
+
+	/**
+	 * Lock lifetime, in seconds.
+	 *
+	 * Long enough to cover a slow download and unzip on a modest host, short
+	 * enough that a request killed mid-install (timeout, fatal, closed
+	 * connection) does not leave the endpoint bolted shut. The lock is released
+	 * explicitly on every normal path; this TTL only matters when the process
+	 * dies without unwinding, and there the correct outcome is a short wait
+	 * rather than an administrator who can never retry.
+	 *
+	 * @since 0.0.34
+	 * @var   int
+	 */
+	private const INSTALL_LOCK_TTL = 120;
+
+	/**
 	 * Retrieve the singleton instance.
 	 *
 	 * @since  0.0.34
@@ -256,6 +279,8 @@ class AcrossAI_Quick_Connect_Controller {
 	public function install_plugin( \WP_REST_Request $request ) {
 		$slug = sanitize_key( (string) $request->get_param( 'slug' ) );
 
+		// Validated before the lock is taken: a rejected slug does no work, so
+		// holding the endpoint shut over it would be pure denial of service.
 		if ( ! in_array( $slug, self::INSTALLABLE_SLUGS, true ) ) {
 			return new \WP_Error(
 				'acrossai_quick_connect_invalid_plugin',
@@ -264,6 +289,39 @@ class AcrossAI_Quick_Connect_Controller {
 			);
 		}
 
+		// SEC-006 / FR-031. The wizard already prevents a second click, but that
+		// rule lived only in the browser: a direct caller could fire the endpoint
+		// repeatedly and set several downloads and unzips running over the same
+		// directory. Requires install_plugins, so the actor is privileged and the
+		// damage is self-inflicted — which is why this is a guard rather than a
+		// throttle, and why it answers 409 instead of failing quietly.
+		if ( ! $this->acquire_install_lock() ) {
+			return new \WP_Error(
+				'acrossai_quick_connect_install_in_progress',
+				__( 'An installation is already running. Wait for it to finish before trying again.', 'acrossai-abilities-manager' ),
+				array( 'status' => 409 )
+			);
+		}
+
+		try {
+			return $this->run_install( $slug );
+		} finally {
+			// finally, not a release before each return: this method has several
+			// exit paths and can also throw out of the upgrader. A lock that
+			// leaks on one uncommon path is worse than no lock, because the
+			// endpoint then stays shut until the TTL expires.
+			$this->release_install_lock();
+		}
+	}
+
+	/**
+	 * Perform the install, assuming the lock is held.
+	 *
+	 * @since  0.0.34
+	 * @param  string $slug Validated plugin slug.
+	 * @return \WP_REST_Response|\WP_Error Install result or a sanitized error.
+	 */
+	private function run_install( string $slug ) {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -341,6 +399,40 @@ class AcrossAI_Quick_Connect_Controller {
 				'plugin'    => $expected_basename,
 			)
 		);
+	}
+
+	/**
+	 * Take the in-flight install lock.
+	 *
+	 * A transient rather than a true mutex. WordPress has no atomic
+	 * check-and-set that holds with and without an external object cache, so a
+	 * sufficiently precise pair of simultaneous requests can still both pass.
+	 * That is an accepted limit: this closes the realistic case — an
+	 * administrator double-submitting, or a script looping the endpoint — and
+	 * the residual race needs two requests inside the same few milliseconds by
+	 * an actor who already holds install_plugins.
+	 *
+	 * @since  0.0.34
+	 * @return bool True when the lock was taken, false when one is already held.
+	 */
+	private function acquire_install_lock(): bool {
+		if ( false !== get_transient( self::INSTALL_LOCK_TRANSIENT ) ) {
+			return false;
+		}
+
+		set_transient( self::INSTALL_LOCK_TRANSIENT, time(), self::INSTALL_LOCK_TTL );
+
+		return true;
+	}
+
+	/**
+	 * Release the in-flight install lock.
+	 *
+	 * @since  0.0.34
+	 * @return void
+	 */
+	private function release_install_lock(): void {
+		delete_transient( self::INSTALL_LOCK_TRANSIENT );
 	}
 
 	/**
