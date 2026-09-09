@@ -5,6 +5,7 @@ import { Icon, plugins } from '@wordpress/icons';
 import { fetchConfig, saveConfig } from '../api';
 import useLibraryTabSync from '../hooks/useLibraryTabSync';
 import LibraryCard from './LibraryCard';
+import { titleCaseTabLabel } from '../../shared/titleCaseTabLabel';
 
 /**
  * Sentinel name for the always-present default tab. Underscores chosen to
@@ -169,7 +170,7 @@ export function filterItemsByTabGroup(items, activeTab) {
  *
  * Named export per PATTERN-NAMED-EXPORT-JEST.
  */
-export { titleCaseTabLabel } from '../../shared/titleCaseTabLabel';
+export { titleCaseTabLabel };
 
 /**
  * Collect the set of category slugs currently in scope for a bulk action,
