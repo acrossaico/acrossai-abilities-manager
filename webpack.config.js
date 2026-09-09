@@ -111,6 +111,16 @@ module.exports = {
 			'src/scss/file-manager-settings',
 			'admin.scss'
 		),
+		'js/quick-connect': path.resolve(
+			process.cwd(),
+			'src/js/quick-connect',
+			'index.js'
+		),
+		'css/quick-connect': path.resolve(
+			process.cwd(),
+			'src/scss/quick-connect',
+			'admin.scss'
+		),
 	},
 	output: {
 		...defaultConfig.output,

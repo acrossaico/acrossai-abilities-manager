@@ -293,11 +293,35 @@ final class Main {
 		 */
 		$main_menu = new \AcrossAI_Abilities_Manager\Admin\Partials\Menu( $this->get_plugin_name(), $this->get_version() );
 		$this->loader->add_action( 'admin_menu', $main_menu, 'register_submenu' );
+		// Priority 999: runs after every plugin sharing the `acrossai` parent has
+		// registered, so Quick Connect can be placed relative to Abilities rather
+		// than at an absolute slot other plugins are also competing for.
+		$this->loader->add_action( 'admin_menu', $main_menu, 'reorder_submenu', 999 );
 
 		// Library submenu page — second position, immediately after main menu (Feature 027/031).
 		// Named variable before Loader call — Boot Flow Rule variable-first pattern.
 		$ability_library_menu = \AcrossAI_Abilities_Manager\Admin\Partials\LibraryMenu::instance();
 		$this->loader->add_action( 'admin_menu', $ability_library_menu, 'register_submenu' );
+
+		// Quick Connect onboarding wizard (Feature 099). No page of its own — it
+		// renders through Partials\Menu when `?quick-connect=1` is present. The
+		// page class owns its enqueue per PATTERN-PARTIALS-SELF-ENQUEUE, keeping
+		// a page-specific bundle out of Admin\Main::enqueue_scripts().
+		$quick_connect_page = \AcrossAI_Abilities_Manager\Admin\Partials\QuickConnect\QuickConnectPage::instance();
+		$this->loader->add_action( 'admin_enqueue_scripts', $quick_connect_page, 'enqueue_assets' );
+		$this->loader->add_filter( 'admin_body_class', $quick_connect_page, 'add_body_class' );
+		$this->loader->add_action( 'in_admin_header', $quick_connect_page, 'suppress_admin_notices', 1000 );
+
+		// Priority 5: early enough to redirect before other admin_init work
+		// renders anything, late enough that the plugin API is available.
+		$quick_connect_redirect = \AcrossAI_Abilities_Manager\Admin\Partials\QuickConnect\ActivationRedirect::instance();
+		$this->loader->add_action( 'admin_init', $quick_connect_redirect, 'maybe_redirect', 5 );
+
+		// Toolbar chip — the one entry point present on every admin screen, so
+		// the wizard stays reachable after its single automatic opening.
+		// Priority 100 settles the node to the right of core's own entries.
+		$quick_connect_bar = \AcrossAI_Abilities_Manager\Admin\Partials\QuickConnect\AdminBarEntry::instance();
+		$this->loader->add_action( 'admin_bar_menu', $quick_connect_bar, 'register_node', 100 );
 
 		// Settings sections (Feature 019; reparented to host page in Feature 038;
 		// migrated to instance-method API + tab-scoped option_group in Feature 045).
@@ -372,6 +396,14 @@ final class Main {
 		// Named variable before Loader call — Boot Flow Rule variable-first pattern.
 		$ability_library_registry = \AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Ability_Library_Registry::instance();
 		$this->loader->add_action( 'init', $ability_library_registry, 'collect', 99 );
+
+		// Feature 099: publish the tab-group summary as a filter so consumers
+		// outside the Library module (the Quick Connect wizard) can read it
+		// without importing Library classes. Constitution Module Contract #3
+		// forbids sibling-module reach-through; #4 makes filters the sanctioned
+		// integration point. Consumers call:
+		// apply_filters( 'acrossai_ability_library_tab_group_summary', array() ).
+		$this->loader->add_filter( 'acrossai_ability_library_tab_group_summary', $ability_library_registry, 'get_tab_group_summary' );
 
 		// Library REST orchestrator — acrossai-abilities-library/v1 namespace (Feature 027).
 		// Named variable before Loader call — Boot Flow Rule variable-first pattern.

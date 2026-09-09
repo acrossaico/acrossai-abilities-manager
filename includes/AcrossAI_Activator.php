@@ -47,6 +47,31 @@ class AcrossAI_Activator {
 		( new RuleTable( AcrossAI_Abilities_Access_Control::TABLE_SLUG ) )->maybe_upgrade();
 		self::migrate_absorbed_options();
 		self::seed_file_manager_settings();
+		self::flag_quick_connect_redirect();
+	}
+
+	/**
+	 * Ask the next admin page view to open the Quick Connect wizard.
+	 *
+	 * Feature 099. Deliberately a 30-second transient rather than an option:
+	 * activation can happen with no admin page view following it (WP-CLI, a
+	 * deployment script), and a persistent flag would ambush the operator on
+	 * some unrelated screen hours later. Letting it expire is the correct
+	 * outcome in that case (spec FR-004).
+	 *
+	 * The decision to actually redirect is not made here — ActivationRedirect
+	 * applies the guards, including the one that leaves sites alone when the
+	 * recommended transport is already present (FR-002).
+	 *
+	 * @since  0.0.34
+	 * @return void
+	 */
+	private static function flag_quick_connect_redirect(): void {
+		if ( ! function_exists( 'set_transient' ) ) {
+			return;
+		}
+
+		set_transient( 'acrossai_abilities_quick_connect_do_redirect', '1', 30 );
 	}
 
 	/**

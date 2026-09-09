@@ -12,6 +12,8 @@
 
 namespace AcrossAI_Abilities_Manager\Includes\Modules\Library;
 
+use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Tab_Group_Label;
+
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
@@ -168,6 +170,77 @@ class AcrossAI_Ability_Library_Registry {
 		$definitions = self::apply_suggested_plugins_decoration( self::$definitions ?? array() );
 		$definitions = self::apply_suggested_abilities_decoration( $definitions );
 		return $definitions;
+	}
+
+	/**
+	 * Summarise registered abilities by tab group.
+	 *
+	 * Published as the module-facing accessor for catalogue summaries. Consumers
+	 * outside this module MUST read the filter rather than calling this class
+	 * directly — Constitution Module Contract #3 forbids sibling-module
+	 * reach-through, and #4 designates actions and filters as the sanctioned
+	 * integration point.
+	 *
+	 * Returns compact rows (~17 of them) instead of the full definition set
+	 * (~440 rows), so consumers are decoupled from the definition shape as well
+	 * as from this module. Labels come from the shared
+	 * {@see AcrossAI_Tab_Group_Label} rule so server-side consumers agree with
+	 * the Integrations page's own JS derivation
+	 * (PATTERN-ABILITY-LIBRARY-TAB-AUTO-DERIVE).
+	 *
+	 * Definitions with no `tab_group` are skipped: they are not surfaced as tabs
+	 * on the Integrations page either.
+	 *
+	 * Registered in `includes/Main.php` as the provider for the
+	 * `acrossai_ability_library_tab_group_summary` filter. Consumers call
+	 * `apply_filters( 'acrossai_ability_library_tab_group_summary', array() )`
+	 * and never reference this class, which is what keeps the dependency
+	 * one-directional.
+	 *
+	 * @since  0.0.34
+	 * @param  mixed $summary Incoming filter value; ignored, this is the provider.
+	 * @return array<int, array{key: string, label: string, count: int}> Sorted by
+	 *         count descending, then key ascending, for stable rendering.
+	 */
+	public function get_tab_group_summary( $summary = array() ): array {
+		unset( $summary );
+
+		$counts = array();
+
+		foreach ( $this->get_definitions() as $definition ) {
+			$key = isset( $definition['tab_group'] ) ? (string) $definition['tab_group'] : '';
+
+			if ( '' === $key ) {
+				continue;
+			}
+
+			$counts[ $key ] = ( $counts[ $key ] ?? 0 ) + 1;
+		}
+
+		$summary = array();
+
+		foreach ( $counts as $key => $count ) {
+			$summary[] = array(
+				'key'   => $key,
+				'label' => AcrossAI_Tab_Group_Label::format( $key ),
+				'count' => (int) $count,
+			);
+		}
+
+		usort(
+			$summary,
+			static function ( array $a, array $b ): int {
+				if ( $a['count'] === $b['count'] ) {
+					return strcmp( $a['key'], $b['key'] );
+				}
+
+				return $b['count'] <=> $a['count'];
+			}
+		);
+
+		// No apply_filters() here: this method IS the filter provider. Firing the
+		// same hook from inside its own callback would recurse infinitely.
+		return $summary;
 	}
 
 	/**

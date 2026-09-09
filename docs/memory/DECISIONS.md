@@ -1887,3 +1887,93 @@ Feature 060 introduced the second abstract base class in this plugin (after `Abi
 - `uninstall.php` — cleanup of the toggle option
 - `specs/095-suggested-abilities-framework/contracts/ability-payload.md` — full contract text
 - Sibling: [[DEC-ABILITY-SUGGESTED-PLUGINS-CONTRACT]] (Feature 088)
+
+---
+
+### 2026-09-08 — Admin-only UI features are not Constitution §I modules (DEC-ADMIN-UI-NOT-MODULE)
+
+**Status**: Active
+
+**Why this is durable**
+Constitution §I enumerates a fixed set of feature areas and the Directory Layout lists them, so any
+new `includes/Modules/<X>/` directory requires a PATCH amendment plus a sync impact report. That
+cost is justified for a new capability and wasteful for a UI surface over existing capability.
+
+**Decision**
+An admin surface that registers no abilities, owns no persisted data, and defines no domain is NOT
+a §I feature area. Place it in `admin/Partials/<Feature>/`, put shared logic in
+`includes/Utilities/`, and attach any REST routes as a sub-controller of the module whose data it
+serves. Reserve new module directories for genuine capability.
+
+**Tradeoffs**
+- Gained: no amendment churn; the five-area enumeration keeps meaning something.
+- Made harder: a feature's files span `admin/Partials/`, `includes/Utilities/`, and another
+  module's `Rest/` — locate it via the spec, not the directory tree.
+- Reconsider: if such a surface later grows domain data, promote it to a real module and amend §I.
+
+**Constraint that survives either way**
+Module Contract #3 still forbids sibling-module reach-through. If the UI needs another module's
+data, that module MUST expose it via a WordPress filter (Module Contract #4) — do not import its
+classes across the boundary.
+
+**Evidence**
+Feature 099 (`specs/099-quick-connect-wizard/research.md` R1). Sibling precedent:
+[[DEC-CATEGORY-FOLDER-NOT-MODULE]] (Feature 042).
+
+---
+
+### 2026-09-08 — Third-party embeds in wp-admin must be consent-safe (DEC-ADMIN-THIRD-PARTY-EMBED)
+
+**Status**: Active
+
+**Why this is durable**
+An `<iframe>` in an authenticated admin screen discloses the admin's IP, user agent, and a
+`Referer` revealing the site's admin URL to a third party — before any user action. It also runs
+against WordPress.org Guideline 7 (external requests without consent), which this plugin must keep
+clear of.
+
+**Decision**
+Any third-party embed on an admin screen MUST:
+1. use the privacy-enhanced host where one exists (`youtube-nocookie.com`, not `youtube.com`);
+2. set `referrerpolicy="no-referrer"` and `loading="lazy"`;
+3. prefer a **click-to-load facade** — a locally-hosted still that swaps in the iframe on click, so
+   the third-party request is user-initiated;
+4. always pair with a plain external link, so the content stays reachable when the embed is blocked
+   by connectivity, a privacy tool, or regional restriction.
+
+**Tradeoffs**
+- Gained: no unconsented disclosure; graceful degradation; Guideline 7 clear.
+- Made harder: a facade is one extra click and needs a local still image.
+- Reconsider: if a first-party self-hosted player is introduced.
+
+**Evidence**
+Feature 099 security review SEC-001 (`specs/099-quick-connect-wizard/security-review-plan.md`),
+MODERATE / CWE-829. Introduced by the wizard's three walkthrough screens.
+
+---
+
+### 2026-09-08 — Server-side capability checks need a matching UI affordance (DEC-CAPABILITY-AFFORDANCE-PARITY)
+
+**Status**: Active
+
+**Why this is durable**
+Escalated capabilities (`install_plugins`, `activate_plugins`, `edit_files`) are enforced server-side
+and then forgotten client-side. The endpoint is safe, but a user holding `manage_options` without the
+escalated capability is shown a control that always fails. The bug is invisible to the developer, who
+tests as an administrator with every capability.
+
+**Decision**
+Any action gated by a capability stricter than the page's own MUST surface that capability in the
+state payload the UI reads, and the UI MUST replace — not merely disable — the control when it is
+false. Prefer an explanatory "Ask a site administrator" message over a disabled button with no reason.
+
+**Tradeoffs**
+- Gained: no dead controls; the reason is legible to the user who cannot act.
+- Made harder: one extra boolean in each state endpoint that gates an escalated action.
+- Reconsider: never — this is strictly additive.
+
+**Evidence**
+Feature 099: SC-009 required it, the server enforced it (tasks T040/T046), and no task implemented
+the UI half until the task security review caught it (SEC-T02 → T073). Prior art:
+`acrossai-pro/admin/Partials/QuickSetup/QuickSetupPage.php` renders "Ask a site administrator" when
+`install_plugins` is absent.

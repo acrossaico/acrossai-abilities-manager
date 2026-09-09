@@ -35,11 +35,13 @@
 	},
 	"devDependencies": {
 		"@agents-dev/cli": "^0.8.8",
+		"@wordpress/api-fetch": "^7.54.0",
 		"@wordpress/env": "latest",
 		"@wordpress/eslint-plugin": "latest",
 		"@wordpress/prettier-config": "latest",
 		"@wordpress/scripts": "latest",
 		"@wordpress/stylelint-config": "latest",
+		"@wordpress/url": "^4.54.0",
 		"copy-webpack-plugin": "latest",
 		"glob": "^13.0.6",
 		"mini-css-extract-plugin": "latest",

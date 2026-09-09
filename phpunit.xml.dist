@@ -263,6 +263,16 @@
 		<testsuite name="feature-092-unit">
 			<file>tests/phpunit/abilities/Test_Feature_092_Allowlists_And_Redactor.php</file>
 		</testsuite>
+		<testsuite name="feature-099-unit">
+			<file>tests/phpunit/Utilities/Test_Tab_Group_Label.php</file>
+			<file>tests/phpunit/Utilities/Test_Mcp_Transport_Detector.php</file>
+			<file>tests/phpunit/Rest/Test_Quick_Connect_Controller.php</file>
+			<file>tests/phpunit/Admin/QuickConnect/Test_Quick_Connect_Page.php</file>
+			<file>tests/phpunit/Admin/QuickConnect/Test_Activation_Redirect.php</file>
+			<file>tests/phpunit/Admin/QuickConnect/Test_Admin_Bar_Entry.php</file>
+			<file>tests/phpunit/Admin/QuickConnect/Test_Quick_Connect_Submenu_Order.php</file>
+			<file>tests/phpunit/Rest/Test_Quick_Connect_Tab_Groups.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

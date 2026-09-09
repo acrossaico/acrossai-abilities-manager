@@ -1688,3 +1688,26 @@ Setting the wrong `tab_group` value on a new ability is silently accepted — th
 - `includes/Modules/Library/AcrossAI_Ability_Library_Registry.php::apply_suggested_plugins_decoration()` — Registry-side decoration example
 - `docs/memory/DECISIONS.md#DEC-ABILITY-SUGGESTED-PLUGINS-CONTRACT` — the field this pattern first delivered
 - `PATTERN-META-ACROSSAI-NAMESPACE` (Feature 041) — the namespace the pattern writes into
+
+---
+
+## PATTERN-PARTIALS-SELF-ENQUEUE
+
+A page class in `admin/Partials/` MAY call `wp_enqueue_script()` / `wp_enqueue_style()` directly,
+wired from `includes/Main.php` via the Loader on `admin_enqueue_scripts`. The Constitution's Admin
+Partials Rule only requires that enqueuing classes *live in* `admin/Partials/` — it does not
+centralise enqueuing in `Admin\Main`.
+
+**Precedent**: `admin/Partials/File_Manager_Settings_Menu.php::enqueue_assets()`, wired at
+`includes/Main.php:337`.
+
+**Prefer self-enqueue when** the bundle serves one page and its gate is page-specific — it keeps
+`admin/Main.php::enqueue_scripts()` from accumulating unrelated branches and matches
+`PATTERN-FEATURE-ASSET-SEPARATION`.
+
+**Always** guard the `.asset.php` manifest with `file_exists()` (`BUG-UNCONDITIONAL-ASSET-INCLUDE`)
+and gate with a dedicated Yoda helper (`PATTERN-ENQUEUE-PAGE-GUARD`).
+
+**Corrects**: the earlier `AC-ENQUEUE-ADMIN` phrasing, which asserted a restriction that the
+Constitution does not contain. Verified 2026-09-08 against CONSTITUTION.md v1.4.8 and the
+File Manager settings precedent.

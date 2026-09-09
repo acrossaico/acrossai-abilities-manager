@@ -162,27 +162,14 @@ export function filterItemsByTabGroup(items, activeTab) {
 /**
  * Convert a sanitized tab_group identifier into a display label.
  *
- * Mirrors the PHP `ucwords( str_replace( '-', ' ', $value ) )` rule used
- * by category_label so PHP-side and JS-side labels look identical for
- * the same identifier.
+ * Feature 099 moved the implementation to `src/js/shared/titleCaseTabLabel.js`
+ * when the Quick Connect wizard became a second consumer (Constitution §VI —
+ * extract before the second use, never duplicate). Re-exported here so existing
+ * importers (`LibraryCard`, the Feature 052 test) keep working unchanged.
  *
  * Named export per PATTERN-NAMED-EXPORT-JEST.
- *
- * @param {string} value Sanitized tab_group identifier.
- * @return {string} Display label.
  */
-export function titleCaseTabLabel(value) {
-	if (typeof value !== 'string' || value === '') {
-		return '';
-	}
-	return value
-		.replace(/-/g, ' ')
-		.split(' ')
-		.map((word) =>
-			word.length > 0 ? word[0].toUpperCase() + word.slice(1) : word
-		)
-		.join(' ');
-}
+export { titleCaseTabLabel } from '../../shared/titleCaseTabLabel';
 
 /**
  * Collect the set of category slugs currently in scope for a bulk action,
