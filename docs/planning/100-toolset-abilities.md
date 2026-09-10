@@ -124,6 +124,43 @@ cards default to OFF. The Toolset asks about none of it.
 Resolving lazily also removes any wp_abilities_api_init ordering window and behaves identically under
 WP-CLI, where hook ordering differs.
 
+CACHE THE RESOLVED MEMBER LIST IN A TRANSIENT, following the existing pattern in
+AcrossAI_Ability_Override_Processor: a keyed transient with a 12-hour TTL, a static bust_cache() and a
+Loader-compatible bust_cache_hook() instance wrapper so every add_action traces back to Main.php.
+
+CACHE ONLY REGISTRATION-DERIVED FACTS: which abilities exist, each one's family and card, and whether
+it is a callable tool. NEVER cache the visibility-filter result or any permission outcome. The
+acrossai_toolset_member_visible filter is explicitly intended to let a policy narrow membership per
+role or per connection, so caching its result would serve one caller's view of the catalogue to
+another — a disclosure bug, not a stale cache. Resolve from cache, then apply visibility and
+permissions fresh on every request.
+
+Key the transient per family and stamp it with a schema version; treat a version mismatch as a miss so
+an upgrade that changes the stored shape can never read back an entry written by the previous version.
+
+BUST ON EVERY ONE OF THESE:
+  - activation and deactivation of this plugin (Activator / Deactivator);
+  - activated_plugin and deactivated_plugin for ANY plugin — Elementor and Rank Math abilities appear
+    and disappear with their host, so a foreign plugin toggling changes this plugin's answer;
+  - upgrader_process_complete (plugin, theme or core update);
+  - the Integrations settings being saved — see the gap below;
+  - acrossai_abilities_after_create / _after_update / _after_delete, the existing DB-ability lifecycle
+    actions;
+  - whatever busts acrossai_ability_overrides_cache, since an override changes what registers;
+  - switch_blog on multisite.
+Publish an action (e.g. acrossai_toolset_flush_cache) so a companion plugin can discard it without
+reaching into internals.
+
+GAP TO CLOSE: saving the Integrations settings currently fires NOTHING. Verified —
+AcrossAI_Ability_Library_Config_Controller has do_action only for the integration-toggle DENIED case,
+nothing on a successful save. The card on/off state, the all/specific mode and the per-ability
+selection all change which abilities register, so this is the single most important bust trigger and
+there is no hook for it. Add one (e.g. acrossai_library_config_saved, passing the saved config) as part
+of this feature, and note that it is generally useful beyond the cache.
+
+Correctness must not depend on the cache being warm: a miss, an expiry and a flush must all behave
+identically to a hit. Test with caching disabled as well as enabled.
+
 STRUCTURE — EXACTLY ONE ABSTRACT CLASS, extended by thirteen four-line subclasses.
 Add includes/Abilities/Toolset/Base_Toolset_Ability.php extending the existing abstract
 includes/Modules/Library/Ability_Definition.php (single abstract method: ability(): array).
@@ -288,6 +325,7 @@ passing."
 | `includes/Abilities/Toolset/Base_Toolset_Ability.php` | **The single abstract class.** Schemas, three-action dispatch, member resolution, search, card and sub-group filters, pagination, all three permission layers, the shared category registration, the published catalogue, and the fallback for an undeclared family. Everything. |
 | `includes/Abilities/Toolset/<Family>.php` × 13 | Family key, slug, label, description. Four declarations, no behaviour. |
 | `includes/Utilities/AcrossAI_Ability_Input_Normalizer.php` | Guarded wrapper over the adapter's argument normalizer (shared utility, not Toolset-specific) |
+| `includes/Modules/Library/Rest/AcrossAI_Ability_Library_Config_Controller.php` | Fire a `acrossai_library_config_saved` action on successful save — the hook the cache needs and that does not exist today |
 | `includes/Abilities/AcrossAI_Core_Abilities_Bootstrap.php` | Instantiate the 13 subclasses; wire the base class's category registrar |
 | `includes/Main.php` | Loader wiring only, variable-first Boot Flow Rule |
 | `phpunit.xml.dist` | New `<file>` entries |
@@ -324,6 +362,12 @@ separate components, so there is exactly one place to look and exactly one place
 9. Switch every card in a family off → that family's Toolset disappears from the pane.
 10. Activate Rank Math → its Toolset appears; deactivate → it goes.
 11. `wp --debug` → no `_doing_it_wrong` notices about ability registration.
+12. Call `discover` twice and confirm the second is served from cache; then switch a card off on the
+    Integrations screen and confirm the next call reflects it immediately, not after the TTL.
+13. Activate an unrelated plugin that registers abilities, and confirm the next `discover` sees them.
+14. As two users with different roles, under an extension that narrows visibility by role, confirm each
+    receives their own listing — the cache must not leak one to the other.
+15. Disable object caching / force the transient to miss, and confirm every listing is still correct.
 
 **Measure and record** `tools/list` payload bytes before and after. Thirteen Toolsets sharing a
 ~200-token schema is roughly 2–4k tokens; what it replaces is a `discover-abilities` call returning the
@@ -339,7 +383,16 @@ entire catalogue.
 4. `validate_output()` now runs the union-typed `data` for every ability; sweep all families once.
 5. Activating an integration changes the tool manifest mid-session, and the operator must then add the
    new Toolset on the Tools screen — it does not attach to a server by itself.
-6. **The transport plugin's call-time gate refuses every curated tool that is not one of the three
+6. **Cache staleness is the failure mode, not cache cost.** Resolving a family filters a few hundred
+   already-loaded objects — cheap. The transient exists to avoid repeating that per request, and its
+   real risk is answering from a list that no longer matches what is registered. That is why the bust
+   triggers are enumerated rather than left to expiry, and why the feature must be correct with the
+   cache absent.
+7. **Caching a visibility decision would be a disclosure bug.** The visibility filter exists to let a
+   policy narrow membership per role or connection. Anything cached must be caller-independent by
+   construction. This is the single easiest mistake to make here, because the obvious implementation —
+   cache the finished listing — is the wrong one.
+8. **The transport plugin's call-time gate refuses every curated tool that is not one of the three
    hardcoded generic ones**, because it compares the sanitised tool name a client sends against raw
    ability slugs. Toolsets will be refused by it until both sides are normalised. Out of scope here,
    but scheduling this feature without scheduling that fix ships a feature that does not work.
