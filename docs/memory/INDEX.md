@@ -93,6 +93,8 @@ This is a compact routing map for durable memory. Keep it short. It points to so
 |---|---|---|---|---|
 | BUG-BERLINDB-UNLIMITED | `number => -1` → absint → LIMIT 1 | BerlinDB queries | berlinddb, unlimited, number | BUGS.md |
 | BUG-FLAT-ARGS-PATH | inject_override_args writing top-level $args keys | Ability registration | args-path, merger, annotations | BUGS.md |
+| BUG-UNWIRED-CATEGORY-REGISTRAR | Category_Registrar written but never added to register_category_callbacks() → WP rejects every ability claiming it (_doing_it_wrong + return null); abilities silently cease to exist; guard = Test_Category_Registrar_Wiring | Abilities/Bootstrap | abilities, category, bootstrap, silent-failure, feature-061, feature-101 | BUGS.md |
+| BUG-ABILITY-CUSTOM-TOP-LEVEL-ARG-DISCARDED | WP_Ability accepts 9 properties only; any other top-level arg is _doing_it_wrong'd and discarded; prepare_properties() validates but does NOT strip, so reading it misleads; `meta` is core's only extension point | Abilities/Registration | abilities, wp-ability, meta, top-level-args, silent-discard, feature-041, feature-101 | BUGS.md |
 | BUG-PARTIAL-HOOK-FIELDS | Partial-save paths fire after_save with incomplete $fields | Sitewide REST | hooks, after_save, partial-save | BUGS.md |
 | BUG-UNIMPLEMENTED-HOOK | apply_filters() declared in plan but missing from implementation | Sitewide REST | filter, apply_filters, extensibility | BUGS.md |
 | BUG-LOOSE-COMPARISON-BYPASS | Type coercion in loose equality access checks | Access Control | type-safety, security, injection | BUGS.md |
