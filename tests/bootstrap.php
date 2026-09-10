@@ -1186,6 +1186,68 @@ if ( ! function_exists( 'rest_url' ) ) {
 	}
 }
 
+if ( ! class_exists( 'WP_Ability' ) ) {
+	/**
+	 * Minimal stand-in for WordPress's WP_Ability.
+	 *
+	 * Only the accessors this plugin's code actually reads. Constructed from
+	 * the same shape `wp_register_ability()` takes, so a fixture reads like a
+	 * real registration.
+	 */
+	class WP_Ability {
+
+		/** @var string */
+		private string $name;
+
+		/** @var array<string, mixed> */
+		private array $args;
+
+		/**
+		 * @param string               $name Ability name.
+		 * @param array<string, mixed> $args Registration args.
+		 */
+		public function __construct( string $name, array $args = array() ) {
+			$this->name = $name;
+			$this->args = $args;
+		}
+
+		/** @return string */
+		public function get_name(): string {
+			return $this->name;
+		}
+
+		/** @return string */
+		public function get_label(): string {
+			return (string) ( $this->args['label'] ?? '' );
+		}
+
+		/** @return string */
+		public function get_description(): string {
+			return (string) ( $this->args['description'] ?? '' );
+		}
+
+		/** @return string */
+		public function get_category(): string {
+			return (string) ( $this->args['category'] ?? '' );
+		}
+
+		/** @return array<string, mixed> */
+		public function get_meta(): array {
+			return (array) ( $this->args['meta'] ?? array() );
+		}
+
+		/**
+		 * @param  string $key           Meta key.
+		 * @param  mixed  $default_value Fallback.
+		 * @return mixed
+		 */
+		public function get_meta_item( string $key, $default_value = null ) {
+			$meta = $this->get_meta();
+			return array_key_exists( $key, $meta ) ? $meta[ $key ] : $default_value;
+		}
+	}
+}
+
 if ( ! function_exists( 'wp_get_abilities' ) ) {
 	/**
 	 * Stub of wp_get_abilities().

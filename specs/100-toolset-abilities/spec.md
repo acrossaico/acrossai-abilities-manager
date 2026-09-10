@@ -191,13 +191,9 @@ it and the Toolset disappears.
   assistant may need to refresh its tool list to see a Toolset appear or disappear.
 - **An ability is added or removed while a request is in flight.** Each request resolves its own
   contents, so no stale set is ever served.
-- **Caching is unavailable or disabled.** Every listing still returns the correct members; the only
-  difference is that the list is derived each time.
-- **A cached entry survives an upgrade that changed its shape.** The version stamp makes it a miss, so
-  a stale shape is never read back.
 - **An extension narrows visibility per connection.** Two connections configured to expose different
-  sets receive different listings from the same cached member list, because visibility is applied after
-  the cache, never inside it.
+  sets receive different listings from the same member list, because visibility is applied by the
+  caller, never inside the lookup.
 
 ## Requirements *(mandatory)*
 
@@ -316,43 +312,39 @@ it and the Toolset disappears.
 - **FR-040**: The system MUST publish a catalogue of the Toolsets it has created — family, label, name
   and member count — so other components can consume it without inspecting internals.
 
-**Caching the member list**
+**Resolving the member list**
 
-- **FR-040a**: The system MUST cache each family's resolved member list, so that repeated listings do
-  not re-derive it from the whole catalogue on every request.
-- **FR-040b**: Only facts derived from **registration** may be cached — which abilities exist, which
-  family and card each belongs to, and whether each is a callable tool. **The system MUST NOT cache
-  anything that can vary between requests**: visibility decisions, permission outcomes, or any value an
-  extension resolves from the context of the call. Caching such a value would serve one request's view
-  of the catalogue to another, which is a disclosure failure rather than a stale cache.
+- **FR-040a**: The system MUST provide a single reusable way to ask which abilities belong to a given
+  family, returning them in a stable order. Every Toolset MUST obtain its members through it, and it
+  MUST be usable by anything else that needs the same answer.
+- **FR-040b**: That lookup MUST return only facts derived from **registration** — which abilities
+  exist and which family each belongs to. It MUST NOT apply visibility or permission decisions;
+  those belong to the caller, because they vary between requests.
+- **FR-040c**: The lookup MUST be the only place family membership is derived, so that a later change
+  to how membership is resolved — including storing the answer between requests — happens in one
+  place and changes no caller.
 
-  This is not hypothetical. The equivalent extension point already shipped in the connected transport
-  varies by **which connection is handling the request** — two connections on the same site can be
-  configured to expose different sets, and the value is resolved from request-scoped state. A cached
-  post-filter listing would hand one connection's view to another.
-- **FR-040c**: Every cached entry MUST be discarded, and the list re-derived, when any of the following
-  occurs:
-  - this plugin is activated or deactivated;
-  - **any** plugin is activated or deactivated, since an integration's abilities appear and disappear
-    with their host;
-  - an update completes for a plugin, theme or the platform itself;
-  - the site owner saves the Integrations settings, including a card being switched on or off, moved
-    between all and specific, or having its selection changed;
-  - an ability is created, updated or deleted through this product's own screens;
-  - an ability's stored overrides change;
-  - the active site changes, on installations hosting more than one.
-- **FR-040d**: The system MUST publish an action allowing any other component to discard the cache, so
-  a product that changes what registers is not forced to guess at internals.
-- **FR-040e**: The cached entry MUST carry a version, and a version mismatch MUST be treated as a miss.
-  An upgrade that changes the shape of what is stored MUST NOT be able to serve an entry written by a
-  previous version.
-- **FR-040f**: The cache MUST carry an expiry as a backstop, so that a trigger nobody anticipated
-  produces stale results for a bounded time rather than indefinitely.
-- **FR-040g**: A miss, an expiry or a discarded entry MUST be indistinguishable in behaviour from a
-  hit. Correctness MUST NOT depend on the cache being warm, and the feature MUST work identically with
-  caching unavailable.
-- **FR-040h**: Saving the Integrations settings MUST announce itself so that FR-040c can be satisfied.
-  No such announcement exists today, which is why this is a requirement rather than an assumption.
+> **Deferred: storing the resolved list between requests.** An earlier revision of this specification
+> required caching each family's member list, with an enumerated set of invalidation triggers. That is
+> **out of scope for now** and will be specified when it is implemented. FR-040c exists so adding it
+> later is a change behind one seam rather than a change to every Toolset.
+>
+> Two constraints are recorded here so they are not rediscovered:
+>
+> 1. **Only registration-derived facts may ever be stored.** The visibility extension point resolves
+>    from the context of the call — the equivalent filter already shipped in the connected transport
+>    takes the identifier of the connection handling the current request — so a stored post-filter
+>    listing would serve one connection's view of the catalogue to another. A disclosure failure, not
+>    a stale cache.
+> 2. **Invalidation, not expiry, is the hard part.** What registers changes when this plugin is
+>    activated or deactivated, when *any* plugin is, when an update completes, when the Integrations
+>    settings are saved, when an ability is created or deleted, when an override changes, and when the
+>    active site changes. Saving the Integrations settings currently announces nothing, so that
+>    trigger has no hook to attach to — see FR-040d.
+- **FR-040d**: Saving the Integrations settings MUST announce itself. Card on and off, the choice
+  between all and specific, and the per-ability selection all change which abilities register, and
+  nothing currently signals it. This is required independently of any caching, because it is the only
+  way another component can react to the setting at all.
 
 **Interaction with existing controls**
 
@@ -450,13 +442,8 @@ spending a tool slot on each.
 - **SC-012**: The combined size of the tool catalogue an assistant receives is recorded before and
   after this change, so the trade between more entry points and smaller listings is measured rather
   than assumed.
-- **SC-013**: A listing served from cache returns byte-identical members to the same listing derived
-  from scratch.
-- **SC-014**: Zero cached values vary by request context. Two connections configured to expose
-  different sets receive listings that differ correctly, with no cached value shared between them that
-  should not be.
-- **SC-015**: Every trigger in FR-040c demonstrably discards the cache, verified per trigger rather
-  than in aggregate.
+- **SC-013**: Family membership is derived in exactly one place, so a caller asking which abilities
+  belong to a family and a Toolset listing its own members can never disagree.
 
 ## Assumptions
 
@@ -487,11 +474,10 @@ spending a tool slot on each.
   would be least specific exactly where precision matters most.
 - **The connected transport's tool-composition interface lists abilities by their registration**, so
   Toolsets appear there for selection without any change to that component.
-- **The cache is defensive rather than a performance fix.** Resolving a family means filtering a few
-  hundred already-loaded ability objects, which is not expensive. The cache exists so that a listing
-  does not repeat that work per request, and its real risk is staleness rather than cost — which is
-  why FR-040c enumerates triggers rather than relying on expiry, and why FR-040g requires correctness
-  to hold with the cache absent.
+- **Deriving a family's members is cheap, so storing it between requests is deferred rather than
+  urgent.** Resolving a family filters a few hundred already-loaded ability objects. The value of a
+  single lookup is that it removes duplication and gives a later optimisation one place to land, not
+  that it saves measurable time today.
 - **Numbers cited are current live counts** — thirteen families over roughly 450 abilities, the largest
   family holding 71 across five cards — and are expected to grow. No requirement depends on a specific
   count.
