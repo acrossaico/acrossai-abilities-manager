@@ -56,6 +56,12 @@ class AcrossAI_Category_Slug_Migration {
 	/**
 	 * Category slugs owned by this plugin.
 	 *
+	 * `toolset` is a no-op for the historical rename — it was introduced after
+	 * it, so no site ever stored `acrossai-abilities-manager-toolset`. It is
+	 * listed anyway so this stays a complete inventory of the categories this
+	 * plugin registers, which is what `Test_Category_Slug_Migration` asserts
+	 * and what any future rename would read.
+	 *
 	 * An explicit list, not a blanket prefix match. Three unrelated strings
 	 * share the retired prefix — the `…-abilities` and `…-mcp-extension` asset
 	 * handles and the `…-wrap` CSS class — and a regex sweep would rewrite
@@ -88,6 +94,7 @@ class AcrossAI_Category_Slug_Migration {
 		'site-health',
 		'taxonomies',
 		'themes',
+		'toolset',
 		'users',
 		'widgets',
 	);

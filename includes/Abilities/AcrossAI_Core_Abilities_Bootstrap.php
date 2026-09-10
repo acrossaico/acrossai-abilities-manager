@@ -91,6 +91,11 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		$loader->add_action( 'wp_abilities_api_categories_init', Recovery\Category_Registrar::instance(), 'register' );
 		// Feature 063 — Widgets category.
 		$loader->add_action( 'wp_abilities_api_categories_init', Widgets\Category_Registrar::instance(), 'register' );
+		// Feature 100 — the category every Toolset dispatcher declares. Kept
+		// distinct from any category holding real abilities: sharing one would
+		// mean an operator's setting for that category applied to the Toolset
+		// itself. See DEC-ABILITY-GROUP-IDENTIFIER-LOAD-BEARING.
+		$loader->add_action( 'wp_abilities_api_categories_init', Toolset\Category_Registrar::instance(), 'register' );
 		// Feature 061 — Debugging category. Its registrar shipped with the
 		// feature but was never wired here, so the category never existed and
 		// WP rejected all seven Debugging abilities on every request with
@@ -535,6 +540,13 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		if ( class_exists( '\RankMath\Helper' ) ) {
 			$this->register_rank_math_abilities();
 		}
+
+		// Feature 100 — one Toolset dispatcher per ability group. Registered last
+		// so every group it may cover already exists. Each declines to register
+		// itself when its group has no registered abilities, which is why the two
+		// conditional ones need no guard: with Elementor or Rank Math inactive,
+		// their groups are empty and their Toolsets simply do not appear.
+		$this->register_toolsets();
 	}
 
 	/**
@@ -763,4 +775,36 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Elementor\Get_Form_Submission();
 		new Elementor\Delete_Form_Submission();
 	}
+
+	/**
+	 * Instantiate the Toolset dispatchers (Feature 100).
+	 *
+	 * One per ability group. Each is four declarations over
+	 * {@see Toolset\Base_Toolset_Ability}, which holds every shared behaviour.
+	 * Adding a group means adding one file here and one `new` line — if it ever
+	 * takes more, the shared class is missing something.
+	 *
+	 * No conditional guards: a Toolset whose group has no registered abilities
+	 * declines to register itself, so Elementor and Rank Math drop out on their
+	 * own when their host plugin is absent.
+	 *
+	 * @since  0.0.34
+	 * @return void
+	 */
+	private function register_toolsets(): void {
+		new Toolset\Content();
+		new Toolset\Blocks();
+		new Toolset\Appearance();
+		new Toolset\Configuration();
+		new Toolset\Users();
+		new Toolset\Updates();
+		new Toolset\Cron();
+		new Toolset\Cache();
+		new Toolset\Database();
+		new Toolset\Files();
+		new Toolset\Diagnostics();
+		new Toolset\Elementor();
+		new Toolset\Rank_Math();
+	}
+
 }

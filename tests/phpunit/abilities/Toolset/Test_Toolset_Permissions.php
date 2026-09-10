@@ -1,0 +1,264 @@
+<?php
+/**
+ * Tests: Base_Toolset_Ability permission layers.
+ *
+ * A Toolset is one route to ~450 abilities, so a gap in its gating is a gap
+ * in all of them at once. Three layers have to hold, and the third is the one
+ * an optimiser is most likely to remove:
+ *
+ *   1. the Toolset's own capability, gating the listing;
+ *   2. for execute, the TARGET's own permission check, run before dispatch so
+ *      a denial is a real authorisation failure rather than a soft miss;
+ *   3. invocation through WP_Ability::execute(), which runs that check again
+ *      along with validation and every lifecycle event.
+ *
+ * The duplicate check in layers 2 and 3 is deliberate. These tests exist so
+ * that removing either one fails loudly.
+ *
+ * @package AcrossAI_Abilities_Manager
+ */
+
+namespace AcrossAI_Abilities_Manager\Tests\Abilities\Toolset;
+
+use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Ability_Group;
+use PHPUnit\Framework\TestCase;
+use WP_Error;
+
+/**
+ * Permission behaviour.
+ */
+class Test_Toolset_Permissions extends TestCase {
+
+	/**
+	 * Signed in, with the default capability, and an empty registry.
+	 */
+	protected function setUp(): void {
+		parent::setUp();
+		$GLOBALS['acrossai_test_abilities']    = array();
+		$GLOBALS['acrossai_test_capabilities'] = array( 'read' );
+		$GLOBALS['acrossai_test_logged_in']    = true;
+		Fixture_Ability::$calls                = array();
+		Fixture_Ability::$permissions          = array();
+		Fixture_Toolset::$for_group            = 'content';
+		AcrossAI_Ability_Group::flush();
+	}
+
+	/**
+	 * Tear down so a leaked fixture cannot reach the next suite.
+	 */
+	protected function tearDown(): void {
+		$GLOBALS['acrossai_test_abilities'] = array();
+		unset( $GLOBALS['acrossai_test_logged_in'] );
+		unset( $GLOBALS['acrossai_test_filter_values']['acrossai_toolset_capability'] );
+		AcrossAI_Ability_Group::flush();
+		parent::tearDown();
+	}
+
+	/**
+	 * Register a member whose permission outcome a test controls.
+	 *
+	 * @param  string             $name    Ability name.
+	 * @param  bool|WP_Error|null $allowed Permission outcome.
+	 * @return void
+	 */
+	private function given_member( string $name, $allowed = true ): void {
+		$GLOBALS['acrossai_test_abilities'][ $name ] = new Fixture_Ability(
+			$name,
+			array(
+				'label'       => $name,
+				'description' => 'Fixture ' . $name,
+				'category'    => 'acrossai-content',
+				'meta'        => array(
+					'acrossai' => array( 'tab_group' => 'content' ),
+					'mcp'      => array( 'type' => 'tool' ),
+				),
+			)
+		);
+
+		if ( null !== $allowed ) {
+			Fixture_Ability::$permissions[ $name ] = $allowed;
+		}
+
+		AcrossAI_Ability_Group::flush();
+	}
+
+	/* ----------------------------------------------------------------- */
+
+	/**
+	 * A signed-out caller is refused before anything else happens.
+	 */
+	public function test_signed_out_caller_is_refused(): void {
+		$GLOBALS['acrossai_test_logged_in'] = false;
+		$this->given_member( 'content/get-post' );
+
+		$result = ( new Fixture_Toolset() )->check_permission( array( 'action' => 'discover' ) );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 401, $result->get_error_data()['status'] );
+	}
+
+	/**
+	 * The Toolset's own capability gates the listing.
+	 */
+	public function test_missing_capability_is_refused(): void {
+		$GLOBALS['acrossai_test_capabilities'] = array();
+		$this->given_member( 'content/get-post' );
+
+		$result = ( new Fixture_Toolset() )->check_permission( array( 'action' => 'discover' ) );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 403, $result->get_error_data()['status'] );
+	}
+
+	/**
+	 * The default capability is deliberately low.
+	 *
+	 * It gates a listing, not an execution. Requiring manage_options here
+	 * would lock out a legitimately-scoped editor while protecting nothing,
+	 * because every run still passes the target's own check.
+	 */
+	public function test_default_capability_is_read(): void {
+		$GLOBALS['acrossai_test_capabilities'] = array( 'read' );
+		$this->given_member( 'content/get-post' );
+
+		$this->assertTrue(
+			( new Fixture_Toolset() )->check_permission( array( 'action' => 'discover' ) )
+		);
+	}
+
+	/**
+	 * The capability is filterable, and raising it restricts discovery.
+	 */
+	public function test_capability_is_filterable(): void {
+		$GLOBALS['acrossai_test_capabilities']                                     = array( 'read' );
+		$GLOBALS['acrossai_test_filter_values']['acrossai_toolset_capability'] = 'manage_options';
+		$this->given_member( 'content/get-post' );
+
+		$result = ( new Fixture_Toolset() )->check_permission( array( 'action' => 'discover' ) );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+	}
+
+	/* ----------------------------------------------------------------- */
+
+	/**
+	 * For execute, the target's own check runs before dispatch.
+	 *
+	 * The refusal must originate from the target, so it is indistinguishable
+	 * from calling that ability directly.
+	 */
+	public function test_execute_runs_the_targets_own_permission_check(): void {
+		$this->given_member(
+			'content/delete-post',
+			new WP_Error( 'forbidden', 'Not for you.', array( 'status' => 403 ) )
+		);
+
+		$result = ( new Fixture_Toolset() )->check_permission(
+			array( 'action' => 'execute', 'ability' => 'content/delete-post' )
+		);
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'forbidden', $result->get_error_code() );
+		$this->assertSame( 'Not for you.', $result->get_error_message() );
+		$this->assertContains( 'check:content/delete-post', Fixture_Ability::$calls );
+	}
+
+	/**
+	 * A plain false from the target is also a refusal.
+	 */
+	public function test_target_returning_false_is_refused(): void {
+		$this->given_member( 'content/delete-post', false );
+
+		$result = ( new Fixture_Toolset() )->check_permission(
+			array( 'action' => 'execute', 'ability' => 'content/delete-post' )
+		);
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'acrossai_toolset_target_forbidden', $result->get_error_code() );
+	}
+
+	/**
+	 * A permitted target passes.
+	 */
+	public function test_permitted_target_passes(): void {
+		$this->given_member( 'content/get-post', true );
+
+		$this->assertTrue(
+			( new Fixture_Toolset() )->check_permission(
+				array( 'action' => 'execute', 'ability' => 'content/get-post' )
+			)
+		);
+	}
+
+	/**
+	 * A soft miss is not an authorisation failure.
+	 *
+	 * Naming an ability that does not exist, or lives elsewhere, must reach
+	 * execute() so the caller gets a machine-readable reason it can act on —
+	 * not a 403 that tells it nothing.
+	 */
+	public function test_unknown_ability_is_not_an_authorisation_failure(): void {
+		$result = ( new Fixture_Toolset() )->check_permission(
+			array( 'action' => 'execute', 'ability' => 'nope/at-all' )
+		);
+
+		$this->assertTrue( $result );
+	}
+
+	/**
+	 * discover and info do not consult any target.
+	 */
+	public function test_non_execute_actions_do_not_check_a_target(): void {
+		$this->given_member( 'content/delete-post', false );
+
+		$toolset = new Fixture_Toolset();
+
+		$this->assertTrue( $toolset->check_permission( array( 'action' => 'discover' ) ) );
+		$this->assertTrue( $toolset->check_permission( array( 'action' => 'info', 'ability' => 'content/delete-post' ) ) );
+		$this->assertNotContains( 'check:content/delete-post', Fixture_Ability::$calls );
+	}
+
+	/* ----------------------------------------------------------------- */
+
+	/**
+	 * Dispatch goes through WP_Ability::execute(), never the raw callback.
+	 *
+	 * That is what keeps validation, the override processor, access control
+	 * and every lifecycle event in the loop. The target's check therefore runs
+	 * twice on a permitted call — once in check_permission(), once inside
+	 * execute(). Both are intentional.
+	 */
+	public function test_dispatch_invokes_execute_and_checks_twice(): void {
+		$this->given_member( 'content/get-post', true );
+
+		$toolset = new Fixture_Toolset();
+		$toolset->check_permission( array( 'action' => 'execute', 'ability' => 'content/get-post' ) );
+		$toolset->execute( array( 'action' => 'execute', 'ability' => 'content/get-post', 'parameters' => array() ) );
+
+		$checks = array_filter(
+			Fixture_Ability::$calls,
+			static fn( string $call ): bool => 'check:content/get-post' === $call
+		);
+
+		$this->assertContains( 'execute:content/get-post', Fixture_Ability::$calls );
+		$this->assertCount( 2, $checks, 'The target check must run in both layers; removing either is a regression.' );
+	}
+
+	/**
+	 * A target that refuses inside execute() surfaces its own error.
+	 */
+	public function test_error_from_the_target_is_returned_verbatim(): void {
+		$this->given_member(
+			'content/delete-post',
+			new WP_Error( 'nope', 'Refused by the ability.' )
+		);
+
+		$out = ( new Fixture_Toolset() )->execute(
+			array( 'action' => 'execute', 'ability' => 'content/delete-post', 'parameters' => array() )
+		);
+
+		$this->assertFalse( $out['success'] );
+		$this->assertSame( 'nope', $out['error_code'] );
+		$this->assertSame( 'Refused by the ability.', $out['error'] );
+	}
+}
