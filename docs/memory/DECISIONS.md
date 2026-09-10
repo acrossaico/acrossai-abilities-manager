@@ -2128,3 +2128,53 @@ misfiled — `tests/phpunit/Modules/Library/Test_Ability_Group_Map.php` is the o
 canonical map. Related: [[PATTERN-ABILITY-LIBRARY-TAB-AUTO-DERIVE]] (the derivation and its
 silent-misplacement failure mode, which `core` was a slow-motion instance of) and
 [[DEC-META-ACROSSAI-NAMESPACE]] (which establishes the field).
+
+---
+
+### 2026-09-10 — The ability group identifier is load-bearing, not display-only (DEC-ABILITY-GROUP-IDENTIFIER-LOAD-BEARING)
+
+**Context**
+Feature 037 introduced `meta.acrossai.tab_group` as a purely presentational field and said so
+explicitly. FR-009: *"The group identifier MUST be display-only. It MUST NOT be written to saved
+configuration, MUST NOT affect ability execution, and MUST NOT change the REST API surface."* SC-005
+went further: *"The group identifier never appears in any persisted store (saved configuration, REST
+response body, database row) — it lives only in the in-memory definition exposed to the admin page
+renderer."*
+
+That was correct for a field whose only job was choosing a tab. Feature 101 then made the identifier
+the product's primary organising concept, and Feature 100 makes it decide **which MCP tools exist and
+what each one dispatches to**. Thirteen tools exist because thirteen distinct values exist.
+
+**Decision**
+`tab_group` is **load-bearing**. Two of FR-009's clauses stand and two do not, and the distinction is
+worth keeping precise rather than declaring the whole requirement dead:
+
+| FR-037 clause | Status |
+|---|---|
+| MUST NOT be written to saved configuration | **Stands.** Nothing persists it. Note this is why storing a resolved group membership between requests was cut from Feature 100 — a cache of a `tab_group`-derived list would breach it. |
+| MUST NOT affect ability execution | **Stands, narrowly.** An ability invoked directly behaves identically. The identifier changes whether it is *reachable through a Toolset* — routing, not execution. |
+| MUST NOT change the REST API surface | **Superseded.** The MCP tool catalogue is derived entirely from it. |
+| SC-005: never in a REST response body | **Superseded.** A Toolset response names the group it answers for. |
+
+The practical consequence is the reason this entry exists: **retagging an ability's `tab_group` is no
+longer a cosmetic edit.** It moves that ability between MCP tools, changing what a connected assistant
+can reach, with nothing in the diff to say so.
+
+**Tradeoffs**
+- Gained: one identifier serves the admin screen and the tool catalogue, so the two cannot disagree.
+  The alternative — a second, tools-only field — would have been identical in all ~450 abilities with
+  nothing keeping the pair in sync, which is the drift shape that produced the Settings 10/1 split in
+  the first place.
+- Made harder: a maintainer fixing a mis-tagged ability is now changing an integration surface. The
+  mitigation is `tests/phpunit/Modules/Library/Test_Ability_Group_Map.php`, which pins every ability's
+  group and fails naming the ability — so the change cannot be silent even though it is invisible in
+  review.
+- Reconsider: if the tool surface ever stops being derived from the same identifier the tabs use.
+
+**Evidence**
+Feature 100 spec, and Feature 101 as merged (`5cf50ec4`). The two `tab_group` comments in
+`AcrossAI_Ability_Library_Registry` that asserted display-only status have been corrected; the
+neighbouring comments about `sub_group` and `card_variant` are untouched, because those fields remain
+display-only and the claim is still true of them. Related: [[DEC-ABILITY-GROUP-TAXONOMY]] (what the
+groups are and why thirteen is a ceiling) and [[PATTERN-ABILITY-LIBRARY-TAB-AUTO-DERIVE]] (how the
+identifier is consumed, and its silent-misplacement failure mode).

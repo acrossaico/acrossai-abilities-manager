@@ -140,10 +140,16 @@ class AcrossAI_Ability_Library_Registry {
 		 * (overrides the auto-derived label). Both are display-only and never appear in
 		 * saved configuration.
 		 *
-		 * Optional (Feature 037): a row MAY include 'tab_group' (display-only page-level
-		 * tab identifier; sanitized to a key form). Display-only and never appears in
-		 * saved configuration. The tab's UI label is derived from the identifier on the
-		 * React side; there is no paired 'tab_group_label' field.
+		 * Optional (Feature 037): a row MAY include 'tab_group' (page-level group
+		 * identifier; sanitized to a key form). Never appears in saved configuration.
+		 * The tab's UI label is derived from the identifier on the React side; there is
+		 * no paired 'tab_group_label' field.
+		 *
+		 * NOT display-only any more. Feature 037 declared it presentational; Feature 101
+		 * made it the product's organising concept and Feature 100 derives the MCP tool
+		 * catalogue from it, so retagging an ability moves it between tools. See
+		 * DEC-ABILITY-GROUP-IDENTIFIER-LOAD-BEARING, and Test_Ability_Group_Map, which
+		 * pins every ability's group so such a change cannot pass silently.
 		 *
 		 * @since 0.1.0
 		 * @param array<int, array<string, mixed>> $definitions Accumulated definitions.
@@ -440,7 +446,10 @@ class AcrossAI_Ability_Library_Registry {
 			}
 
 			// Feature 037 — optional tab_group pass-through.
-			// Display-only; never written to saved configuration. Closes the
+			// Never written to saved configuration, but NOT display-only: the
+			// MCP tool catalogue is derived from this value (Feature 100), so
+			// changing it moves an ability between tools. See
+			// DEC-ABILITY-GROUP-IDENTIFIER-LOAD-BEARING. Closes the
 			// PATTERN-LIBRARY-ARGS-RAW-PASSTHROUGH gap for this field by
 			// sanitizing at the Registry boundary via sanitize_key_field().
 			if ( isset( $item['tab_group'] ) && '' !== $item['tab_group'] ) {

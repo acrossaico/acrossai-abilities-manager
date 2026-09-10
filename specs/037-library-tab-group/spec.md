@@ -99,6 +99,14 @@ When an administrator switches to a non-default tab and toggles an ability or ch
 - **FR-007**: The group identifier MUST be a single field — there is no separate display-label field. The displayed tab label is derived from the identifier using the same title-casing rule already used elsewhere on the Library page (replacing `-` with space, capitalizing each word).
 - **FR-008**: The group identifier MUST be sanitized using the same rules already applied to other Library identifiers (category, slug, sub-group). Values that sanitize to an empty string MUST be treated as if the field was not provided.
 - **FR-009**: The group identifier MUST be display-only. It MUST NOT be written to saved configuration, MUST NOT affect ability execution, and MUST NOT change the REST API surface.
+
+  > **Partially superseded, 2026-09-10 — see `DEC-ABILITY-GROUP-IDENTIFIER-LOAD-BEARING`.** This
+  > requirement was correct while the identifier only chose a tab. Feature 101 made it the product's
+  > organising concept and Feature 100 derives the MCP tool catalogue from it. The first two clauses
+  > still hold: nothing persists it, and an ability invoked directly behaves identically. The third
+  > clause does not — the set of MCP tools is determined by these values — and neither does SC-005,
+  > since a tool's response names the group it answers for. **Retagging an ability is therefore no
+  > longer a cosmetic edit.**
 - **FR-010**: Switching between tabs MUST NOT affect saved configuration. Toggles and mode changes performed under any tab MUST persist via the existing save flow.
 - **FR-011**: The active tab selection MUST NOT persist across page reloads. The default tab MUST be active on every fresh page load.
 - **FR-012**: Per-card behaviors (enable toggle, All/Specific mode radio, sub-group sub-headings, descriptions) MUST behave identically inside any tab as they do today on the flat page.
