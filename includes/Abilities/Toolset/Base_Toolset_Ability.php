@@ -409,12 +409,31 @@ abstract class Base_Toolset_Ability {
 			return true;
 		}
 
-		$target = $this->find_member( (string) ( $input['ability'] ?? '' ), 'execute' );
+		$name   = (string) ( $input['ability'] ?? '' );
+		$target = $this->find_member( $name, 'execute' );
 
-		// A soft miss is reported by execute() with a machine-readable code, so
-		// a model can correct itself. Only a real authorisation failure belongs
-		// here.
 		if ( ! $target instanceof WP_Ability ) {
+			/*
+			 * Hidden is a policy decision, not a mistake. The sibling
+			 * transport's own execute tool denies here with a 403 rather than
+			 * reporting a miss, and it is right to: retrying or rephrasing will
+			 * never help, and an operator switching an ability off for one
+			 * server should look the same however the caller reached it.
+			 */
+			if ( $this->is_hidden_member( $name ) ) {
+				return new WP_Error(
+					'acrossai_toolset_ability_not_exposed',
+					__( 'This ability is not exposed on this MCP server.', 'acrossai-abilities-manager' ),
+					array( 'status' => 403 )
+				);
+			}
+
+			/*
+			 * Everything else — a typo, or an ability that lives in another
+			 * group — IS self-correctable, so execute() reports it with a
+			 * machine-readable code instead of raising an authorisation
+			 * failure the caller cannot learn from.
+			 */
 			return true;
 		}
 
@@ -614,12 +633,21 @@ abstract class Base_Toolset_Ability {
 			$input['parameters'] ?? null
 		);
 
-		$result = $target->execute( $parameters );
+		try {
+			$result = $target->execute( $parameters );
+		} catch ( \Throwable $e ) {
+			/*
+			 * An ability that throws would otherwise reach the transport as an
+			 * unhandled exception and come back as a generic "Failed to execute
+			 * tool", losing both the message and which ability threw.
+			 */
+			return $this->failure( 'execute', 'ability_threw', $e->getMessage() );
+		}
 
 		if ( is_wp_error( $result ) ) {
 			return array(
-				'action'     => 'execute',
-				'group'      => $this->group(),
+				'action'        => 'execute',
+				'group'         => $this->group(),
 				'success'       => false,
 				'error_message' => $result->get_error_message(),
 				'error_code'    => (string) $result->get_error_code(),
@@ -944,6 +972,37 @@ abstract class Base_Toolset_Ability {
 			'error_message' => $message,
 			'error_code'    => $code,
 		);
+	}
+
+	/**
+	 * Is this a real member of this group that a policy has hidden?
+	 *
+	 * `members()` drops an ability for exactly two reasons: it is not
+	 * dispatchable, or `acrossai_toolset_member_visible` returned false. So an
+	 * ability that is registered, dispatchable and in this group, yet absent
+	 * from `members()`, was hidden by a policy — per-server exposure on the
+	 * connected transport, or a site's own callback.
+	 *
+	 * Kept separate from `miss()` because the two answer different questions at
+	 * different times: this one runs in the permission callback and decides
+	 * whether to deny, `miss()` runs afterwards and explains a miss.
+	 *
+	 * @since  0.0.34
+	 * @param  string $name Ability name.
+	 * @return bool
+	 */
+	private function is_hidden_member( string $name ): bool {
+		if ( '' === $name || ! function_exists( 'wp_has_ability' ) || ! wp_has_ability( $name ) ) {
+			return false;
+		}
+
+		$ability = function_exists( 'wp_get_ability' ) ? wp_get_ability( $name ) : null;
+
+		if ( ! $ability instanceof WP_Ability || ! $this->is_dispatchable( $ability ) ) {
+			return false;
+		}
+
+		return AcrossAI_Ability_Group::of( $ability ) === $this->group();
 	}
 
 	/**

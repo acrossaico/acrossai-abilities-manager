@@ -39,6 +39,7 @@ class Test_Toolset_Permissions extends TestCase {
 		$GLOBALS['acrossai_test_logged_in']    = true;
 		Fixture_Ability::$calls                = array();
 		Fixture_Ability::$permissions          = array();
+		Fixture_Ability::$throws               = array();
 		Fixture_Toolset::$for_group            = 'content';
 		AcrossAI_Ability_Group::flush();
 	}
@@ -50,6 +51,7 @@ class Test_Toolset_Permissions extends TestCase {
 		$GLOBALS['acrossai_test_abilities'] = array();
 		unset( $GLOBALS['acrossai_test_logged_in'] );
 		unset( $GLOBALS['acrossai_test_filter_values']['acrossai_toolset_capability'] );
+		unset( $GLOBALS['acrossai_test_filter_callbacks']['acrossai_toolset_member_visible'] );
 		AcrossAI_Ability_Group::flush();
 		parent::tearDown();
 	}
@@ -203,6 +205,89 @@ class Test_Toolset_Permissions extends TestCase {
 		);
 
 		$this->assertTrue( $result );
+	}
+
+	/**
+	 * An ability a policy has hidden is denied, not reported as a miss.
+	 *
+	 * This is the sibling transport's per-server exposure arriving through
+	 * `acrossai_toolset_member_visible`. It is an operator decision, so it
+	 * denies with a 403 exactly as that plugin's own execute tool does —
+	 * retrying will never help, and the same policy should look the same
+	 * whichever route the caller took.
+	 */
+	public function test_hidden_member_is_denied_with_403(): void {
+		$this->given_member( 'content/get-post', true );
+
+		$GLOBALS['acrossai_test_filter_callbacks']['acrossai_toolset_member_visible'] =
+			static fn( bool $visible, $ability ): bool => 'content/get-post' !== $ability->get_name();
+
+		$result = ( new Fixture_Toolset() )->check_permission(
+			array( 'action' => 'execute', 'ability' => 'content/get-post' )
+		);
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'acrossai_toolset_ability_not_exposed', $result->get_error_code() );
+		$this->assertSame( 403, $result->get_error_data()['status'] );
+	}
+
+	/**
+	 * A hidden ability is never handed to the target's permission check.
+	 *
+	 * Denying first is what keeps the policy a policy: the target must not get
+	 * a say in whether an operator's decision applies.
+	 */
+	public function test_hidden_member_short_circuits_before_the_target(): void {
+		$this->given_member( 'content/get-post', true );
+
+		$GLOBALS['acrossai_test_filter_callbacks']['acrossai_toolset_member_visible'] =
+			static fn(): bool => false;
+
+		$result = ( new Fixture_Toolset() )->check_permission(
+			array( 'action' => 'execute', 'ability' => 'content/get-post' )
+		);
+
+		// Assert the denial too: without it this passes in the broken state,
+		// where the miss simply falls through to execute() and the target is
+		// never consulted for a different reason.
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertNotContains( 'check:content/get-post', Fixture_Ability::$calls );
+	}
+
+	/**
+	 * A typo is still a soft miss, not a 403.
+	 *
+	 * The split is the point: hidden is policy, unknown is a mistake the
+	 * caller can correct. Collapsing them would make one of the two useless.
+	 */
+	public function test_unknown_ability_is_still_soft_after_the_hidden_split(): void {
+		$this->given_member( 'content/get-post', true );
+
+		$this->assertTrue(
+			( new Fixture_Toolset() )->check_permission(
+				array( 'action' => 'execute', 'ability' => 'content/typo-here' )
+			)
+		);
+	}
+
+	/**
+	 * An ability that throws is reported, not allowed to escape.
+	 *
+	 * Left unhandled it reaches the transport as an exception and comes back
+	 * as a generic "Failed to execute tool", losing both the message and which
+	 * ability threw.
+	 */
+	public function test_throwing_ability_is_caught_and_reported(): void {
+		$this->given_member( 'content/get-post', true );
+		Fixture_Ability::$throws[] = 'content/get-post';
+
+		$out = ( new Fixture_Toolset() )->execute(
+			array( 'action' => 'execute', 'ability' => 'content/get-post', 'parameters' => array() )
+		);
+
+		$this->assertFalse( $out['success'] );
+		$this->assertSame( 'ability_threw', $out['error_code'] );
+		$this->assertStringContainsString( 'Boom from content/get-post', $out['error_message'] );
 	}
 
 	/**

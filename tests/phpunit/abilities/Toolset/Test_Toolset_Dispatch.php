@@ -60,6 +60,9 @@ final class Fixture_Ability extends WP_Ability {
 	/** @var array<string, bool|\WP_Error> */
 	public static array $permissions = array();
 
+	/** @var string[] Names whose execute() throws. */
+	public static array $throws = array();
+
 	/**
 	 * @param  mixed $input Input.
 	 * @return bool|\WP_Error
@@ -81,6 +84,10 @@ final class Fixture_Ability extends WP_Ability {
 			return $allowed;
 		}
 
+		if ( in_array( $this->get_name(), self::$throws, true ) ) {
+			throw new \RuntimeException( 'Boom from ' . $this->get_name() );
+		}
+
 		return array( 'ran' => $this->get_name(), 'input' => $input );
 	}
 }
@@ -100,6 +107,7 @@ class Test_Toolset_Dispatch extends TestCase {
 		$GLOBALS['acrossai_test_current_user']  = 1;
 		Fixture_Ability::$calls                 = array();
 		Fixture_Ability::$permissions           = array();
+		Fixture_Ability::$throws                = array();
 		Fixture_Toolset::$for_group             = 'content';
 		AcrossAI_Ability_Group::flush();
 	}
