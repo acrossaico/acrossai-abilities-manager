@@ -129,11 +129,18 @@ AcrossAI_Ability_Override_Processor: a keyed transient with a 12-hour TTL, a sta
 Loader-compatible bust_cache_hook() instance wrapper so every add_action traces back to Main.php.
 
 CACHE ONLY REGISTRATION-DERIVED FACTS: which abilities exist, each one's family and card, and whether
-it is a callable tool. NEVER cache the visibility-filter result or any permission outcome. The
-acrossai_toolset_member_visible filter is explicitly intended to let a policy narrow membership per
-role or per connection, so caching its result would serve one caller's view of the catalogue to
-another — a disclosure bug, not a stale cache. Resolve from cache, then apply visibility and
-permissions fresh on every request.
+it is a callable tool. NEVER cache the visibility-filter result or any permission outcome. Resolve from
+cache, then apply visibility and permissions fresh on every request.
+
+The reason is evidenced, not hypothetical. The filter this feature introduces
+(acrossai_toolset_member_visible) does not exist yet — it is specified here. But its sibling in the
+transport plugin does: acrossai_mcp_is_ability_exposed, at
+acrossai-mcp-manager/includes/Abilities/AbilityHelpers.php:114, takes a server_id described as 'the DB
+PK of the MCP server handling the current request', resolved from request-scoped state in
+CurrentServerHolder. Two connections on one site can therefore be configured to expose different sets.
+Cache a post-filter listing and one connection's view is served to another. Whether anyone also varies
+it by role is unknown and beside the point — per-connection variance alone rules out caching the
+filtered result.
 
 Key the transient per family and stamp it with a schema version; treat a version mismatch as a miss so
 an upgrade that changes the stored shape can never read back an entry written by the previous version.
@@ -388,8 +395,9 @@ entire catalogue.
    real risk is answering from a list that no longer matches what is registered. That is why the bust
    triggers are enumerated rather than left to expiry, and why the feature must be correct with the
    cache absent.
-7. **Caching a visibility decision would be a disclosure bug.** The visibility filter exists to let a
-   policy narrow membership per role or connection. Anything cached must be caller-independent by
+7. **Caching a visibility decision would be a disclosure bug.** The transport plugin's equivalent
+   filter resolves from which connection is handling the request, so the same site can legitimately
+   answer differently per connection. Anything cached must be request-context-independent by
    construction. This is the single easiest mistake to make here, because the obvious implementation —
    cache the finished listing — is the wrong one.
 8. **The transport plugin's call-time gate refuses every curated tool that is not one of the three

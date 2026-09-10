@@ -118,7 +118,7 @@ it directly. Then run one the current user is not permitted to use and confirm i
 
 The site owner's existing per-card switches on the Integrations screen remain the control. Switching a
 card off removes its abilities from every Toolset that drew on them. An extension point exists for
-narrowing further — per role, per connection — without modifying this feature.
+narrowing further — per connection, or on any basis a policy chooses — without modifying this feature.
 
 **Why this priority**: The controls already exist and already work; this story is about them
 continuing to hold rather than being bypassed. Important, but nothing new is exposed to the site
@@ -195,9 +195,9 @@ it and the Toolset disappears.
   difference is that the list is derived each time.
 - **A cached entry survives an upgrade that changed its shape.** The version stamp makes it a miss, so
   a stale shape is never read back.
-- **An extension narrows visibility per role.** Two callers with different roles receive different
-  listings from the same cached member list, because visibility is applied after the cache, never
-  inside it.
+- **An extension narrows visibility per connection.** Two connections configured to expose different
+  sets receive different listings from the same cached member list, because visibility is applied after
+  the cache, never inside it.
 
 ## Requirements *(mandatory)*
 
@@ -322,10 +322,14 @@ it and the Toolset disappears.
   not re-derive it from the whole catalogue on every request.
 - **FR-040b**: Only facts derived from **registration** may be cached — which abilities exist, which
   family and card each belongs to, and whether each is a callable tool. **The system MUST NOT cache
-  anything that can vary between callers**: visibility decisions, permission outcomes, or any value an
-  extension may resolve per role, per connection or per user. Caching a visibility decision would serve
-  one caller's view of the catalogue to another, which is a disclosure failure rather than a stale
-  cache.
+  anything that can vary between requests**: visibility decisions, permission outcomes, or any value an
+  extension resolves from the context of the call. Caching such a value would serve one request's view
+  of the catalogue to another, which is a disclosure failure rather than a stale cache.
+
+  This is not hypothetical. The equivalent extension point already shipped in the connected transport
+  varies by **which connection is handling the request** — two connections on the same site can be
+  configured to expose different sets, and the value is resolved from request-scoped state. A cached
+  post-filter listing would hand one connection's view to another.
 - **FR-040c**: Every cached entry MUST be discarded, and the list re-derived, when any of the following
   occurs:
   - this plugin is activated or deactivated;
@@ -448,8 +452,9 @@ spending a tool slot on each.
   than assumed.
 - **SC-013**: A listing served from cache returns byte-identical members to the same listing derived
   from scratch.
-- **SC-014**: Zero cached values vary by caller. Two callers with different permissions or roles
-  receive listings that differ correctly, with no cached value shared between them that should not be.
+- **SC-014**: Zero cached values vary by request context. Two connections configured to expose
+  different sets receive listings that differ correctly, with no cached value shared between them that
+  should not be.
 - **SC-015**: Every trigger in FR-040c demonstrably discards the cache, verified per trigger rather
   than in aggregate.
 
