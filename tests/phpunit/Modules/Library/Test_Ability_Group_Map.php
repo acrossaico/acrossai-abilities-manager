@@ -187,6 +187,83 @@ class Test_Ability_Group_Map extends TestCase {
 	}
 
 	/**
+	 * The group block sits in the ability's own meta, not inside a schema.
+	 *
+	 * Every other test here greps the file for `'tab_group' => '...'`, which
+	 * says nothing about WHERE the declaration landed. A sweep that wrote the
+	 * `acrossai` block into an input-schema property named `meta` satisfies
+	 * every one of them while the ability registers with no group at all:
+	 * invisible to its Toolset, absent from the Integrations screen, and
+	 * carrying a polluted input schema. That is what happened to
+	 * `users/update-user`, and nothing failed.
+	 *
+	 * The invariant is structural: walking up from the `acrossai` key, the
+	 * nearest enclosing key at the ability-argument level must be `meta`.
+	 */
+	public function test_group_block_is_declared_on_the_ability_meta(): void {
+		$misfiled = array();
+
+		foreach ( $this->ability_files() as $file ) {
+			$lines  = explode( "\n", (string) file_get_contents( $file ) );
+			$anchor = null;
+
+			foreach ( $lines as $i => $line ) {
+				if ( ! preg_match( "/^\t*'acrossai'\s*=>/", $line ) ) {
+					continue;
+				}
+
+				// Walk upward to the nearest enclosing argument-level key.
+				for ( $j = $i - 1; $j >= 0; $j-- ) {
+					if ( preg_match( "/^\t{4}'([a-z_]+)'\s*=>\s*array\(/", $lines[ $j ], $m ) ) {
+						$anchor = $m[1];
+						break;
+					}
+				}
+				break;
+			}
+
+			if ( null !== $anchor && 'meta' !== $anchor ) {
+				$misfiled[] = sprintf(
+					'%s (nested under %s)',
+					str_replace( $this->abilities_dir() . '/', '', $file ),
+					$anchor
+				);
+			}
+		}
+
+		$this->assertSame(
+			array(),
+			$misfiled,
+			"The acrossai group block must sit in the ability's own meta, not inside a schema: "
+				. implode( ', ', $misfiled )
+		);
+	}
+
+	/**
+	 * Every swept ability file path.
+	 *
+	 * @return string[]
+	 */
+	private function ability_files(): array {
+		$skip = array( 'Elementor', 'RankMath', 'Integrations', 'Utilities', 'Rest' );
+		$out  = array();
+
+		foreach ( glob( $this->abilities_dir() . '/*', GLOB_ONLYDIR ) as $dir ) {
+			if ( in_array( basename( $dir ), $skip, true ) ) {
+				continue;
+			}
+			foreach ( glob( $dir . '/*.php' ) as $file ) {
+				$src = (string) file_get_contents( $file );
+				if ( preg_match( "/'tab_group'\s*=>\s*'[a-z0-9-]+'/", $src ) ) {
+					$out[] = $file;
+				}
+			}
+		}
+
+		return $out;
+	}
+
+	/**
 	 * Every ability declares the group the map assigns it.
 	 */
 	public function test_every_ability_declares_its_mapped_group(): void {
