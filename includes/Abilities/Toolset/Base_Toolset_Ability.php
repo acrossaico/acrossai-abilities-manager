@@ -304,7 +304,17 @@ abstract class Base_Toolset_Ability {
 				),
 				'group'      => array( 'type' => 'string' ),
 				'success'    => array( 'type' => 'boolean' ),
-				'error'      => array( 'type' => 'string' ),
+				/*
+				 * Deliberately NOT named `error`. The MCP adapter treats any
+				 * result matching `{ success: false, error: <string> }` as a
+				 * protocol-level tool failure and replaces the whole payload
+				 * with that one string (ToolsHandler, "Backward compatibility"),
+				 * discarding error_code. A caller that cannot read the code
+				 * cannot self-correct, which is the entire point of returning
+				 * a soft failure instead of raising one. Renaming this key is
+				 * what keeps the structured response intact end to end.
+				 */
+				'error_message' => array( 'type' => 'string' ),
 				'error_code' => array( 'type' => 'string' ),
 				'message'    => array( 'type' => 'string' ),
 				'abilities'  => array(
@@ -610,9 +620,9 @@ abstract class Base_Toolset_Ability {
 			return array(
 				'action'     => 'execute',
 				'group'      => $this->group(),
-				'success'    => false,
-				'error'      => $result->get_error_message(),
-				'error_code' => (string) $result->get_error_code(),
+				'success'       => false,
+				'error_message' => $result->get_error_message(),
+				'error_code'    => (string) $result->get_error_code(),
 			);
 		}
 
@@ -930,9 +940,9 @@ abstract class Base_Toolset_Ability {
 		return array(
 			'action'     => '' === $action ? 'discover' : $action,
 			'group'      => $this->group(),
-			'success'    => false,
-			'error'      => $message,
-			'error_code' => $code,
+			'success'       => false,
+			'error_message' => $message,
+			'error_code'    => $code,
 		);
 	}
 

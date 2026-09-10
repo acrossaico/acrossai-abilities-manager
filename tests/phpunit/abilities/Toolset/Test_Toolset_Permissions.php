@@ -259,6 +259,6 @@ class Test_Toolset_Permissions extends TestCase {
 
 		$this->assertFalse( $out['success'] );
 		$this->assertSame( 'nope', $out['error_code'] );
-		$this->assertSame( 'Refused by the ability.', $out['error'] );
+		$this->assertSame( 'Refused by the ability.', $out['error_message'] );
 	}
 }
