@@ -124,13 +124,21 @@ cards default to OFF. The Toolset asks about none of it.
 Resolving lazily also removes any wp_abilities_api_init ordering window and behaves identically under
 WP-CLI, where hook ordering differs.
 
-STRUCTURE — shared base class plus one small subclass per family, plus an automatic fallback.
-Add includes/Abilities/Base_Toolset_Ability.php extending the existing abstract
-includes/Modules/Library/Ability_Definition.php (single abstract method: ability(): array). The base
-owns ALL shared logic: input and output schemas, three-action dispatch, member resolution, search,
-card and sub-group filtering, pagination, permission handling (Constitution VI). Each family gets a
-subclass declaring only its family key, slug, hand-written label and hand-written description. If a
-subclass grows logic beyond those four declarations, that logic belongs on the base class.
+STRUCTURE — EXACTLY ONE ABSTRACT CLASS, extended by thirteen four-line subclasses.
+Add includes/Abilities/Toolset/Base_Toolset_Ability.php extending the existing abstract
+includes/Modules/Library/Ability_Definition.php (single abstract method: ability(): array).
+
+That base class owns EVERYTHING shared: input and output schemas, three-action dispatch, member
+resolution, search, card and sub-group filtering, pagination, all three permission layers, the
+registration of the Toolsets' shared ability category, the published catalogue filter, the
+protected-slugs callback, and the fallback that covers a family with no declared subclass. Do NOT
+split these across separate registrar or helper classes — one place to look, one place to change
+(Constitution VI).
+
+Each family gets a subclass declaring ONLY four things: its family key, its slug, its hand-written
+label and its hand-written description. A subclass MUST NOT carry behaviour. If one needs anything
+beyond those four declarations, the base class is missing something — add it there. Adding a family
+must mean adding one file with four methods and nothing else.
 
 Descriptions are hand-written because the description is the only thing a model reads when choosing a
 tool; generated text would be generic exactly where precision matters.
@@ -273,16 +281,32 @@ passing."
 
 **Files expected**
 
+**One abstract class holds everything. A family class holds four declarations and nothing else.**
+
 | Path | Purpose |
 |---|---|
-| `includes/Abilities/Base_Toolset_Ability.php` | All shared logic — schemas, dispatch, resolution, search, card/sub-group filters, paging, permissions |
-| `includes/Abilities/Toolset/<Family>.php` × 13 | Family key, slug, hand-written label + description |
-| `includes/Abilities/Toolset/Category_Registrar.php` | The one dedicated category every Toolset declares |
-| `includes/Modules/Groups/AcrossAI_Toolset_Registrar.php` | Catalogue filter provider, protected-slugs callback, fallback for undeclared families |
-| `includes/Utilities/AcrossAI_Ability_Input_Normalizer.php` | Guarded wrapper over the adapter's argument normalizer |
-| `includes/Abilities/AcrossAI_Core_Abilities_Bootstrap.php` | Instantiate the Toolset subclasses **and wire the Toolset category registrar** |
+| `includes/Abilities/Toolset/Base_Toolset_Ability.php` | **The single abstract class.** Schemas, three-action dispatch, member resolution, search, card and sub-group filters, pagination, all three permission layers, the shared category registration, the published catalogue, and the fallback for an undeclared family. Everything. |
+| `includes/Abilities/Toolset/<Family>.php` × 13 | Family key, slug, label, description. Four declarations, no behaviour. |
+| `includes/Utilities/AcrossAI_Ability_Input_Normalizer.php` | Guarded wrapper over the adapter's argument normalizer (shared utility, not Toolset-specific) |
+| `includes/Abilities/AcrossAI_Core_Abilities_Bootstrap.php` | Instantiate the 13 subclasses; wire the base class's category registrar |
 | `includes/Main.php` | Loader wiring only, variable-first Boot Flow Rule |
 | `phpunit.xml.dist` | New `<file>` entries |
+
+A family subclass should look like this and no larger:
+
+```php
+final class Content extends Base_Toolset_Ability {
+    protected function family(): string { return 'content'; }
+    protected function slug(): string   { return 'toolset/content'; }
+    protected function toolset_label(): string { … }
+    protected function toolset_description(): string { … }   // hand-written, model-facing
+}
+```
+
+**Adding a family means adding one file with four methods.** If anything else is needed, the shared
+class is missing something — fix it there, not in the subclass. The category registration, the
+catalogue filter, the protected-slugs callback and the fallback all live on the base rather than in
+separate components, so there is exactly one place to look and exactly one place to change.
 
 **Manual acceptance run** — on the transport plugin's MCP → Tools screen
 

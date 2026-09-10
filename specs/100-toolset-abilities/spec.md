@@ -215,6 +215,20 @@ it and the Toolset disappears.
   refuses to register an ability whose category is unknown. That category MUST be distinct from any
   category holding real abilities.
 
+**Shared behaviour lives in one place**
+
+- **FR-008a**: Every behaviour common to Toolsets — the request and response shapes, the three-action
+  dispatch, member resolution, search, card and sub-group filtering, pagination, and every permission
+  check — MUST live in **exactly one abstract definition that all Toolsets extend**. There MUST NOT be
+  a second place where any of it is implemented.
+- **FR-008b**: An individual Toolset MUST declare only its own identity: which family it covers, its
+  name, its label and its description. It MUST NOT carry behaviour. Anything appearing in one Toolset
+  that could apply to another belongs in the shared definition instead.
+- **FR-008c**: The registration of the Toolsets' shared category, the published catalogue of Toolsets,
+  and the fallback that covers a family with no purpose-written Toolset MUST also live with the shared
+  definition rather than in separate components, so that adding a family means adding one declaration
+  and nothing else.
+
 **Grouping**
 
 - **FR-009**: The system MUST group abilities into Toolsets by **family**, the per-ability grouping the
