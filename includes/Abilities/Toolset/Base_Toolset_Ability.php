@@ -81,6 +81,23 @@ abstract class Base_Toolset_Ability {
 	private array $memo = array();
 
 	/**
+	 * Whether another plugin was found holding this Toolset's slug.
+	 *
+	 * Deliberately the negative. Keying the hide-list on "did I register?"
+	 * looks safer and does not work: the transport builds its hide-list during
+	 * admin page setup, which runs BEFORE `wp_abilities_api_init`, so every
+	 * Toolset would still be reporting "not yet registered" and all 13 would
+	 * appear in the picker. Verified against the live Abilities tab.
+	 *
+	 * So the slug is contributed by default and withdrawn only once
+	 * `register()` has positively found someone else holding it — hiding
+	 * another plugin's ability being the one outcome actually worth avoiding.
+	 *
+	 * @var bool
+	 */
+	private bool $slug_taken_by_other = false;
+
+	/**
 	 * Wire registration. Mirrors Ability_Definition, which also hooks here.
 	 *
 	 * Priority 20 — after the Library processor (5) and DB abilities (10), so
@@ -92,6 +109,50 @@ abstract class Base_Toolset_Ability {
 	 */
 	public function __construct() {
 		add_action( 'wp_abilities_api_init', array( $this, 'register' ), 20 );
+		add_filter( 'acrossai_mcp_manager_hidden_abilities', array( $this, 'hide_from_tool_pickers' ) );
+	}
+
+	/**
+	 * Keep this Toolset out of the connected transport's ability pickers.
+	 *
+	 * A Toolset is plumbing. An operator curating tools wants the ~450
+	 * abilities, not the 13 dispatchers that exist to reach them — and adding a
+	 * Toolset to a server by hand is never the intent, since the point is to
+	 * replace a flat catalogue rather than join it.
+	 *
+	 * The hook belongs to acrossai-mcp-manager. Filtering a hook that plugin
+	 * may never fire costs nothing, so this is registered unconditionally
+	 * rather than guarded on its presence.
+	 *
+	 * Each Toolset contributes its own slug. The alternative — one callback
+	 * walking wp_get_abilities() for meta.acrossai.toolset — reads better but
+	 * cannot work here: the transport builds this list during admin page setup,
+	 * before `wp_abilities_api_init` has fired, so the walk would find an empty
+	 * or partial registry and quietly hide nothing. Contributing a known string
+	 * needs no registry at all, which is the whole point.
+	 *
+	 * A slug is withheld only when `register()` has found another plugin
+	 * holding it. An unregistered Toolset still contributes: hiding a slug that
+	 * nothing has claimed is a no-op, whereas withholding on "not registered
+	 * yet" breaks the common case above.
+	 *
+	 * @since  0.0.34
+	 * @param  mixed $slugs Slugs collected so far.
+	 * @return string[]
+	 */
+	public function hide_from_tool_pickers( $slugs ): array {
+		// A prior callback returning junk would otherwise take the Toolsets
+		// down with it and surface all 13 in the picker. The hook's owner
+		// normalises the final list the same way.
+		$slugs = is_array( $slugs ) ? $slugs : array();
+
+		if ( $this->slug_taken_by_other ) {
+			return $slugs;
+		}
+
+		$slugs[] = $this->slug();
+
+		return $slugs;
 	}
 
 	/* ---------------------------------------------------------------------
@@ -162,6 +223,7 @@ abstract class Base_Toolset_Ability {
 			 * @param string $group The group whose Toolset was skipped.
 			 */
 			do_action( 'acrossai_toolset_slug_collision', $slug, $this->group() );
+			$this->slug_taken_by_other = true;
 			return;
 		}
 

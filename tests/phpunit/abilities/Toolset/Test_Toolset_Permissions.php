@@ -290,6 +290,114 @@ class Test_Toolset_Permissions extends TestCase {
 		$this->assertStringContainsString( 'Boom from content/get-post', $out['error_message'] );
 	}
 
+	/* ----------------------------------------------------------------- */
+
+	/**
+	 * A registered Toolset hides itself from the transport's ability pickers.
+	 *
+	 * An operator curating tools wants the abilities, not the 13 dispatchers
+	 * that exist to reach them. The hook belongs to acrossai-mcp-manager; this
+	 * plugin only contributes to it.
+	 */
+	public function test_registered_toolset_adds_itself_to_the_hide_list(): void {
+		$this->given_member( 'content/get-post' );
+
+		$toolset = new Fixture_Toolset();
+		$toolset->register();
+
+		$this->assertSame(
+			array( 'toolset/content' ),
+			$toolset->hide_from_tool_pickers( array() )
+		);
+	}
+
+	/**
+	 * The slug is contributed before registration has run.
+	 *
+	 * This is the case that decides the whole design. The transport builds its
+	 * hide-list during admin page setup, which happens BEFORE
+	 * `wp_abilities_api_init`. Gating on "have I registered yet?" therefore
+	 * suppresses every Toolset and all 13 show up in the picker — which is
+	 * exactly what shipped first and had to be reverted.
+	 */
+	public function test_slug_is_contributed_before_registration_runs(): void {
+		$toolset = new Fixture_Toolset();
+
+		$this->assertSame(
+			array( 'toolset/content' ),
+			$toolset->hide_from_tool_pickers( array() ),
+			'The hide-list is built before registration; withholding here hides nothing at all.'
+		);
+	}
+
+	/**
+	 * A Toolset that never registered still contributes, and that is fine.
+	 *
+	 * `register()` bails on an empty group. Hiding a slug nothing has claimed
+	 * is a no-op, so there is nothing to protect against — and the alternative
+	 * costs the case above.
+	 */
+	public function test_unregistered_toolset_still_contributes(): void {
+		// No members, so register() bails before claiming the slug.
+		$toolset = new Fixture_Toolset();
+		$toolset->register();
+
+		$this->assertSame( array( 'toolset/content' ), $toolset->hide_from_tool_pickers( array() ) );
+	}
+
+	/**
+	 * A slug held by someone else is never claimed on the hide-list.
+	 *
+	 * The one outcome worth protecting against: on a collision the slug belongs
+	 * to another plugin, so contributing it would hide THEIR ability from the
+	 * operator's picker.
+	 */
+	public function test_collided_slug_is_not_hidden(): void {
+		$this->given_member( 'content/get-post' );
+
+		// Something else already holds the Toolset's slug.
+		$GLOBALS['acrossai_test_abilities']['toolset/content'] = new Fixture_Ability(
+			'toolset/content',
+			array( 'label' => 'Someone else', 'description' => 'Not ours.' )
+		);
+
+		$toolset = new Fixture_Toolset();
+		$toolset->register();
+
+		$this->assertSame( array(), $toolset->hide_from_tool_pickers( array() ) );
+	}
+
+	/**
+	 * Slugs contributed by other callbacks are preserved.
+	 */
+	public function test_existing_slugs_are_kept(): void {
+		$this->given_member( 'content/get-post' );
+
+		$toolset = new Fixture_Toolset();
+		$toolset->register();
+
+		$this->assertSame(
+			array( 'mcp-adapter/discover-abilities', 'toolset/content' ),
+			$toolset->hide_from_tool_pickers( array( 'mcp-adapter/discover-abilities' ) )
+		);
+	}
+
+	/**
+	 * A junk value from an earlier callback does not drag the Toolsets along.
+	 *
+	 * Returning it untouched would surface all 13 dispatchers in the picker
+	 * because of someone else's bug.
+	 */
+	public function test_junk_input_still_yields_the_toolset(): void {
+		$this->given_member( 'content/get-post' );
+
+		$toolset = new Fixture_Toolset();
+		$toolset->register();
+
+		$this->assertSame( array( 'toolset/content' ), $toolset->hide_from_tool_pickers( null ) );
+		$this->assertSame( array( 'toolset/content' ), $toolset->hide_from_tool_pickers( 'nonsense' ) );
+	}
+
 	/**
 	 * discover and info do not consult any target.
 	 */

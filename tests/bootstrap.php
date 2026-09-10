@@ -1271,6 +1271,27 @@ if ( ! class_exists( 'WP_Ability' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_register_ability' ) ) {
+	/**
+	 * Stub: records a registration and returns the ability, mirroring core's
+	 * `?WP_Ability` return so a caller can tell success from failure.
+	 *
+	 * @param  string               $name Ability name.
+	 * @param  array<string, mixed> $args Ability args.
+	 * @return WP_Ability|null
+	 */
+	function wp_register_ability( string $name, array $args ) {
+		if ( ! empty( $GLOBALS['acrossai_test_register_fails'] ) ) {
+			return null;
+		}
+
+		$ability                                    = new WP_Ability( $name, $args );
+		$GLOBALS['acrossai_test_abilities'][ $name ] = $ability;
+
+		return $ability;
+	}
+}
+
 if ( ! function_exists( 'wp_has_ability' ) ) {
 	/**
 	 * Stub of wp_has_ability().
