@@ -31,7 +31,7 @@ class Create_Internal_Link_Suggestions extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create Internal Link Suggestions', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Persist one or more internal-link suggestions for a given post via the option-backed suggestion store. Each suggestion carries a target URL + proposed anchor text. Store cap: 500 suggestions total.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content-search',
+				'category'            => 'acrossai-content-search',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

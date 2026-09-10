@@ -32,7 +32,7 @@ class Replace_Urls extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Replace URLs in Elementor Documents', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Bulk-replace URLs (or any string) inside every Elementor document across the site. Useful for post-migration domain rewrites. Supports dry_run for a preview count with no writes.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

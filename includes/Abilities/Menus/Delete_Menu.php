@@ -30,7 +30,7 @@ class Delete_Menu extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Menu', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Delete a nav menu via DELETE /wp/v2/menus/{id}. Menus do not support trash — force=true is sent implicitly.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-menus',
+				'category'            => 'acrossai-menus',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

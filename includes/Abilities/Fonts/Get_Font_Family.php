@@ -34,7 +34,7 @@ class Get_Font_Family extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Font Family', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Fetch a single Font Library font family record (wp_font_family CPT) by its post ID.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-fonts',
+				'category'            => 'acrossai-fonts',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

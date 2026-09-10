@@ -63,7 +63,7 @@ final class Category_Registrar {
 			return;
 		}
 		wp_register_ability_category(
-			'acrossai-abilities-manager-rank-math',
+			'acrossai-rank-math',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager — Rank Math', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for managing Rank Math SEO: typed global settings, per-post and bulk SEO metadata, schema, primary terms, content audits, redirections, 404 logs, sitemaps, llms.txt routes, Instant Indexing, the Role Manager, status and maintenance tools, Search Console analytics, Content AI, and AI Visibility.', 'acrossai-abilities-manager' ),

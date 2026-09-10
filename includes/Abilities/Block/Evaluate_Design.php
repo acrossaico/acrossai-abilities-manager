@@ -31,7 +31,7 @@ class Evaluate_Design extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Evaluate Design', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Score design coherence 0-100 and flag layout risks (card monotony, section-rhythm drift, and other design-quality issues). Filter-extensible via acrossai_block_qa_rules.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

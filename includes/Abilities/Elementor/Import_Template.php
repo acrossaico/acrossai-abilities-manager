@@ -24,7 +24,7 @@ class Import_Template extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Import Elementor Template', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Import an Elementor template from a JSON export (as produced by export-template). Regenerates element IDs to avoid collisions.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array(

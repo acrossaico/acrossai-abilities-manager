@@ -30,7 +30,7 @@ class List_Taxonomies extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Taxonomies', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List registered taxonomies via the core REST endpoint GET /wp/v2/taxonomies.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-taxonomies',
+				'category'            => 'acrossai-taxonomies',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -24,7 +24,7 @@ class Suggest_Design_Fixes extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Suggest Elementor Design Fixes', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Turn aggregated design-audit findings into concrete fix recommendations.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array( 'type' => 'object', 'properties' => array( 'post_id' => array( 'type' => 'integer', 'minimum' => 1 ), 'subtree_id' => array( 'type' => 'string' ) ), 'required' => array( 'post_id' ), 'additionalProperties' => false ),

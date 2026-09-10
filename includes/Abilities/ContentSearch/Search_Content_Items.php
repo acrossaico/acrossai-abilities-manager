@@ -32,7 +32,7 @@ class Search_Content_Items extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Search Content Items', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Search post-type items by keyword. Backed by WP_Query `s=` (LIKE-based title + content search). Score is a simple 0/1 relevance stub — WP core\'s search does not produce ranked scores natively.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content-search',
+				'category'            => 'acrossai-content-search',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

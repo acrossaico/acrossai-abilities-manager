@@ -31,7 +31,7 @@ class Review_Internal_Link_Suggestion extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Review Internal Link Suggestion', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Mark a suggestion as approved or rejected with optional reviewer notes. Applied suggestions cannot be re-reviewed.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content-search',
+				'category'            => 'acrossai-content-search',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

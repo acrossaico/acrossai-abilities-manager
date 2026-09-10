@@ -38,7 +38,7 @@ class Read_Block_Template extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Read Block Template', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Reads a single block template by slug from the database, theme, or plugin. When the slug exists in multiple locations, returns "multiple_locations" with the candidate list — pick one with source / theme_type / plugin_slug.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

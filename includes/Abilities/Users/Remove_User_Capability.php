@@ -119,7 +119,7 @@ class Remove_User_Capability extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Remove User Capability', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Revoke a single capability directly from a specific user. Refuses when the target is the last remaining site administrator and the capability is a WordPress-core administrator capability (would leave the site without an admin).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-users',
+				'category'            => 'acrossai-users',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

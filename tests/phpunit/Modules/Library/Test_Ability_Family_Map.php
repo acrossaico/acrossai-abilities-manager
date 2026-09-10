@@ -291,7 +291,7 @@ class Test_Ability_Family_Map extends TestCase {
 			);
 
 			$src = (string) file_get_contents( $path );
-			$this->assertStringContainsString( "'acrossai-abilities-manager-block'", $src );
+			$this->assertStringContainsString( "'acrossai-block'", $src );
 			$this->assertStringContainsString( "'post-blocks'", $src );
 			$this->assertMatchesRegularExpression(
 				"/'name'\s*=>\s*'blocks\//",

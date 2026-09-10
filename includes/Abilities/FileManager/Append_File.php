@@ -57,7 +57,7 @@ class Append_File extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Append to File', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Append (default) or prepend caller-supplied bytes to an existing file inside the WordPress installation. Path must be relative to ABSPATH. Refuses missing files (use create-file instead) and refuses wp-config.php or .htaccess at ABSPATH root. Both append and prepend read the current contents and rewrite the file via WP_Filesystem (not atomic — a concurrent writer may win; avoid on very-high-throughput logs).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

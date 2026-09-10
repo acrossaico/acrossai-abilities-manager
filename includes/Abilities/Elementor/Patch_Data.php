@@ -30,7 +30,7 @@ class Patch_Data extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Patch Elementor Document Data', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Find and replace text within an Elementor document\'s serialised JSON. Operates on the raw string so it can update text in any control (headings, text-editors, buttons, image alt-text, etc.) in one pass. Case-sensitive.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

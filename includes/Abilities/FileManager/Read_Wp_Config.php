@@ -48,7 +48,7 @@ class Read_Wp_Config extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Read wp-config.php', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Returns non-sensitive constants and the table prefix defined in wp-config.php. Credential and secret constants are redacted.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

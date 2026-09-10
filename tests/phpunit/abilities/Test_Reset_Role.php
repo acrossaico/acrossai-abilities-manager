@@ -55,7 +55,7 @@ class Test_Reset_Role extends WP_UnitTestCase {
 	public function test_ability_name_and_category(): void {
 		$src = $this->sources['reset_role'];
 		$this->assertStringContainsString( "'users/reset-role'", $src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-users'", $src );
+		$this->assertStringContainsString( "'acrossai-users'", $src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {

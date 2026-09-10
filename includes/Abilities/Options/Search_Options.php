@@ -32,7 +32,7 @@ class Search_Options extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Search Options', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Search wp_options.option_name with a LIKE pattern. Pass exact_match=true to require an exact match.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-options',
+				'category'            => 'acrossai-options',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

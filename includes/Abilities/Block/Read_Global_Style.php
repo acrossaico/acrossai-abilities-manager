@@ -39,7 +39,7 @@ class Read_Global_Style extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Read Global Style', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Reads a Global Styles record (or one section of it) for a theme. Defaults to the database; falls back to theme.json defaults when no DB record exists. Pass "section" to return only colors / typography / spacing / layout / blockStyles / customCss.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

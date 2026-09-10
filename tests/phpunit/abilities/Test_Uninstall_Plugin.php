@@ -36,7 +36,7 @@ class Test_Uninstall_Plugin extends WP_UnitTestCase {
 
 	public function test_registers_correct_slug_and_category(): void {
 		$this->assertStringContainsString( "'plugins/uninstall-plugin'", $this->src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-plugins'", $this->src );
+		$this->assertStringContainsString( "'acrossai-plugins'", $this->src );
 	}
 
 	public function test_permission_callback_gates_manage_options(): void {

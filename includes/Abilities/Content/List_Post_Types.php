@@ -32,7 +32,7 @@ class List_Post_Types extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Post Types', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List registered post types via get_post_types( objects ). Filterable by public/show_in_rest/hierarchical flags.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

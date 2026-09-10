@@ -38,7 +38,7 @@ class Create_Directory extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create Directory', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Create a directory inside the WordPress installation. Path must be relative to ABSPATH. Default recursive:true uses wp_mkdir_p (creates any missing parents); recursive:false requires the parent to exist. Idempotent — returns success with created:false when the target already exists as a directory. Refuses when the target exists as a file.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

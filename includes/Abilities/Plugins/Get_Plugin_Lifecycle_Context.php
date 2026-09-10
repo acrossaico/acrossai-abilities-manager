@@ -33,7 +33,7 @@ class Get_Plugin_Lifecycle_Context extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Plugin Lifecycle Context', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the lifecycle-context envelope for a single plugin: header (name, version, author, description), active state, network-active state, autoupdate enrolment, update availability, and the last activated / deactivated / updated timestamps recorded since 0.0.13.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-plugins',
+				'category'            => 'acrossai-plugins',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

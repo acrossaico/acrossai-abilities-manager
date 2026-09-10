@@ -33,7 +33,7 @@ class List_Theme_Mods extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Theme Mods', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the active theme stylesheet identifier and the full map of stored theme modifications (Customizer values, header image, etc.).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-themes',
+				'category'            => 'acrossai-themes',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -52,7 +52,7 @@ class Edit_Wp_Config extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Edit wp-config.php', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Updates the value of an existing non-sensitive constant in wp-config.php. Protected credential and secret constants cannot be modified.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

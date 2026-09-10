@@ -35,7 +35,7 @@ class Unpause_Plugin extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Unpause Plugin', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Clears the paused-storage entry for a plugin so WordPress retries loading it on the next request. Distinct from deactivate-plugin (which flips the active_plugins option); this ability leaves the active/inactive state alone. If the plugin still fatally errors when WP retries, it will be re-paused. Accepts a fuzzy plugin identifier (name, slug, or partial); when uncertain, returns a candidates list rather than acting.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-recovery',
+				'category'            => 'acrossai-recovery',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

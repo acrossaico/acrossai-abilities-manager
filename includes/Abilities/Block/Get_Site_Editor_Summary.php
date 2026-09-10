@@ -31,7 +31,7 @@ class Get_Site_Editor_Summary extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Site Editor Summary', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return a categorized inventory of Site Editor objects: templates grouped by area, template parts grouped by area, style variations by title, and navigation entities by title + slug. Complements get-site-editor-context (scalar counts).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

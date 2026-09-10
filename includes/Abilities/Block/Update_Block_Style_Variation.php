@@ -43,7 +43,7 @@ class Update_Block_Style_Variation extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Block Style Variation', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Updates a Block Style Variation. Auto-detects location; supports section-scoped updates, rename via new_slug, and cross-source migration via migrate_to.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

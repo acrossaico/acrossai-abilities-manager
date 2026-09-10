@@ -30,7 +30,7 @@ class Get_Comment extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Comment', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Fetch a comment via GET /wp/v2/comments/{id}.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-comments',
+				'category'            => 'acrossai-comments',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

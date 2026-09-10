@@ -51,7 +51,7 @@ class Reset_Role extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Reset Role', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Reset any of the five WordPress-core built-in roles (administrator, editor, author, contributor, subscriber) back to its shipped default capability set.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-users',
+				'category'            => 'acrossai-users',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

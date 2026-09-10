@@ -49,7 +49,7 @@ class Read_File extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Read File', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Reads the contents of a file within the WordPress installation. Path must be relative to ABSPATH. Refuses files larger than 5 MB and reports binary content without returning raw bytes. Text content is scrubbed through the configurable secret redactor before return; response includes redacted:bool and redaction_count:int. When a read allowlist is configured, reads outside it return blocked_reason:"path_not_allowed_for_read".', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

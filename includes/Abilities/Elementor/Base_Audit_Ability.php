@@ -61,7 +61,7 @@ abstract class Base_Audit_Ability extends Ability_Definition { // phpcs:ignore
 			'args' => array(
 				'label'               => $this->audit_label(),
 				'description'         => $this->audit_description(),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

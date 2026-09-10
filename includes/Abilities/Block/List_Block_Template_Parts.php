@@ -42,7 +42,7 @@ class List_Block_Template_Parts extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Block Template Parts', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Lists block template parts across the database (wp_template_part), the active theme\'s /parts/*.html, the parent theme, and installed plugin /parts dirs. Filter by source, theme_type, plugin_slug, area, or exact slug.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

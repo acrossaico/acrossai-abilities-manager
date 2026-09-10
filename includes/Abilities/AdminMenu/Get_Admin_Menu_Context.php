@@ -31,7 +31,7 @@ class Get_Admin_Menu_Context extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Admin Menu Context', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the current WP-admin screen context: base, id, post_type, top-level menu slug (if resolvable via $_GET[page]), current caller\'s roles, and admin URL. Reads get_current_screen() when available; falls back to sanitized $_GET data otherwise.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-admin-menu',
+				'category'            => 'acrossai-admin-menu',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -37,7 +37,7 @@ class Read_Block_Style_Variation extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Read Block Style Variation', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Reads a Block Style Variation by slug. Defaults to the database; falls back to /styles file defaults. Pass "section" to return only colors / typography / spacing / layout / blockStyles.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

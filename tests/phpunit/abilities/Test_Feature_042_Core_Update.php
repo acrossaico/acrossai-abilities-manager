@@ -146,9 +146,9 @@ class Test_Feature_042_Core_Update extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'public static function instance(): self', $src );
 		$this->assertStringContainsString( 'public function register(): void', $src );
 		$this->assertStringContainsString(
-			"'acrossai-abilities-manager-core'",
+			"'acrossai-core'",
 			$src,
-			'Category slug must be acrossai-abilities-manager-core.'
+			'Category slug must be acrossai-core.'
 		);
 		$this->assertStringContainsString(
 			'wp_register_ability_category',
@@ -175,7 +175,7 @@ class Test_Feature_042_Core_Update extends WP_UnitTestCase {
 			'Ability name must be core/check-wp-core-update.'
 		);
 		$this->assertStringContainsString(
-			"'acrossai-abilities-manager-core'",
+			"'acrossai-core'",
 			$src,
 			'Ability category must point at the new Core category slug.'
 		);
@@ -213,7 +213,7 @@ class Test_Feature_042_Core_Update extends WP_UnitTestCase {
 			$src
 		);
 		$this->assertStringContainsString(
-			"'acrossai-abilities-manager-core'",
+			"'acrossai-core'",
 			$src
 		);
 		$this->assertStringContainsString(

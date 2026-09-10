@@ -32,7 +32,7 @@ class Read_Block_Bindings extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Read Block Bindings', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the metadata.bindings map for the block at the given path plus resolved values via WP_Block_Bindings_Registry (WP 6.5+).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

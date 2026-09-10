@@ -32,7 +32,7 @@ class Update_Post extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Post', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Update an existing post (any post type) via wp_update_post(). Only the supplied fields are changed. Refuses non-writable post types and strips protected meta keys unless allow-listed.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

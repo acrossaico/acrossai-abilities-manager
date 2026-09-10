@@ -44,7 +44,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-site-health',
+			'acrossai-site-health',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Site Health', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for inspecting Site Health: run the direct status checks (good/recommended/critical) and read the full Site Health Info (server, database, WordPress, theme, plugins, media, filesystem, constants).', 'acrossai-abilities-manager' ),

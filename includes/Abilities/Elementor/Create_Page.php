@@ -30,7 +30,7 @@ class Create_Page extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create Elementor Page', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Create a new post or page with Elementor builder mode enabled. Returns the new post ID and edit URL.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

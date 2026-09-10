@@ -33,7 +33,7 @@ class Find_Reusable_Block_Usage extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Find Reusable Block Usage', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return every template, template-part, and (optionally) post whose block tree contains a core/block reference to the given wp_block ID.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

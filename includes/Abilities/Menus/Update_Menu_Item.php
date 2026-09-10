@@ -31,7 +31,7 @@ class Update_Menu_Item extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Menu Item', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Update a menu item via POST /wp/v2/menu-items/{id}. Only the supplied fields are touched.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-menus',
+				'category'            => 'acrossai-menus',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

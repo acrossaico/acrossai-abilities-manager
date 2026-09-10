@@ -30,7 +30,7 @@ class Get_Official_Pattern_Guidance extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Elementor Pattern Guidance', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return canonical Elementor.com pattern and layout guidance (widgets, patterns, layouts). Grounded in Elementor documentation.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

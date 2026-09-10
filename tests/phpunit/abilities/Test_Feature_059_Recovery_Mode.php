@@ -66,9 +66,9 @@ class Test_Feature_059_Recovery_Mode extends WP_UnitTestCase {
 	public function test_category_registrar_uses_recovery_category_slug(): void {
 		$src = $this->sources['category_registrar'];
 		$this->assertStringContainsString(
-			"'acrossai-abilities-manager-recovery'",
+			"'acrossai-recovery'",
 			$src,
-			'Recovery category slug must be acrossai-abilities-manager-recovery.'
+			'Recovery category slug must be acrossai-recovery.'
 		);
 		$this->assertStringContainsString( 'wp_register_ability_category', $src );
 		$this->assertStringContainsString( 'final class Category_Registrar', $src );
@@ -112,7 +112,7 @@ class Test_Feature_059_Recovery_Mode extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'extends Ability_Definition', $src, "$src_key must extend Ability_Definition" );
 		$this->assertStringContainsString( "'{$expected_slug}'", $src, "$src_key must register slug $expected_slug" );
 		$this->assertStringContainsString(
-			"'acrossai-abilities-manager-recovery'",
+			"'acrossai-recovery'",
 			$src,
 			"$src_key must point at the Recovery category slug"
 		);

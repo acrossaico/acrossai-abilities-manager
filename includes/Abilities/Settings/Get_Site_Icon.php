@@ -30,7 +30,7 @@ class Get_Site_Icon extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Site Icon', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Returns the current site icon (favicon) — attachment ID plus URLs at the standard sizes (32, 192, 270, 512).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-settings',
+				'category'            => 'acrossai-settings',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

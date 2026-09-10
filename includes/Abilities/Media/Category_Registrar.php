@@ -44,7 +44,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-media',
+			'acrossai-media',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Media', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for managing the Media Library: upload, list, read, update, delete, and meta access.', 'acrossai-abilities-manager' ),

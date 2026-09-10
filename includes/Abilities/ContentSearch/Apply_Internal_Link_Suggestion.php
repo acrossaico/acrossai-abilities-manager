@@ -32,7 +32,7 @@ class Apply_Internal_Link_Suggestion extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Apply Internal Link Suggestion', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Apply an approved suggestion by wrapping the first case-insensitive occurrence of the suggestion\'s anchor text in the target post\'s content with an <a href> tag. Marks the suggestion `applied` on success. Requires manage_options + edit_others_posts.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content-search',
+				'category'            => 'acrossai-content-search',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_others_posts' );

@@ -31,7 +31,7 @@ class Find_Related_Content extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Find Related Content', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return posts related to a given post via shared taxonomy terms (categories + tags by default). Fallback implementation — no learned relevance model.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content-search',
+				'category'            => 'acrossai-content-search',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

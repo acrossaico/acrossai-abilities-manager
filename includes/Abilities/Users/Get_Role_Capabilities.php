@@ -32,7 +32,7 @@ class Get_Role_Capabilities extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Role Capabilities', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the full capability map for a single registered role. Useful before granting a role via user-create / user-update.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-users',
+				'category'            => 'acrossai-users',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

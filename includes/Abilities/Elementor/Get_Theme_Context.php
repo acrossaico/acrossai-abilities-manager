@@ -29,7 +29,7 @@ class Get_Theme_Context extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Elementor Theme Context', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the active theme, Elementor version, active kit, and viewport settings — foundation snapshot used by other design abilities.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

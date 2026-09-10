@@ -31,7 +31,7 @@ class List_Cron_Jobs extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Cron Jobs', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List every scheduled WP-Cron event via _get_cron_array(), flattened to one row per event with timestamp, hook, schedule, interval, and args.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cron',
+				'category'            => 'acrossai-cron',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

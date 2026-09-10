@@ -32,7 +32,7 @@ class Delete_Theme extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Theme', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Delete an installed WordPress theme by name, stylesheet, or partial match. The active theme cannot be deleted.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-themes',
+				'category'            => 'acrossai-themes',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

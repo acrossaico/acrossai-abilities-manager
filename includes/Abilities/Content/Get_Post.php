@@ -30,7 +30,7 @@ class Get_Post extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Post', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Fetch a post (any post type) by ID via get_post(). Returns the raw post row plus derived fields (terms, non-protected meta, featured image, permalink, edit link, author).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

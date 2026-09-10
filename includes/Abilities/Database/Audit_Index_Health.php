@@ -35,7 +35,7 @@ class Audit_Index_Health extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Audit Index Health', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return a bounded, paginated snapshot of table + index metadata for the current site: engine, row estimate, data/index/free bytes, and index shape (name, unique, columns). Filters to the current-blog prefix and rejects sibling-site tables on multisite.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -35,7 +35,7 @@ class List_Font_Families extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Font Families', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List installed Font Library font families (the wp_font_family CPT) via the core REST endpoint.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-fonts',
+				'category'            => 'acrossai-fonts',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

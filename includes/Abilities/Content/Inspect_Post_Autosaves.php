@@ -34,7 +34,7 @@ class Inspect_Post_Autosaves extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Inspect Autosaves', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the autosaves attached to a post (distinct from revisions). Only one autosave per post per author exists at a time; this ability flattens them into a list.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

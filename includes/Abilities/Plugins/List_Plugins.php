@@ -31,7 +31,7 @@ class List_Plugins extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Plugins', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List all installed WordPress plugins, optionally filtered by status.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-plugins',
+				'category'            => 'acrossai-plugins',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

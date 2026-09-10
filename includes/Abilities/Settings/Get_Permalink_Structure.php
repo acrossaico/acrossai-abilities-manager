@@ -31,7 +31,7 @@ class Get_Permalink_Structure extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Permalink Structure', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Returns the current permalink_structure, the matching preset name (plain, day-and-name, month-and-name, numeric, post-name, or custom), plus category_base and tag_base.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-settings',
+				'category'            => 'acrossai-settings',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

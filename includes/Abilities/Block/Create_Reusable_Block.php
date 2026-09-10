@@ -31,7 +31,7 @@ class Create_Reusable_Block extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create Reusable Block', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Create a new reusable block (wp_block CPT). Accepts either `content` (raw block markup) or `blocks` (structured block array). One of the two is required.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

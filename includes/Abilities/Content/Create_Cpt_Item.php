@@ -33,7 +33,7 @@ class Create_Cpt_Item extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create CPT Item', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Create a custom post type record. post_type is required and must be registered.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

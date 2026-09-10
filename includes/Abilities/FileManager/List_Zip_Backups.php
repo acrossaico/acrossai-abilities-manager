@@ -32,7 +32,7 @@ class List_Zip_Backups extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Zip Backups', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List zips inside acrossai-backups/ (default) or acrossai-staging/, newest first, with size, sha256, created_at.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

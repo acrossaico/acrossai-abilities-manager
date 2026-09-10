@@ -63,7 +63,7 @@ class Rollback_Wp_Core extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Rollback WordPress Core', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Roll back WordPress core to an earlier offered version via the WP.org Core API. Fetches the available offers from api.wordpress.org, picks the requested version, and hands the offer to Core_Upgrader::upgrade() — the same class the WP dashboard uses. Uses only WordPress functions; no bundled updater code. Refuses when the target version is equal to or newer than the currently-running version (use wp-core-update for upgrades). Honours DISALLOW_FILE_MODS.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-core',
+				'category'            => 'acrossai-core',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'update_core' );

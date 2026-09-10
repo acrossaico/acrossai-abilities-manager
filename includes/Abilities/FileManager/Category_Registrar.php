@@ -44,7 +44,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-file-manager',
+			'acrossai-file-manager',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â File Manager', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for reading, creating, editing, and deleting files across WordPress plugins, themes, configuration, and logs.', 'acrossai-abilities-manager' ),

@@ -44,7 +44,7 @@ class Get_Changelog extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get File Manager Changelog', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the last N entries from the File Manager audit log at wp-content/acrossai-file-manager-logs/acrossai-file-manager.log. Entries are returned in chronological order (oldest first). Default 100 lines, max 500. Empty log returns success with an informative message.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

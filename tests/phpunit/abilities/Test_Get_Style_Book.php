@@ -28,7 +28,7 @@ class Test_Get_Style_Book extends WP_UnitTestCase {
 
 	public function test_registers_correct_slug_and_category(): void {
 		$this->assertStringContainsString( "'blocks/get-style-book'", $this->src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-block'", $this->src );
+		$this->assertStringContainsString( "'acrossai-block'", $this->src );
 	}
 
 	public function test_permission_callback_gates_manage_options(): void {

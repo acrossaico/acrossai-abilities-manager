@@ -36,7 +36,7 @@ class Get_Nested_Option_Value extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Nested Option Value', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Read one nested key inside a serialized-array option without transferring the whole option. path is an array of string keys walked in order (e.g. ["a","b","c"]).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-options',
+				'category'            => 'acrossai-options',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -29,7 +29,7 @@ class Add_Container extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Add Elementor Container', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Insert a new Elementor v3+ container element at root or nested inside another element. Returns the new element with its generated ID.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

@@ -36,7 +36,7 @@ class Clear_Overrides extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Clear Conflict-Test Overrides', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Deletes the overrides map in a single call, restoring every plugin\'s effective state to its DB-recorded state.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-debugging',
+				'category'            => 'acrossai-debugging',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

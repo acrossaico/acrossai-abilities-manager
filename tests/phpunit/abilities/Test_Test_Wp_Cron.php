@@ -43,7 +43,7 @@ class Test_Test_Wp_Cron extends WP_UnitTestCase {
 	}
 
 	public function test_targets_the_cron_category(): void {
-		$this->assertStringContainsString( "'acrossai-abilities-manager-cron'", $this->src );
+		$this->assertStringContainsString( "'acrossai-cron'", $this->src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {

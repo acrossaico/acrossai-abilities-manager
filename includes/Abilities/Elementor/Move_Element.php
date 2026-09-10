@@ -33,7 +33,7 @@ class Move_Element extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Move Elementor Element', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Move an Elementor element to a new parent and sibling position. Atomic: source and destination are updated together. Refuses moves whose destination lies inside the source subtree.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

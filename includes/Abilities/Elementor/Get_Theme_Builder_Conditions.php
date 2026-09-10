@@ -30,7 +30,7 @@ class Get_Theme_Builder_Conditions extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Theme Builder Conditions', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the display conditions attached to an Elementor template (Theme Builder / popup targeting).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

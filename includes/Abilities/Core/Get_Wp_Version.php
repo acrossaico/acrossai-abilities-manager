@@ -33,7 +33,7 @@ class Get_Wp_Version extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get WordPress Version', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the currently-installed WordPress core version string and a boolean indicating whether the install is multisite.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-core',
+				'category'            => 'acrossai-core',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

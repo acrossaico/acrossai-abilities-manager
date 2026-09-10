@@ -41,7 +41,7 @@ class File_Info extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get File Info', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return stat metadata (type, size, modification time, mode/permissions, ownership, readability, writability, symlink flag) for any path inside the WordPress installation. Path must be relative to ABSPATH. Read-only — does not open the file. Owner/group name fields are omitted when the PHP POSIX extension is absent.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

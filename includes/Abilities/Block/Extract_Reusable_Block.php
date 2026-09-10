@@ -33,7 +33,7 @@ class Extract_Reusable_Block extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Extract Reusable Block', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Extract a block subtree at the given canonical path from a source post into a new reusable block (wp_block). Replaces the source location with a core/block reference. Atomic — rolls back the source-post rewrite if the wp_block creation fails.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

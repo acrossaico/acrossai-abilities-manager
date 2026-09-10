@@ -40,7 +40,7 @@ class Replace_Block_Text extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Replace Block Text', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Search-and-replace text inside every text-bearing leaf block. Supports plain-string or regex mode. Optional block_names filter narrows scope.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -31,7 +31,7 @@ class Update_Post_Meta extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Post Meta', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Set a post meta value via update_post_meta(). Works for any meta key, including protected keys.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

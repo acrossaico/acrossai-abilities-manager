@@ -37,7 +37,7 @@ class Update_Wp_Core extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update WordPress Core', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Apply the pending WordPress core update via WP core\'s Core_Upgrader. When called with no arguments, upgrades to the latest available offer. Provide "version" (+ optional "locale") to pin to a specific offer. Re-running when no update is available is a clean no-op. Honours DISALLOW_FILE_MODS.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-core',
+				'category'            => 'acrossai-core',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'update_core' );

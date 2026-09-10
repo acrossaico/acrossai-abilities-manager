@@ -31,7 +31,7 @@ class Get_Block_Guidance extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Block Guidance', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Given a scenario description (e.g. "hero section", "three-column grid"), return recommended block layouts with rationale and starter block trees. Filter-extensible via acrossai_block_guidance_rules.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

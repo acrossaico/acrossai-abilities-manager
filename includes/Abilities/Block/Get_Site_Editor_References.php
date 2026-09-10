@@ -33,7 +33,7 @@ class Get_Site_Editor_References extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Site Editor References', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Given a target site-editor object (template-part slug, navigation ID, or reusable-block ID), return every template + template-part that references it. Answers "what breaks if I remove X?".', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

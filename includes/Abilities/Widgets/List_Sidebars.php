@@ -34,7 +34,7 @@ class List_Sidebars extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Sidebars', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Enumerate every registered sidebar with its identifier, display name, description, and widget-wrapper HTML fragments (before_widget, after_widget, before_title, after_title).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-widgets',
+				'category'            => 'acrossai-widgets',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

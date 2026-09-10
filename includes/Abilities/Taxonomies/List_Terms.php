@@ -31,7 +31,7 @@ class List_Terms extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Terms', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List terms in a taxonomy via the core REST endpoint GET /wp/v2/{rest_base}.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-taxonomies',
+				'category'            => 'acrossai-taxonomies',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

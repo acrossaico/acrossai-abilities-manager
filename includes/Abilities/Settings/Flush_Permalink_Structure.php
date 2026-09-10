@@ -34,7 +34,7 @@ class Flush_Permalink_Structure extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Reset / Flush Permalinks', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Rebuilds WordPress rewrite rules — useful after registering custom post types, taxonomies, or rewrite endpoints. Pass hard=true to also regenerate .htaccess (Apache) where supported.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-settings',
+				'category'            => 'acrossai-settings',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

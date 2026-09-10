@@ -34,7 +34,7 @@ class Merge_Element_Settings extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Merge Elementor Element Settings', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Deep-merge new settings into a single Elementor element by ID. Only the supplied setting keys are changed; siblings and unchanged settings are preserved.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

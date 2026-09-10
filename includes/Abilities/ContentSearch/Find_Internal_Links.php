@@ -32,7 +32,7 @@ class Find_Internal_Links extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Find Internal Links', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Parse a post\'s rendered content for <a href> tags whose target resolves to a same-site URL. Returns each match with anchor text + resolved target post id (via url_to_postid()) when available.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content-search',
+				'category'            => 'acrossai-content-search',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

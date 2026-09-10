@@ -34,7 +34,7 @@ class Delete_Font_Family extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Font Family', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Permanently delete a Font Library font family and all of its child font faces. Trash is not supported for font CPTs — deletion is immediate.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-fonts',
+				'category'            => 'acrossai-fonts',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

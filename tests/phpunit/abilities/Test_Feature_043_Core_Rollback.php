@@ -65,7 +65,7 @@ class Test_Feature_043_Core_Rollback extends WP_UnitTestCase {
 			'Ability name must be core/rollback-wp-core.'
 		);
 		$this->assertStringContainsString(
-			"'acrossai-abilities-manager-core'",
+			"'acrossai-core'",
 			$src,
 			'Ability category must point at the Core category slug.'
 		);

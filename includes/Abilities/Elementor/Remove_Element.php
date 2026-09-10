@@ -30,7 +30,7 @@ class Remove_Element extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Remove Elementor Element', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Remove the Elementor element at the given ID. Semantically identical to delete-element; force_delete required for populated or top-level elements.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

@@ -34,7 +34,7 @@ class List_Rewrite_Rules extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Rewrite Rules', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the persisted rewrite-rules map (regex to query-template pairs) and a count of entries.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-settings',
+				'category'            => 'acrossai-settings',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

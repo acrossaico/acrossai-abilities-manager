@@ -30,7 +30,7 @@ class Get_Cpt_Item extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get CPT Item', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Fetch a custom post type record by ID. post_type is required and must match the post.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -32,7 +32,7 @@ class Duplicate_Block extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Duplicate Block', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Create a deep clone of the Gutenberg block at the given path and insert it as the next sibling.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

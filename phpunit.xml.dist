@@ -41,6 +41,7 @@
 		</testsuite>
 		<testsuite name="library-unit">
 			<file>tests/phpunit/Modules/Library/Test_Ability_Family_Map.php</file>
+			<file>tests/phpunit/Modules/Library/Test_Category_Slug_Migration.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Ability_Definition.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Ability_Library_Registry.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Ability_Library_Config.php</file>

@@ -42,7 +42,7 @@ class Extract_Zip_Backup extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Extract Zip Backup', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Extract a zip archive (already on disk or fetched from a URL) into the resolved target directory. Every entry is checked for path traversal before extraction; DISALLOW_FILE_MODS short-circuits the ability.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

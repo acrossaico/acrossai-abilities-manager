@@ -32,7 +32,7 @@ class Get_Style_Book extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Style Book', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the Site Editor Style Book payload. For every registered block that declares an example, return the block name, title, category, and example markup. Same data source the Styles → Style Book panel renders.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -30,7 +30,7 @@ class Create_Navigation extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create Navigation', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Create a new wp_navigation Site-Editor entity. Accepts `content` (raw markup) or `blocks` (structured). Distinct from classic nav_menu (see menus/create-menu).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

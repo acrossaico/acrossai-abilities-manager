@@ -37,7 +37,7 @@ class Add_User_Capability extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Add User Capability', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Grant a single capability directly to a specific user, overriding role-derived permissions for that capability only.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-users',
+				'category'            => 'acrossai-users',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

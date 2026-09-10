@@ -32,7 +32,7 @@ class List_Admin_Settings extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Admin Settings', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List every Settings API section + field per settings page. Reads the WP core $wp_settings_sections / $wp_settings_fields globals. Filter with the optional `page` input.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-admin-menu',
+				'category'            => 'acrossai-admin-menu',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

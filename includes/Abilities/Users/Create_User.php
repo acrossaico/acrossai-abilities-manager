@@ -31,7 +31,7 @@ class Create_User extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create User', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Create a new WordPress user. If no password is provided, a strong one is generated and returned.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-users',
+				'category'            => 'acrossai-users',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

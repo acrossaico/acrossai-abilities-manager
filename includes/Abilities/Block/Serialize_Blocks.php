@@ -30,7 +30,7 @@ class Serialize_Blocks extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Serialize Blocks', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Serialize a normalized block tree back into block markup. Round-trip parity with blocks/parse-content for valid input.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

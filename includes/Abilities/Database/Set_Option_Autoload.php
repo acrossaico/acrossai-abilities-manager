@@ -35,7 +35,7 @@ class Set_Option_Autoload extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Set Option Autoload', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Toggle the autoload flag on up to 25 explicit option names. Rejects transient names and names longer than 191 chars. Never reads or writes option values. Dry-run default; live writes require dry_run=false AND confirm=true. Postcondition verified.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

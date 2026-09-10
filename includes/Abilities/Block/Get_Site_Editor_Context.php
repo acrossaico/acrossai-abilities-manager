@@ -31,7 +31,7 @@ class Get_Site_Editor_Context extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Site Editor Context', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the active theme\'s Site Editor context: whether the theme is a block theme, the active style variation, counts of registered templates and template parts, and the Site Editor URL.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -36,7 +36,7 @@ class Update_Upload_Mime_Types extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Add or Remove Allowed Upload MIME Types', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Manage the "extra allowed MIME types" the upload-media ability will accept. Pass "add" ({ext: mime} map) to add or overwrite entries. Pass "remove" (array of extensions) to drop entries this plugin previously added. Both are optional but at least one must be supplied. This ability cannot remove WordPress core defaults or entries added by other plugins/filters — only entries this plugin manages. The extras only apply during upload-media calls; regular Media Library uploads via wp-admin are unaffected.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-media',
+				'category'            => 'acrossai-media',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

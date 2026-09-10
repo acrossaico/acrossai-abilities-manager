@@ -36,7 +36,7 @@ class Insert_Pattern extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Insert Pattern', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Resolve a block pattern by slug (across database, active theme, and installed plugins) and insert its constituent blocks at the given parent_path and sibling index. Refuses ambiguous slugs unless a "source" (and optionally "theme_type" or "plugin_slug") is provided.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

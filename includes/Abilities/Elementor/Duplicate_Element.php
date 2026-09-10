@@ -30,7 +30,7 @@ class Duplicate_Element extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Duplicate Elementor Element', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Deep-clone an Elementor element (including all nested children) and insert the clone as the next sibling of the source. IDs are regenerated throughout the cloned subtree.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

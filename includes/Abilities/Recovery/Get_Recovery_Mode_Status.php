@@ -31,7 +31,7 @@ class Get_Recovery_Mode_Status extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Recovery Mode Status', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Detects whether the site is currently in WordPress Recovery Mode (active only when a fatal error has been captured on a protected endpoint) and returns summary counters: paused-plugin count, paused-theme count, and whether the WP fatal-error handler is enabled.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-recovery',
+				'category'            => 'acrossai-recovery',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

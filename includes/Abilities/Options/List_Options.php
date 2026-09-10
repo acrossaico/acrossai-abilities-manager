@@ -32,7 +32,7 @@ class List_Options extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Options', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List wp_options rows. Defaults to names + autoload only; pass include_values=true to embed truncated option values.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-options',
+				'category'            => 'acrossai-options',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -31,7 +31,7 @@ class Get_Style_Guide extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Style Guide', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return a normalized summary of the active theme\'s design system: spacing scale, color palette (theme + user), typography (families + font-sizes), layout widths (contentSize / wideSize), and root duotone/gradient sets.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -44,7 +44,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-content-search',
+			'acrossai-content-search',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager - Content Search', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for content indexing, search, related-content discovery, and internal-link suggestion management (option-backed suggestion queue).', 'acrossai-abilities-manager' ),

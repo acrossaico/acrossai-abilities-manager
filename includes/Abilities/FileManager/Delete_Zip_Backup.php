@@ -34,7 +34,7 @@ class Delete_Zip_Backup extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Zip Backup', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Delete a zip stored under acrossai-backups/ or acrossai-staging/. Path outside those two directories is rejected; deleting a missing file returns success with a note.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

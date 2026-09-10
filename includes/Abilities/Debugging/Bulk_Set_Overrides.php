@@ -38,7 +38,7 @@ class Bulk_Set_Overrides extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Bulk Set Conflict-Test Overrides', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Set the effective active state of many plugins in one atomic write. Best-effort with a per-plugin report — unknowns and fatals do not abort the call, they are recorded under skipped.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-debugging',
+				'category'            => 'acrossai-debugging',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

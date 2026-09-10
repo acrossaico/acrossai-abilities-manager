@@ -31,7 +31,7 @@ class List_Navigations extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Navigations', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Enumerate every wp_navigation Site-Editor entity with id, title, slug, status, and modified timestamp. Distinct from classic nav_menu (see menus/list-menus).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

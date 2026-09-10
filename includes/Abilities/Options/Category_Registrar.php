@@ -45,7 +45,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-options',
+			'acrossai-options',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Options', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for reading, writing, and searching the wp_options table.', 'acrossai-abilities-manager' ),

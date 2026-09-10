@@ -47,7 +47,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-block',
+			'acrossai-block',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Block Patterns', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for managing theme block patterns: list, read, create, update, and delete pattern PHP files inside a theme\'s /patterns directory.', 'acrossai-abilities-manager' ),

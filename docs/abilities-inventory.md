@@ -36,31 +36,31 @@ may legitimately span two families (Feature 101, `DEC-ABILITY-FAMILY-TAXONOMY`).
 
 | Namespace | Count | WP category slug |
 |---|---:|---|
-| `acrossai/` | 7 | `acrossai-abilities-manager-debugging` |
-| `admin-menu/` | 5 | `acrossai-abilities-manager-admin-menu` |
-| `blocks/` | 87 | `acrossai-abilities-manager-block` |
-| `cache/` | 7 | `acrossai-abilities-manager-cache` |
-| `comments/` | 12 | `acrossai-abilities-manager-comments` |
-| `content-search/` | 11 | `acrossai-abilities-manager-content-search` |
-| `content/` | 29 | `acrossai-abilities-manager-content` |
-| `core/` | 6 | `acrossai-abilities-manager-core` |
-| `cron/` | 16 | `acrossai-abilities-manager-cron` |
-| `database/` | 18 | `acrossai-abilities-manager-database` |
-| `elementor/` | 62 | `acrossai-abilities-manager-elementor` |
-| `file-manager/` | 23 | `acrossai-abilities-manager-file-manager` |
-| `fonts/` | 8 | `acrossai-abilities-manager-fonts` |
-| `media/` | 11 | `acrossai-abilities-manager-media` |
-| `menus/` | 12 | `acrossai-abilities-manager-menus` |
-| `options/` | 7 | `acrossai-abilities-manager-options` |
-| `plugins/` | 10 | `acrossai-abilities-manager-plugins` |
-| `rank-math/` | 61 | `acrossai-abilities-manager-rank-math` |
-| `recovery/` | 7 | `acrossai-abilities-manager-recovery` |
-| `settings/` | 11 | `acrossai-abilities-manager-settings` |
-| `site-health/` | 6 | `acrossai-abilities-manager-site-health` |
-| `taxonomies/` | 10 | `acrossai-abilities-manager-taxonomies` |
-| `themes/` | 7 | `acrossai-abilities-manager-themes` |
-| `users/` | 16 | `acrossai-abilities-manager-users` |
-| `widgets/` | 2 | `acrossai-abilities-manager-widgets` |
+| `acrossai/` | 7 | `acrossai-debugging` |
+| `admin-menu/` | 5 | `acrossai-admin-menu` |
+| `blocks/` | 87 | `acrossai-block` |
+| `cache/` | 7 | `acrossai-cache` |
+| `comments/` | 12 | `acrossai-comments` |
+| `content-search/` | 11 | `acrossai-content-search` |
+| `content/` | 29 | `acrossai-content` |
+| `core/` | 6 | `acrossai-core` |
+| `cron/` | 16 | `acrossai-cron` |
+| `database/` | 18 | `acrossai-database` |
+| `elementor/` | 62 | `acrossai-elementor` |
+| `file-manager/` | 23 | `acrossai-file-manager` |
+| `fonts/` | 8 | `acrossai-fonts` |
+| `media/` | 11 | `acrossai-media` |
+| `menus/` | 12 | `acrossai-menus` |
+| `options/` | 7 | `acrossai-options` |
+| `plugins/` | 10 | `acrossai-plugins` |
+| `rank-math/` | 61 | `acrossai-rank-math` |
+| `recovery/` | 7 | `acrossai-recovery` |
+| `settings/` | 11 | `acrossai-settings` |
+| `site-health/` | 6 | `acrossai-site-health` |
+| `taxonomies/` | 10 | `acrossai-taxonomies` |
+| `themes/` | 7 | `acrossai-themes` |
+| `users/` | 16 | `acrossai-users` |
+| `widgets/` | 2 | `acrossai-widgets` |
 
 ## Every ability
 

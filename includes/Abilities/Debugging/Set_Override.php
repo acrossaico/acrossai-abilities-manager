@@ -43,7 +43,7 @@ class Set_Override extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Set Conflict-Test Override', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Set the effective active state of one plugin without modifying the WordPress active_plugins option row. Optionally cascade through the Requires Plugins header.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-debugging',
+				'category'            => 'acrossai-debugging',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

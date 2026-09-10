@@ -38,7 +38,7 @@ class Search_Replace extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Search Replace', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Replace every occurrence of a source string with a target string across every applicable table in the WordPress database, handling PHP-serialized values safely. Defaults to dry-run mode — pass dry_run=false to execute the actual replacement. Skips wp_posts.guid unless include_guids=true.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

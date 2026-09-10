@@ -24,7 +24,7 @@ class Empty_Trash extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Empty Elementor Template Trash', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Permanently delete every trashed Elementor template. Requires confirm=true.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array(

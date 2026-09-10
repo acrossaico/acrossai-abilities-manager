@@ -31,7 +31,7 @@ class List_Themes extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Themes', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List all installed WordPress themes, optionally filtered by status.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-themes',
+				'category'            => 'acrossai-themes',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

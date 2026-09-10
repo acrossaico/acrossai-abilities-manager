@@ -47,7 +47,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-plugins',
+			'acrossai-plugins',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Plugin Management', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for managing WordPress plugins: install, activate, deactivate, list, and check for updates.', 'acrossai-abilities-manager' ),

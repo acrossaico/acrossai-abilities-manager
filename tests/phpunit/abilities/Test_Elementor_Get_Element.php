@@ -27,7 +27,7 @@ class Test_Elementor_Get_Element extends WP_UnitTestCase {
 
 	public function test_registers_correct_slug_and_category(): void {
 		$this->assertStringContainsString( "'elementor/get-element'", $this->src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-elementor'", $this->src );
+		$this->assertStringContainsString( "'acrossai-elementor'", $this->src );
 	}
 
 	public function test_input_requires_post_id_and_element_id(): void {

@@ -31,7 +31,7 @@ class Update_Media extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Media', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Update an attachment\'s title, caption, description, or alt text via POST /wp/v2/media/{id}.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-media',
+				'category'            => 'acrossai-media',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

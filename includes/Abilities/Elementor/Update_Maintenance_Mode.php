@@ -29,7 +29,7 @@ class Update_Maintenance_Mode extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Elementor Maintenance Mode', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Enable or disable Elementor maintenance mode. Set mode (maintenance | coming_soon), template ID, and exclude rules.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

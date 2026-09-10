@@ -60,7 +60,7 @@ class Delete_Directory extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Directory', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Delete a directory inside the WordPress installation. Path must be relative to ABSPATH. Requires confirm:true. Default recursive:false refuses non-empty directories. Refuses a hardcoded list of critical WordPress directories (ABSPATH, wp-admin, wp-includes, wp-content, wp-content/plugins, wp-content/themes, wp-content/mu-plugins, wp-content/uploads, and this plugin\'s directory). Symlinks are not followed during recursive walks. Idempotent — a missing target returns success with entries_removed:0.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

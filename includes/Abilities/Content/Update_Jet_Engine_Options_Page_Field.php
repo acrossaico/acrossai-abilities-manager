@@ -31,7 +31,7 @@ class Update_Jet_Engine_Options_Page_Field extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Options Page Field', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Write a single field value into a Jet Engine options page. The field value is stored inside the page\'s wp_options row.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

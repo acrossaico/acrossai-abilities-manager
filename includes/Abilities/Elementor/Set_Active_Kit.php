@@ -24,7 +24,7 @@ class Set_Active_Kit extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Set Active Elementor Kit', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Switch the site-wide active Elementor kit. Invalidates Elementor CSS cache site-wide.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array(

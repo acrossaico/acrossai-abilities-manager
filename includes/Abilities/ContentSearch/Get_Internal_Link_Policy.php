@@ -31,7 +31,7 @@ class Get_Internal_Link_Policy extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Internal Link Policy', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the policy that governs internal-link suggestion creation and application. v1 policy is a static ruleset — future specs may make the ruleset editable via an options page.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content-search',
+				'category'            => 'acrossai-content-search',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

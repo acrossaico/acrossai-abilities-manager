@@ -32,7 +32,7 @@ class Normalize_Heading_Levels extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Normalize Heading Levels', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Rewrite heading levels so no heading skips more than one level. Demotes headings above top_level (default 2) down to top_level. preserve_h1 leaves H1 untouched (default true).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

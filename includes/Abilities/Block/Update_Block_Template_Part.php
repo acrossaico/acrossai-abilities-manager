@@ -47,7 +47,7 @@ class Update_Block_Template_Part extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Block Template Part', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Updates an existing block template part. Detects the location automatically; pass source / theme_type / plugin_slug to disambiguate. Supports rename via new_slug, area change, and cross-source migration via migrate_to. Refuses parent-theme writes — copy to child or DB first.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

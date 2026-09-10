@@ -41,7 +41,7 @@ class Test_Get_Maintenance_Mode_Status extends WP_UnitTestCase {
 	}
 
 	public function test_targets_the_site_health_category(): void {
-		$this->assertStringContainsString( "'acrossai-abilities-manager-site-health'", $this->src );
+		$this->assertStringContainsString( "'acrossai-site-health'", $this->src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {

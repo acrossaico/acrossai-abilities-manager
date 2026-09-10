@@ -30,7 +30,7 @@ class Flush_Object_Cache extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Flush Object Cache', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Flushes the entire WordPress object cache via wp_cache_flush(). Useful after data changes when stale cached values may be served.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cache',
+				'category'            => 'acrossai-cache',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

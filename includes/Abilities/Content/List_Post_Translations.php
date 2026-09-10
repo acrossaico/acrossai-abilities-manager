@@ -31,7 +31,7 @@ class List_Post_Translations extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Post Translations', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the translations of a post (language code → post ID). Detects Polylang first, then WPML; errors if neither is active.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

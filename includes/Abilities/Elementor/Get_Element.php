@@ -30,7 +30,7 @@ class Get_Element extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Elementor Element', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the Elementor element at the given 7-character hex ID for a post, plus its parent-ID path from the root.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );
