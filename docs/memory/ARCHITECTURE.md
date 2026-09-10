@@ -813,15 +813,15 @@ NOT the vendor library's own name. The vendor's name is for filesystem paths
 and Composer; the WordPress handle is in the global asset registry and must
 satisfy Plugin Check's 4+ character unique-prefix rule.
 
-For a **family of plugins** that all bundle the same vendor library via
-Jetpack Autoloader (Jetpack picks the highest PHP version across the family but
+For a **group of plugins** that all bundle the same vendor library via
+Jetpack Autoloader (Jetpack picks the highest PHP version across the group but
 does not manage asset URLs), all plugins MUST register the asset under the
-**same family-level handle**. WordPress's `WP_Dependencies::add()` silently
+**same group-level handle**. WordPress's `WP_Dependencies::add()` silently
 returns false on duplicate handle registration, so first-to-register wins and
 the CSS loads exactly once site-wide — no duplicate `<link>` tags, no
 conflicts, no `wp_style_is()` guard required.
 
-**Convention for the AcrossAI family**:
+**Convention for the AcrossAI group**:
 - Handle format: `acrossai-<vendor-package-name>` (e.g.
   `acrossai-wpb-access-control` for `wpboilerplate/wpb-access-control`)
 - Carries the 8-char `acrossai-` prefix (Plugin Check satisfied)
@@ -846,7 +846,7 @@ gets served — even if Jetpack Autoloader selected a different plugin's
 higher-version PHP. The cleanest long-term fix is for the vendor library
 itself to expose an `Assets::register()` method called from the Jetpack-
 Autoloader-selected copy, so PHP version and CSS version stay in sync.
-Until then, the family-level handle is the right pragmatic answer.
+Until then, the group-level handle is the right pragmatic answer.
 
 **Evidence**
 `admin/Main.php:179, 188` — handle renamed from `'wpb-access-control'` to
@@ -1647,29 +1647,29 @@ There is **no PHP-side `register_tab()` call**, no admin-registered whitelist, a
 **Consequence — silent misplacement**
 Setting the wrong `tab_group` value on a new ability is silently accepted — the ability just lands in whichever bucket its string names. Copy-paste inheritance of `'core'` from an unrelated template misplaces the ability into the Core tab with no warning, no error, no test failure. This is exactly what happened to 88 Elementor abilities before PR #128: every one of them declared `'tab_group' => 'core'` (inherited from a Core-tab template used as scaffolding) and the entire Elementor suite silently shipped under the Core tab for weeks. The fix was a mechanical `sed -i "s/'tab_group' *=> *'core'/'tab_group' => 'elementor'/g"` across 63 files — no other change needed to make an "Elementor" tab appear.
 
-**Feature 101 — pick a family by the JOB, not by the FOLDER**
-The tab set is now thirteen task families: `content`, `blocks`, `appearance`, `configuration`,
+**Feature 101 — pick a group by the JOB, not by the FOLDER**
+The tab set is now thirteen task groups: `content`, `blocks`, `appearance`, `configuration`,
 `users`, `updates`, `cron`, `cache`, `database`, `files`, `diagnostics`, plus `elementor` and
 `rank-math` when active. `core` was retired — it had become a bucket holding 105 abilities from nine
 folders, which is exactly the failure mode this pattern warns about, arrived at one copy-paste at a
 time.
 
 Crucially, **`tab_group` is per ability, not per folder.** Five categories legitimately span two
-families: an ability is filed by what it does, not by which directory it sits in. `LibraryCard`
+groups: an ability is filed by what it does, not by which directory it sits in. `LibraryCard`
 renders "Tab membership" chips so a card appearing in two tabs announces itself.
 
 **When you add a new ability**
-1. Ask what job someone is doing when they reach for it, then pick that family. Do **not** copy the
+1. Ask what job someone is doing when they reach for it, then pick that group. Do **not** copy the
    `tab_group` of the file next to it — the folder is not the answer, and copy-paste inheritance is
    how the Elementor and Core incidents both happened.
-2. Read `tests/phpunit/Modules/Library/Test_Ability_Family_Map.php` — it holds the full map and is the
+2. Read `tests/phpunit/Modules/Library/Test_Ability_Group_Map.php` — it holds the full map and is the
    fastest way to see where things live. Add your ability's expectation there in the same commit.
 3. Set `meta.acrossai.tab_group` to the matching kebab-case string.
-4. **Adding a fourteenth family is not free.** Once Feature 100 ships, each family is an always-loaded
+4. **Adding a fourteenth group is not free.** Once Feature 100 ships, each group is an always-loaded
    MCP tool definition, and Claude's tool-selection accuracy degrades past 30–50 tools (Anthropic's
    published figure; production telemetry puts Haiku below 90% between 10 and 15). Thirteen is a
-   deliberate ceiling — see `DEC-ABILITY-FAMILY-TAXONOMY`.
-5. A new family still needs no registration — the tab appears the moment the first ability declares
+   deliberate ceiling — see `DEC-ABILITY-GROUP-TAXONOMY`.
+5. A new group still needs no registration — the tab appears the moment the first ability declares
    the string. Its label comes from `titleCaseTabLabel()`, and spec 037 FR-007 forbids a separate
    label field, so **the key IS the label**: use kebab-case, and no ampersands.
 6. If many similar abilities share a base class (e.g. `Base_Audit_Ability` driving 25 audit subclasses
@@ -1690,9 +1690,9 @@ MCP client with no back-compat alias. Multi-purpose abilities are what per-abili
 
 **Reference**
 - `src/js/ability-library/components/LibraryPage.js::collectTabGroups()` and `titleCaseTabLabel()` — the auto-derivation logic.
-- `tests/phpunit/Modules/Library/Test_Ability_Family_Map.php` — Feature 101's guard. The runtime has no validation, so this test is the only thing that fails when an ability is misfiled. Keep it current.
+- `tests/phpunit/Modules/Library/Test_Ability_Group_Map.php` — Feature 101's guard. The runtime has no validation, so this test is the only thing that fails when an ability is misfiled. Keep it current.
 - PR #128 (2026-08-14) — flipped 63 Elementor ability files from `'core'` to `'elementor'`; sole change needed to produce a working "Elementor" tab.
-- Feature 101 (2026-09-10) — regrouped 229 declarations into thirteen task families and retired `core`.
+- Feature 101 (2026-09-10) — regrouped 229 declarations into thirteen task groups and retired `core`.
 
 **Tags**: ability-library, ability-integrations, tab-derivation, meta-acrossai, tab_group, silent-misplacement, first-party, jsx-runtime-derivation
 

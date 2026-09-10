@@ -1,9 +1,9 @@
-# Feature Specification: Ability Family Tabs
+# Feature Specification: Ability Group Tabs
 
-**Feature Branch**: `101-ability-family-tabs`
+**Feature Branch**: `101-ability-group-tabs`
 **Created**: 2026-09-10
 **Status**: Implemented
-**Input**: User description: "Group all the abilities properly — the Integrations screen has 18 tabs and Core holds 105 of them. Divide into task families, and abilities in a folder can belong to multiple groups."
+**Input**: User description: "Group all the abilities properly — the Integrations screen has 18 tabs and Core holds 105 of them. Divide into task groups, and abilities in a folder can belong to multiple groups."
 
 > **Provenance.** This specification was written **after** implementation, from the approved plan and
 > the shipped code, so that Feature 101 has the same artifact set as its neighbours. It describes what
@@ -33,9 +33,9 @@ every tab name describes a task rather than a code location.
 **Acceptance Scenarios**:
 
 1. **Given** the Integrations screen, **When** it is opened, **Then** the tab bar shows thirteen
-   families and no tab named "Core".
-2. **Given** any family tab, **When** it is selected, **Then** it shows only abilities belonging to
-   that family, grouped into cards.
+   groups and no tab named "Core".
+2. **Given** any group tab, **When** it is selected, **Then** it shows only abilities belonging to
+   that group, grouped into cards.
 3. **Given** an integration whose host plugin is inactive, **When** the screen is opened, **Then**
    that integration's tab is absent.
 4. **Given** any tab, **When** its ability count is compared with the others, **Then** no tab holds
@@ -49,7 +49,7 @@ Some abilities do a job unrelated to most of their neighbours. An ability that c
 site accepts on upload is a configuration concern even though it lives beside the media library.
 A site owner looking for it should find it under Configuration.
 
-**Why this priority**: Equal to Story 1. Assigning families per folder would have reproduced the
+**Why this priority**: Equal to Story 1. Assigning groups per folder would have reproduced the
 original problem — a folder is a code location, not a task.
 
 **Independent Test**: Open Configuration. It contains abilities drawn from four different folders,
@@ -58,8 +58,8 @@ each because of what it does.
 **Acceptance Scenarios**:
 
 1. **Given** a category whose abilities serve two different jobs, **When** the screen is opened,
-   **Then** its card appears under both families, each time showing only the relevant abilities.
-2. **Given** such a split card, **When** it is displayed, **Then** it names every family it belongs
+   **Then** its card appears under both groups, each time showing only the relevant abilities.
+2. **Given** such a split card, **When** it is displayed, **Then** it names every group it belongs
    to, so the other half is discoverable rather than hidden.
 3. **Given** the Configuration tab, **When** it is opened, **Then** it shows the permalink abilities
    from Settings, the upload-policy abilities from Media, and the rewrite-flush ability from Cache,
@@ -93,7 +93,7 @@ survive.
 
 ### User Story 4 - A misfiled ability is caught before release (Priority: P2)
 
-A contributor adds an ability and gives it the wrong family, or adds a folder and forgets to register
+A contributor adds an ability and gives it the wrong group, or adds a folder and forgets to register
 its category. The test suite fails and names the problem.
 
 **Why this priority**: Nothing in the runtime validates any of this. The 105-ability bucket formed
@@ -104,11 +104,11 @@ that documentation alone does not hold.
 
 **Acceptance Scenarios**:
 
-1. **Given** an ability declaring a family other than the one the map assigns it, **When** the tests
-   run, **Then** they fail and name the ability, the expected family and the declared one.
+1. **Given** an ability declaring a group other than the one the map assigns it, **When** the tests
+   run, **Then** they fail and name the ability, the expected group and the declared one.
 2. **Given** a folder shipping a category registrar that is not registered at start-up, **When** the
    tests run, **Then** they fail and name the folder.
-3. **Given** a family whose name would not render as a readable label, **When** the tests run,
+3. **Given** a group whose name would not render as a readable label, **When** the tests run,
    **Then** they fail.
 4. **Given** a scan that finds nothing because it was written wrongly, **When** the tests run,
    **Then** they fail rather than reporting success against an empty set.
@@ -120,10 +120,10 @@ that documentation alone does not hold.
 - **A retired tab is deep-linked.** Ten identifiers stop resolving. Each falls back to the default
   view silently, with no error — the pre-existing contract for unrecognised tab values.
 - **A category is enabled but exposes only specific abilities.** Its card still appears in every
-  family it belongs to, showing whichever of its selected abilities fall in that family.
-- **A category spans two families and is switched off.** It disappears from both. The enable control
+  group it belongs to, showing whichever of its selected abilities fall in that group.
+- **A category spans two groups and is switched off.** It disappears from both. The enable control
   is one setting shown in two places; the membership labels are what make that visible.
-- **An integration is activated mid-session.** Its family appears on the next page load.
+- **An integration is activated mid-session.** Its group appears on the next page load.
 - **An ability is created with a category that no longer exists.** WordPress refuses to register it,
   silently. This is why the stored-value update exists.
 - **A site upgrades several versions at once.** The stored-value update is idempotent and runs once.
@@ -134,27 +134,27 @@ that documentation alone does not hold.
 
 ### Functional Requirements
 
-**Families**
+**Groups**
 
-- **FR-001**: The system MUST organise abilities into thirteen families, each named for a task a site
+- **FR-001**: The system MUST organise abilities into thirteen groups, each named for a task a site
   owner performs rather than for a code location.
-- **FR-002**: The system MUST NOT retain a general-purpose family that accumulates abilities having no
+- **FR-002**: The system MUST NOT retain a general-purpose group that accumulates abilities having no
   other home.
-- **FR-003**: Each family's displayed name MUST be derived from its identifier, since no separate
+- **FR-003**: Each group's displayed name MUST be derived from its identifier, since no separate
   label field exists. Identifiers MUST therefore be chosen so their derived name is readable.
-- **FR-004**: Families whose abilities come from an optional integration MUST appear only while that
+- **FR-004**: Groups whose abilities come from an optional integration MUST appear only while that
   integration is active.
-- **FR-005**: The most frequently used family MUST appear first; the remainder MUST be ordered
+- **FR-005**: The most frequently used group MUST appear first; the remainder MUST be ordered
   deterministically so that the same set produces the same order on every site.
 
 **Assignment**
 
-- **FR-006**: Family membership MUST be assigned per ability, not per folder.
+- **FR-006**: Group membership MUST be assigned per ability, not per folder.
 - **FR-007**: A category whose abilities serve more than one job MUST be able to contribute to more
-  than one family.
-- **FR-008**: A card appearing in more than one family MUST show, in each, only the abilities
-  belonging to that family.
-- **FR-009**: Such a card MUST name every family it belongs to, so no portion of it is hidden.
+  than one group.
+- **FR-008**: A card appearing in more than one group MUST show, in each, only the abilities
+  belonging to that group.
+- **FR-009**: Such a card MUST name every group it belongs to, so no portion of it is hidden.
 - **FR-010**: An ability's file MUST be relocated between folders only when its own published
   identifier already contradicts its folder. Relocation MUST NOT change that identifier.
 
@@ -174,8 +174,8 @@ that documentation alone does not hold.
 
 **Correctness guarantees**
 
-- **FR-016**: The system MUST fail its tests when any ability declares a family other than the one the
-  map assigns it, naming the ability and both families.
+- **FR-016**: The system MUST fail its tests when any ability declares a group other than the one the
+  map assigns it, naming the ability and both groups.
 - **FR-017**: The system MUST fail its tests when a folder ships a category registrar that is never
   registered at start-up.
 - **FR-018**: The system MUST fail its tests when abilities are created from a folder that has no
@@ -194,11 +194,11 @@ that documentation alone does not hold.
 
 ### Key Entities
 
-- **Family**: A named group of abilities sharing a task. Identified by a single value that is also its
+- **Group**: A named group of abilities sharing a task. Identified by a single value that is also its
   displayed name. Thirteen exist; two appear conditionally.
-- **Category**: The existing per-folder grouping. Supplies the cards within a family, and is the unit
-  a site owner enables or disables. May contribute abilities to more than one family.
-- **Family assignment**: A per-ability association with exactly one family, derived from what the
+- **Category**: The existing per-folder grouping. Supplies the cards within a group, and is the unit
+  a site owner enables or disables. May contribute abilities to more than one group.
+- **Group assignment**: A per-ability association with exactly one group, derived from what the
   ability does.
 - **Stored category identifier**: The same value as a category, persisted in the site owner's saved
   preferences and against abilities they created. Renaming it is a data migration.
@@ -207,9 +207,9 @@ that documentation alone does not hold.
 
 ### Measurable Outcomes
 
-- **SC-001**: No family holds more than a fifth of the registered catalogue, against 23% concentrated
+- **SC-001**: No group holds more than a fifth of the registered catalogue, against 23% concentrated
   in a single tab before this change.
-- **SC-002**: Every family is describable in one sentence naming the task it serves.
+- **SC-002**: Every group is describable in one sentence naming the task it serves.
 - **SC-003**: Zero categories appear in two tabs showing different halves of themselves without
   naming both, against two before this change.
 - **SC-004**: 100% of a site owner's saved per-category preferences survive the upgrade.
@@ -222,17 +222,17 @@ that documentation alone does not hold.
   by the platform, against 399 accumulated before this change.
 - **SC-009**: The count of abilities recorded in the generated inventory equals the count that
   actually register.
-- **SC-010**: The number of families stays at or below the threshold beyond which an assistant's tool
+- **SC-010**: The number of groups stays at or below the threshold beyond which an assistant's tool
   selection is known to degrade.
 
 ## Assumptions
 
-- **Thirteen families is a ceiling, not an outcome.** Feature 100 exposes one assistant-facing tool
-  per family, and tool-selection accuracy is documented to degrade beyond 30–50 available tools, with
-  measurements placing smaller models below 90% between 10 and 15. Adding a fourteenth family is cheap
+- **Thirteen groups is a ceiling, not an outcome.** Feature 100 exposes one assistant-facing tool
+  per group, and tool-selection accuracy is documented to degrade beyond 30–50 available tools, with
+  measurements placing smaller models below 90% between 10 and 15. Adding a fourteenth group is cheap
   in the admin interface and expensive in an assistant, so it is a decision rather than a reflex.
 - **Per-ability assignment is the intended design, not a workaround.** The interface has displayed
-  each card's family membership since Feature 055, so a card spanning families was always anticipated.
+  each card's group membership since Feature 055, so a card spanning groups was always anticipated.
   What was wrong beforehand was not the mechanism but that nobody had chosen the assignments — two
   categories were split along lines that followed no distinction anyone intended.
 - **A category identifier is a persistence key, not a label.** It keys the site owner's saved

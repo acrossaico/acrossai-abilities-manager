@@ -130,15 +130,15 @@ usort(
 
 // Summaries.
 $by_namespace = array();
-$by_family    = array();
+$by_group    = array();
 foreach ( $rows as $row ) {
 	$ns = $row['namespace'];
 	$by_namespace[ $ns ]['count']                    = ( $by_namespace[ $ns ]['count'] ?? 0 ) + 1;
 	$by_namespace[ $ns ]['categories'][ $row['category'] ] = true;
-	$by_family[ $row['tab_group'] ]                  = ( $by_family[ $row['tab_group'] ] ?? 0 ) + 1;
+	$by_group[ $row['tab_group'] ]                  = ( $by_group[ $row['tab_group'] ] ?? 0 ) + 1;
 }
 ksort( $by_namespace );
-arsort( $by_family );
+arsort( $by_group );
 
 $total = count( $rows );
 $date  = gmdate( 'Y-m-d' );
@@ -150,13 +150,13 @@ $out .= "Snapshot taken {$date}. **Total abilities:** {$total} across " . count(
 $out .= "Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their\n";
 $out .= "host plugin is active on any given site — this is a source inventory, not a runtime one.\n\n";
 
-$out .= "## Families\n\n";
+$out .= "## Groups\n\n";
 $out .= "Tabs on the Ability Integrations screen. `tab_group` is assigned per ability, so a category\n";
-$out .= "may legitimately span two families (Feature 101, `DEC-ABILITY-FAMILY-TAXONOMY`).\n\n";
-$out .= "| Family | Abilities |\n|---|---:|\n";
-foreach ( $by_family as $family => $count ) {
-	$label = ucwords( str_replace( '-', ' ', (string) $family ) );
-	$out  .= "| `{$family}` — {$label} | {$count} |\n";
+$out .= "may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).\n\n";
+$out .= "| Group | Abilities |\n|---|---:|\n";
+foreach ( $by_group as $group => $count ) {
+	$label = ucwords( str_replace( '-', ' ', (string) $group ) );
+	$out  .= "| `{$group}` — {$label} | {$count} |\n";
 }
 
 $out .= "\n## Namespaces\n\n| Namespace | Count | WP category slug |\n|---|---:|---|\n";
@@ -173,4 +173,4 @@ foreach ( $rows as $row ) {
 file_put_contents( $out_file, $out );
 
 echo "Wrote {$out_file}\n";
-echo "{$total} abilities across " . count( $by_namespace ) . " namespaces, " . count( $by_family ) . " families.\n";
+echo "{$total} abilities across " . count( $by_namespace ) . " namespaces, " . count( $by_group ) . " groups.\n";

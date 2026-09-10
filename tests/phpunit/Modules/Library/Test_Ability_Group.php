@@ -1,8 +1,8 @@
 <?php
 /**
- * Tests: AcrossAI_Ability_Family — family membership lookup.
+ * Tests: AcrossAI_Ability_Group — group membership lookup.
  *
- * The lookup exists so family membership is derived in exactly one place.
+ * The lookup exists so group membership is derived in exactly one place.
  * Two properties matter more than the rest and are pinned here: that the
  * order is stable, because callers page the result and a registration-order
  * answer would shift under them; and that nothing request-dependent is
@@ -14,14 +14,14 @@
 
 namespace AcrossAI_Abilities_Manager\Tests\Modules\Library;
 
-use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Ability_Family;
+use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Ability_Group;
 use PHPUnit\Framework\TestCase;
 use WP_Ability;
 
 /**
- * Family membership behaviour.
+ * Group membership behaviour.
  */
-class Test_Ability_Family extends TestCase {
+class Test_Ability_Group extends TestCase {
 
 	/**
 	 * Reset registered abilities and the per-request memo.
@@ -29,7 +29,7 @@ class Test_Ability_Family extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		$GLOBALS['acrossai_test_abilities'] = array();
-		AcrossAI_Ability_Family::flush();
+		AcrossAI_Ability_Group::flush();
 	}
 
 	/**
@@ -37,23 +37,23 @@ class Test_Ability_Family extends TestCase {
 	 */
 	protected function tearDown(): void {
 		$GLOBALS['acrossai_test_abilities'] = array();
-		AcrossAI_Ability_Family::flush();
+		AcrossAI_Ability_Group::flush();
 		parent::tearDown();
 	}
 
 	/**
-	 * Register a fixture ability in a family.
+	 * Register a fixture ability in a group.
 	 *
 	 * @param  string $name   Ability name.
-	 * @param  string $family Family identifier, or '' to declare none.
+	 * @param  string $group Group identifier, or '' to declare none.
 	 * @param  string $card   Category slug.
 	 * @return void
 	 */
-	private function given_ability( string $name, string $family, string $card = 'acrossai-content' ): void {
+	private function given_ability( string $name, string $group, string $card = 'acrossai-content' ): void {
 		$meta = array( 'mcp' => array( 'type' => 'tool' ) );
 
-		if ( '' !== $family ) {
-			$meta['acrossai'] = array( 'tab_group' => $family );
+		if ( '' !== $group ) {
+			$meta['acrossai'] = array( 'tab_group' => $group );
 		}
 
 		$GLOBALS['acrossai_test_abilities'][ $name ] = new WP_Ability(
@@ -65,55 +65,55 @@ class Test_Ability_Family extends TestCase {
 			)
 		);
 
-		AcrossAI_Ability_Family::flush();
+		AcrossAI_Ability_Group::flush();
 	}
 
 	/**
-	 * Members are returned for the requested family only.
+	 * Members are returned for the requested group only.
 	 */
-	public function test_returns_only_the_requested_family(): void {
+	public function test_returns_only_the_requested_group(): void {
 		$this->given_ability( 'content/get-post', 'content' );
 		$this->given_ability( 'comments/list-comments', 'content' );
 		$this->given_ability( 'cron/list-cron-jobs', 'cron' );
 
 		$this->assertSame(
 			array( 'comments/list-comments', 'content/get-post' ),
-			AcrossAI_Ability_Family::member_names( 'content' )
+			AcrossAI_Ability_Group::member_names( 'content' )
 		);
 		$this->assertSame(
 			array( 'cron/list-cron-jobs' ),
-			AcrossAI_Ability_Family::member_names( 'cron' )
+			AcrossAI_Ability_Group::member_names( 'cron' )
 		);
 	}
 
 	/**
-	 * A family drawing on several cards returns all of them.
+	 * A group drawing on several cards returns all of them.
 	 *
 	 * This is the case category-based grouping could not express: five cards
-	 * feed the content family.
+	 * feed the content group.
 	 */
-	public function test_family_spanning_several_cards(): void {
+	public function test_group_spanning_several_cards(): void {
 		$this->given_ability( 'content/get-post', 'content', 'acrossai-content' );
 		$this->given_ability( 'comments/get-comment', 'content', 'acrossai-comments' );
 		$this->given_ability( 'media/list-media', 'content', 'acrossai-media' );
 
-		$this->assertCount( 3, AcrossAI_Ability_Family::members( 'content' ) );
+		$this->assertCount( 3, AcrossAI_Ability_Group::members( 'content' ) );
 	}
 
 	/**
-	 * One card feeding two families splits correctly.
+	 * One card feeding two groups splits correctly.
 	 *
 	 * Five real categories do this; getting it wrong would put an ability in
 	 * both Toolsets or neither.
 	 */
-	public function test_one_card_feeding_two_families(): void {
+	public function test_one_card_feeding_two_groups(): void {
 		$this->given_ability( 'media/list-media', 'content', 'acrossai-media' );
 		$this->given_ability( 'media/update-upload-mime-types', 'configuration', 'acrossai-media' );
 
-		$this->assertSame( array( 'media/list-media' ), AcrossAI_Ability_Family::member_names( 'content' ) );
+		$this->assertSame( array( 'media/list-media' ), AcrossAI_Ability_Group::member_names( 'content' ) );
 		$this->assertSame(
 			array( 'media/update-upload-mime-types' ),
-			AcrossAI_Ability_Family::member_names( 'configuration' )
+			AcrossAI_Ability_Group::member_names( 'configuration' )
 		);
 	}
 
@@ -130,56 +130,56 @@ class Test_Ability_Family extends TestCase {
 
 		$this->assertSame(
 			array( 'content/alpha', 'content/mango', 'content/zebra' ),
-			AcrossAI_Ability_Family::member_names( 'content' )
+			AcrossAI_Ability_Group::member_names( 'content' )
 		);
 	}
 
 	/**
-	 * An ability declaring no family belongs to none.
+	 * An ability declaring no group belongs to none.
 	 */
-	public function test_ability_without_a_family_is_excluded(): void {
+	public function test_ability_without_a_group_is_excluded(): void {
 		$this->given_ability( 'orphan/thing', '' );
 
-		$this->assertSame( array(), AcrossAI_Ability_Family::member_names( '' ) );
-		$this->assertSame( array(), AcrossAI_Ability_Family::counts() );
+		$this->assertSame( array(), AcrossAI_Ability_Group::member_names( '' ) );
+		$this->assertSame( array(), AcrossAI_Ability_Group::counts() );
 	}
 
 	/**
-	 * An unknown family is empty rather than an error.
+	 * An unknown group is empty rather than an error.
 	 */
-	public function test_unknown_family_returns_empty(): void {
+	public function test_unknown_group_returns_empty(): void {
 		$this->given_ability( 'content/get-post', 'content' );
 
-		$this->assertSame( array(), AcrossAI_Ability_Family::members( 'no-such-family' ) );
+		$this->assertSame( array(), AcrossAI_Ability_Group::members( 'no-such-group' ) );
 	}
 
 	/**
-	 * An empty family identifier returns empty without scanning.
+	 * An empty group identifier returns empty without scanning.
 	 */
-	public function test_empty_family_identifier_returns_empty(): void {
+	public function test_empty_group_identifier_returns_empty(): void {
 		$this->given_ability( 'content/get-post', 'content' );
 
-		$this->assertSame( array(), AcrossAI_Ability_Family::members( '' ) );
+		$this->assertSame( array(), AcrossAI_Ability_Group::members( '' ) );
 	}
 
 	/**
-	 * of() reports the family an ability declares.
+	 * of() reports the group an ability declares.
 	 */
-	public function test_of_reports_the_declared_family(): void {
+	public function test_of_reports_the_declared_group(): void {
 		$this->given_ability( 'content/get-post', 'content' );
 		$ability = $GLOBALS['acrossai_test_abilities']['content/get-post'];
 
-		$this->assertSame( 'content', AcrossAI_Ability_Family::of( $ability ) );
+		$this->assertSame( 'content', AcrossAI_Ability_Group::of( $ability ) );
 	}
 
 	/**
-	 * of() returns an empty string rather than null for an undeclared family.
+	 * of() returns an empty string rather than null for an undeclared group.
 	 */
 	public function test_of_returns_empty_string_when_undeclared(): void {
 		$this->given_ability( 'orphan/thing', '' );
 		$ability = $GLOBALS['acrossai_test_abilities']['orphan/thing'];
 
-		$this->assertSame( '', AcrossAI_Ability_Family::of( $ability ) );
+		$this->assertSame( '', AcrossAI_Ability_Group::of( $ability ) );
 	}
 
 	/**
@@ -201,14 +201,14 @@ class Test_Ability_Family extends TestCase {
 				'cache'   => 1,
 				'cron'    => 1,
 			),
-			AcrossAI_Ability_Family::counts()
+			AcrossAI_Ability_Group::counts()
 		);
 	}
 
 	/**
-	 * Protected system abilities are excluded from every family.
+	 * Protected system abilities are excluded from every group.
 	 *
-	 * Dispatchers and diagnostics are not what a family is meant to contain,
+	 * Dispatchers and diagnostics are not what a group is meant to contain,
 	 * and a Toolset that listed them could dispatch to itself.
 	 */
 	public function test_protected_abilities_are_excluded(): void {
@@ -217,7 +217,7 @@ class Test_Ability_Family extends TestCase {
 
 		$this->assertSame(
 			array( 'content/get-post' ),
-			AcrossAI_Ability_Family::member_names( 'content' )
+			AcrossAI_Ability_Group::member_names( 'content' )
 		);
 	}
 
@@ -238,7 +238,7 @@ class Test_Ability_Family extends TestCase {
 		// No capabilities held, yet the ability is still reported as a member.
 		$this->assertSame(
 			array( 'content/delete-post' ),
-			AcrossAI_Ability_Family::member_names( 'content' )
+			AcrossAI_Ability_Group::member_names( 'content' )
 		);
 	}
 
@@ -250,8 +250,8 @@ class Test_Ability_Family extends TestCase {
 		$this->given_ability( 'content/list-posts', 'content' );
 
 		$this->assertSame(
-			AcrossAI_Ability_Family::member_names( 'content' ),
-			AcrossAI_Ability_Family::member_names( 'content' )
+			AcrossAI_Ability_Group::member_names( 'content' ),
+			AcrossAI_Ability_Group::member_names( 'content' )
 		);
 	}
 
@@ -259,8 +259,8 @@ class Test_Ability_Family extends TestCase {
 	 * With no abilities registered, every accessor is empty rather than fatal.
 	 */
 	public function test_no_registered_abilities_is_not_fatal(): void {
-		$this->assertSame( array(), AcrossAI_Ability_Family::members( 'content' ) );
-		$this->assertSame( array(), AcrossAI_Ability_Family::member_names( 'content' ) );
-		$this->assertSame( array(), AcrossAI_Ability_Family::counts() );
+		$this->assertSame( array(), AcrossAI_Ability_Group::members( 'content' ) );
+		$this->assertSame( array(), AcrossAI_Ability_Group::member_names( 'content' ) );
+		$this->assertSame( array(), AcrossAI_Ability_Group::counts() );
 	}
 }

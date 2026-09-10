@@ -1,4 +1,4 @@
-# Specification Quality Checklist: Ability Family Tabs
+# Specification Quality Checklist: Ability Group Tabs
 
 **Purpose**: Validate specification completeness and quality
 **Created**: 2026-09-10
@@ -43,7 +43,7 @@ predictions should know they are descriptions.
 **Deliberate abstraction, and its limit.** The specification names no identifier, option, column or
 class — "the value that keys the site owner's saved preferences" rather than the option name.
 Domain vocabulary that is part of the product's own contract is retained (*ability*, *category*,
-*family*, *tab*) because removing it would make the requirements untestable. Two places where this
+*group*, *tab*) because removing it would make the requirements untestable. Two places where this
 abstraction costs precision, and where `plan.md` is the authority:
 
 1. FR-011 says "stored category identifiers" without naming the two stores.
@@ -61,7 +61,7 @@ abstraction costs precision, and where `plan.md` is the authority:
    feature passed vacuously — it found 24 of 25 categories and diffed to empty. The requirement
    exists because the failure already happened here, not as a general precaution.
 
-**One requirement encodes a constraint the team does not control.** FR-003 — that a family's displayed
+**One requirement encodes a constraint the team does not control.** FR-003 — that a group's displayed
 name derives from its identifier — is a platform-level fact, not a choice. It is stated as a
-requirement because it constrains every future family name, and a reader who does not know it will
+requirement because it constrains every future group name, and a reader who does not know it will
 propose names that cannot be built.

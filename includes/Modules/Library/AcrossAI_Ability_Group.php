@@ -1,10 +1,10 @@
 <?php
 /**
- * Family membership lookup — which abilities belong to a given family.
+ * Group membership lookup — which abilities belong to a given group.
  *
- * A family is the task-shaped grouping introduced by Feature 101 and shown as
+ * A group is the task-shaped grouping introduced by Feature 101 and shown as
  * the Integrations screen's tabs. It is declared per ability at
- * `meta.acrossai.tab_group`, so answering "what is in the Content family"
+ * `meta.acrossai.tab_group`, so answering "what is in the Content group"
  * means walking the registered abilities and reading that value. Doing that
  * inline in every caller is how two callers end up disagreeing, so it lives
  * here and only here.
@@ -18,7 +18,7 @@
  * never inside it.
  *
  * **Storing the answer between requests is deliberately not implemented.**
- * Deriving a family filters a few hundred already-loaded objects, which is
+ * Deriving a group filters a few hundred already-loaded objects, which is
  * cheap, and the hard part of caching is invalidation rather than expiry —
  * what registers changes when this plugin is activated or deactivated, when
  * any plugin is, when an update completes, when the Integrations settings are
@@ -39,56 +39,56 @@ use WP_Ability;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Answers which abilities belong to a family.
+ * Answers which abilities belong to a group.
  */
-class AcrossAI_Ability_Family {
+class AcrossAI_Ability_Group {
 
 	/**
-	 * Per-request memo, keyed by family. Not persisted — see the class docblock.
+	 * Per-request memo, keyed by group. Not persisted — see the class docblock.
 	 *
 	 * @var array<string, array<int, WP_Ability>>|null
 	 */
 	private static ?array $memo = null;
 
 	/**
-	 * Every registered ability in a family, in a stable order.
+	 * Every registered ability in a group, in a stable order.
 	 *
 	 * Ordered by ability name so two calls in one request, and two requests on
 	 * one site, return the same sequence. Callers that page a result depend on
 	 * that; a registration-order result would shift under them.
 	 *
 	 * @since  0.0.34
-	 * @param  string $family Family identifier, e.g. `content`.
+	 * @param  string $group Group identifier, e.g. `content`.
 	 * @return array<int, WP_Ability> Matching abilities, or an empty array.
 	 */
-	public static function members( string $family ): array {
-		if ( '' === $family ) {
+	public static function members( string $group ): array {
+		if ( '' === $group ) {
 			return array();
 		}
 
-		return self::resolve()[ $family ] ?? array();
+		return self::resolve()[ $group ] ?? array();
 	}
 
 	/**
-	 * The ability names in a family, in the same order as members().
+	 * The ability names in a group, in the same order as members().
 	 *
 	 * @since  0.0.34
-	 * @param  string $family Family identifier.
+	 * @param  string $group Group identifier.
 	 * @return string[] Ability names.
 	 */
-	public static function member_names( string $family ): array {
+	public static function member_names( string $group ): array {
 		return array_map(
 			static fn( WP_Ability $ability ): string => $ability->get_name(),
-			self::members( $family )
+			self::members( $group )
 		);
 	}
 
 	/**
-	 * The family an ability belongs to.
+	 * The group an ability belongs to.
 	 *
 	 * @since  0.0.34
 	 * @param  WP_Ability $ability The ability.
-	 * @return string Family identifier, or '' when it declares none.
+	 * @return string Group identifier, or '' when it declares none.
 	 */
 	public static function of( WP_Ability $ability ): string {
 		$meta = $ability->get_meta_item( 'acrossai' );
@@ -101,19 +101,19 @@ class AcrossAI_Ability_Family {
 	}
 
 	/**
-	 * Every family present on this site, with its member count.
+	 * Every group present on this site, with its member count.
 	 *
 	 * Sorted by count descending then name ascending, matching the ordering the
 	 * Integrations screen's own summary uses.
 	 *
 	 * @since  0.0.34
-	 * @return array<string, int> Family identifier => member count.
+	 * @return array<string, int> Group identifier => member count.
 	 */
 	public static function counts(): array {
 		$counts = array();
 
-		foreach ( self::resolve() as $family => $abilities ) {
-			$counts[ $family ] = count( $abilities );
+		foreach ( self::resolve() as $group => $abilities ) {
+			$counts[ $group ] = count( $abilities );
 		}
 
 		uksort(
@@ -143,14 +143,14 @@ class AcrossAI_Ability_Family {
 	}
 
 	/**
-	 * Build the family => abilities map from the registered abilities.
+	 * Build the group => abilities map from the registered abilities.
 	 *
 	 * The single seam. Everything above reads this, and a future cache would
 	 * wrap this and nothing else.
 	 *
-	 * Excludes abilities that declare no family, and those marked as protected
+	 * Excludes abilities that declare no group, and those marked as protected
 	 * system infrastructure — the latter are dispatchers and diagnostics rather
-	 * than things a family is meant to contain.
+	 * than things a group is meant to contain.
 	 *
 	 * @since  0.0.34
 	 * @return array<string, array<int, WP_Ability>>
@@ -180,21 +180,21 @@ class AcrossAI_Ability_Family {
 				continue;
 			}
 
-			$family = self::of( $ability );
+			$group = self::of( $ability );
 
-			if ( '' === $family ) {
+			if ( '' === $group ) {
 				continue;
 			}
 
-			$map[ $family ][] = $ability;
+			$map[ $group ][] = $ability;
 		}
 
-		foreach ( $map as $family => $abilities ) {
+		foreach ( $map as $group => $abilities ) {
 			usort(
 				$abilities,
 				static fn( WP_Ability $a, WP_Ability $b ): int => strcmp( $a->get_name(), $b->get_name() )
 			);
-			$map[ $family ] = $abilities;
+			$map[ $group ] = $abilities;
 		}
 
 		self::$memo = $map;

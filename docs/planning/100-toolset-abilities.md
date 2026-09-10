@@ -1,24 +1,24 @@
 # Planning: Toolset Abilities (Feature 100)
 
-Add one dispatcher ability per ability **family** — a "Toolset" — so an AI client browses the site's
-~450 abilities one family at a time instead of receiving the entire catalogue in a single unfiltered
+Add one dispatcher ability per ability **group** — a "Toolset" — so an AI client browses the site's
+~450 abilities one group at a time instead of receiving the entire catalogue in a single unfiltered
 response.
 
-> **Grouping key changed from category to family (2026-09-10).** This brief originally proposed one
+> **Grouping key changed from category to group (2026-09-10).** This brief originally proposed one
 > Toolset per ability *category* — 25 of them. Feature 101 (merged as `5cf50ec4`) introduced
-> **families**: 13 task-shaped groups assigned per ability, now shown as the Integrations screen's
-> tabs. Toolsets follow families. Beyond halving the tool count, this removes four requirements the
-> category-based draft had to legislate around — see *Why families settle four requirements* below.
+> **groups**: 13 task-shaped groups assigned per ability, now shown as the Integrations screen's
+> tabs. Toolsets follow groups. Beyond halving the tool count, this removes four requirements the
+> category-based draft had to legislate around — see *Why groups settle four requirements* below.
 
 Today the only MCP-facing surface is the three vendor tools (`mcp-adapter/discover-abilities`,
 `mcp-adapter/get-ability-info`, `mcp-adapter/execute-ability`). `discover-abilities` declares **no
 `input_schema` at all** and returns every `mcp.public` ability in one response — no filter, no search,
 no pagination. The structure that makes the Integrations screen navigable stops at the browser.
 
-A Toolset carries the same three verbs, scoped to a single family:
+A Toolset carries the same three verbs, scoped to a single group:
 
 ```
-toolset-content { "action": "discover" }                    → that family's abilities
+toolset-content { "action": "discover" }                    → that group's abilities
 toolset-content { "action": "discover", "card": "comments" } → just the Comments ones
 toolset-content { "action": "info", "ability": "content/…" } → schemas + annotations
 toolset-content { "action": "execute", "ability": "…",
@@ -32,9 +32,9 @@ because the transport plugin's Tools screen curates arbitrary ability slugs and 
 
 ---
 
-## The thirteen families
+## The thirteen groups
 
-| Family | Abilities | Cards it draws on |
+| Group | Abilities | Cards it draws on |
 |---|---:|---|
 | `content` | 71 | content 29, comments 12, content-search 11, taxonomies 10, media 9 |
 | `appearance` | 64 | block design 35, menus 12, fonts 8, settings 7, widgets 2 |
@@ -50,12 +50,12 @@ because the transport plugin's Tools screen curates arbitrary ability slugs and 
 | `users` | 16 | users |
 | `cache` | 7 | cache 6, database 1 |
 
-Five cards contribute to two families each. That is why `card` is a listing filter (FR-015) rather
+Five cards contribute to two groups each. That is why `card` is a listing filter (FR-015) rather
 than a tool boundary — it recovers the finer granularity without spending a tool slot on it.
 
 ---
 
-## Why families settle four requirements
+## Why groups settle four requirements
 
 The category-based draft needed separate rules for: not registering a Toolset for a disabled category;
 honouring the opposite enable-defaults of ordinary versus integration cards; reading that inverted
@@ -65,7 +65,7 @@ selection its own category applied in "specific" mode.
 All four existed because a Toolset **shared a category with the abilities it dispatched to**, so the
 operator's setting for that category applied to the Toolset itself.
 
-A family Toolset shares a category with nothing. It declares its own, and resolves members from what
+A group Toolset shares a category with nothing. It declares its own, and resolves members from what
 is *registered*. A card switched off, or set to expose only some abilities, already prevents those
 abilities from registering — so the Toolset inherits every setting without asking about any of them.
 One requirement replaces four.
@@ -81,11 +81,11 @@ One requirement replaces four.
 # 2. Specify
 /speckit.specify "Add one Toolset dispatcher ability per ability FAMILY to AcrossAI Abilities Manager.
 A Toolset is a single ability taking an `action` of discover | info | execute that dispatches to the
-abilities in its own family, so an AI client works through ~450 abilities one family at a time
+abilities in its own group, so an AI client works through ~450 abilities one group at a time
 instead of receiving the whole catalogue in one response.
 
 GROUPING KEY IS THE FAMILY — meta.acrossai.tab_group, established by Feature 101 and displayed as the
-Integrations screen's tabs. Thirteen families with their live counts:
+Integrations screen's tabs. Thirteen groups with their live counts:
 content 71, appearance 64, elementor 63, rank-math 62, blocks 52, updates 23, files 23,
 diagnostics 20, configuration 19, database 17, cron 16, users 16, cache 7.
 
@@ -93,11 +93,11 @@ Do NOT group by ability category. There are 25 categories, and 25 always-loaded 
 threshold where tool-selection accuracy measurably degrades — Anthropic documents degradation past
 30-50 tools, and production telemetry places Haiku below 90% between 10 and 15 and Sonnet below 90%
 at 30. Thirteen is comfortably inside both. Feature 101 recorded thirteen as a deliberate ceiling in
-DEC-ABILITY-FAMILY-TAXONOMY; a fourteenth family is a decision, not a reflex.
+DEC-ABILITY-GROUP-TAXONOMY; a fourteenth group is a decision, not a reflex.
 
-A family may draw on several cards (categories) and a card may contribute to two families. Five do.
+A group may draw on several cards (categories) and a card may contribute to two groups. Five do.
 The card is therefore a LISTING FILTER, not a tool boundary — action=discover must accept a `card`
-parameter so a client can ask for 'just the comments ones' inside the 71-ability content family.
+parameter so a client can ask for 'just the comments ones' inside the 71-ability content group.
 That recovers per-category granularity without spending a tool slot on each.
 
 EVERY TOOLSET MUST DECLARE ITS OWN CATEGORY, distinct from any category holding real abilities.
@@ -113,7 +113,7 @@ the abilities they dispatch to, and it is why this design needs ONE requirement 
 category-based draft needed four.
 
 RESOLVE MEMBERS FROM WHAT IS REGISTERED, LAZILY, PER CALL — never fixed at boot. On each call walk
-wp_get_abilities() and keep abilities where (1) meta.acrossai.tab_group matches this Toolset's family,
+wp_get_abilities() and keep abilities where (1) meta.acrossai.tab_group matches this Toolset's group,
 (2) meta.mcp.type is 'tool', (3) the ability is not itself a Toolset and is not in
 AcrossAI_Protected_Abilities::get_protected_slugs(), and (4) it passes the visibility filter. Memoize
 per request. Resolving from registration means every operator setting is inherited rather than
@@ -128,7 +128,7 @@ CACHE THE RESOLVED MEMBER LIST IN A TRANSIENT, following the existing pattern in
 AcrossAI_Ability_Override_Processor: a keyed transient with a 12-hour TTL, a static bust_cache() and a
 Loader-compatible bust_cache_hook() instance wrapper so every add_action traces back to Main.php.
 
-CACHE ONLY REGISTRATION-DERIVED FACTS: which abilities exist, each one's family and card, and whether
+CACHE ONLY REGISTRATION-DERIVED FACTS: which abilities exist, each one's group and card, and whether
 it is a callable tool. NEVER cache the visibility-filter result or any permission outcome. Resolve from
 cache, then apply visibility and permissions fresh on every request.
 
@@ -142,7 +142,7 @@ Cache a post-filter listing and one connection's view is served to another. Whet
 it by role is unknown and beside the point — per-connection variance alone rules out caching the
 filtered result.
 
-Key the transient per family and stamp it with a schema version; treat a version mismatch as a miss so
+Key the transient per group and stamp it with a schema version; treat a version mismatch as a miss so
 an upgrade that changes the stored shape can never read back an entry written by the previous version.
 
 BUST ON EVERY ONE OF THESE:
@@ -175,23 +175,23 @@ includes/Modules/Library/Ability_Definition.php (single abstract method: ability
 That base class owns EVERYTHING shared: input and output schemas, three-action dispatch, member
 resolution, search, card and sub-group filtering, pagination, all three permission layers, the
 registration of the Toolsets' shared ability category, the published catalogue filter, the
-protected-slugs callback, and the fallback that covers a family with no declared subclass. Do NOT
+protected-slugs callback, and the fallback that covers a group with no declared subclass. Do NOT
 split these across separate registrar or helper classes — one place to look, one place to change
 (Constitution VI).
 
-Each family gets a subclass declaring ONLY four things: its family key, its slug, its hand-written
+Each group gets a subclass declaring ONLY four things: its group key, its slug, its hand-written
 label and its hand-written description. A subclass MUST NOT carry behaviour. If one needs anything
-beyond those four declarations, the base class is missing something — add it there. Adding a family
+beyond those four declarations, the base class is missing something — add it there. Adding a group
 must mean adding one file with four methods and nothing else.
 
 Descriptions are hand-written because the description is the only thing a model reads when choosing a
 tool; generated text would be generic exactly where precision matters.
 
-FALLBACK: after the declared subclasses register, a registrar walks the live families and auto-creates
-a generic Toolset for any family with no declared subclass, so an integration activated later is never
-silently missing a tool. Emit a debug notice naming each family on the fallback.
+FALLBACK: after the declared subclasses register, a registrar walks the live groups and auto-creates
+a generic Toolset for any group with no declared subclass, so an integration activated later is never
+silently missing a tool. Emit a debug notice naming each group on the fallback.
 
-NAMING: slug is 'toolset/' + the family key — toolset/content, toolset/appearance, toolset/rank-math.
+NAMING: slug is 'toolset/' + the group key — toolset/content, toolset/appearance, toolset/rank-math.
 The vendor sanitizer maps / to - so clients see toolset-content; longest is toolset-configuration at
 21 characters against a 128 limit, so no mcp_adapter_tool_name filter is needed. The 'toolset-' prefix
 is Anthropic's own recommended pattern: 'prefix by service or resource so one search matches the whole
@@ -229,14 +229,14 @@ DISCOVER returns name, label, description, card and sub_group ONLY. No input_sch
 no annotations — those are the info surface. Explicitly no suggested_abilities and no suggested_plugins
 per DEC-ABILITY-SUGGESTED-ABILITIES-CONTRACT. Response carries total, returned, offset and has_more.
 
-OUTPUT SCHEMA is one permissive object keyed by action rather than oneOf: action, family, success,
+OUTPUT SCHEMA is one permissive object keyed by action rather than oneOf: action, group, success,
 error, error_code, message, abilities[] (with input_schema/output_schema/annotations present only for
 info), total, returned, offset, has_more, not_found[], and `data` typed as the same union
 ExecuteAbilityAbility uses (object, array, string, number, integer, boolean, null) because it must
 absorb ~450 output shapes and WordPress runs validate_output() on it. Required: action, success.
 
 Soft failures return success:false plus a machine-readable error_code — ability_not_found,
-ability_not_in_family, ability_not_visible, invalid_action, missing_ability — so the model can
+ability_not_in_group, ability_not_visible, invalid_action, missing_ability — so the model can
 self-correct. Permission denial is the deliberate exception: it propagates as a WP_Error from
 permission_callback so it is a real 403.
 
@@ -265,7 +265,7 @@ ANTI-BYPASS INVARIANTS, each a testable functional requirement:
 - action=info MUST apply the same membership and visibility gate as execute. Input schemas name
   parameters and constraints, so an ungated info is a read-side information-disclosure bypass. This is
   the single most likely requirement to be forgotten.
-- MUST NOT dispatch to another Toolset. No recursion, no cross-family hop.
+- MUST NOT dispatch to another Toolset. No recursion, no cross-group hop.
 - Every Toolset MUST ship meta.mcp.public = false, so the vendor default server's discover-abilities
   output does not silently grow by 13 entries. Merge-blocking test. This does not impede the transport
   plugin's Tools screen, which builds its picker from wp_get_abilities() and ignores that flag.
@@ -275,12 +275,12 @@ ANTI-BYPASS INVARIANTS, each a testable functional requirement:
 - Toolsets MUST NOT be published into the definition catalogue that builds the Integrations screen's
   cards, so no Toolset row appears inside any card.
 
-EXPOSURE: by default a Toolset sees every registered, tool-typed ability in its family. Publish
-apply_filters( 'acrossai_toolset_member_visible', true, WP_Ability \$ability, string \$family,
+EXPOSURE: by default a Toolset sees every registered, tool-typed ability in its group. Publish
+apply_filters( 'acrossai_toolset_member_visible', true, WP_Ability \$ability, string \$group,
 string \$context ) where context is 'discover' | 'info' | 'execute'. Nothing in this plugin hooks it;
 it ships as the extension point so a per-server or per-role policy can narrow membership later, and
 its four-argument shape deliberately mirrors the sibling transport plugin's existing exposure filter.
-Also publish acrossai_toolset_abilities (family, label, slug, member count) and
+Also publish acrossai_toolset_abilities (group, label, slug, member count) and
 acrossai_toolset_report_unavailable (default false; when true, discover returns
 unavailable: [{name, reason}] instead of omitting filtered-out members).
 
@@ -294,14 +294,14 @@ operator explicitly added that tool. Net: a Toolset exposes approximately what t
 could already do in wp-admin.
 
 TESTS (PHPUnit, added to phpunit.xml.dist's explicit <file> list):
-- One Toolset per live family; none for a family with no registered abilities; the fallback creates one
-  for a family with no subclass and none for a family that has one; a family whose every contributing
+- One Toolset per live group; none for a group with no registered abilities; the fallback creates one
+  for a group with no subclass and none for a group that has one; a group whose every contributing
   card is switched off registers no Toolset; slug collision is skipped rather than clobbering.
 - All three actions; search, card, sub_group, limit, offset, total, returned, has_more; include_fields
   trims and always keeps name; batch info with a found/not_found mix; unknown action; missing ability
-  on execute; an out-of-family ability rejected with ability_not_in_family; a family whose members are
+  on execute; an out-of-group ability rejected with ability_not_in_group; a group whose members are
   all filtered out returns an empty array plus a message, not an error.
-- A card contributing to two families yields each of its abilities to exactly one Toolset.
+- A card contributing to two groups yields each of its abilities to exactly one Toolset.
 - Permission passthrough is the load-bearing suite: a target whose permission_callback returns false or
   WP_Error is denied THROUGH the Toolset with the error propagating from permission_callback; assert
   WP_Ability::execute() is the invocation path by spying on wp_before_execute_ability and
@@ -325,30 +325,30 @@ passing."
 
 **Files expected**
 
-**One abstract class holds everything. A family class holds four declarations and nothing else.**
+**One abstract class holds everything. A group class holds four declarations and nothing else.**
 
 | Path | Purpose |
 |---|---|
-| `includes/Abilities/Toolset/Base_Toolset_Ability.php` | **The single abstract class.** Schemas, three-action dispatch, member resolution, search, card and sub-group filters, pagination, all three permission layers, the shared category registration, the published catalogue, and the fallback for an undeclared family. Everything. |
-| `includes/Abilities/Toolset/<Family>.php` × 13 | Family key, slug, label, description. Four declarations, no behaviour. |
+| `includes/Abilities/Toolset/Base_Toolset_Ability.php` | **The single abstract class.** Schemas, three-action dispatch, member resolution, search, card and sub-group filters, pagination, all three permission layers, the shared category registration, the published catalogue, and the fallback for an undeclared group. Everything. |
+| `includes/Abilities/Toolset/<Group>.php` × 13 | Group key, slug, label, description. Four declarations, no behaviour. |
 | `includes/Utilities/AcrossAI_Ability_Input_Normalizer.php` | Guarded wrapper over the adapter's argument normalizer (shared utility, not Toolset-specific) |
 | `includes/Modules/Library/Rest/AcrossAI_Ability_Library_Config_Controller.php` | Fire a `acrossai_library_config_saved` action on successful save — the hook the cache needs and that does not exist today |
 | `includes/Abilities/AcrossAI_Core_Abilities_Bootstrap.php` | Instantiate the 13 subclasses; wire the base class's category registrar |
 | `includes/Main.php` | Loader wiring only, variable-first Boot Flow Rule |
 | `phpunit.xml.dist` | New `<file>` entries |
 
-A family subclass should look like this and no larger:
+A group subclass should look like this and no larger:
 
 ```php
 final class Content extends Base_Toolset_Ability {
-    protected function family(): string { return 'content'; }
+    protected function group(): string { return 'content'; }
     protected function slug(): string   { return 'toolset/content'; }
     protected function toolset_label(): string { … }
     protected function toolset_description(): string { … }   // hand-written, model-facing
 }
 ```
 
-**Adding a family means adding one file with four methods.** If anything else is needed, the shared
+**Adding a group means adding one file with four methods.** If anything else is needed, the shared
 class is missing something — fix it there, not in the subclass. The category registration, the
 catalogue filter, the protected-slugs callback and the fallback all live on the base rather than in
 separate components, so there is exactly one place to look and exactly one place to change.
@@ -366,7 +366,7 @@ separate components, so there is exactly one place to look and exactly one place
    still works.
 8. Switch a card off on the Integrations screen → its abilities vanish from the Toolset that drew on
    them, and the Toolset itself survives if any other card still contributes.
-9. Switch every card in a family off → that family's Toolset disappears from the pane.
+9. Switch every card in a group off → that group's Toolset disappears from the pane.
 10. Activate Rank Math → its Toolset appears; deactivate → it goes.
 11. `wp --debug` → no `_doing_it_wrong` notices about ability registration.
 12. Call `discover` twice and confirm the second is served from cache; then switch a card off on the
@@ -385,12 +385,12 @@ entire catalogue.
 1. Broader default exposure than the vendor tools — the security review's central claim, not an
    assumption.
 2. Thirteen near-identical subclass files; any logic appearing in one belongs on the base class.
-3. A family with no declared subclass is covered by the fallback, but silently — the debug notice is
+3. A group with no declared subclass is covered by the fallback, but silently — the debug notice is
    what stops that becoming permanent.
-4. `validate_output()` now runs the union-typed `data` for every ability; sweep all families once.
+4. `validate_output()` now runs the union-typed `data` for every ability; sweep all groups once.
 5. Activating an integration changes the tool manifest mid-session, and the operator must then add the
    new Toolset on the Tools screen — it does not attach to a server by itself.
-6. **Cache staleness is the failure mode, not cache cost.** Resolving a family filters a few hundred
+6. **Cache staleness is the failure mode, not cache cost.** Resolving a group filters a few hundred
    already-loaded objects — cheap. The transient exists to avoid repeating that per request, and its
    real risk is answering from a list that no longer matches what is registered. That is why the bust
    triggers are enumerated rather than left to expiry, and why the feature must be correct with the

@@ -95,8 +95,8 @@ export function groupDefinitions(definitions) {
  * (i.e. immediately after the `All` tab).
  *
  * Feature 046 pinned `core`, the absorbed acrossai-core-abilities plugin's
- * default tab_group. Feature 101 regrouped the tabs into task families and
- * retired `core` entirely, so the pin moved to `content` — the family
+ * default tab_group. Feature 101 regrouped the tabs into task groups and
+ * retired `core` entirely, so the pin moved to `content` — the group
  * administrators reach for most, and the one that would otherwise land
  * mid-alphabet between Configuration and Cron.
  *

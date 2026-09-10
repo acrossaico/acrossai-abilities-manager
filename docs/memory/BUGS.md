@@ -1513,7 +1513,7 @@ via `<directory>` rather than `<file>` entries.
 PHPUnit 10's `<directory>` element defaults to `suffix="Test.php"`. The project uses
 `Test_*.php` (prefix), so `<directory>tests/phpunit/Modules/X</directory>` matches zero
 files and silently emits no test failures — `vendor/bin/phpunit` reports an unchanged
-test count even though the new suite "ran." Same failure-mode family as
+test count even though the new suite "ran." Same failure-mode group as
 BUG-PHPUNIT-ABSPATH-SILENT-EXIT and BUG-PHPUNIT-BERLINDDB-SCOPE.
 
 **Prevention**
