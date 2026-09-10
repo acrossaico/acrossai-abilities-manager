@@ -31,37 +31,40 @@
 
 ## Validation Notes
 
-**Iteration 1 — all items pass.**
+**Iteration 2 — all items pass.** Re-validated after the grouping key changed from ability *category*
+to *family* (2026-09-10), following Feature 101.
 
-Automated scans against `spec.md` returned zero hits for code identifiers
-(`wp_*()` calls, filter/action names, file extensions, class references, `::`,
-`_callback`), zero `[NEEDS CLARIFICATION]` markers, and zero third-party product
-names. Design decisions that originated as implementation choices were restated
-as observable behaviour before being admitted as requirements — for example
-"resolved at the moment of each request, never fixed at start-up" (FR-031) is
-stated for its testable consequence, that a settings change is reflected on the
-next request.
+Automated scans against `spec.md` return zero code identifiers (`wp_*()` calls, filter/action names,
+file extensions, class references, `::`), zero `[NEEDS CLARIFICATION]` markers, and zero third-party
+product names. 47 functional requirements, 12 success criteria, 5 user stories, 11 edge cases.
 
-**Terms retained deliberately.** *Ability*, *category*, *sub-group*, *input
-schema*, *output schema* and *annotations* are domain vocabulary of the product's
-existing public contract, not implementation detail. Removing them would make the
-requirements untestable.
+**Terms retained deliberately.** *Ability*, *family*, *card*, *sub-group*, *input schema*, *output
+schema* and *annotations* are domain vocabulary of the product's existing public contract, not
+implementation detail. Removing them would make the requirements untestable.
 
-**Zero clarification markers, and one place where that was a judgement call.**
-Whether a Toolset should exist for a category set to expose only specific
-abilities had two defensible readings with materially different outcomes. The
-reasonable default was clear — a Toolset is category infrastructure, not a member
-— and the alternative reading fails outright, silently removing the Toolset from
-every category in that mode. Recorded as FR-039 with the reasoning in Assumptions
-rather than spent as one of the three permitted markers. Worth confirming during
-`/speckit-clarify` even so.
+**What the regrouping changed, and why it is a simplification rather than a rename.** The first
+iteration needed four separate requirements to keep a Toolset out of the operator settings that
+applied to its own category — because it shared a category with the abilities it dispatched to. A
+family Toolset declares its own category (FR-008) and resolves members from what is registered
+(FR-034), so every enable, disable and specific-selection is inherited rather than re-implemented.
+FR-041 replaces all four. A reviewer comparing revisions should check that claim first: if it does not
+hold, the four requirements need to come back.
 
-**Two items reviewers should weigh rather than accept.**
+**Three claims a reviewer should test rather than accept.**
 
-1. The default exposure posture (Assumptions, and SC-006/SC-007) is broader than
-   the entry points it supplements. It is stated explicitly, with its safeguards,
-   because it is the central claim any security review of this feature must test —
-   not a detail to be discovered later.
-2. SC-011 requires measuring the tool-catalogue size before and after. This
-   feature trades more entry points for smaller listings, and that trade is
-   asserted, not yet proven. The criterion exists so it gets measured.
+1. **The default exposure posture** (Assumptions, and SC-006/SC-007) is broader than the entry points
+   it supplements. It is stated with its safeguards because it is the central claim any security
+   review must test.
+2. **FR-041's "without consulting them directly"** is the requirement most likely to be satisfied by
+   accident and then broken by a later optimisation. If a Toolset ever reads the settings option
+   itself, it has stopped inheriting and started re-implementing, and the inverted default for
+   untouched integration cards is what will break first.
+3. **SC-010 pins the tool count to a threshold the team does not control.** Thirteen is inside the
+   published degradation range; a fourteenth family is a decision recorded in
+   `DEC-ABILITY-FAMILY-TAXONOMY`, not a free addition.
+
+**One dependency is a blocker, not a note.** The Dependencies section records a defect in the connected
+transport that refuses every curated tool which is not one of three hardcoded generic ones. Toolsets
+are curated tools. Scheduling this feature without scheduling that fix produces a feature that ships
+and then does not work — which is why it appears in the specification rather than only in a planning
+document.
