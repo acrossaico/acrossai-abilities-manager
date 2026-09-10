@@ -31,7 +31,7 @@ class Generate_Section extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Generate Section', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Deterministically generate one reusable section from a section-recipe ID and an input payload. Returns block tree only; does not save.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

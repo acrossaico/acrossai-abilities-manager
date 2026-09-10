@@ -49,7 +49,7 @@ class Create_File extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create File', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Creates a new file within the WordPress installation. Fails if the file already exists. Path must be relative to ABSPATH. Refuses wp-config.php and .htaccess at ABSPATH root. Pass create_dirs=true to auto-create any missing parent directories.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -105,7 +105,7 @@ class Create_File extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'file-manager',
+						'tab_group'       => 'files',
 						'sub_group'       => 'files',
 						'sub_group_label' => __( 'Files', 'acrossai-abilities-manager' ),
 					),

@@ -29,7 +29,7 @@ class Add_Heading extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Add Elementor Heading', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Insert an Elementor heading widget with title, header size (h1-h6), alignment, and colour.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

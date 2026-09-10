@@ -31,7 +31,7 @@ class Get_Jet_Engine_Options_Page extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Options Page', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return a Jet Engine options page by slug, including the stored field values from wp_options.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -56,7 +56,7 @@ class Get_Jet_Engine_Options_Page extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'options-pages',
 						'sub_group_label' => __( 'Options Pages', 'acrossai-abilities-manager' ),
 					),

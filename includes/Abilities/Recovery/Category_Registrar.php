@@ -44,7 +44,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-recovery',
+			'acrossai-recovery',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager — Recovery Mode', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for operating the site around WordPress Recovery Mode: detect if recovery is active, list paused (fatally-erroring) plugins and themes, clear paused entries so WP retries loading them, get the admin-clickable exit URL, and filter recent fatal errors from debug.log.', 'acrossai-abilities-manager' ),

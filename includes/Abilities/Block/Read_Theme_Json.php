@@ -33,7 +33,7 @@ class Read_Theme_Json extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Read theme.json', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Returns the raw parsed contents of a theme.json file. Defaults to the active stylesheet; pass theme_slug to target a specific theme folder, or theme_type=parent to read the parent theme when a child is active.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -69,7 +69,7 @@ class Read_Theme_Json extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'theme-json-settings',
 						'sub_group_label' => __( 'theme.json Settings', 'acrossai-abilities-manager' ),
 					),

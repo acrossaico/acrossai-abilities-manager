@@ -32,7 +32,7 @@ class Delete_Post_Meta extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Post Meta', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Delete a post meta row via delete_post_meta(). If a value is supplied, only rows matching that value are removed; otherwise every row for the given key is removed.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -81,7 +81,7 @@ class Delete_Post_Meta extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'posts',
 						'sub_group_label' => __( 'Posts', 'acrossai-abilities-manager' ),
 					),

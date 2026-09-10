@@ -36,7 +36,7 @@ class Check_Wp_Core_Update extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Check WordPress Core Update', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Report whether a WordPress core update is available. Returns the current version, the offered new version + download URL, and the PHP / MySQL requirements of the offer. Read-only; safe to call from any admin context.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-core',
+				'category'            => 'acrossai-core',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -67,7 +67,7 @@ class Check_Wp_Core_Update extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'lifecycle',
 						'sub_group_label' => __( 'Lifecycle', 'acrossai-abilities-manager' ),
 					),

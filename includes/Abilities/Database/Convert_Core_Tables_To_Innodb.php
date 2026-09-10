@@ -35,7 +35,7 @@ class Convert_Core_Tables_To_Innodb extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Convert Core Tables to InnoDB', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Convert specified core WordPress tables to InnoDB via ALTER TABLE. Only accepts logical core-table keys (posts, options, users, ...); never arbitrary identifiers. Live writes require dry_run=false AND confirm=true. Postcondition verified via engine re-read; mutation attribution separates statement outcome from postcondition.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

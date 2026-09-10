@@ -47,7 +47,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-fonts',
+			'acrossai-fonts',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Fonts', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for managing the WordPress Font Library: list, read, create, and delete font families and font faces.', 'acrossai-abilities-manager' ),

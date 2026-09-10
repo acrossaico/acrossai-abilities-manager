@@ -47,7 +47,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-debugging',
+			'acrossai-debugging',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager — Debugging', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for debugging a WordPress site, including conflict testing (toggle plugins on/off without modifying wp_options.active_plugins) and future debugging sub-groups such as log tail, transient inspection, and Query Monitor toggling.', 'acrossai-abilities-manager' ),

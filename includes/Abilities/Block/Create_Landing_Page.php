@@ -32,7 +32,7 @@ class Create_Landing_Page extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create Landing Page', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Composite: generate a landing-page block tree from business_name + tone + sections, then persist it as a WordPress page. Returns page metadata plus any generator warnings.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

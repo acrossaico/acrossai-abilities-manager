@@ -24,7 +24,7 @@ class Update_Template extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Elementor Template', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Update an Elementor template — change title, page_settings, or replace the full data tree. force_replace=true required for destructive full-data overwrites.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array(

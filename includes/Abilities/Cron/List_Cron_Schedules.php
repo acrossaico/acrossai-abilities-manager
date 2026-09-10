@@ -30,7 +30,7 @@ class List_Cron_Schedules extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Schedules', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List every registered cron schedule via wp_get_schedules() — includes core schedules (hourly/twicedaily/daily/weekly), schedules added by other plugins, and persisted custom schedules.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cron',
+				'category'            => 'acrossai-cron',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

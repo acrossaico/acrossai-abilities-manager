@@ -31,7 +31,7 @@ class Reset_User_Password extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Reset User Password', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Send a password reset email to a user, or set a new password directly. Email notification is configurable.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-users',
+				'category'            => 'acrossai-users',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

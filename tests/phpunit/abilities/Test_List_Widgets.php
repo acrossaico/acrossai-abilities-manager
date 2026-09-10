@@ -46,7 +46,7 @@ class Test_List_Widgets extends WP_UnitTestCase {
 	}
 
 	public function test_targets_the_widgets_category(): void {
-		$this->assertStringContainsString( "'acrossai-abilities-manager-widgets'", $this->src );
+		$this->assertStringContainsString( "'acrossai-widgets'", $this->src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {
@@ -76,7 +76,7 @@ class Test_List_Widgets extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'final class Category_Registrar', $this->registrar );
 		$this->assertStringContainsString( 'public static function instance(): self', $this->registrar );
 		$this->assertStringContainsString( 'public function register(): void', $this->registrar );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-widgets'", $this->registrar );
+		$this->assertStringContainsString( "'acrossai-widgets'", $this->registrar );
 		$this->assertStringContainsString( 'wp_register_ability_category', $this->registrar );
 	}
 

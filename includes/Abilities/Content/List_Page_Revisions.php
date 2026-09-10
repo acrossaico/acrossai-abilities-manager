@@ -30,7 +30,7 @@ class List_Page_Revisions extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Page Revisions', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List all stored revisions for a page by ID. Autosaves are hidden by default; pass include_autosaves=true to surface them.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -75,7 +75,7 @@ class List_Page_Revisions extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'pages',
 						'sub_group_label' => __( 'Pages', 'acrossai-abilities-manager' ),
 					),

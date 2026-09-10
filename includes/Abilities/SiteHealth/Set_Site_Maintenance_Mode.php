@@ -40,7 +40,7 @@ class Set_Site_Maintenance_Mode extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Set Site Maintenance Mode', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Activate WordPress core maintenance mode by writing the ABSPATH/.maintenance marker. A wp-cron event refreshes the marker every 5 minutes so the site stays down for the requested duration. WARNING: this blocks wp-admin as well as the frontend.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-site-health',
+				'category'            => 'acrossai-site-health',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -75,7 +75,7 @@ class Set_Site_Maintenance_Mode extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'site-health',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'maintenance',
 						'sub_group_label' => __( 'Maintenance', 'acrossai-abilities-manager' ),
 					),

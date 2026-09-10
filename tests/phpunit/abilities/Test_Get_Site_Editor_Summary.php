@@ -28,7 +28,7 @@ class Test_Get_Site_Editor_Summary extends WP_UnitTestCase {
 
 	public function test_registers_correct_slug_and_category(): void {
 		$this->assertStringContainsString( "'blocks/get-site-editor-summary'", $this->src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-block'", $this->src );
+		$this->assertStringContainsString( "'acrossai-block'", $this->src );
 	}
 
 	public function test_permission_callback_gates_manage_options(): void {

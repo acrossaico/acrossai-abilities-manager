@@ -33,7 +33,7 @@ class Get_Site_Maintenance_Report extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Site Maintenance Report', 'acrossai-abilities-manager' ),
 				'description'         => __( 'One-shot maintenance snapshot: counts of pending core / plugin / theme updates, disk-free bytes on the WP install partition, PHP version, MySQL version, WP version, active theme, and site URL. Safe to poll (read-only).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-site-health',
+				'category'            => 'acrossai-site-health',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -66,7 +66,7 @@ class Get_Site_Maintenance_Report extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'site-health',
 						'sub_group_label' => __( 'Site Health', 'acrossai-abilities-manager' ),
 					),

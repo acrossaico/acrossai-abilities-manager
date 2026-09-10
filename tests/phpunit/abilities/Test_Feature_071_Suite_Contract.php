@@ -35,7 +35,7 @@ class Test_Feature_071_Suite_Contract extends WP_UnitTestCase {
 	public function test_class_registers_expected_slug( string $class_name, string $slug ): void {
 		$src = $this->src( $class_name );
 		$this->assertStringContainsString( "'name' => '{$slug}'", $src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-block'", $src );
+		$this->assertStringContainsString( "'acrossai-block'", $src );
 	}
 
 	/**

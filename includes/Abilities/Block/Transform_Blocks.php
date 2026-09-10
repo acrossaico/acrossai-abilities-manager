@@ -39,7 +39,7 @@ class Transform_Blocks extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Transform Blocks', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Convert one or more blocks at specified paths using a named transform: paragraph-to-heading, heading-to-paragraph, group-to-columns, columns-to-group. Atomic per-post.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

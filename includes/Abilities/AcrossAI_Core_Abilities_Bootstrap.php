@@ -91,6 +91,12 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		$loader->add_action( 'wp_abilities_api_categories_init', Recovery\Category_Registrar::instance(), 'register' );
 		// Feature 063 — Widgets category.
 		$loader->add_action( 'wp_abilities_api_categories_init', Widgets\Category_Registrar::instance(), 'register' );
+		// Feature 061 — Debugging category. Its registrar shipped with the
+		// feature but was never wired here, so the category never existed and
+		// WP rejected all seven Debugging abilities on every request with
+		// _doing_it_wrong. Registering the abilities is not enough; a category
+		// must be registered before any ability may claim it.
+		$loader->add_action( 'wp_abilities_api_categories_init', Debugging\Category_Registrar::instance(), 'register' );
 	}
 
 	/**
@@ -372,15 +378,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Media\List_Image_Sizes();
 		new Menus\Get_Navigation_Context();
 		new Menus\List_Navigation_Locations();
-		new Content\Update_Post_Block();
+		new Block\Update_Post_Block();
 		// Feature 066 — Block tree mutation & nested editing.
-		new Content\Get_Post_Blocks();
-		new Content\Outline_Post_Blocks();
-		new Content\Add_Block();
-		new Content\Remove_Block();
-		new Content\Duplicate_Block();
-		new Content\Move_Block();
-		new Content\Insert_Pattern();
+		new Block\Get_Post_Blocks();
+		new Block\Outline_Post_Blocks();
+		new Block\Add_Block();
+		new Block\Remove_Block();
+		new Block\Duplicate_Block();
+		new Block\Move_Block();
+		new Block\Insert_Pattern();
 		new Content\Inspect_Post_Autosaves();
 		new Block\Get_Site_Editor_Context();
 		new Block\Refresh_Site_Editor_Context();

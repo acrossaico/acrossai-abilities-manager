@@ -32,7 +32,7 @@ class Insert_Reusable_Block_Into_Post extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Insert Reusable Block Into Post', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Insert a core/block reference to a reusable block into a target post at parent_path and sibling index. Does not duplicate content — inserts a reference. Validates the reusable block exists.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -71,9 +71,9 @@ class Test_Add_Role_Capability extends WP_UnitTestCase {
 			'Ability name must be users/add-role-capability.'
 		);
 		$this->assertStringContainsString(
-			"'acrossai-abilities-manager-users'",
+			"'acrossai-users'",
 			$src,
-			'Category slug must be acrossai-abilities-manager-users.'
+			'Category slug must be acrossai-users.'
 		);
 	}
 

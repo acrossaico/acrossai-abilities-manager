@@ -33,7 +33,7 @@ class Get_Font_Face extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Font Face', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Fetch a single Font Library font face (wp_font_face CPT) under a given font family.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-fonts',
+				'category'            => 'acrossai-fonts',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -67,7 +67,7 @@ class Get_Font_Face extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'font-faces',
 						'sub_group_label' => __( 'Font Faces', 'acrossai-abilities-manager' ),
 					),

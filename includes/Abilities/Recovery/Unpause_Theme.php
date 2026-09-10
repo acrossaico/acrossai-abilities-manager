@@ -34,7 +34,7 @@ class Unpause_Theme extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Unpause Theme', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Clears the paused-storage entry for a theme so WordPress retries loading it on the next request. If the theme still fatally errors when WP retries, it will be re-paused and WP falls back to the default theme. Accepts a fuzzy theme identifier (name, stylesheet, or partial); when uncertain, returns a candidates list rather than acting.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-recovery',
+				'category'            => 'acrossai-recovery',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -67,7 +67,7 @@ class Unpause_Theme extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'recovery',
 						'sub_group_label' => __( 'Recovery Mode', 'acrossai-abilities-manager' ),
 					),

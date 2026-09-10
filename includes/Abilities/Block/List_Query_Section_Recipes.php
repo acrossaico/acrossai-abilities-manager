@@ -31,7 +31,7 @@ class List_Query_Section_Recipes extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Query Section Recipes', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return every registered dynamic core/query recipe with id, title, description, input_shape, post_type_defaults, and preview_blocks. Filter-extensible via acrossai_block_recipes.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

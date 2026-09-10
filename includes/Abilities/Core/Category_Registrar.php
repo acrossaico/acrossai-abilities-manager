@@ -49,7 +49,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-core',
+			'acrossai-core',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Core', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for managing the WordPress core itself: check for available core updates and apply them via Core_Upgrader.', 'acrossai-abilities-manager' ),

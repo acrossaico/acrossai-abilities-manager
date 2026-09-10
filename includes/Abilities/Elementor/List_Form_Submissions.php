@@ -31,7 +31,7 @@ class List_Form_Submissions extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Elementor Pro Form Submissions', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List Elementor Pro Form widget submissions with optional form_id filter and include_values flag. Requires Elementor Pro.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array(

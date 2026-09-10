@@ -26,7 +26,7 @@ class List_Experiments extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Elementor Experiments', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List Elementor experiment feature flags with their current state (active | inactive | default) and default state.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array( 'type' => 'object', 'properties' => array(), 'required' => array(), 'additionalProperties' => false ),

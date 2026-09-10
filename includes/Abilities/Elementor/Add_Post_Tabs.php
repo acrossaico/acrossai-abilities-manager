@@ -31,7 +31,7 @@ class Add_Post_Tabs extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Add Elementor Post Tabs', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Insert a Nested Tabs widget where each tab contains a native Posts widget. Each tab can filter by taxonomy term or a custom query.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

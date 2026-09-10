@@ -31,7 +31,7 @@ class List_Page_Recipes extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Page Recipes', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return every registered full-page recipe with id, title, description, section_slugs, and input_shape. Filter-extensible via acrossai_block_recipes.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

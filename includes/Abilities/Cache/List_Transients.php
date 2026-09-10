@@ -35,7 +35,7 @@ class List_Transients extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Transients', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Enumerate every transient (or site-transient) stored on the site with expiry metadata. Supports substring search, blog/site-scope filter, include-expired toggle, and pagination.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cache',
+				'category'            => 'acrossai-cache',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

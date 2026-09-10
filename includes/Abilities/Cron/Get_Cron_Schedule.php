@@ -30,7 +30,7 @@ class Get_Cron_Schedule extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Schedule Details', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return a single schedule definition by name (interval + display) from wp_get_schedules().', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cron',
+				'category'            => 'acrossai-cron',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

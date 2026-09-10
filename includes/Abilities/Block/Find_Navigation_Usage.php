@@ -33,7 +33,7 @@ class Find_Navigation_Usage extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Find Navigation Usage', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return every template + template-part (and optionally posts) whose block tree contains a core/navigation reference to the given wp_navigation ID.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -72,7 +72,7 @@ class Find_Navigation_Usage extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'site-editor',
 						'sub_group_label' => __( 'Site Editor', 'acrossai-abilities-manager' ),
 					),

@@ -35,7 +35,7 @@ class Suggest_Copy_Fixes extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Suggest Copy Fixes', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Convert copy-evaluation issues into rewrite suggestions. Accepts post_id (re-runs copy evaluation) or issues[] (pass-through mode).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -50,7 +50,7 @@ class Delete_Role extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Role', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Delete an existing WordPress role. Refuses when the role is one of the five WordPress built-in roles, or when the role is currently held by one or more users.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-users',
+				'category'            => 'acrossai-users',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

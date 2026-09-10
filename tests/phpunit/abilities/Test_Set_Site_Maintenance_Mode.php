@@ -30,7 +30,7 @@ class Test_Set_Site_Maintenance_Mode extends WP_UnitTestCase {
 	}
 
 	public function test_lives_in_site_health_category(): void {
-		$this->assertStringContainsString( "'acrossai-abilities-manager-site-health'", $this->src );
+		$this->assertStringContainsString( "'acrossai-site-health'", $this->src );
 	}
 
 	public function test_requires_confirm_flag(): void {

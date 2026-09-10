@@ -35,7 +35,7 @@ class Test_Wp_Cron extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Test WP-Cron', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Probe the site\'s wp-cron.php endpoint via a non-blocking HTTP request and report reachability plus whether DISABLE_WP_CRON is defined.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cron',
+				'category'            => 'acrossai-cron',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

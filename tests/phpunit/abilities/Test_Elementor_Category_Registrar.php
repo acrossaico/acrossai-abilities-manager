@@ -27,7 +27,7 @@ class Test_Elementor_Category_Registrar extends WP_UnitTestCase {
 	}
 
 	public function test_registers_correct_category_slug(): void {
-		$this->assertStringContainsString( "'acrossai-abilities-manager-elementor'", $this->src );
+		$this->assertStringContainsString( "'acrossai-elementor'", $this->src );
 	}
 
 	public function test_uses_wp_register_ability_category(): void {

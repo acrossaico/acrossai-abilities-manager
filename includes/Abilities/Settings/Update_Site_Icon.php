@@ -34,7 +34,7 @@ class Update_Site_Icon extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Site Icon', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Sets the site icon to a media library attachment_id. Pass 0 to remove. WordPress recommends a 512×512 image.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-settings',
+				'category'            => 'acrossai-settings',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -66,7 +66,7 @@ class Update_Site_Icon extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'site-identity',
 						'sub_group_label' => __( 'Site Identity', 'acrossai-abilities-manager' ),
 					),

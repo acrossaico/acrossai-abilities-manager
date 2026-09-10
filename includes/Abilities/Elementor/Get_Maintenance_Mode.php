@@ -30,7 +30,7 @@ class Get_Maintenance_Mode extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Elementor Maintenance Mode', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the current Elementor maintenance mode settings: mode, active template, exclude rules.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

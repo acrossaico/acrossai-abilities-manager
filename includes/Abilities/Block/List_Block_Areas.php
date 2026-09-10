@@ -31,7 +31,7 @@ class List_Block_Areas extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Block Areas', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return every registered block-template-part `area` (header / footer / sidebar / uncategorized / …) with the template parts that live in it. Reads get_allowed_block_template_part_areas() + get_block_templates() for wp_template_part.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -53,7 +53,7 @@ class List_Block_Areas extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'site-editor',
 						'sub_group_label' => __( 'Site Editor', 'acrossai-abilities-manager' ),
 					),

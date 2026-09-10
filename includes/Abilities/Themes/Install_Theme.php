@@ -32,7 +32,7 @@ class Install_Theme extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Install Theme', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Install a theme from the WordPress.org theme directory by name or slug.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-themes',
+				'category'            => 'acrossai-themes',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -65,7 +65,7 @@ class Install_Theme extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'themes',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'lifecycle',
 						'sub_group_label' => __( 'Lifecycle', 'acrossai-abilities-manager' ),
 					),

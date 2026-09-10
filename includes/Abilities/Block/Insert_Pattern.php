@@ -8,7 +8,7 @@
  * @since      0.0.24
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\Block;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Block_Tree;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Pattern\Pattern_Detector;
@@ -36,7 +36,7 @@ class Insert_Pattern extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Insert Pattern', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Resolve a block pattern by slug (across database, active theme, and installed plugins) and insert its constituent blocks at the given parent_path and sibling index. Refuses ambiguous slugs unless a "source" (and optionally "theme_type" or "plugin_slug") is provided.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );
@@ -90,8 +90,8 @@ class Insert_Pattern extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
-						'sub_group'       => 'posts',
+						'tab_group'       => 'blocks',
+						'sub_group'       => 'post-blocks',
 						'sub_group_label' => __( 'Posts', 'acrossai-abilities-manager' ),
 					),
 					'show_in_rest' => true,

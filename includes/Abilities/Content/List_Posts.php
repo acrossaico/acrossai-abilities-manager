@@ -31,7 +31,7 @@ class List_Posts extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Posts', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List posts of any post type via WP_Query — supports search, pagination, status filter, ordering, and a simple meta key/value filter.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -87,7 +87,7 @@ class List_Posts extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'posts',
 						'sub_group_label' => __( 'Posts', 'acrossai-abilities-manager' ),
 					),

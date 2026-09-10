@@ -30,7 +30,7 @@ class Delete_Menu_Item extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Menu Item', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Delete a menu item via DELETE /wp/v2/menu-items/{id}. force=true is sent implicitly.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-menus',
+				'category'            => 'acrossai-menus',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -59,7 +59,7 @@ class Delete_Menu_Item extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'menu-items',
 						'sub_group_label' => __( 'Menu Items', 'acrossai-abilities-manager' ),
 					),

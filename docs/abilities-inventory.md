@@ -1,159 +1,241 @@
 # Ability inventory
 
-Generated snapshot of every ability the plugin registers, using the **post-rename** slugs
-(after PRs #134 blocks, #135 elementor, #136 rank-math, #137 topic-namespaces land).
+**Generated file — do not edit by hand.** Regenerate with:
 
-**Total abilities:** 389 across 24 topic namespaces.
+```sh
+php scripts/generate-abilities-inventory.php
+```
 
-## Summary
+Snapshot taken 2026-09-10. **Total abilities:** 451 across 25 topic namespaces.
+
+Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
+host plugin is active on any given site — this is a source inventory, not a runtime one.
+
+## Families
+
+Tabs on the Ability Integrations screen. `tab_group` is assigned per ability, so a category
+may legitimately span two families (Feature 101, `DEC-ABILITY-FAMILY-TAXONOMY`).
+
+| Family | Abilities |
+|---|---:|
+| `content` — Content | 71 |
+| `appearance` — Appearance | 64 |
+| `elementor` — Elementor | 62 |
+| `rank-math` — Rank Math | 61 |
+| `blocks` — Blocks | 52 |
+| `updates` — Updates | 23 |
+| `files` — Files | 23 |
+| `diagnostics` — Diagnostics | 20 |
+| `configuration` — Configuration | 19 |
+| `database` — Database | 17 |
+| `cron` — Cron | 16 |
+| `users` — Users | 16 |
+| `cache` — Cache | 7 |
+
+## Namespaces
 
 | Namespace | Count | WP category slug |
 |---|---:|---|
-| `admin-menu/` | 5 | `acrossai-abilities-manager-admin-menu` |
-| `blocks/` | 40 | `acrossai-abilities-manager-block`, `acrossai-abilities-manager-content` |
-| `cache/` | 7 | `acrossai-abilities-manager-cache` |
-| `comments/` | 12 | `acrossai-abilities-manager-comments` |
-| `content/` | 29 | `acrossai-abilities-manager-content` |
-| `content-search/` | 11 | `acrossai-abilities-manager-content-search` |
-| `core/` | 6 | `acrossai-abilities-manager-core` |
-| `cron/` | 16 | `acrossai-abilities-manager-cron` |
-| `database/` | 11 | `acrossai-abilities-manager-database` |
-| `elementor/` | 62 | `acrossai-abilities-manager-elementor` |
-| `file-manager/` | 22 | `acrossai-abilities-manager-file-manager` |
-| `fonts/` | 8 | `acrossai-abilities-manager-fonts` |
-| `media/` | 11 | `acrossai-abilities-manager-media` |
-| `menus/` | 12 | `acrossai-abilities-manager-menus` |
-| `options/` | 7 | `acrossai-abilities-manager-options` |
-| `plugins/` | 10 | `acrossai-abilities-manager-plugins` |
-| `rank-math/` | 61 | `acrossai-abilities-manager-rank-math` |
-| `recovery/` | 7 | `acrossai-abilities-manager-recovery` |
-| `settings/` | 11 | `acrossai-abilities-manager-settings` |
-| `site-health/` | 6 | `acrossai-abilities-manager-site-health` |
-| `taxonomies/` | 10 | `acrossai-abilities-manager-taxonomies` |
-| `themes/` | 7 | `acrossai-abilities-manager-themes` |
-| `users/` | 16 | `acrossai-abilities-manager-users` |
-| `widgets/` | 2 | `acrossai-abilities-manager-widgets` |
+| `acrossai/` | 7 | `acrossai-debugging` |
+| `admin-menu/` | 5 | `acrossai-admin-menu` |
+| `blocks/` | 87 | `acrossai-block` |
+| `cache/` | 7 | `acrossai-cache` |
+| `comments/` | 12 | `acrossai-comments` |
+| `content-search/` | 11 | `acrossai-content-search` |
+| `content/` | 29 | `acrossai-content` |
+| `core/` | 6 | `acrossai-core` |
+| `cron/` | 16 | `acrossai-cron` |
+| `database/` | 18 | `acrossai-database` |
+| `elementor/` | 62 | `acrossai-elementor` |
+| `file-manager/` | 23 | `acrossai-file-manager` |
+| `fonts/` | 8 | `acrossai-fonts` |
+| `media/` | 11 | `acrossai-media` |
+| `menus/` | 12 | `acrossai-menus` |
+| `options/` | 7 | `acrossai-options` |
+| `plugins/` | 10 | `acrossai-plugins` |
+| `rank-math/` | 61 | `acrossai-rank-math` |
+| `recovery/` | 7 | `acrossai-recovery` |
+| `settings/` | 11 | `acrossai-settings` |
+| `site-health/` | 6 | `acrossai-site-health` |
+| `taxonomies/` | 10 | `acrossai-taxonomies` |
+| `themes/` | 7 | `acrossai-themes` |
+| `users/` | 16 | `acrossai-users` |
+| `widgets/` | 2 | `acrossai-widgets` |
 
-## Detail — all abilities
+## Every ability
 
-Sorted by namespace → sub-group → slug.
-
-| Namespace | Slug | Tab group | Sub-group | Label |
+| Namespace | Slug | Family | Sub-group | Label |
 |---|---|---|---|---|
-| `admin-menu/` | `admin-menu/get-admin-menu-context` | core | admin-menu | Get Admin Menu Context |
-| `admin-menu/` | `admin-menu/get-admin-menu-navigation-target` | core | admin-menu | Get Admin Menu Navigation Target |
-| `admin-menu/` | `admin-menu/list-admin-menu-pages` | core | admin-menu | List Admin Menu Pages |
-| `admin-menu/` | `admin-menu/list-admin-settings` | core | admin-menu | List Admin Settings |
-| `admin-menu/` | `admin-menu/refresh-admin-menu-context` | core | admin-menu | Refresh Admin Menu Context |
-| `blocks/` | `blocks/list-blocks` | blocks | block-info | List Blocks |
-| `blocks/` | `blocks/read-block` | blocks | block-info | Read Block |
-| `blocks/` | `blocks/create-block-style-variation` | blocks | block-style-variations | Create Block Style Variation |
-| `blocks/` | `blocks/delete-block-style-variation` | blocks | block-style-variations | Delete Block Style Variation |
-| `blocks/` | `blocks/list-block-style-variations` | blocks | block-style-variations | List Block Style Variations |
-| `blocks/` | `blocks/read-block-style-variation` | blocks | block-style-variations | Read Block Style Variation |
-| `blocks/` | `blocks/update-block-style-variation` | blocks | block-style-variations | Update Block Style Variation |
-| `blocks/` | `blocks/create-global-style` | blocks | global-styles | Create Global Style |
-| `blocks/` | `blocks/delete-global-style` | blocks | global-styles | Delete Global Style |
-| `blocks/` | `blocks/list-global-styles` | blocks | global-styles | List Global Styles |
-| `blocks/` | `blocks/read-global-style` | blocks | global-styles | Read Global Style |
-| `blocks/` | `blocks/update-global-style` | blocks | global-styles | Update Global Style |
+| `acrossai/` | `acrossai/conflict-test-bulk-set-overrides` | diagnostics | conflict-testing | Bulk Set Conflict-Test Overrides |
+| `acrossai/` | `acrossai/conflict-test-clear-overrides` | diagnostics | conflict-testing | Clear Conflict-Test Overrides |
+| `acrossai/` | `acrossai/conflict-test-deploy-mu-plugin` | diagnostics | conflict-testing | Deploy Conflict-Test Mu-Plugin |
+| `acrossai/` | `acrossai/conflict-test-get-overrides` | diagnostics | conflict-testing | Get Conflict-Test Overrides |
+| `acrossai/` | `acrossai/conflict-test-list-plugins` | diagnostics | conflict-testing | List Plugins (Conflict Testing) |
+| `acrossai/` | `acrossai/conflict-test-remove-mu-plugin` | diagnostics | conflict-testing | Remove Conflict-Test Mu-Plugin |
+| `acrossai/` | `acrossai/conflict-test-set-override` | diagnostics | conflict-testing | Set Conflict-Test Override |
+| `admin-menu/` | `admin-menu/get-admin-menu-context` | configuration | admin-menu | Get Admin Menu Context |
+| `admin-menu/` | `admin-menu/get-admin-menu-navigation-target` | configuration | admin-menu | Get Admin Menu Navigation Target |
+| `admin-menu/` | `admin-menu/list-admin-menu-pages` | configuration | admin-menu | List Admin Menu Pages |
+| `admin-menu/` | `admin-menu/list-admin-settings` | configuration | admin-menu | List Admin Settings |
+| `admin-menu/` | `admin-menu/refresh-admin-menu-context` | configuration | admin-menu | Refresh Admin Menu Context |
+| `blocks/` | `blocks/add-block` | blocks | post-blocks | Add Block |
+| `blocks/` | `blocks/analyze-content` | blocks | analysis | Analyze Content |
+| `blocks/` | `blocks/audit-content` | blocks | analysis | Audit Content |
 | `blocks/` | `blocks/create-block-pattern` | blocks | patterns | Create Block Pattern |
+| `blocks/` | `blocks/create-block-style-variation` | appearance | block-style-variations | Create Block Style Variation |
+| `blocks/` | `blocks/create-block-template` | appearance | templates | Create Block Template |
+| `blocks/` | `blocks/create-block-template-part` | appearance | template-parts | Create Block Template Part |
+| `blocks/` | `blocks/create-global-style` | appearance | global-styles | Create Global Style |
+| `blocks/` | `blocks/create-landing-page` | blocks | content | Create Landing Page |
+| `blocks/` | `blocks/create-navigation` | appearance | site-editor | Create Navigation |
+| `blocks/` | `blocks/create-page-from-blocks` | blocks | content | Create Page From Blocks |
+| `blocks/` | `blocks/create-page-from-pattern` | blocks | content | Create Page From Pattern |
+| `blocks/` | `blocks/create-reusable-block` | blocks | patterns | Create Reusable Block |
 | `blocks/` | `blocks/delete-block-pattern` | blocks | patterns | Delete Block Pattern |
+| `blocks/` | `blocks/delete-block-style-variation` | appearance | block-style-variations | Delete Block Style Variation |
+| `blocks/` | `blocks/delete-block-template` | appearance | templates | Delete Block Template |
+| `blocks/` | `blocks/delete-block-template-part` | appearance | template-parts | Delete Block Template Part |
+| `blocks/` | `blocks/delete-global-style` | appearance | global-styles | Delete Global Style |
+| `blocks/` | `blocks/duplicate-block` | blocks | post-blocks | Duplicate Block |
+| `blocks/` | `blocks/evaluate-copy` | blocks | analysis | Evaluate Copy |
+| `blocks/` | `blocks/evaluate-design` | blocks | analysis | Evaluate Design |
+| `blocks/` | `blocks/evaluate-render-context` | blocks | analysis | Evaluate Render Context |
+| `blocks/` | `blocks/extract-reusable-block` | blocks | patterns | Extract Reusable Block |
+| `blocks/` | `blocks/find-navigation-usage` | appearance | site-editor | Find Navigation Usage |
+| `blocks/` | `blocks/find-reusable-block-usage` | appearance | site-editor | Find Reusable Block Usage |
+| `blocks/` | `blocks/find-template-part-usage` | appearance | site-editor | Find Template Part Usage |
+| `blocks/` | `blocks/generate-landing-page` | blocks | generation | Generate Landing Page |
+| `blocks/` | `blocks/generate-query-section` | blocks | generation | Generate Query Section |
+| `blocks/` | `blocks/generate-section` | blocks | generation | Generate Section |
+| `blocks/` | `blocks/get-block-guidance` | blocks | generation | Get Block Guidance |
+| `blocks/` | `blocks/get-post-blocks` | blocks | post-blocks | Get Post Blocks |
+| `blocks/` | `blocks/get-site-editor-context` | appearance | site-editor | Get Site Editor Context |
+| `blocks/` | `blocks/get-site-editor-references` | appearance | site-editor | Get Site Editor References |
+| `blocks/` | `blocks/get-site-editor-summary` | appearance | site-editor | Get Site Editor Summary |
+| `blocks/` | `blocks/get-style-book` | blocks | block-info | Get Style Book |
+| `blocks/` | `blocks/get-style-guide` | appearance | site-editor | Get Style Guide |
+| `blocks/` | `blocks/insert-pattern` | blocks | post-blocks | Insert Pattern |
+| `blocks/` | `blocks/insert-reusable-block-into-post` | blocks | patterns | Insert Reusable Block Into Post |
+| `blocks/` | `blocks/list-block-areas` | appearance | site-editor | List Block Areas |
+| `blocks/` | `blocks/list-block-categories` | blocks | block-info | List Block Categories |
 | `blocks/` | `blocks/list-block-patterns` | blocks | patterns | List Block Patterns |
-| `blocks/` | `blocks/read-block-pattern` | blocks | patterns | Read Block Pattern |
-| `blocks/` | `blocks/update-block-pattern` | blocks | patterns | Update Block Pattern |
+| `blocks/` | `blocks/list-block-style-variations` | appearance | block-style-variations | List Block Style Variations |
+| `blocks/` | `blocks/list-block-template-parts` | appearance | template-parts | List Block Template Parts |
+| `blocks/` | `blocks/list-block-templates` | appearance | templates | List Block Templates |
+| `blocks/` | `blocks/list-blocks` | blocks | block-info | List Blocks |
+| `blocks/` | `blocks/list-global-styles` | appearance | global-styles | List Global Styles |
+| `blocks/` | `blocks/list-navigations` | appearance | site-editor | List Navigations |
+| `blocks/` | `blocks/list-page-recipes` | blocks | generation | List Page Recipes |
+| `blocks/` | `blocks/list-query-section-recipes` | blocks | generation | List Query Section Recipes |
 | `blocks/` | `blocks/list-reusable-blocks` | blocks | reusable | List Reusable Blocks |
-| `blocks/` | `blocks/get-site-editor-context` | blocks | site-editor | Get Site Editor Context |
-| `blocks/` | `blocks/list-block-areas` | blocks | site-editor | List Block Areas |
-| `blocks/` | `blocks/refresh-site-editor-context` | blocks | site-editor | Refresh Site Editor Context |
-| `blocks/` | `blocks/create-block-template-part` | blocks | template-parts | Create Block Template Part |
-| `blocks/` | `blocks/delete-block-template-part` | blocks | template-parts | Delete Block Template Part |
-| `blocks/` | `blocks/list-block-template-parts` | blocks | template-parts | List Block Template Parts |
-| `blocks/` | `blocks/read-block-template-part` | blocks | template-parts | Read Block Template Part |
-| `blocks/` | `blocks/update-block-template-part` | blocks | template-parts | Update Block Template Part |
-| `blocks/` | `blocks/create-block-template` | blocks | templates | Create Block Template |
-| `blocks/` | `blocks/delete-block-template` | blocks | templates | Delete Block Template |
-| `blocks/` | `blocks/list-block-templates` | blocks | templates | List Block Templates |
-| `blocks/` | `blocks/read-block-template` | blocks | templates | Read Block Template |
-| `blocks/` | `blocks/update-block-template` | blocks | templates | Update Block Template |
-| `blocks/` | `blocks/read-theme-json` | blocks | theme-json-settings | Read theme.json |
-| `blocks/` | `blocks/update-theme-json` | blocks | theme-json-settings | Update theme.json |
-| `blocks/` | `blocks/add-block` | core | posts | Add Block |
-| `blocks/` | `blocks/duplicate-block` | core | posts | Duplicate Block |
-| `blocks/` | `blocks/get-post-blocks` | core | posts | Get Post Blocks |
-| `blocks/` | `blocks/insert-pattern` | core | posts | Insert Pattern |
-| `blocks/` | `blocks/move-block` | core | posts | Move Block |
-| `blocks/` | `blocks/remove-block` | core | posts | Remove Block |
-| `blocks/` | `blocks/update-post-block` | core | posts | Update Block |
-| `cache/` | `cache/flush-object-cache` | cache | — | Flush Object Cache |
-| `cache/` | `cache/flush-rewrite-rules` | cache | — | Flush Rewrite Rules |
-| `cache/` | `cache/flush-transients` | cache | — | Flush Transients |
+| `blocks/` | `blocks/list-section-recipes` | blocks | generation | List Section Recipes |
+| `blocks/` | `blocks/move-block` | blocks | post-blocks | Move Block |
+| `blocks/` | `blocks/mutate-block-tree` | blocks | mutation | Mutate Block Tree |
+| `blocks/` | `blocks/normalize-heading-levels` | blocks | mutation | Normalize Heading Levels |
+| `blocks/` | `blocks/outline-post-blocks` | blocks | post-blocks | Outline Post Blocks |
+| `blocks/` | `blocks/parse-content` | blocks | content | Parse Content |
+| `blocks/` | `blocks/read-block` | blocks | block-info | Read Block |
+| `blocks/` | `blocks/read-block-bindings` | blocks | bindings | Read Block Bindings |
+| `blocks/` | `blocks/read-block-pattern` | blocks | patterns | Read Block Pattern |
+| `blocks/` | `blocks/read-block-style-variation` | appearance | block-style-variations | Read Block Style Variation |
+| `blocks/` | `blocks/read-block-template` | appearance | templates | Read Block Template |
+| `blocks/` | `blocks/read-block-template-part` | appearance | template-parts | Read Block Template Part |
+| `blocks/` | `blocks/read-global-style` | appearance | global-styles | Read Global Style |
+| `blocks/` | `blocks/read-navigation` | appearance | site-editor | Read Navigation |
+| `blocks/` | `blocks/read-reusable-block` | blocks | patterns | Read Reusable Block |
+| `blocks/` | `blocks/read-theme-json` | appearance | theme-json-settings | Read theme.json |
+| `blocks/` | `blocks/refresh-site-editor-context` | appearance | site-editor | Refresh Site Editor Context |
+| `blocks/` | `blocks/remove-block` | blocks | post-blocks | Remove Block |
+| `blocks/` | `blocks/replace-block-text` | blocks | mutation | Replace Block Text |
+| `blocks/` | `blocks/serialize-blocks` | blocks | content | Serialize Blocks |
+| `blocks/` | `blocks/set-allowed-blocks` | blocks | mutation | Set Allowed Blocks |
+| `blocks/` | `blocks/set-block-bindings` | blocks | bindings | Set Block Bindings |
+| `blocks/` | `blocks/set-block-lock` | blocks | mutation | Set Block Lock |
+| `blocks/` | `blocks/set-template-lock` | blocks | mutation | Set Template Lock |
+| `blocks/` | `blocks/suggest-copy-fixes` | blocks | analysis | Suggest Copy Fixes |
+| `blocks/` | `blocks/suggest-design-fixes` | blocks | analysis | Suggest Design Fixes |
+| `blocks/` | `blocks/transform-blocks` | blocks | mutation | Transform Blocks |
+| `blocks/` | `blocks/update-block-pattern` | blocks | patterns | Update Block Pattern |
+| `blocks/` | `blocks/update-block-style-variation` | appearance | block-style-variations | Update Block Style Variation |
+| `blocks/` | `blocks/update-block-template` | appearance | templates | Update Block Template |
+| `blocks/` | `blocks/update-block-template-part` | appearance | template-parts | Update Block Template Part |
+| `blocks/` | `blocks/update-global-style` | appearance | global-styles | Update Global Style |
+| `blocks/` | `blocks/update-navigation` | appearance | site-editor | Update Navigation |
+| `blocks/` | `blocks/update-post-block` | blocks | post-blocks | Update Block |
+| `blocks/` | `blocks/update-reusable-block` | blocks | patterns | Update Reusable Block |
+| `blocks/` | `blocks/update-theme-json` | appearance | theme-json-settings | Update theme.json |
+| `blocks/` | `blocks/validate-content` | blocks | analysis | Validate Content |
 | `cache/` | `cache/delete-expired-transients` | cache | cache | Delete Expired Transients |
 | `cache/` | `cache/delete-transient` | cache | cache | Delete Transient |
+| `cache/` | `cache/flush-object-cache` | cache |  | Flush Object Cache |
+| `cache/` | `cache/flush-rewrite-rules` | configuration |  | Flush Rewrite Rules |
+| `cache/` | `cache/flush-transients` | cache |  | Flush Transients |
 | `cache/` | `cache/get-transient` | cache | cache | Get Transient |
 | `cache/` | `cache/list-transients` | cache | cache | List Transients |
-| `comments/` | `comments/get-comment-count` | comments | introspection | Get Comment Count |
-| `comments/` | `comments/create-comment` | comments | manage | Create Comment |
-| `comments/` | `comments/delete-comment` | comments | manage | Delete Comment |
-| `comments/` | `comments/get-comment` | comments | manage | Get Comment |
-| `comments/` | `comments/list-comments` | comments | manage | List Comments |
-| `comments/` | `comments/update-comment` | comments | manage | Update Comment |
-| `comments/` | `comments/get-comment-meta` | comments | meta | Get Comment Meta |
-| `comments/` | `comments/update-comment-meta` | comments | meta | Update Comment Meta |
-| `comments/` | `comments/approve-comment` | comments | moderation | Approve Comment |
-| `comments/` | `comments/bulk-update-comments` | comments | moderation | Bulk Update Comments |
-| `comments/` | `comments/mark-comment-spam` | comments | moderation | Mark Comment as Spam |
-| `comments/` | `comments/unapprove-comment` | comments | moderation | Unapprove Comment |
-| `content/` | `content/create-cpt-item` | core | cpt | Create CPT Item |
-| `content/` | `content/delete-cpt-item` | core | cpt | Delete CPT Item |
-| `content/` | `content/get-cpt-item` | core | cpt | Get CPT Item |
-| `content/` | `content/list-cpt-item-revisions` | core | cpt | Get CPT Item Revisions |
-| `content/` | `content/list-cpt-items` | core | cpt | Get CPT Items |
-| `content/` | `content/list-post-types` | core | cpt | List Post Types |
-| `content/` | `content/update-cpt-item` | core | cpt | Update CPT Item |
-| `content/` | `content/link-post-translation` | core | multilanguage | Link Post Translations |
-| `content/` | `content/list-post-translations` | core | multilanguage | Get Post Translations |
-| `content/` | `content/set-post-language` | core | multilanguage | Set Post Language |
-| `content/` | `content/get-jet-engine-options-page` | core | options-pages | Get Options Page |
-| `content/` | `content/list-jet-engine-options-pages` | core | options-pages | List Options Pages |
-| `content/` | `content/update-jet-engine-options-page-field` | core | options-pages | Update Options Page Field |
-| `content/` | `content/create-page` | core | pages | Create Page |
-| `content/` | `content/get-page` | core | pages | Get Page |
-| `content/` | `content/list-page-revisions` | core | pages | Get Page Revisions |
-| `content/` | `content/list-pages` | core | pages | Get Pages |
-| `content/` | `content/update-page` | core | pages | Update Page |
-| `content/` | `content/add-post-meta` | core | posts | Add Post Meta |
-| `content/` | `content/create-post` | core | posts | Create Post |
-| `content/` | `content/delete-post` | core | posts | Delete Post |
-| `content/` | `content/delete-post-meta` | core | posts | Delete Post Meta |
-| `content/` | `content/get-post` | core | posts | Get Post |
-| `content/` | `content/get-post-meta` | core | posts | Get Post Meta |
-| `content/` | `content/inspect-post-autosaves` | core | posts | Inspect Autosaves |
-| `content/` | `content/list-post-revisions` | core | posts | Get Post Revisions |
-| `content/` | `content/list-posts` | core | posts | Get Posts |
-| `content/` | `content/update-post` | core | posts | Update Post |
-| `content/` | `content/update-post-meta` | core | posts | Update Post Meta |
-| `content-search/` | `content-search/audit-internal-links` | content-search | audit | Audit Internal Links |
-| `content-search/` | `content-search/find-internal-links` | content-search | find | Find Internal Links |
-| `content-search/` | `content-search/find-related-content` | content-search | find | Find Related Content |
-| `content-search/` | `content-search/refresh-content-index-batch` | content-search | index | Refresh Content Index Batch |
-| `content-search/` | `content-search/apply-internal-link-suggestion` | content-search | internal-links | Apply Internal Link Suggestion |
-| `content-search/` | `content-search/create-internal-link-suggestions` | content-search | internal-links | Create Internal Link Suggestions |
-| `content-search/` | `content-search/get-internal-link-policy` | content-search | internal-links | Get Internal Link Policy |
-| `content-search/` | `content-search/list-internal-link-suggestions` | content-search | internal-links | List Internal Link Suggestions |
-| `content-search/` | `content-search/review-internal-link-suggestion` | content-search | internal-links | Review Internal Link Suggestion |
-| `content-search/` | `content-search/search-content-chunks` | content-search | search | Search Content Chunks |
-| `content-search/` | `content-search/search-content-items` | content-search | search | Search Content Items |
-| `core/` | `core/verify-core-checksums` | core | integrity | Verify Core Checksums |
-| `core/` | `core/get-wp-version` | core | introspection | Get WordPress Version |
-| `core/` | `core/check-wp-core-update` | core | lifecycle | Check WordPress Core Update |
-| `core/` | `core/reinstall-wp-core` | core | lifecycle | Reinstall WordPress Core |
-| `core/` | `core/rollback-wp-core` | core | lifecycle | Rollback WordPress Core |
-| `core/` | `core/update-wp-core` | core | lifecycle | Update WordPress Core |
+| `comments/` | `comments/approve-comment` | content | moderation | Approve Comment |
+| `comments/` | `comments/bulk-update-comments` | content | moderation | Bulk Update Comments |
+| `comments/` | `comments/create-comment` | content | manage | Create Comment |
+| `comments/` | `comments/delete-comment` | content | manage | Delete Comment |
+| `comments/` | `comments/get-comment` | content | manage | Get Comment |
+| `comments/` | `comments/get-comment-count` | content | introspection | Get Comment Count |
+| `comments/` | `comments/get-comment-meta` | content | meta | Get Comment Meta |
+| `comments/` | `comments/list-comments` | content | manage | List Comments |
+| `comments/` | `comments/mark-comment-spam` | content | moderation | Mark Comment as Spam |
+| `comments/` | `comments/unapprove-comment` | content | moderation | Unapprove Comment |
+| `comments/` | `comments/update-comment` | content | manage | Update Comment |
+| `comments/` | `comments/update-comment-meta` | content | meta | Update Comment Meta |
+| `content-search/` | `content-search/apply-internal-link-suggestion` | content | internal-links | Apply Internal Link Suggestion |
+| `content-search/` | `content-search/audit-internal-links` | content | audit | Audit Internal Links |
+| `content-search/` | `content-search/create-internal-link-suggestions` | content | internal-links | Create Internal Link Suggestions |
+| `content-search/` | `content-search/find-internal-links` | content | find | Find Internal Links |
+| `content-search/` | `content-search/find-related-content` | content | find | Find Related Content |
+| `content-search/` | `content-search/get-internal-link-policy` | content | internal-links | Get Internal Link Policy |
+| `content-search/` | `content-search/list-internal-link-suggestions` | content | internal-links | List Internal Link Suggestions |
+| `content-search/` | `content-search/refresh-content-index-batch` | content | index | Refresh Content Index Batch |
+| `content-search/` | `content-search/review-internal-link-suggestion` | content | internal-links | Review Internal Link Suggestion |
+| `content-search/` | `content-search/search-content-chunks` | content | search | Search Content Chunks |
+| `content-search/` | `content-search/search-content-items` | content | search | Search Content Items |
+| `content/` | `content/add-post-meta` | content | posts | Add Post Meta |
+| `content/` | `content/create-cpt-item` | content | cpt | Create CPT Item |
+| `content/` | `content/create-page` | content | pages | Create Page |
+| `content/` | `content/create-post` | content | posts | Create Post |
+| `content/` | `content/delete-cpt-item` | content | cpt | Delete CPT Item |
+| `content/` | `content/delete-post` | content | posts | Delete Post |
+| `content/` | `content/delete-post-meta` | content | posts | Delete Post Meta |
+| `content/` | `content/get-cpt-item` | content | cpt | Get CPT Item |
+| `content/` | `content/get-jet-engine-options-page` | content | options-pages | Get Options Page |
+| `content/` | `content/get-page` | content | pages | Get Page |
+| `content/` | `content/get-post` | content | posts | Get Post |
+| `content/` | `content/get-post-meta` | content | posts | Get Post Meta |
+| `content/` | `content/inspect-post-autosaves` | content | posts | Inspect Autosaves |
+| `content/` | `content/link-post-translation` | content | multilanguage | Link Post Translations |
+| `content/` | `content/list-cpt-item-revisions` | content | cpt | Get CPT Item Revisions |
+| `content/` | `content/list-cpt-items` | content | cpt | Get CPT Items |
+| `content/` | `content/list-jet-engine-options-pages` | content | options-pages | List Options Pages |
+| `content/` | `content/list-page-revisions` | content | pages | Get Page Revisions |
+| `content/` | `content/list-pages` | content | pages | Get Pages |
+| `content/` | `content/list-post-revisions` | content | posts | Get Post Revisions |
+| `content/` | `content/list-post-translations` | content | multilanguage | Get Post Translations |
+| `content/` | `content/list-post-types` | content | cpt | List Post Types |
+| `content/` | `content/list-posts` | content | posts | Get Posts |
+| `content/` | `content/set-post-language` | content | multilanguage | Set Post Language |
+| `content/` | `content/update-cpt-item` | content | cpt | Update CPT Item |
+| `content/` | `content/update-jet-engine-options-page-field` | content | options-pages | Update Options Page Field |
+| `content/` | `content/update-page` | content | pages | Update Page |
+| `content/` | `content/update-post` | content | posts | Update Post |
+| `content/` | `content/update-post-meta` | content | posts | Update Post Meta |
+| `core/` | `core/check-wp-core-update` | updates | lifecycle | Check WordPress Core Update |
+| `core/` | `core/get-wp-version` | updates | introspection | Get WordPress Version |
+| `core/` | `core/reinstall-wp-core` | updates | lifecycle | Reinstall WordPress Core |
+| `core/` | `core/rollback-wp-core` | updates | lifecycle | Rollback WordPress Core |
+| `core/` | `core/update-wp-core` | updates | lifecycle | Update WordPress Core |
+| `core/` | `core/verify-core-checksums` | updates | integrity | Verify Core Checksums |
+| `cron/` | `cron/check-cron-job-exists` | cron | read | Check If Cron Job Exists |
+| `cron/` | `cron/create-cron-job` | cron | write | Create Cron Job |
+| `cron/` | `cron/create-cron-schedule` | cron | write | Create Custom Schedule |
 | `cron/` | `cron/delete-cron-job` | cron | delete | Delete Cron Job |
 | `cron/` | `cron/delete-cron-jobs-by-hook` | cron | delete | Delete All Cron Jobs By Hook |
 | `cron/` | `cron/delete-cron-schedule` | cron | delete | Delete Custom Schedule |
-| `cron/` | `cron/check-cron-job-exists` | cron | read | Check If Cron Job Exists |
 | `cron/` | `cron/get-cron-job` | cron | read | Get Cron Job Details |
 | `cron/` | `cron/get-cron-schedule` | cron | read | Get Schedule Details |
 | `cron/` | `cron/get-cron-status` | cron | read | Get Cron Status |
@@ -161,22 +243,27 @@ Sorted by namespace → sub-group → slug.
 | `cron/` | `cron/list-cron-jobs` | cron | read | List Cron Jobs |
 | `cron/` | `cron/list-cron-schedules` | cron | read | List Schedules |
 | `cron/` | `cron/list-overdue-cron-jobs` | cron | read | Get Overdue Cron Jobs |
-| `cron/` | `cron/test-wp-cron` | cron | read | Test WP-Cron |
-| `cron/` | `cron/create-cron-job` | cron | write | Create Cron Job |
-| `cron/` | `cron/create-cron-schedule` | cron | write | Create Custom Schedule |
 | `cron/` | `cron/run-cron-job-now` | cron | write | Run Cron Job Now |
+| `cron/` | `cron/test-wp-cron` | cron | read | Test WP-Cron |
 | `cron/` | `cron/update-cron-job` | cron | write | Update Cron Job |
-| `database/` | `database/get-db-prefix` | database | introspection | Get Database Prefix |
-| `database/` | `database/get-db-stats` | database | maintenance | Database Stats |
-| `database/` | `database/optimize-db-tables` | database | maintenance | Optimize Database Tables |
+| `database/` | `database/audit-core-table-engines` | database | engine | Audit Core Table Engines |
+| `database/` | `database/audit-health` | database | audit | Audit Database Health |
+| `database/` | `database/audit-index-health` | database | audit | Audit Index Health |
+| `database/` | `database/audit-options-health` | database | audit | Audit Options Health |
+| `database/` | `database/cleanup-expired-transients` | cache | safe-writes | Cleanup Expired Transients |
+| `database/` | `database/convert-core-tables-to-innodb` | database | engine | Convert Core Tables to InnoDB |
 | `database/` | `database/delete-db-rows` | database | queries | Delete Rows |
 | `database/` | `database/explain-db-query` | database | queries | Explain Query |
+| `database/` | `database/extract-db-schema` | database | schema | Extract Database Schema |
+| `database/` | `database/get-db-prefix` | database | introspection | Get Database Prefix |
+| `database/` | `database/get-db-stats` | database | maintenance | Database Stats |
 | `database/` | `database/insert-db-row` | database | queries | Insert Row |
+| `database/` | `database/list-db-tables` | database | schema | List Database Tables |
+| `database/` | `database/optimize-db-tables` | database | maintenance | Optimize Database Tables |
 | `database/` | `database/run-db-select-query` | database | queries | Run SELECT Query |
 | `database/` | `database/search-replace` | database | queries | Search Replace |
+| `database/` | `database/set-option-autoload` | database | safe-writes | Set Option Autoload |
 | `database/` | `database/update-db-rows` | database | queries | Update Rows |
-| `database/` | `database/extract-db-schema` | database | schema | Extract Database Schema |
-| `database/` | `database/list-db-tables` | database | schema | List Database Tables |
 | `elementor/` | `elementor/add-button` | elementor | elementor | Add Elementor Button |
 | `elementor/` | `elementor/add-container` | elementor | elementor | Add Elementor Container |
 | `elementor/` | `elementor/add-heading` | elementor | elementor | Add Elementor Heading |
@@ -239,211 +326,194 @@ Sorted by namespace → sub-group → slug.
 | `elementor/` | `elementor/update-page-settings` | elementor | elementor | Update Elementor Page Settings |
 | `elementor/` | `elementor/update-template` | elementor | elementor | Update Elementor Template |
 | `elementor/` | `elementor/update-theme-builder-conditions` | elementor | elementor | Update Theme Builder Conditions |
-| `file-manager/` | `file-manager/create-zip-backup` | file-manager | backups | Create Zip Backup |
-| `file-manager/` | `file-manager/delete-zip-backup` | file-manager | backups | Delete Zip Backup |
-| `file-manager/` | `file-manager/download-zip-backup` | file-manager | backups | Download Zip Backup |
-| `file-manager/` | `file-manager/extract-zip-backup` | file-manager | backups | Extract Zip Backup |
-| `file-manager/` | `file-manager/list-zip-backups` | file-manager | backups | List Zip Backups |
-| `file-manager/` | `file-manager/upload-zip-backup` | file-manager | backups | Upload Zip Backup |
-| `file-manager/` | `file-manager/clear-debug-log` | file-manager | debug | Clear Debug Log |
-| `file-manager/` | `file-manager/read-debug-log` | file-manager | debug | Read Debug Log |
-| `file-manager/` | `file-manager/append-file` | file-manager | files | Append to File |
-| `file-manager/` | `file-manager/copy-file` | file-manager | files | Copy File |
-| `file-manager/` | `file-manager/create-directory` | file-manager | files | Create Directory |
-| `file-manager/` | `file-manager/create-file` | file-manager | files | Create File |
-| `file-manager/` | `file-manager/delete-directory` | file-manager | files | Delete Directory |
-| `file-manager/` | `file-manager/delete-file` | file-manager | files | Delete File |
-| `file-manager/` | `file-manager/edit-file` | file-manager | files | Create or Overwrite File |
-| `file-manager/` | `file-manager/file-info` | file-manager | files | Get File Info |
-| `file-manager/` | `file-manager/list-directory` | file-manager | files | List Directory |
-| `file-manager/` | `file-manager/move-file` | file-manager | files | Move File |
-| `file-manager/` | `file-manager/read-file` | file-manager | files | Read File |
-| `file-manager/` | `file-manager/edit-wp-config` | file-manager | wp-config | Edit wp-config.php |
-| `file-manager/` | `file-manager/get-wp-config-constant` | file-manager | wp-config | Get wp-config Constant |
-| `file-manager/` | `file-manager/read-wp-config` | file-manager | wp-config | Read wp-config.php |
-| `fonts/` | `fonts/create-font-face` | core | font-faces | Create Font Face |
-| `fonts/` | `fonts/delete-font-face` | core | font-faces | Delete Font Face |
-| `fonts/` | `fonts/get-font-face` | core | font-faces | Get Font Face |
-| `fonts/` | `fonts/list-font-faces` | core | font-faces | List Font Faces |
-| `fonts/` | `fonts/create-font-family` | core | font-families | Create Font Family |
-| `fonts/` | `fonts/delete-font-family` | core | font-families | Delete Font Family |
-| `fonts/` | `fonts/get-font-family` | core | font-families | Get Font Family |
-| `fonts/` | `fonts/list-font-families` | core | font-families | List Font Families |
-| `media/` | `media/list-image-sizes` | media | introspection | List Image Sizes |
-| `media/` | `media/delete-media` | media | manage | Delete Media |
-| `media/` | `media/get-media` | media | manage | Get Media |
-| `media/` | `media/list-media` | media | manage | List Media |
-| `media/` | `media/list-upload-mime-types` | media | manage | List Allowed Upload MIME Types |
-| `media/` | `media/rename-media-file` | media | manage | Rename Media File |
-| `media/` | `media/update-media` | media | manage | Update Media |
-| `media/` | `media/update-upload-mime-types` | media | manage | Add or Remove Allowed Upload MIME Types |
-| `media/` | `media/upload-media` | media | manage | Upload Media |
-| `media/` | `media/get-media-meta` | media | meta | Get Media Meta |
-| `media/` | `media/update-media-meta` | media | meta | Update Media Meta |
-| `menus/` | `menus/create-menu-item` | core | menu-items | Create Menu Item |
-| `menus/` | `menus/delete-menu-item` | core | menu-items | Delete Menu Item |
-| `menus/` | `menus/get-menu-item` | core | menu-items | Get Menu Item |
-| `menus/` | `menus/list-menu-items` | core | menu-items | List Menu Items |
-| `menus/` | `menus/update-menu-item` | core | menu-items | Update Menu Item |
-| `menus/` | `menus/create-menu` | core | menus | Create Menu |
-| `menus/` | `menus/delete-menu` | core | menus | Delete Menu |
-| `menus/` | `menus/get-menu` | core | menus | Get Menu |
-| `menus/` | `menus/get-navigation-context` | core | menus | Get Navigation Context |
-| `menus/` | `menus/list-menus` | core | menus | List Menus |
-| `menus/` | `menus/list-navigation-locations` | core | menus | List Navigation Locations |
-| `menus/` | `menus/update-menu` | core | menus | Update Menu |
-| `options/` | `options/delete-option` | core | manage | Delete Option |
-| `options/` | `options/get-nested-option-value` | core | manage | Get Nested Option Value |
-| `options/` | `options/get-option` | core | manage | Get Option |
-| `options/` | `options/patch-option-value` | core | manage | Patch Option Value |
-| `options/` | `options/update-option` | core | manage | Update Option |
-| `options/` | `options/list-options` | core | search | List Options |
-| `options/` | `options/search-options` | core | search | Search Options |
-| `plugins/` | `plugins/check-plugin-updates` | plugins | info | Check Updates |
-| `plugins/` | `plugins/list-plugins` | plugins | info | List Plugins |
-| `plugins/` | `plugins/verify-plugin-checksums` | plugins | integrity | Verify Plugin Checksums |
-| `plugins/` | `plugins/activate-plugin` | plugins | lifecycle | Activate Plugin |
-| `plugins/` | `plugins/deactivate-plugin` | plugins | lifecycle | Deactivate Plugin |
-| `plugins/` | `plugins/get-plugin-lifecycle-context` | plugins | lifecycle | Get Plugin Lifecycle Context |
-| `plugins/` | `plugins/install-plugin` | plugins | lifecycle | Install Plugin |
-| `plugins/` | `plugins/search-wp-plugin-directory` | plugins | lifecycle | Search WordPress.org Plugin Directory |
-| `plugins/` | `plugins/uninstall-plugin` | plugins | lifecycle | Uninstall Plugin |
-| `plugins/` | `plugins/update-plugin` | plugins | lifecycle | Update Plugin |
-| `rank-math/` | `rank-math/update-general-settings` | rank-math | — | Update Rank Math General Settings |
-| `rank-math/` | `rank-math/update-sitemap-settings` | rank-math | — | Update Rank Math Sitemap Settings |
-| `rank-math/` | `rank-math/update-title-settings` | rank-math | — | Update Rank Math Title & Meta Settings |
-| `rank-math/` | `rank-math/delete-404-logs` | rank-math | rank-math-404-monitor | Delete Rank Math 404 Log Entries |
-| `rank-math/` | `rank-math/list-404-logs` | rank-math | rank-math-404-monitor | List Rank Math 404 Logs |
-| `rank-math/` | `rank-math/get-ai-visibility-brand` | rank-math | rank-math-ai-visibility | Get AI Visibility Brand |
-| `rank-math/` | `rank-math/update-ai-visibility-object` | rank-math | rank-math-ai-visibility | Update AI Visibility Brand or Query |
-| `rank-math/` | `rank-math/get-analytics-rows` | rank-math | rank-math-analytics | Get Rank Math Analytics Rows |
-| `rank-math/` | `rank-math/get-analytics-summary` | rank-math | rank-math-analytics | Get Rank Math Analytics Summary |
-| `rank-math/` | `rank-math/get-index-status` | rank-math | rank-math-analytics | Get Rank Math Index Status |
-| `rank-math/` | `rank-math/inspect-url` | rank-math | rank-math-analytics | Inspect URL with Google |
-| `rank-math/` | `rank-math/audit-content-seo` | rank-math | rank-math-content | Audit Rank Math Content SEO |
-| `rank-math/` | `rank-math/audit-faq-links` | rank-math | rank-math-content | Audit Rank Math FAQ Blocks |
-| `rank-math/` | `rank-math/bulk-update-meta` | rank-math | rank-math-content | Bulk Update Rank Math Meta |
-| `rank-math/` | `rank-math/get-inbound-links` | rank-math | rank-math-content | Get Inbound Internal Links |
-| `rank-math/` | `rank-math/get-primary-term` | rank-math | rank-math-content | Get Rank Math Primary Term |
-| `rank-math/` | `rank-math/get-rendered-head` | rank-math | rank-math-content | Get Rank Math Rendered Head |
-| `rank-math/` | `rank-math/update-primary-term` | rank-math | rank-math-content | Update Rank Math Primary Term |
-| `rank-math/` | `rank-math/update-seo-meta` | rank-math | rank-math-content | Update Rank Math SEO Meta |
-| `rank-math/` | `rank-math/update-seo-scores` | rank-math | rank-math-content | Update Rank Math SEO Scores |
-| `rank-math/` | `rank-math/get-content-ai-status` | rank-math | rank-math-content-ai | Get Rank Math Content AI Status |
-| `rank-math/` | `rank-math/manage-content-ai-output` | rank-math | rank-math-content-ai | Manage Content AI Output |
-| `rank-math/` | `rank-math/manage-content-ai-prompts` | rank-math | rank-math-content-ai | Manage Content AI Prompts |
-| `rank-math/` | `rank-math/research-keyword` | rank-math | rank-math-content-ai | Research Keyword with Content AI |
-| `rank-math/` | `rank-math/clear-indexing-log` | rank-math | rank-math-instant-indexing | Clear IndexNow Submission Log |
-| `rank-math/` | `rank-math/get-indexing-log` | rank-math | rank-math-instant-indexing | Get IndexNow Submission Log |
-| `rank-math/` | `rank-math/reset-indexing-key` | rank-math | rank-math-instant-indexing | Reset IndexNow API Key |
-| `rank-math/` | `rank-math/submit-urls` | rank-math | rank-math-instant-indexing | Submit URLs to IndexNow |
-| `rank-math/` | `rank-math/list-modules` | rank-math | rank-math-modules | List Rank Math Modules |
-| `rank-math/` | `rank-math/set-module-state` | rank-math | rank-math-modules | Set Rank Math Module State |
-| `rank-math/` | `rank-math/change-redirection-status` | rank-math | rank-math-redirections | Change Rank Math Redirection Status |
-| `rank-math/` | `rank-math/create-redirection` | rank-math | rank-math-redirections | Create Rank Math Redirection |
-| `rank-math/` | `rank-math/delete-redirections` | rank-math | rank-math-redirections | Delete Rank Math Redirections |
-| `rank-math/` | `rank-math/delete-trashed-redirections` | rank-math | rank-math-redirections | Empty Rank Math Redirection Trash |
-| `rank-math/` | `rank-math/export-redirections` | rank-math | rank-math-redirections | Export Rank Math Redirections |
-| `rank-math/` | `rank-math/find-redirection` | rank-math | rank-math-redirections | Find Rank Math Redirection |
-| `rank-math/` | `rank-math/get-redirection-stats` | rank-math | rank-math-redirections | Get Rank Math Redirection Stats |
-| `rank-math/` | `rank-math/list-redirections` | rank-math | rank-math-redirections | List Rank Math Redirections |
-| `rank-math/` | `rank-math/update-redirection` | rank-math | rank-math-redirections | Update Rank Math Redirection |
-| `rank-math/` | `rank-math/get-role-capabilities` | rank-math | rank-math-role-manager | Get Rank Math Role Capabilities |
-| `rank-math/` | `rank-math/reset-role-capabilities` | rank-math | rank-math-role-manager | Reset Rank Math Role Capabilities |
-| `rank-math/` | `rank-math/get-llms-status` | rank-math | rank-math-routes | Get Rank Math llms.txt Status |
-| `rank-math/` | `rank-math/refresh-llms-route` | rank-math | rank-math-routes | Refresh Rank Math llms.txt Route |
-| `rank-math/` | `rank-math/delete-post-schemas` | rank-math | rank-math-schema | Delete Rank Math Post Schemas |
-| `rank-math/` | `rank-math/get-schema-status` | rank-math | rank-math-schema | Get Rank Math Schema Status |
-| `rank-math/` | `rank-math/update-post-schemas` | rank-math | rank-math-schema | Update Rank Math Post Schemas |
-| `rank-math/` | `rank-math/get-seo-analysis-results` | rank-math | rank-math-seo-analysis | Get Cached Rank Math SEO Analysis |
-| `rank-math/` | `rank-math/get-settings` | rank-math | rank-math-settings | Get Rank Math Settings |
-| `rank-math/` | `rank-math/update-instant-indexing-settings` | rank-math | rank-math-settings | Update Rank Math Instant Indexing Settings |
-| `rank-math/` | `rank-math/update-robots-txt` | rank-math | rank-math-settings | Update Rank Math robots.txt |
-| `rank-math/` | `rank-math/get-sitemap-status` | rank-math | rank-math-sitemap | Get Rank Math Sitemap Status |
-| `rank-math/` | `rank-math/invalidate-sitemap-cache` | rank-math | rank-math-sitemap | Invalidate Rank Math Sitemap Cache |
-| `rank-math/` | `rank-math/list-sitemap-urls` | rank-math | rank-math-sitemap | List Rank Math Sitemap URLs |
-| `rank-math/` | `rank-math/create-backup` | rank-math | rank-math-status | Create Rank Math Settings Backup |
-| `rank-math/` | `rank-math/detect-seo-plugins` | rank-math | rank-math-status | Detect Other SEO Plugin Data |
-| `rank-math/` | `rank-math/export-settings` | rank-math | rank-math-status | Export Rank Math Settings |
-| `rank-math/` | `rank-math/get-status` | rank-math | rank-math-status | Get Rank Math Status |
-| `rank-math/` | `rank-math/import-settings` | rank-math | rank-math-status | Import Rank Math Settings |
-| `rank-math/` | `rank-math/list-backups` | rank-math | rank-math-status | List Rank Math Settings Backups |
-| `rank-math/` | `rank-math/manage-backup` | rank-math | rank-math-status | Restore or Delete Rank Math Backup |
-| `rank-math/` | `rank-math/run-maintenance-tool` | rank-math | rank-math-status | Run Rank Math Maintenance Tool |
-| `recovery/` | `recovery/get-recovery-exit-url` | core | recovery | Get Recovery Mode Exit URL |
-| `recovery/` | `recovery/get-recovery-mode-status` | core | recovery | Get Recovery Mode Status |
-| `recovery/` | `recovery/list-paused-plugins` | core | recovery | List Paused Plugins |
-| `recovery/` | `recovery/list-paused-themes` | core | recovery | List Paused Themes |
-| `recovery/` | `recovery/list-recent-fatal-errors` | core | recovery | List Recent Fatal Errors |
-| `recovery/` | `recovery/unpause-plugin` | core | recovery | Unpause Plugin |
-| `recovery/` | `recovery/unpause-theme` | core | recovery | Unpause Theme |
-| `settings/` | `settings/flush-permalink-structure` | core | permalinks | Reset / Flush Permalinks |
-| `settings/` | `settings/get-permalink-structure` | core | permalinks | Get Permalink Structure |
-| `settings/` | `settings/set-permalink-structure` | core | permalinks | Set Permalink Structure |
-| `settings/` | `settings/get-site-icon` | core | site-identity | Get Site Icon |
-| `settings/` | `settings/get-site-title` | core | site-identity | Get Site Title |
-| `settings/` | `settings/get-tagline` | core | site-identity | Get Tagline |
-| `settings/` | `settings/update-site-icon` | core | site-identity | Update Site Icon |
-| `settings/` | `settings/update-site-logo` | core | site-identity | Update Site Logo |
-| `settings/` | `settings/update-site-title` | core | site-identity | Update Site Title |
-| `settings/` | `settings/update-tagline` | core | site-identity | Update Tagline |
-| `settings/` | `settings/list-rewrite-rules` | settings | permalinks | List Rewrite Rules |
-| `site-health/` | `site-health/get-site-health-info` | core | read | Get Site Health Info |
-| `site-health/` | `site-health/get-site-health-status` | core | read | Get Site Health Status |
-| `site-health/` | `site-health/get-site-maintenance-report` | core | site-health | Site Maintenance Report |
-| `site-health/` | `site-health/get-maintenance-mode-status` | site-health | maintenance | Get Maintenance Mode Status |
-| `site-health/` | `site-health/set-site-maintenance-mode` | site-health | maintenance | Set Site Maintenance Mode |
-| `site-health/` | `site-health/unset-site-maintenance-mode` | site-health | maintenance | Unset Site Maintenance Mode |
-| `taxonomies/` | `taxonomies/get-taxonomy` | core | taxonomies | Get Taxonomy |
-| `taxonomies/` | `taxonomies/list-cpt-taxonomies` | core | taxonomies | Get CPT Taxonomies |
-| `taxonomies/` | `taxonomies/list-taxonomies` | core | taxonomies | List Taxonomies |
-| `taxonomies/` | `taxonomies/assign-cpt-terms` | core | terms | Assign Terms |
-| `taxonomies/` | `taxonomies/create-term` | core | terms | Create Term |
-| `taxonomies/` | `taxonomies/delete-term` | core | terms | Delete Term |
-| `taxonomies/` | `taxonomies/get-term` | core | terms | Get Term |
-| `taxonomies/` | `taxonomies/list-terms` | core | terms | List Terms |
-| `taxonomies/` | `taxonomies/set-term-image` | core | terms | Set Term Image |
-| `taxonomies/` | `taxonomies/update-term` | core | terms | Update Term |
-| `themes/` | `themes/list-themes` | themes | info | List Themes |
-| `themes/` | `themes/list-theme-mods` | themes | introspection | List Theme Mods |
-| `themes/` | `themes/activate-theme` | themes | lifecycle | Activate Theme |
-| `themes/` | `themes/delete-theme` | themes | lifecycle | Delete Theme |
-| `themes/` | `themes/get-theme-lifecycle-context` | themes | lifecycle | Get Theme Lifecycle Context |
-| `themes/` | `themes/install-theme` | themes | lifecycle | Install Theme |
-| `themes/` | `themes/update-theme` | themes | lifecycle | Update Theme |
+| `file-manager/` | `file-manager/append-file` | files | files | Append to File |
+| `file-manager/` | `file-manager/clear-debug-log` | files | debug | Clear Debug Log |
+| `file-manager/` | `file-manager/copy-file` | files | files | Copy File |
+| `file-manager/` | `file-manager/create-directory` | files | files | Create Directory |
+| `file-manager/` | `file-manager/create-file` | files | files | Create File |
+| `file-manager/` | `file-manager/create-zip-backup` | files | backups | Create Zip Backup |
+| `file-manager/` | `file-manager/delete-directory` | files | files | Delete Directory |
+| `file-manager/` | `file-manager/delete-file` | files | files | Delete File |
+| `file-manager/` | `file-manager/delete-zip-backup` | files | backups | Delete Zip Backup |
+| `file-manager/` | `file-manager/download-zip-backup` | files | backups | Download Zip Backup |
+| `file-manager/` | `file-manager/edit-file` | files | files | Create or Overwrite File |
+| `file-manager/` | `file-manager/edit-wp-config` | files | wp-config | Edit wp-config.php |
+| `file-manager/` | `file-manager/extract-zip-backup` | files | backups | Extract Zip Backup |
+| `file-manager/` | `file-manager/file-info` | files | files | Get File Info |
+| `file-manager/` | `file-manager/get-changelog` | files | audit | Get File Manager Changelog |
+| `file-manager/` | `file-manager/get-wp-config-constant` | files | wp-config | Get wp-config Constant |
+| `file-manager/` | `file-manager/list-directory` | files | files | List Directory |
+| `file-manager/` | `file-manager/list-zip-backups` | files | backups | List Zip Backups |
+| `file-manager/` | `file-manager/move-file` | files | files | Move File |
+| `file-manager/` | `file-manager/read-debug-log` | files | debug | Read Debug Log |
+| `file-manager/` | `file-manager/read-file` | files | files | Read File |
+| `file-manager/` | `file-manager/read-wp-config` | files | wp-config | Read wp-config.php |
+| `file-manager/` | `file-manager/upload-zip-backup` | files | backups | Upload Zip Backup |
+| `fonts/` | `fonts/create-font-face` | appearance | font-faces | Create Font Face |
+| `fonts/` | `fonts/create-font-family` | appearance | font-families | Create Font Family |
+| `fonts/` | `fonts/delete-font-face` | appearance | font-faces | Delete Font Face |
+| `fonts/` | `fonts/delete-font-family` | appearance | font-families | Delete Font Family |
+| `fonts/` | `fonts/get-font-face` | appearance | font-faces | Get Font Face |
+| `fonts/` | `fonts/get-font-family` | appearance | font-families | Get Font Family |
+| `fonts/` | `fonts/list-font-faces` | appearance | font-faces | List Font Faces |
+| `fonts/` | `fonts/list-font-families` | appearance | font-families | List Font Families |
+| `media/` | `media/delete-media` | content | manage | Delete Media |
+| `media/` | `media/get-media` | content | manage | Get Media |
+| `media/` | `media/get-media-meta` | content | meta | Get Media Meta |
+| `media/` | `media/list-image-sizes` | content | introspection | List Image Sizes |
+| `media/` | `media/list-media` | content | manage | List Media |
+| `media/` | `media/list-upload-mime-types` | configuration | manage | List Allowed Upload MIME Types |
+| `media/` | `media/rename-media-file` | content | manage | Rename Media File |
+| `media/` | `media/update-media` | content | manage | Update Media |
+| `media/` | `media/update-media-meta` | content | meta | Update Media Meta |
+| `media/` | `media/update-upload-mime-types` | configuration | manage | Add or Remove Allowed Upload MIME Types |
+| `media/` | `media/upload-media` | content | manage | Upload Media |
+| `menus/` | `menus/create-menu` | appearance | menus | Create Menu |
+| `menus/` | `menus/create-menu-item` | appearance | menu-items | Create Menu Item |
+| `menus/` | `menus/delete-menu` | appearance | menus | Delete Menu |
+| `menus/` | `menus/delete-menu-item` | appearance | menu-items | Delete Menu Item |
+| `menus/` | `menus/get-menu` | appearance | menus | Get Menu |
+| `menus/` | `menus/get-menu-item` | appearance | menu-items | Get Menu Item |
+| `menus/` | `menus/get-navigation-context` | appearance | menus | Get Navigation Context |
+| `menus/` | `menus/list-menu-items` | appearance | menu-items | List Menu Items |
+| `menus/` | `menus/list-menus` | appearance | menus | List Menus |
+| `menus/` | `menus/list-navigation-locations` | appearance | menus | List Navigation Locations |
+| `menus/` | `menus/update-menu` | appearance | menus | Update Menu |
+| `menus/` | `menus/update-menu-item` | appearance | menu-items | Update Menu Item |
+| `options/` | `options/delete-option` | configuration | manage | Delete Option |
+| `options/` | `options/get-nested-option-value` | configuration | manage | Get Nested Option Value |
+| `options/` | `options/get-option` | configuration | manage | Get Option |
+| `options/` | `options/list-options` | configuration | search | List Options |
+| `options/` | `options/patch-option-value` | configuration | manage | Patch Option Value |
+| `options/` | `options/search-options` | configuration | search | Search Options |
+| `options/` | `options/update-option` | configuration | manage | Update Option |
+| `plugins/` | `plugins/activate-plugin` | updates | lifecycle | Activate Plugin |
+| `plugins/` | `plugins/check-plugin-updates` | updates | info | Check Updates |
+| `plugins/` | `plugins/deactivate-plugin` | updates | lifecycle | Deactivate Plugin |
+| `plugins/` | `plugins/get-plugin-lifecycle-context` | updates | lifecycle | Get Plugin Lifecycle Context |
+| `plugins/` | `plugins/install-plugin` | updates | lifecycle | Install Plugin |
+| `plugins/` | `plugins/list-plugins` | updates | info | List Plugins |
+| `plugins/` | `plugins/search-wp-plugin-directory` | updates | lifecycle | Search WordPress.org Plugin Directory |
+| `plugins/` | `plugins/uninstall-plugin` | updates | lifecycle | Uninstall Plugin |
+| `plugins/` | `plugins/update-plugin` | updates | lifecycle | Update Plugin |
+| `plugins/` | `plugins/verify-plugin-checksums` | updates | integrity | Verify Plugin Checksums |
+| `rank-math/` | `rank-math/audit-content-seo` | rank-math |  |  |
+| `rank-math/` | `rank-math/audit-faq-links` | rank-math |  |  |
+| `rank-math/` | `rank-math/bulk-update-meta` | rank-math |  |  |
+| `rank-math/` | `rank-math/change-redirection-status` | rank-math |  |  |
+| `rank-math/` | `rank-math/clear-indexing-log` | rank-math |  |  |
+| `rank-math/` | `rank-math/create-backup` | rank-math |  |  |
+| `rank-math/` | `rank-math/create-redirection` | rank-math |  |  |
+| `rank-math/` | `rank-math/delete-404-logs` | rank-math |  |  |
+| `rank-math/` | `rank-math/delete-post-schemas` | rank-math |  |  |
+| `rank-math/` | `rank-math/delete-redirections` | rank-math |  |  |
+| `rank-math/` | `rank-math/delete-trashed-redirections` | rank-math |  |  |
+| `rank-math/` | `rank-math/detect-seo-plugins` | rank-math |  |  |
+| `rank-math/` | `rank-math/export-redirections` | rank-math |  |  |
+| `rank-math/` | `rank-math/export-settings` | rank-math |  |  |
+| `rank-math/` | `rank-math/find-redirection` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-ai-visibility-brand` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-analytics-rows` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-analytics-summary` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-content-ai-status` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-inbound-links` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-index-status` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-indexing-log` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-llms-status` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-primary-term` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-redirection-stats` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-rendered-head` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-role-capabilities` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-schema-status` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-seo-analysis-results` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-settings` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-sitemap-status` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-status` | rank-math |  |  |
+| `rank-math/` | `rank-math/import-settings` | rank-math |  |  |
+| `rank-math/` | `rank-math/inspect-url` | rank-math |  |  |
+| `rank-math/` | `rank-math/invalidate-sitemap-cache` | rank-math |  |  |
+| `rank-math/` | `rank-math/list-404-logs` | rank-math |  |  |
+| `rank-math/` | `rank-math/list-backups` | rank-math |  |  |
+| `rank-math/` | `rank-math/list-modules` | rank-math |  |  |
+| `rank-math/` | `rank-math/list-redirections` | rank-math |  |  |
+| `rank-math/` | `rank-math/list-sitemap-urls` | rank-math |  |  |
+| `rank-math/` | `rank-math/manage-backup` | rank-math |  |  |
+| `rank-math/` | `rank-math/manage-content-ai-output` | rank-math |  |  |
+| `rank-math/` | `rank-math/manage-content-ai-prompts` | rank-math |  |  |
+| `rank-math/` | `rank-math/refresh-llms-route` | rank-math |  |  |
+| `rank-math/` | `rank-math/research-keyword` | rank-math |  |  |
+| `rank-math/` | `rank-math/reset-indexing-key` | rank-math |  |  |
+| `rank-math/` | `rank-math/reset-role-capabilities` | rank-math |  |  |
+| `rank-math/` | `rank-math/run-maintenance-tool` | rank-math |  |  |
+| `rank-math/` | `rank-math/set-module-state` | rank-math |  |  |
+| `rank-math/` | `rank-math/submit-urls` | rank-math |  |  |
+| `rank-math/` | `rank-math/update-ai-visibility-object` | rank-math |  |  |
+| `rank-math/` | `rank-math/update-general-settings` | rank-math |  |  |
+| `rank-math/` | `rank-math/update-instant-indexing-settings` | rank-math |  |  |
+| `rank-math/` | `rank-math/update-post-schemas` | rank-math |  |  |
+| `rank-math/` | `rank-math/update-primary-term` | rank-math |  |  |
+| `rank-math/` | `rank-math/update-redirection` | rank-math |  |  |
+| `rank-math/` | `rank-math/update-robots-txt` | rank-math |  |  |
+| `rank-math/` | `rank-math/update-seo-meta` | rank-math |  |  |
+| `rank-math/` | `rank-math/update-seo-scores` | rank-math |  |  |
+| `rank-math/` | `rank-math/update-sitemap-settings` | rank-math |  |  |
+| `rank-math/` | `rank-math/update-title-settings` | rank-math |  |  |
+| `recovery/` | `recovery/get-recovery-exit-url` | diagnostics | recovery | Get Recovery Mode Exit URL |
+| `recovery/` | `recovery/get-recovery-mode-status` | diagnostics | recovery | Get Recovery Mode Status |
+| `recovery/` | `recovery/list-paused-plugins` | diagnostics | recovery | List Paused Plugins |
+| `recovery/` | `recovery/list-paused-themes` | diagnostics | recovery | List Paused Themes |
+| `recovery/` | `recovery/list-recent-fatal-errors` | diagnostics | recovery | List Recent Fatal Errors |
+| `recovery/` | `recovery/unpause-plugin` | diagnostics | recovery | Unpause Plugin |
+| `recovery/` | `recovery/unpause-theme` | diagnostics | recovery | Unpause Theme |
+| `settings/` | `settings/flush-permalink-structure` | configuration | permalinks | Reset / Flush Permalinks |
+| `settings/` | `settings/get-permalink-structure` | configuration | permalinks | Get Permalink Structure |
+| `settings/` | `settings/get-site-icon` | appearance | site-identity | Get Site Icon |
+| `settings/` | `settings/get-site-title` | appearance | site-identity | Get Site Title |
+| `settings/` | `settings/get-tagline` | appearance | site-identity | Get Tagline |
+| `settings/` | `settings/list-rewrite-rules` | configuration | permalinks | List Rewrite Rules |
+| `settings/` | `settings/set-permalink-structure` | configuration | permalinks | Set Permalink Structure |
+| `settings/` | `settings/update-site-icon` | appearance | site-identity | Update Site Icon |
+| `settings/` | `settings/update-site-logo` | appearance | site-identity | Update Site Logo |
+| `settings/` | `settings/update-site-title` | appearance | site-identity | Update Site Title |
+| `settings/` | `settings/update-tagline` | appearance | site-identity | Update Tagline |
+| `site-health/` | `site-health/get-maintenance-mode-status` | diagnostics | maintenance | Get Maintenance Mode Status |
+| `site-health/` | `site-health/get-site-health-info` | diagnostics | read | Get Site Health Info |
+| `site-health/` | `site-health/get-site-health-status` | diagnostics | read | Get Site Health Status |
+| `site-health/` | `site-health/get-site-maintenance-report` | diagnostics | site-health | Site Maintenance Report |
+| `site-health/` | `site-health/set-site-maintenance-mode` | diagnostics | maintenance | Set Site Maintenance Mode |
+| `site-health/` | `site-health/unset-site-maintenance-mode` | diagnostics | maintenance | Unset Site Maintenance Mode |
+| `taxonomies/` | `taxonomies/assign-cpt-terms` | content | terms | Assign Terms |
+| `taxonomies/` | `taxonomies/create-term` | content | terms | Create Term |
+| `taxonomies/` | `taxonomies/delete-term` | content | terms | Delete Term |
+| `taxonomies/` | `taxonomies/get-taxonomy` | content | taxonomies | Get Taxonomy |
+| `taxonomies/` | `taxonomies/get-term` | content | terms | Get Term |
+| `taxonomies/` | `taxonomies/list-cpt-taxonomies` | content | taxonomies | Get CPT Taxonomies |
+| `taxonomies/` | `taxonomies/list-taxonomies` | content | taxonomies | List Taxonomies |
+| `taxonomies/` | `taxonomies/list-terms` | content | terms | List Terms |
+| `taxonomies/` | `taxonomies/set-term-image` | content | terms | Set Term Image |
+| `taxonomies/` | `taxonomies/update-term` | content | terms | Update Term |
+| `themes/` | `themes/activate-theme` | updates | lifecycle | Activate Theme |
+| `themes/` | `themes/delete-theme` | updates | lifecycle | Delete Theme |
+| `themes/` | `themes/get-theme-lifecycle-context` | updates | lifecycle | Get Theme Lifecycle Context |
+| `themes/` | `themes/install-theme` | updates | lifecycle | Install Theme |
+| `themes/` | `themes/list-theme-mods` | updates | introspection | List Theme Mods |
+| `themes/` | `themes/list-themes` | updates | info | List Themes |
+| `themes/` | `themes/update-theme` | updates | lifecycle | Update Theme |
 | `users/` | `users/add-role-capability` | users | roles | Add Role Capability |
+| `users/` | `users/add-user-capability` | users | users | Add User Capability |
 | `users/` | `users/create-role` | users | roles | Create Role |
+| `users/` | `users/create-user` | users | users | Create User |
 | `users/` | `users/delete-role` | users | roles | Delete Role |
+| `users/` | `users/delete-user` | users | users | Delete User |
 | `users/` | `users/get-current-user-access` | users | roles | Current User Access |
 | `users/` | `users/get-role-capabilities` | users | roles | Get Role Capabilities |
-| `users/` | `users/list-user-roles` | users | roles | List User Roles |
-| `users/` | `users/remove-role-capability` | users | roles | Remove Role Capability |
-| `users/` | `users/reset-role` | users | roles | Reset Role |
-| `users/` | `users/add-user-capability` | users | users | Add User Capability |
-| `users/` | `users/create-user` | users | users | Create User |
-| `users/` | `users/delete-user` | users | users | Delete User |
 | `users/` | `users/get-user` | users | users | Get User |
+| `users/` | `users/list-user-roles` | users | roles | List User Roles |
 | `users/` | `users/list-users` | users | users | List Users |
+| `users/` | `users/remove-role-capability` | users | roles | Remove Role Capability |
 | `users/` | `users/remove-user-capability` | users | users | Remove User Capability |
+| `users/` | `users/reset-role` | users | roles | Reset Role |
 | `users/` | `users/reset-user-password` | users | users | Reset User Password |
 | `users/` | `users/update-user` | users | users | Update User |
-| `widgets/` | `widgets/list-sidebars` | widgets | introspection | List Sidebars |
-| `widgets/` | `widgets/list-widgets` | widgets | introspection | List Widgets |
-
----
-
-## Transport note (Feature 091)
-
-All 19 non-zip `file-manager/*` abilities perform their filesystem I/O through WordPress's `WP_Filesystem` transport. That means they work on every host WordPress itself can write to — `direct` filesystems (Local, wp-env, most managed WP hosts, containers, VPS setups) as well as hosts configured with `FS_METHOD='ftpext'` / `'ftpsockets'` / `'ssh2'` where the web-server process cannot write files directly. When `WP_Filesystem()` initialisation fails (typically missing FTP/SSH credentials), the ability responds `{success:false, blocked_reason:"filesystem_unavailable"}` with a message identifying the credential requirement.
-
-Three `file-manager/*` abilities remain on native PHP for now: `create-zip-backup`, `extract-zip-backup`, `upload-zip-backup`. `ZipArchive` and chunked `fopen()` upload have no `WP_Filesystem` equivalent. A follow-up feature will address the design question (refuse on non-`direct`, stage via a temp local copy, or rewrite the chunked upload to buffer + `put_contents`). Until then those three work on `direct` transports and fail on non-`direct` transports.
-
-## Path allowlists + secret redactor (Feature 092)
-
-Site admins control which folders the file-manager abilities may touch via a **File Manager** tab at `admin.php?page=acrossai-settings`.
-
-- **Write allowlist** — gates `create-file`, `edit-file`, `delete-file`, `copy-file`, `move-file`, `append-file`, `create-directory`, `delete-directory`. Default `['wp-content']`. Empty = deny all writes.
-- **Read allowlist** — gates `read-file`, `read-debug-log`. Default `[]` (unrestricted sentinel). Non-empty = only listed paths readable.
-- **Secret redactor** — every text response from `read-file` and `read-debug-log` is scrubbed of WordPress credentials + common third-party API keys before return. Admin-configurable pattern set with custom-literal support.
-
-The write allowlist enforcement is one line per ability (via `Path_Allowlist_Guard::blocked_write_response()`); the read allowlist + redactor are enforced inside `Read_File` and `Read_Debug_Log` respectively. `list-directory` and `file-info` return metadata only and are not gated by either allowlist.
+| `widgets/` | `widgets/list-sidebars` | appearance | introspection | List Sidebars |
+| `widgets/` | `widgets/list-widgets` | appearance | introspection | List Widgets |

@@ -47,7 +47,7 @@ abstract class Base_Rank_Math_Ability extends Ability_Definition {
 	/**
 	 * Ability category shared by the whole suite.
 	 */
-	protected const CATEGORY = 'acrossai-abilities-manager-rank-math';
+	protected const CATEGORY = 'acrossai-rank-math';
 
 	/**
 	 * Admin Integrations tab. The visible "Rank Math" label is derived from this

@@ -34,7 +34,7 @@ class List_Widgets extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Widgets', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the per-sidebar widget-instance-id map and the registered-widgets metadata registry, sufficient for callers to resolve identifiers to widget classes.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-widgets',
+				'category'            => 'acrossai-widgets',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -57,7 +57,7 @@ class List_Widgets extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'widgets',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'introspection',
 						'sub_group_label' => __( 'Introspection', 'acrossai-abilities-manager' ),
 					),

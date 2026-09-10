@@ -31,7 +31,7 @@ class List_Internal_Link_Suggestions extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Internal Link Suggestions', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List all suggestions in the option-backed store, optionally filtered by post_id and/or status (pending / approved / rejected / applied).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content-search',
+				'category'            => 'acrossai-content-search',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -62,7 +62,7 @@ class List_Internal_Link_Suggestions extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'content-search',
+						'tab_group'       => 'content',
 						'sub_group'       => 'internal-links',
 						'sub_group_label' => __( 'Internal Links', 'acrossai-abilities-manager' ),
 					),

@@ -41,7 +41,7 @@ class Test_Get_Comment_Count extends WP_UnitTestCase {
 	}
 
 	public function test_targets_the_comments_category(): void {
-		$this->assertStringContainsString( "'acrossai-abilities-manager-comments'", $this->src );
+		$this->assertStringContainsString( "'acrossai-comments'", $this->src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {

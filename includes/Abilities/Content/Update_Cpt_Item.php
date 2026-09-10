@@ -31,7 +31,7 @@ class Update_Cpt_Item extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update CPT Item', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Update a custom post type record via wp_update_post(). post_type is validated against the post; only supplied fields are touched.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -74,7 +74,7 @@ class Update_Cpt_Item extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'cpt',
 						'sub_group_label' => __( 'Custom Post Types', 'acrossai-abilities-manager' ),
 					),

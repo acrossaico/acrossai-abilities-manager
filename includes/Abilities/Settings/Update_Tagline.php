@@ -30,7 +30,7 @@ class Update_Tagline extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Tagline', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Updates the site tagline (the "blogdescription" option). Empty values are accepted to clear the tagline.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-settings',
+				'category'            => 'acrossai-settings',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -60,7 +60,7 @@ class Update_Tagline extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'site-identity',
 						'sub_group_label' => __( 'Site Identity', 'acrossai-abilities-manager' ),
 					),

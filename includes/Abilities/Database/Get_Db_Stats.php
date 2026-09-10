@@ -30,7 +30,7 @@ class Get_Db_Stats extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Database Stats', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Returns a summary of the WordPress database: version, name, table count, total size, charset, and collation.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

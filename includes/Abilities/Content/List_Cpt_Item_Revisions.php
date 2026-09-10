@@ -30,7 +30,7 @@ class List_Cpt_Item_Revisions extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get CPT Item Revisions', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List all stored revisions for a custom post type item by post_type + id. Autosaves are hidden by default; pass include_autosaves=true to surface them.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -76,7 +76,7 @@ class List_Cpt_Item_Revisions extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'cpt',
 						'sub_group_label' => __( 'Custom Post Types', 'acrossai-abilities-manager' ),
 					),

@@ -31,7 +31,7 @@ class Evaluate_Render_Context extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Evaluate Elementor Render Context', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Inspect the frontend wrapper and render context for a post: template file, canvas type (default / elementor_canvas / elementor_header_footer), and Elementor edit-mode flag.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

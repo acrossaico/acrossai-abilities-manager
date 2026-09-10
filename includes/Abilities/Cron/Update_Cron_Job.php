@@ -33,7 +33,7 @@ class Update_Cron_Job extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Cron Job', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Reschedule an existing event: unschedule the original (identified by hook + old_args) and create a new one with the supplied schedule, timestamp, and args.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cron',
+				'category'            => 'acrossai-cron',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

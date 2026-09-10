@@ -71,7 +71,7 @@ class Test_Remove_Role_Capability extends WP_UnitTestCase {
 			$src
 		);
 		$this->assertStringContainsString(
-			"'acrossai-abilities-manager-users'",
+			"'acrossai-users'",
 			$src
 		);
 	}

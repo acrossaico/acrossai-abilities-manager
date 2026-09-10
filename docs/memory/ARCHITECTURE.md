@@ -1640,18 +1640,49 @@ Feature 060 `AcrossAI_Ability_Library_Config_Controller::save_config()` implemen
 **Scope**: Ability Library / Ability Integrations admin page, JS-side tab rendering
 
 **Pattern**
-The admin page's tab strip is auto-derived at render time from the set of unique `meta.acrossai.tab_group` strings across all registered abilities. `collectTabGroups()` (`src/js/ability-library/components/LibraryPage.js`) walks every ability, extracts the `tab_group` field, dedupes, sorts, and pins `'core'` first. `titleCaseTabLabel(value)` converts the raw identifier to a display label via `ucwords(str_replace('-', ' ', value))` — so `elementor` → "Elementor", `site-health` → "Site Health", `database` → "Database", etc.
+The admin page's tab strip is auto-derived at render time from the set of unique `meta.acrossai.tab_group` strings across all registered abilities. `collectTabGroups()` (`src/js/ability-library/components/LibraryPage.js`) walks every ability, extracts the `tab_group` field, dedupes, sorts, and pins `'content'` first (Feature 101 repointed this from `'core'`, which no longer exists). `titleCaseTabLabel(value)` converts the raw identifier to a display label via `ucwords(str_replace('-', ' ', value))` — so `elementor` → "Elementor", `site-health` → "Site Health", `database` → "Database", etc.
 
 There is **no PHP-side `register_tab()` call**, no admin-registered whitelist, and no server-side validation of tab_group values. The tab strip is a pure JS derivation from ability data.
 
 **Consequence — silent misplacement**
 Setting the wrong `tab_group` value on a new ability is silently accepted — the ability just lands in whichever bucket its string names. Copy-paste inheritance of `'core'` from an unrelated template misplaces the ability into the Core tab with no warning, no error, no test failure. This is exactly what happened to 88 Elementor abilities before PR #128: every one of them declared `'tab_group' => 'core'` (inherited from a Core-tab template used as scaffolding) and the entire Elementor suite silently shipped under the Core tab for weeks. The fix was a mechanical `sed -i "s/'tab_group' *=> *'core'/'tab_group' => 'elementor'/g"` across 63 files — no other change needed to make an "Elementor" tab appear.
 
+**Feature 101 — pick a family by the JOB, not by the FOLDER**
+The tab set is now thirteen task families: `content`, `blocks`, `appearance`, `configuration`,
+`users`, `updates`, `cron`, `cache`, `database`, `files`, `diagnostics`, plus `elementor` and
+`rank-math` when active. `core` was retired — it had become a bucket holding 105 abilities from nine
+folders, which is exactly the failure mode this pattern warns about, arrived at one copy-paste at a
+time.
+
+Crucially, **`tab_group` is per ability, not per folder.** Five categories legitimately span two
+families: an ability is filed by what it does, not by which directory it sits in. `LibraryCard`
+renders "Tab membership" chips so a card appearing in two tabs announces itself.
+
 **When you add a new ability**
-1. Decide which existing tab it belongs to — Core, Database, Elementor, Site Health, etc. Grep for `'tab_group' *=>` across the closest sibling abilities to check.
-2. Set `meta.acrossai.tab_group` to the matching kebab-case string.
-3. If the ability genuinely belongs to a new integration bucket, no separate tab registration is needed — the tab appears automatically the moment the first ability declares the new `tab_group` string. Its display label comes from `titleCaseTabLabel()`; if the auto-derived label is wrong (e.g. `SiteHealth` becoming "Sitehealth"), use kebab-case (`site-health`) so `ucwords` produces the desired output.
-4. If many similar abilities share a base class (e.g. `Base_Audit_Ability` driving 25 audit subclasses via inheritance), remember to change the base — changing subclasses alone misses inherited declarations.
+1. Ask what job someone is doing when they reach for it, then pick that family. Do **not** copy the
+   `tab_group` of the file next to it — the folder is not the answer, and copy-paste inheritance is
+   how the Elementor and Core incidents both happened.
+2. Read `tests/phpunit/Modules/Library/Test_Ability_Family_Map.php` — it holds the full map and is the
+   fastest way to see where things live. Add your ability's expectation there in the same commit.
+3. Set `meta.acrossai.tab_group` to the matching kebab-case string.
+4. **Adding a fourteenth family is not free.** Once Feature 100 ships, each family is an always-loaded
+   MCP tool definition, and Claude's tool-selection accuracy degrades past 30–50 tools (Anthropic's
+   published figure; production telemetry puts Haiku below 90% between 10 and 15). Thirteen is a
+   deliberate ceiling — see `DEC-ABILITY-FAMILY-TAXONOMY`.
+5. A new family still needs no registration — the tab appears the moment the first ability declares
+   the string. Its label comes from `titleCaseTabLabel()`, and spec 037 FR-007 forbids a separate
+   label field, so **the key IS the label**: use kebab-case, and no ampersands.
+6. If many similar abilities share a base class (e.g. `Base_Audit_Ability` driving 25 audit subclasses
+   via inheritance), remember to change the base — changing subclasses alone misses inherited
+   declarations.
+
+**Moving a file between folders — the objective test**
+Move an ability's file only when **its slug namespace already disagrees with its folder**. Feature 101
+moved eight files from `Content/` to `Block/` because they registered as `blocks/*` while declaring the
+`content` category. Three other candidates (`media/*-upload-mime-types`, `cache/flush-rewrite-rules`,
+`database/set-option-autoload`) were left alone: their slug matches their folder, so moving them would
+either relocate the same inconsistency or force a slug rename — and a slug rename is breaking for every
+MCP client with no back-compat alias. Multi-purpose abilities are what per-ability `tab_group` is for.
 
 **Cross-references**
 - Distinct from `PATTERN-LIBRARY-INTEGRATION-TAB-EXTENSION` — that pattern covers third-party plugins REGISTERING a new tab via `<Integration>::TAB_GROUP` const with the 3-step contract. This pattern is about correctly landing FIRST-party abilities in the RIGHT existing tab.
@@ -1659,7 +1690,9 @@ Setting the wrong `tab_group` value on a new ability is silently accepted — th
 
 **Reference**
 - `src/js/ability-library/components/LibraryPage.js::collectTabGroups()` and `titleCaseTabLabel()` — the auto-derivation logic.
+- `tests/phpunit/Modules/Library/Test_Ability_Family_Map.php` — Feature 101's guard. The runtime has no validation, so this test is the only thing that fails when an ability is misfiled. Keep it current.
 - PR #128 (2026-08-14) — flipped 63 Elementor ability files from `'core'` to `'elementor'`; sole change needed to produce a working "Elementor" tab.
+- Feature 101 (2026-09-10) — regrouped 229 declarations into thirteen task families and retired `core`.
 
 **Tags**: ability-library, ability-integrations, tab-derivation, meta-acrossai, tab_group, silent-misplacement, first-party, jsx-runtime-derivation
 

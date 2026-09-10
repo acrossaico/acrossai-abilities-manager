@@ -24,7 +24,7 @@ class Get_Template extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Elementor Template', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return a single Elementor template with metadata, conditions, and optional _elementor_data payload.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array(

@@ -8,7 +8,7 @@
  * @since      0.0.13
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\Block;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Block_Tree;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
@@ -37,7 +37,7 @@ class Update_Post_Block extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Block', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Parse a post\'s block tree, find one block, merge the supplied attributes, replace innerHTML, and save the post. Targeting priority: (1) path — a canonical integer-array path targeting a block at any nesting depth; (2) block_index — 0-based top-level index; (3) block_name (+ optional occurrence).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );
@@ -90,8 +90,8 @@ class Update_Post_Block extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
-						'sub_group'       => 'posts',
+						'tab_group'       => 'blocks',
+						'sub_group'       => 'post-blocks',
 						'sub_group_label' => __( 'Posts', 'acrossai-abilities-manager' ),
 					),
 					'show_in_rest' => true,

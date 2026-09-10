@@ -31,7 +31,7 @@ class Test_Rank_Math_Base_Ability extends WP_UnitTestCase {
 	}
 
 	public function test_declares_shared_category(): void {
-		$this->assertStringContainsString( "CATEGORY = 'acrossai-abilities-manager-rank-math'", $this->src );
+		$this->assertStringContainsString( "CATEGORY = 'acrossai-rank-math'", $this->src );
 	}
 
 	/**

@@ -36,7 +36,7 @@ class Update_Data extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Elementor Document Data', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Overwrite the full Elementor document tree for a post with a caller-supplied element array. Optional page_settings. Guarded by force_replace=true when replacing a populated document with a smaller payload.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

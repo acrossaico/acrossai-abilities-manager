@@ -33,7 +33,7 @@ class Read_Debug_Log extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Read Debug Log', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Returns the contents of wp-content/debug.log. Use the lines parameter to limit output to the last N lines.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -69,7 +69,7 @@ class Read_Debug_Log extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'file-manager',
+						'tab_group'       => 'files',
 						'sub_group'       => 'debug',
 						'sub_group_label' => __( 'Debug', 'acrossai-abilities-manager' ),
 					),

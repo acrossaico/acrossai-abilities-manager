@@ -48,7 +48,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-settings',
+			'acrossai-settings',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Settings', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for reading and updating WordPress Settings: Permalinks, Site Title, Tagline, and Site Icon.', 'acrossai-abilities-manager' ),

@@ -33,7 +33,7 @@ class Run_Cron_Job_Now extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Run Cron Job Now', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Fire a scheduled cron hook synchronously via do_action(). The hook must be present in the cron array — this is not a generic do_action() runner.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cron',
+				'category'            => 'acrossai-cron',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

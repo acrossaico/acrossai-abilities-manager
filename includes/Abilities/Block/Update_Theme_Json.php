@@ -40,7 +40,7 @@ class Update_Theme_Json extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update theme.json', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Writes a theme.json file directly. Defaults to the active child theme (or single theme); refuses to edit the parent theme. By default deep-merges into the existing file; pass merge=false to replace.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -81,7 +81,7 @@ class Update_Theme_Json extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'theme-json-settings',
 						'sub_group_label' => __( 'theme.json Settings', 'acrossai-abilities-manager' ),
 					),

@@ -1974,3 +1974,48 @@ is inside the content region.
 **References**:
 - `src/js/quick-connect/StepLayout.jsx` — the focus/announce effect.
 - `src/scss/quick-connect/admin.scss` — `.qs__step-title:focus { outline: none; }` and why it is safe.
+
+### 2026-09-10 — BUG-UNWIRED-CATEGORY-REGISTRAR — A Category_Registrar that is never wired makes its abilities silently cease to exist
+
+**Status**: Active
+**Scope**: Abilities/Bootstrap (any folder under `includes/Abilities/` shipping a `Category_Registrar`)
+**Tags**: abilities, category, bootstrap, register_category_callbacks, doing_it_wrong, silent-failure, feature-061, feature-101
+
+**Bug**: Registering abilities is two steps and only one of them is obvious. `includes/Abilities/Debugging/Category_Registrar.php` shipped with Feature 061, was correctly written, and was never added to `AcrossAI_Core_Abilities_Bootstrap::register_category_callbacks()`. WordPress refuses to register an ability whose category is not registered — `WP_Abilities_Registry::register()` calls `_doing_it_wrong()` and `return null` — so all seven conflict-testing abilities were constructed on every request, attempted to register, and vanished. They had not existed at runtime for the feature's entire life. Nothing failed: the ability files, their instantiation in the bootstrap, and the registrar file all existed and looked complete; the single missing line sat in a *different method of the same class*. 399 notices accumulated in `debug.log` unread, which is what `_doing_it_wrong` does when `WP_DEBUG_LOG` is off or nobody looks.
+
+**Prevention**:
+- Adding a new ability folder means editing `register_category_callbacks()` **and** the instantiation list. Doing only the second produces zero abilities and zero visible errors.
+- `tests/phpunit/abilities/Test_Category_Registrar_Wiring.php` asserts both directions — every folder shipping a registrar is wired, and every folder whose abilities are instantiated has a registrar — plus a minimum-discovery count so a broken glob cannot make it pass against an empty set. Verified by reverting the fix and confirming it names `Debugging`.
+- **A generated artifact disagreeing with a hand-maintained one is a signal, not a formatting nuisance.** `docs/abilities-inventory.md` recorded "389 abilities across 24 namespaces" and omitted Debugging entirely, because whoever maintained it was reading runtime data where those seven genuinely were not there. Generating it from source is what surfaced the gap: source said 25 namespaces, runtime said 24.
+
+**References**:
+- `includes/Abilities/AcrossAI_Core_Abilities_Bootstrap.php` — `register_category_callbacks()`.
+- `wp-includes/abilities-api/class-wp-abilities-registry.php:142-156` — the rejection.
+- `scripts/generate-abilities-inventory.php` — the generator whose output exposed the discrepancy.
+
+---
+
+### 2026-09-10 — BUG-ABILITY-CUSTOM-TOP-LEVEL-ARG-DISCARDED — WP_Ability silently throws away any arg that is not one of its nine properties
+
+**Status**: Active
+**Scope**: Abilities/Registration (any attempt to add plugin-specific fields to an ability declaration)
+**Tags**: abilities, wp-ability, meta, top-level-args, doing_it_wrong, silent-discard, extension-point, feature-041, feature-101
+
+**Bug**: `WP_Ability` accepts exactly nine properties — `category`, `description`, `execute_callback`, `input_schema`, `label`, `meta`, `name`, `output_schema`, `permission_callback`. Any other top-level key reaches the constructor, fails `property_exists()`, emits `_doing_it_wrong()` and is discarded via `continue`. The value never arrives and nothing throws.
+
+The trap is in the reading, not just the writing: `prepare_properties()` runs first and *looks* like the gate, but it only validates types and merges meta defaults before a bare `return $args;`. It never strips unknown keys. So inspecting that method suggests custom top-level args survive — the discard happens later, in the constructor loop.
+
+At this plugin's scale, moving the three `meta.acrossai` display fields to top-level `acrossai_*` args would emit roughly **1,350 notices per request** (≈450 abilities × 3 fields) and blank the Integrations screen, since no `tab_group` reaching the registry means no tabs and no sub-groups.
+
+**Prevention**:
+- **`meta` is the only extension point WordPress core provides.** This is not a plugin convention that can be undone — it is why Feature 041 consolidated the display fields there (`DEC-META-ACROSSAI-NAMESPACE`).
+- To improve declaration ergonomics without fighting core, add a template method on `Ability_Definition` that auto-injects into `meta.acrossai` — the pattern Features 088 and 095 already use for `suggested_plugins()` and `suggested_abilities()`. See `PATTERN-ABILITY-BASE-OPTIONAL-TEMPLATE-AUTO-INJECT`.
+- Verify claims about core behaviour by running the class, not by reading it. A ~20-line harness that stubs `_doing_it_wrong`, `__`, `esc_html` and `wp_parse_args` instantiates `WP_Ability` directly with no database.
+
+**Evidence**: harness against WordPress 7.1 — a custom top-level arg produced 3 notices, `get_meta_item()` returned MISSING and `property_exists()` was false; the identical fields nested under `meta` produced 0 notices and retrieved correctly.
+
+**References**:
+- `wp-includes/abilities-api/class-wp-ability.php:180-203` — the constructor loop that discards.
+- `wp-includes/abilities-api/class-wp-ability.php:281+` — `prepare_properties()`, which validates but does not strip.
+
+---

@@ -30,7 +30,7 @@ class Find_Elements extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Find Elementor Elements', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Search Elementor elements in a post by element type, widget type, or text contained in the serialised settings. Returns matches with their parent-ID paths.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

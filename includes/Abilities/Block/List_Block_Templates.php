@@ -42,7 +42,7 @@ class List_Block_Templates extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Block Templates', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Lists block templates across the database (wp_template), the active theme\'s /templates/*.html, the parent theme, and installed plugin /templates dirs. Filter by source, theme_type, plugin_slug, or exact slug.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -96,7 +96,7 @@ class List_Block_Templates extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'templates',
 						'sub_group_label' => __( 'Templates', 'acrossai-abilities-manager' ),
 					),

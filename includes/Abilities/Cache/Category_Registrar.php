@@ -47,7 +47,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-cache',
+			'acrossai-cache',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Cache Management', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for managing WordPress caches: flush object cache and related cache stores.', 'acrossai-abilities-manager' ),

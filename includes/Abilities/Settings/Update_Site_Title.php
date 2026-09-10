@@ -30,7 +30,7 @@ class Update_Site_Title extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Site Title', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Updates the site title (the "blogname" option). Whitespace is trimmed; the value cannot be empty.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-settings',
+				'category'            => 'acrossai-settings',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -60,7 +60,7 @@ class Update_Site_Title extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'site-identity',
 						'sub_group_label' => __( 'Site Identity', 'acrossai-abilities-manager' ),
 					),

@@ -45,7 +45,7 @@ class Create_Block_Style_Variation extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create Block Style Variation', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Creates a Block Style Variation. Defaults to the database. Pass source=child_theme / theme / plugin to write a <slug>.json file. Provide "content" (full variation JSON) or "section"+"data" to seed one section.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -112,7 +112,7 @@ class Create_Block_Style_Variation extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'block-style-variations',
 						'sub_group_label' => __( 'Block Style Variations', 'acrossai-abilities-manager' ),
 					),

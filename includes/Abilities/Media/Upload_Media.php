@@ -36,7 +36,7 @@ class Upload_Media extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Upload Media', 'acrossai-abilities-manager' ),
 				'description'         => __( "Sideload an attachment into the Media Library via media_handle_sideload(). Pass ONE of: \"url\" (remote HTTP(S) fetch), \"path\" (existing file relative to ABSPATH), or \"data\" (base64 bytes — supply \"filename\" or \"mime_type\" for a valid extension). Optionally attach to a post via \"post_id\".\n\nChunked \"data\" (for payloads too large for one tool call): pair \"data\" with a \"chunk\" object. Recipe:\n  1. Pick session_id matching [A-Za-z0-9_-]{8,64}.\n  2. base64-encode the file; split into pieces of ≤ 8 MB of base64 text each (~6 MB decoded). Total session ≤ 64 MB base64.\n  3. For k = 0..N-1, call upload-media with data=<piece_k> and chunk={session_id, index:k, is_final:(k == N-1)}.\n  4. Chunks MUST arrive in strict sequential order — out-of-order discards the session.\n  5. Pass filename / mime_type / post_id / title / alt_text / description / caption on the FINAL call only — mid-stream calls ignore them.\n\nNon-final responses: {success:true, session_id, chunk_received, bytes_staged}. Final response: {success:true, id, media}.", 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-media',
+				'category'            => 'acrossai-media',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -133,7 +133,7 @@ class Upload_Media extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'media',
+						'tab_group'       => 'content',
 						'sub_group'       => 'manage',
 						'sub_group_label' => __( 'Manage', 'acrossai-abilities-manager' ),
 					),

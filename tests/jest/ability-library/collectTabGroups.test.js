@@ -121,40 +121,51 @@ describe('collectTabGroups', () => {
 		expect(collectTabGroups(items)).toEqual(['sales']);
 	});
 
-	test('pins the `core` tab_group to first position (Feature 046)', () => {
+	test('pins the `content` tab_group to first position (Feature 101)', () => {
 		const items = [
 			itemWithSlugs([
-				slug({ slug: 'a', tabGroup: 'themes' }),
+				slug({ slug: 'a', tabGroup: 'updates' }),
 				slug({ slug: 'b', tabGroup: 'blocks' }),
-				slug({ slug: 'c', tabGroup: 'core' }),
+				slug({ slug: 'c', tabGroup: 'content' }),
 				slug({ slug: 'd', tabGroup: 'users' }),
 			]),
 		];
 		expect(collectTabGroups(items)).toEqual([
-			'core',
+			'content',
 			'blocks',
-			'themes',
+			'updates',
 			'users',
 		]);
 	});
 
-	test('is a no-op when `core` is absent', () => {
+	test('is a no-op when `content` is absent', () => {
 		const items = [
 			itemWithSlugs([
-				slug({ slug: 'a', tabGroup: 'themes' }),
+				slug({ slug: 'a', tabGroup: 'updates' }),
 				slug({ slug: 'b', tabGroup: 'blocks' }),
 			]),
 		];
-		expect(collectTabGroups(items)).toEqual(['blocks', 'themes']);
+		expect(collectTabGroups(items)).toEqual(['blocks', 'updates']);
 	});
 
-	test('leaves `core` alone when already first', () => {
+	test('leaves `content` alone when already first', () => {
 		const items = [
 			itemWithSlugs([
-				slug({ slug: 'a', tabGroup: 'core' }),
-				slug({ slug: 'b', tabGroup: 'themes' }),
+				slug({ slug: 'a', tabGroup: 'content' }),
+				slug({ slug: 'b', tabGroup: 'updates' }),
 			]),
 		];
-		expect(collectTabGroups(items)).toEqual(['core', 'themes']);
+		expect(collectTabGroups(items)).toEqual(['content', 'updates']);
+	});
+
+	test('retired `core` is no longer special (Feature 101)', () => {
+		const items = [
+			itemWithSlugs([
+				slug({ slug: 'a', tabGroup: 'updates' }),
+				slug({ slug: 'b', tabGroup: 'core' }),
+			]),
+		];
+		// `core` sorts alphabetically like any other identifier now.
+		expect(collectTabGroups(items)).toEqual(['core', 'updates']);
 	});
 });

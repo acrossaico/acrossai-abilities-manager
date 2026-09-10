@@ -94,13 +94,16 @@ export function groupDefinitions(definitions) {
  * Reserved tab identifier pinned to the first position in the tab list
  * (i.e. immediately after the `All` tab).
  *
- * Feature 046: the absorbed acrossai-core-abilities plugin's default
- * `tab_group` is `core`. Site admins expect the Core tab to appear as
- * the second option (right after `All`) even after other categories
- * introduce their own tab_groups. When `core` is absent from the
- * definitions this pin is a no-op.
+ * Feature 046 pinned `core`, the absorbed acrossai-core-abilities plugin's
+ * default tab_group. Feature 101 regrouped the tabs into task families and
+ * retired `core` entirely, so the pin moved to `content` — the family
+ * administrators reach for most, and the one that would otherwise land
+ * mid-alphabet between Configuration and Cron.
+ *
+ * When the pinned group is absent from the definitions this is a no-op
+ * and ordering falls back to plain alphabetical (spec 037 FR-013).
  */
-const PINNED_FIRST_TAB_GROUP = 'core';
+const PINNED_FIRST_TAB_GROUP = 'content';
 
 /**
  * Collect the unique non-empty tab_group identifiers across all slug records.

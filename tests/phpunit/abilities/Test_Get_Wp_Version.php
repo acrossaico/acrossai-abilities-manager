@@ -44,7 +44,7 @@ class Test_Get_Wp_Version extends WP_UnitTestCase {
 	}
 
 	public function test_targets_the_core_category(): void {
-		$this->assertStringContainsString( "'acrossai-abilities-manager-core'", $this->src );
+		$this->assertStringContainsString( "'acrossai-core'", $this->src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {

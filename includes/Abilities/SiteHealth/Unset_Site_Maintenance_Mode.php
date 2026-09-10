@@ -30,7 +30,7 @@ class Unset_Site_Maintenance_Mode extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Unset Site Maintenance Mode', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Deactivate WordPress core maintenance mode: delete the ABSPATH/.maintenance marker and clear the refresh cron. Idempotent — safe to call when maintenance mode is already inactive.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-site-health',
+				'category'            => 'acrossai-site-health',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -54,7 +54,7 @@ class Unset_Site_Maintenance_Mode extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'site-health',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'maintenance',
 						'sub_group_label' => __( 'Maintenance', 'acrossai-abilities-manager' ),
 					),

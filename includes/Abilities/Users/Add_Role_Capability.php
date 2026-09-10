@@ -37,7 +37,7 @@ class Add_Role_Capability extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Add Role Capability', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Grant a single capability to an existing WordPress role. Idempotent — regranting a capability the role already holds is a no-op success.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-users',
+				'category'            => 'acrossai-users',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -30,7 +30,7 @@ class Approve_Comment extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Approve Comment', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Approve a comment via POST /wp/v2/comments/{id} with status=approved.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-comments',
+				'category'            => 'acrossai-comments',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -58,7 +58,7 @@ class Approve_Comment extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'comments',
+						'tab_group'       => 'content',
 						'sub_group'       => 'moderation',
 						'sub_group_label' => __( 'Moderation', 'acrossai-abilities-manager' ),
 					),

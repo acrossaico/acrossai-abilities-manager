@@ -47,7 +47,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-users',
+			'acrossai-users',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â User Management', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for reading, creating, updating, and deleting WordPress users, plus user meta and password resets.', 'acrossai-abilities-manager' ),

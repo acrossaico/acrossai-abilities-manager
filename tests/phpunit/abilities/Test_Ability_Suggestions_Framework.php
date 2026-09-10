@@ -232,7 +232,7 @@ class Test_Ability_Suggestions_Framework extends WP_UnitTestCase {
 			'update-page'     => array( 'includes/Abilities/Content/Update_Page.php', 'content/update-page' ),
 			'update-post'     => array( 'includes/Abilities/Content/Update_Post.php', 'content/update-post' ),
 			'update-cpt-item' => array( 'includes/Abilities/Content/Update_Cpt_Item.php', 'content/update-cpt-item' ),
-			'get-post-blocks' => array( 'includes/Abilities/Content/Get_Post_Blocks.php', 'blocks/get-post-blocks' ),
+			'get-post-blocks' => array( 'includes/Abilities/Block/Get_Post_Blocks.php', 'blocks/get-post-blocks' ),
 
 			// Feature 095 follow-up batch: content/get-* → outline
 			'get-page'        => array( 'includes/Abilities/Content/Get_Page.php', 'content/get-page' ),

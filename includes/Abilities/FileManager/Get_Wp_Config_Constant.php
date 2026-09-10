@@ -55,7 +55,7 @@ class Get_Wp_Config_Constant extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get wp-config Constant', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the value of a named PHP constant (typically defined in wp-config.php). Refuses to disclose auth keys, salts, or DB_PASSWORD.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -87,7 +87,7 @@ class Get_Wp_Config_Constant extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'file-manager',
+						'tab_group'       => 'files',
 						'sub_group'       => 'wp-config',
 						'sub_group_label' => __( 'WP Config', 'acrossai-abilities-manager' ),
 					),

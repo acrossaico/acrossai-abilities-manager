@@ -31,7 +31,7 @@ class Update_Page extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Page', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Update an existing page (post_type=page) via wp_update_post(). Only the supplied fields are changed.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -74,7 +74,7 @@ class Update_Page extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'pages',
 						'sub_group_label' => __( 'Pages', 'acrossai-abilities-manager' ),
 					),

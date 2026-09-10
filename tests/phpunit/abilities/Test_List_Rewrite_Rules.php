@@ -41,7 +41,7 @@ class Test_List_Rewrite_Rules extends WP_UnitTestCase {
 	}
 
 	public function test_targets_the_settings_category(): void {
-		$this->assertStringContainsString( "'acrossai-abilities-manager-settings'", $this->src );
+		$this->assertStringContainsString( "'acrossai-settings'", $this->src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {

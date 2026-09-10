@@ -30,7 +30,7 @@ class Clear_Cache extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Clear Elementor Cache', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Clear Elementor cache at post scope, site scope, or both. Optional regenerate_css=true to also invalidate the per-post CSS meta for one post.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

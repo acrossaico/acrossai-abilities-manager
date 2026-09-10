@@ -14,6 +14,7 @@ use AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Abilities_Acc
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Secret_Redactor;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Settings;
+use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Category_Slug_Migration;
 use WPBoilerplate\AccessControl\Database\Rule\RuleTable;
 
 // Exit if accessed directly.
@@ -46,6 +47,7 @@ class AcrossAI_Activator {
 		( new AcrossAI_Abilities_Table() )->maybe_upgrade();
 		( new RuleTable( AcrossAI_Abilities_Access_Control::TABLE_SLUG ) )->maybe_upgrade();
 		self::migrate_absorbed_options();
+		AcrossAI_Category_Slug_Migration::maybe_migrate();
 		self::seed_file_manager_settings();
 		self::flag_quick_connect_redirect();
 	}

@@ -31,7 +31,7 @@ class List_Navigation_Locations extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Navigation Locations', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List every theme-registered nav-menu location (slug + label) and the currently-assigned menu id / name (if any).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-menus',
+				'category'            => 'acrossai-menus',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -53,7 +53,7 @@ class List_Navigation_Locations extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'menus',
 						'sub_group_label' => __( 'Menus', 'acrossai-abilities-manager' ),
 					),

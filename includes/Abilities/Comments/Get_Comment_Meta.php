@@ -30,7 +30,7 @@ class Get_Comment_Meta extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Comment Meta', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Fetch the REST-exposed meta map for a comment via GET /wp/v2/comments/{id} (only keys registered with register_meta show_in_rest=true).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-comments',
+				'category'            => 'acrossai-comments',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -62,7 +62,7 @@ class Get_Comment_Meta extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'comments',
+						'tab_group'       => 'content',
 						'sub_group'       => 'meta',
 						'sub_group_label' => __( 'Meta', 'acrossai-abilities-manager' ),
 					),

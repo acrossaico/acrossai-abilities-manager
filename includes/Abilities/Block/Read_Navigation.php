@@ -30,7 +30,7 @@ class Read_Navigation extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Read Navigation', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return one wp_navigation Site-Editor entity by ID: title, status, raw content, and the parsed block tree.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -63,7 +63,7 @@ class Read_Navigation extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'site-editor',
 						'sub_group_label' => __( 'Site Editor', 'acrossai-abilities-manager' ),
 					),

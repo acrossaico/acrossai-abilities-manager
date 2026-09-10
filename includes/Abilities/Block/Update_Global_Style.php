@@ -46,7 +46,7 @@ class Update_Global_Style extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Global Style', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Updates Global Styles. By default deep-merges new data into the existing record; pass merge=false to replace. Use "section" + "data" to update one section only. Supports cross-source migration via migrate_to.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -123,7 +123,7 @@ class Update_Global_Style extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'global-styles',
 						'sub_group_label' => __( 'Global Styles', 'acrossai-abilities-manager' ),
 					),

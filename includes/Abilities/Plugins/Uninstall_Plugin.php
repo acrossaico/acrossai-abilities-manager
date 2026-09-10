@@ -40,7 +40,7 @@ class Uninstall_Plugin extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Uninstall Plugin', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Uninstall a plugin (fires its uninstall hook and deletes its files) via WordPress core uninstall_plugin(). Distinct from deactivate-plugin (which only flips active_plugins). Refuses on active plugins and honours DISALLOW_FILE_MODS.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-plugins',
+				'category'            => 'acrossai-plugins',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -75,7 +75,7 @@ class Uninstall_Plugin extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'plugins',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'lifecycle',
 						'sub_group_label' => __( 'Lifecycle', 'acrossai-abilities-manager' ),
 					),

@@ -33,7 +33,7 @@ class Delete_Transient extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Transient', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Delete one transient by name via delete_transient() (or delete_site_transient() when site:true). Idempotent — succeeds even if the transient is already gone.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cache',
+				'category'            => 'acrossai-cache',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

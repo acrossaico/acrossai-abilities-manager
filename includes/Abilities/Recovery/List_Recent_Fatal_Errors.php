@@ -49,7 +49,7 @@ class List_Recent_Fatal_Errors extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Recent Fatal Errors', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Extracts PHP Fatal / Parse / Compile error entries from debug.log within the last N days, groups them by unique signature (type + file + line + message), and returns the top-M groups sorted by most-recent occurrence. Streams the log from disk with a 20 MB tail cap to guard against runaway logs.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-recovery',
+				'category'            => 'acrossai-recovery',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -102,7 +102,7 @@ class List_Recent_Fatal_Errors extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'recovery',
 						'sub_group_label' => __( 'Recovery Mode', 'acrossai-abilities-manager' ),
 					),

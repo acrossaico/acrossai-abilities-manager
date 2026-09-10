@@ -97,15 +97,15 @@ class Test_Feature_046_Payload_Shape extends WP_UnitTestCase {
 		$expected = array(
 			'plugin_list' => array(
 				'name'     => 'plugins/list-plugins',
-				'category' => 'acrossai-abilities-manager-plugins',
+				'category' => 'acrossai-plugins',
 			),
 			'get_post'    => array(
 				'name'     => 'content/get-post',
-				'category' => 'acrossai-abilities-manager-content',
+				'category' => 'acrossai-content',
 			),
 			'user_get'    => array(
 				'name'     => 'users/get-user',
-				'category' => 'acrossai-abilities-manager-users',
+				'category' => 'acrossai-users',
 			),
 		);
 		foreach ( $expected as $tag => $pair ) {

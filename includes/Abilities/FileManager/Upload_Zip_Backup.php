@@ -49,7 +49,7 @@ class Upload_Zip_Backup extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Upload Zip Backup', 'acrossai-abilities-manager' ),
 				'description'         => __( "Upload a zip archive to wp-content/uploads/acrossai-backups/ for later extraction via zip-extract. Three input modes:\n\n  1) \"data\" (base64) — single-shot, best for small zips.\n  2) \"url\" — server-side fetch via download_url().\n  3) \"data\" + \"chunk\" — session/index/is_final protocol; ≤ 8 MB base64 per chunk, ≤ 64 MB base64 per session, staged under acrossai-staging/.\n\nOn success the response carries file_path (ABSPATH-relative), file_url, size, and sha256; hand file_path to zip-extract on the destination site.", 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -119,7 +119,7 @@ class Upload_Zip_Backup extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'file-manager',
+						'tab_group'       => 'files',
 						'sub_group'       => 'backups',
 						'sub_group_label' => __( 'Backups', 'acrossai-abilities-manager' ),
 					),

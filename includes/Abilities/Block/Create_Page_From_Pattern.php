@@ -31,7 +31,7 @@ class Create_Page_From_Pattern extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create Page From Pattern', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Create a new WordPress page from a registered block pattern slug. Optional substitutions object replaces {{token}} placeholders in the pattern content before saving.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

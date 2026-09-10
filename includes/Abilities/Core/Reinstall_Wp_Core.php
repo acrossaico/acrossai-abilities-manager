@@ -37,7 +37,7 @@ class Reinstall_Wp_Core extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Reinstall WordPress Core', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Reinstall the currently installed WordPress version by re-downloading and re-applying the same release via WP core\'s Core_Upgrader with response="reinstall". Equivalent to the wp-admin "Re-install version X" action at /wp-admin/update-core.php?action=do-core-reinstall. Honours DISALLOW_FILE_MODS. Idempotent — safe to re-run.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-core',
+				'category'            => 'acrossai-core',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'update_core' );
@@ -66,7 +66,7 @@ class Reinstall_Wp_Core extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'lifecycle',
 						'sub_group_label' => __( 'Lifecycle', 'acrossai-abilities-manager' ),
 					),

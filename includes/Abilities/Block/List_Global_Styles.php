@@ -42,7 +42,7 @@ class List_Global_Styles extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Global Styles', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Lists Global Styles records across the database (wp_global_styles) and theme.json files in themes and plugins. Each record reports its theme association, which sections are customised, and whether it is the copy WordPress is currently serving.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -91,7 +91,7 @@ class List_Global_Styles extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'global-styles',
 						'sub_group_label' => __( 'Global Styles', 'acrossai-abilities-manager' ),
 					),

@@ -50,7 +50,7 @@ class Copy_File extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Copy File', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Copy a file from a source path to a destination path within the WordPress installation. Both paths must remain inside ABSPATH. Default refuses when the destination exists; pass overwrite:true to replace it. Refuses when the destination resolves to wp-config.php or .htaccess even with overwrite:true.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -108,7 +108,7 @@ class Copy_File extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'file-manager',
+						'tab_group'       => 'files',
 						'sub_group'       => 'files',
 						'sub_group_label' => __( 'Files', 'acrossai-abilities-manager' ),
 					),

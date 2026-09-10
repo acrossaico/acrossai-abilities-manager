@@ -30,7 +30,7 @@ class Get_Next_Cron_Run extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Next Run Time', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the next scheduled run timestamp for a hook (and optional args) via wp_next_scheduled().', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cron',
+				'category'            => 'acrossai-cron',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

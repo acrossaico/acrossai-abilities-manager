@@ -30,7 +30,7 @@ class List_Comments extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Comments', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List comments via GET /wp/v2/comments. Supports search, post filter, status filter, and pagination.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-comments',
+				'category'            => 'acrossai-comments',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -68,7 +68,7 @@ class List_Comments extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'comments',
+						'tab_group'       => 'content',
 						'sub_group'       => 'manage',
 						'sub_group_label' => __( 'Manage', 'acrossai-abilities-manager' ),
 					),

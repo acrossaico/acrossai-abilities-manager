@@ -44,7 +44,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-comments',
+			'acrossai-comments',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Comments', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for managing comments: CRUD, moderation (approve / hold / spam), and meta.', 'acrossai-abilities-manager' ),

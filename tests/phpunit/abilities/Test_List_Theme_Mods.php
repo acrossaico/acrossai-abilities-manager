@@ -41,7 +41,7 @@ class Test_List_Theme_Mods extends WP_UnitTestCase {
 	}
 
 	public function test_targets_the_themes_category(): void {
-		$this->assertStringContainsString( "'acrossai-abilities-manager-themes'", $this->src );
+		$this->assertStringContainsString( "'acrossai-themes'", $this->src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {

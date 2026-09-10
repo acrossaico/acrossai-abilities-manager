@@ -48,7 +48,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-content',
+			'acrossai-content',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Content', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for managing posts, pages, custom post types, multilingual translations, and Jet Engine options pages.', 'acrossai-abilities-manager' ),
