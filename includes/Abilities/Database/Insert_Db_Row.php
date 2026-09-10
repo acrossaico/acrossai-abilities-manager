@@ -30,7 +30,7 @@ class Insert_Db_Row extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Insert Row', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Inserts a single row into a database table using $wpdb->insert() (values are auto-escaped). Not idempotent — each call adds a new row.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -44,7 +44,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-cron',
+			'acrossai-cron',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Cron', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for inspecting and managing WP-Cron: list/get/check scheduled events, list and define schedules, run hooks on demand, and delete events.', 'acrossai-abilities-manager' ),

@@ -38,7 +38,7 @@ class Remove_Mu_Plugin extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Remove Conflict-Test Mu-Plugin', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Deletes the mu-plugin that reads the conflict-test override map. When also_clear_overrides is true, also deletes the JSON overrides file. Idempotent — an already-absent mu-plugin returns success.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-debugging',
+				'category'            => 'acrossai-debugging',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -67,7 +67,7 @@ class Remove_Mu_Plugin extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'debugging',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'conflict-testing',
 						'sub_group_label' => __( 'Conflict Testing', 'acrossai-abilities-manager' ),
 					),

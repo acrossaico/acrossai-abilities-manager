@@ -31,7 +31,7 @@ class Create_Post extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create Post', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Create a post (or any post-type record) via wp_insert_post(). Defaults post_type to "post".', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -78,7 +78,7 @@ class Create_Post extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'posts',
 						'sub_group_label' => __( 'Posts', 'acrossai-abilities-manager' ),
 					),

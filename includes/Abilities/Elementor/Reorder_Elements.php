@@ -30,7 +30,7 @@ class Reorder_Elements extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Reorder Elementor Elements', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Reorder the direct children of a parent (or root children when parent_id is null). Children not listed in ordered_element_ids retain their prior relative order and are appended after.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

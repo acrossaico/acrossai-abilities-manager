@@ -31,7 +31,7 @@ class Evaluate_Copy extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Evaluate Copy', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Score copy quality 0-100 and flag weak patterns (bare label chips, sentence run-ons, weak headline verbs). Filter-extensible via acrossai_block_qa_rules.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

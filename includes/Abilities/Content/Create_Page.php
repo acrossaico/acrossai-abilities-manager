@@ -31,7 +31,7 @@ class Create_Page extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create Page', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Create a page via wp_insert_post() (post_type=page). Supports parent and menu_order for hierarchical layouts.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -80,7 +80,7 @@ class Create_Page extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'pages',
 						'sub_group_label' => __( 'Pages', 'acrossai-abilities-manager' ),
 					),

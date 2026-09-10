@@ -35,7 +35,7 @@ class Add_Post_Meta extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Add Post Meta', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Append a new post-meta row via add_post_meta() — additive, does not replace existing rows for the same key. Set unique:true to refuse the append if any row already exists for the (post_id, key) pair (matches WordPress core add_post_meta( ..., true ) behaviour).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -86,7 +86,7 @@ class Add_Post_Meta extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'posts',
 						'sub_group_label' => __( 'Posts', 'acrossai-abilities-manager' ),
 					),

@@ -33,12 +33,27 @@ class Test_Tab_Group_Label extends TestCase {
 	 */
 	public static function shared_fixture(): array {
 		return array(
-			'core'             => 'Core',
+			// Feature 101 families. Every key must title-case cleanly, because
+			// spec 037 FR-007 forbids a separate display-label field — the key
+			// IS the label. This fixture is what stops a family being named
+			// something the formatter renders badly.
+			'content'          => 'Content',
 			'blocks'           => 'Blocks',
+			'appearance'       => 'Appearance',
+			'configuration'    => 'Configuration',
+			'users'            => 'Users',
+			'updates'          => 'Updates',
+			'cron'             => 'Cron',
+			'cache'            => 'Cache',
+			'database'         => 'Database',
+			'files'            => 'Files',
+			'diagnostics'      => 'Diagnostics',
+			'elementor'        => 'Elementor',
+			'rank-math'        => 'Rank Math',
+			// Multi-word derivation and a third-party key.
 			'content-search'   => 'Content Search',
 			'file-manager'     => 'File Manager',
 			'site-health'      => 'Site Health',
-			'database'         => 'Database',
 			'mailerpress-pro'  => 'Mailerpress Pro',
 		);
 	}

@@ -27,7 +27,7 @@ class Test_Elementor_Get_Widget_Controls extends WP_UnitTestCase {
 
 	public function test_registers_correct_slug_and_category(): void {
 		$this->assertStringContainsString( "'elementor/get-widget-controls'", $this->src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-elementor'", $this->src );
+		$this->assertStringContainsString( "'acrossai-elementor'", $this->src );
 	}
 
 	public function test_permission_callback_gates_manage_options(): void {

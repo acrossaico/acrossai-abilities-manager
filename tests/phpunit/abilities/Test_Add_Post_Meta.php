@@ -38,7 +38,7 @@ class Test_Add_Post_Meta extends WP_UnitTestCase {
 
 	public function test_registers_correct_slug_and_category(): void {
 		$this->assertStringContainsString( "'content/add-post-meta'", $this->src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-content'", $this->src );
+		$this->assertStringContainsString( "'acrossai-content'", $this->src );
 	}
 
 	public function test_permission_callback_gates_manage_options(): void {

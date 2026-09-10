@@ -30,7 +30,7 @@ class List_Menu_Items extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Menu Items', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List menu items via GET /wp/v2/menu-items. Use menus={id} to scope to a single menu.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-menus',
+				'category'            => 'acrossai-menus',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -66,7 +66,7 @@ class List_Menu_Items extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'menu-items',
 						'sub_group_label' => __( 'Menu Items', 'acrossai-abilities-manager' ),
 					),

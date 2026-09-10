@@ -33,7 +33,7 @@ class Get_Current_User_Access extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Current User Access', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the current caller\'s user id, roles, capability map, and network-admin status. Read-only; useful for MCP clients that need to reason about what actions the current session is authorised to perform.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-users',
+				'category'            => 'acrossai-users',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

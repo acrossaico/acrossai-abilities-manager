@@ -56,7 +56,7 @@ class Test_Feature_090_File_Manager_Additions extends WP_UnitTestCase {
 
 	public function test_append_file_uses_expected_slug_and_category(): void {
 		$this->assertStringContainsString( "'file-manager/append-file'", $this->files['append_file'] );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-file-manager'", $this->files['append_file'] );
+		$this->assertStringContainsString( "'acrossai-file-manager'", $this->files['append_file'] );
 	}
 
 	public function test_append_file_gates_on_manage_options(): void {
@@ -110,7 +110,7 @@ class Test_Feature_090_File_Manager_Additions extends WP_UnitTestCase {
 
 	public function test_create_directory_uses_expected_slug_and_category(): void {
 		$this->assertStringContainsString( "'file-manager/create-directory'", $this->files['create_directory'] );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-file-manager'", $this->files['create_directory'] );
+		$this->assertStringContainsString( "'acrossai-file-manager'", $this->files['create_directory'] );
 	}
 
 	public function test_create_directory_gates_on_manage_options(): void {
@@ -161,7 +161,7 @@ class Test_Feature_090_File_Manager_Additions extends WP_UnitTestCase {
 
 	public function test_delete_directory_uses_expected_slug_and_category(): void {
 		$this->assertStringContainsString( "'file-manager/delete-directory'", $this->files['delete_directory'] );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-file-manager'", $this->files['delete_directory'] );
+		$this->assertStringContainsString( "'acrossai-file-manager'", $this->files['delete_directory'] );
 	}
 
 	public function test_delete_directory_gates_on_manage_options(): void {
@@ -243,7 +243,7 @@ class Test_Feature_090_File_Manager_Additions extends WP_UnitTestCase {
 
 	public function test_file_info_uses_expected_slug_and_category(): void {
 		$this->assertStringContainsString( "'file-manager/file-info'", $this->files['file_info'] );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-file-manager'", $this->files['file_info'] );
+		$this->assertStringContainsString( "'acrossai-file-manager'", $this->files['file_info'] );
 	}
 
 	public function test_file_info_gates_on_manage_options(): void {

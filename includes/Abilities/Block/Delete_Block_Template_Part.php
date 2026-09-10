@@ -42,7 +42,7 @@ class Delete_Block_Template_Part extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Block Template Part', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Deletes a block template part by slug. Auto-resolves the source when there\'s only one copy; pass source / theme_type / plugin_slug to disambiguate. Refuses to delete parent-theme files. When the part is referenced by templates, confirm_usage=true is required.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -98,7 +98,7 @@ class Delete_Block_Template_Part extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'template-parts',
 						'sub_group_label' => __( 'Template Parts', 'acrossai-abilities-manager' ),
 					),

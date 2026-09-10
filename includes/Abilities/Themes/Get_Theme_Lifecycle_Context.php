@@ -33,7 +33,7 @@ class Get_Theme_Lifecycle_Context extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Theme Lifecycle Context', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the lifecycle-context envelope for a single theme (by stylesheet slug): header (name, version, author), active state, parent (if child theme), autoupdate enrolment, update availability, and last activated / deactivated / updated timestamps.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-themes',
+				'category'            => 'acrossai-themes',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -71,7 +71,7 @@ class Get_Theme_Lifecycle_Context extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'themes',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'lifecycle',
 						'sub_group_label' => __( 'Lifecycle', 'acrossai-abilities-manager' ),
 					),

@@ -30,7 +30,7 @@ class Check_Cron_Job_Exists extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Check If Cron Job Exists', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return whether a scheduled event exists for a hook (and optional args). Backed by wp_next_scheduled() — true if a future run is registered.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cron',
+				'category'            => 'acrossai-cron',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

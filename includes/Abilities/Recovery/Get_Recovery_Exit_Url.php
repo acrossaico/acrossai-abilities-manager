@@ -36,7 +36,7 @@ class Get_Recovery_Exit_Url extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Recovery Mode Exit URL', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Returns the admin-clickable URL that exits WordPress Recovery Mode when followed inside an active recovery session. WP core does not expose a programmatic exit API (the action is cookie- and nonce-guarded); this ability returns the URL so an admin — or an agent driving a browser — can follow it. Returns null when the site is not in recovery mode.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-recovery',
+				'category'            => 'acrossai-recovery',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -59,7 +59,7 @@ class Get_Recovery_Exit_Url extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'recovery',
 						'sub_group_label' => __( 'Recovery Mode', 'acrossai-abilities-manager' ),
 					),

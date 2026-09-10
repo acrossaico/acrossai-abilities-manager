@@ -38,7 +38,7 @@ class Test_Get_Nested_Option_Value extends WP_UnitTestCase {
 
 	public function test_registers_correct_slug_and_category(): void {
 		$this->assertStringContainsString( "'options/get-nested-option-value'", $this->src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-options'", $this->src );
+		$this->assertStringContainsString( "'acrossai-options'", $this->src );
 	}
 
 	public function test_permission_callback_gates_manage_options(): void {

@@ -38,7 +38,7 @@ class Search_Wp_Plugin_Directory extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Search WordPress.org Plugin Directory', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Search the WordPress.org plugin directory. Returns slug, name, short_description, rating, active_installs, homepage, and download_link for each hit, plus pagination metadata.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-plugins',
+				'category'            => 'acrossai-plugins',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -78,7 +78,7 @@ class Search_Wp_Plugin_Directory extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'plugins',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'lifecycle',
 						'sub_group_label' => __( 'Lifecycle', 'acrossai-abilities-manager' ),
 					),

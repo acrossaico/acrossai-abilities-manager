@@ -34,7 +34,7 @@ class Set_Term_Image extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Set Term Image', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Attach (or clear) an attachment as the "image" of a term by writing the term-meta key _thumbnail_id. Matches the convention used by WooCommerce and most theme frameworks. Pass attachment_id=0 to clear.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-taxonomies',
+				'category'            => 'acrossai-taxonomies',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -67,7 +67,7 @@ class Set_Term_Image extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'terms',
 						'sub_group_label' => __( 'Terms', 'acrossai-abilities-manager' ),
 					),

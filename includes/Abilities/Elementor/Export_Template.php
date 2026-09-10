@@ -24,7 +24,7 @@ class Export_Template extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Export Elementor Template', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Export an Elementor template as a JSON-encodable object for portability across sites.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array(

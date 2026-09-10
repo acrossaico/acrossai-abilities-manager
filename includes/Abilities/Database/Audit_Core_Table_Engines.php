@@ -34,7 +34,7 @@ class Audit_Core_Table_Engines extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Audit Core Table Engines', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Report the storage engine (InnoDB / MyISAM / other), data + index bytes, and existence for each of the 18 core WordPress tables. Read-only. Accepts an optional list of core-table keys (posts, options, users, ...); defaults to all when omitted.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -55,7 +55,7 @@ class Test_Add_User_Capability extends WP_UnitTestCase {
 	public function test_ability_name_and_category(): void {
 		$src = $this->sources['add_user_cap'];
 		$this->assertStringContainsString( "'users/add-user-capability'", $src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-users'", $src );
+		$this->assertStringContainsString( "'acrossai-users'", $src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {

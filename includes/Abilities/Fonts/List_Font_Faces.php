@@ -34,7 +34,7 @@ class List_Font_Faces extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Font Faces', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List Font Library font faces (wp_font_face CPT) registered under a specific font family.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-fonts',
+				'category'            => 'acrossai-fonts',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -75,7 +75,7 @@ class List_Font_Faces extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'font-faces',
 						'sub_group_label' => __( 'Font Faces', 'acrossai-abilities-manager' ),
 					),

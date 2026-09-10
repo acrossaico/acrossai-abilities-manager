@@ -69,7 +69,7 @@ class Test_Feature_057_Core_Reinstall extends WP_UnitTestCase {
 			'Ability name must be core/reinstall-wp-core.'
 		);
 		$this->assertStringContainsString(
-			"'acrossai-abilities-manager-core'",
+			"'acrossai-core'",
 			$src,
 			'Ability category must point at the Core category slug.'
 		);

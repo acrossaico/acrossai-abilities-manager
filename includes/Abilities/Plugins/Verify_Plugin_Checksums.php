@@ -42,7 +42,7 @@ class Verify_Plugin_Checksums extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Verify Plugin Checksums', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Verify an installed plugin\'s on-disk files against the official WordPress.org checksums manifest. Per-file status: ok / modified / missing / added (added only when strict:true). Plugins without a WP.org manifest report success:true with results:[] and message:"no_manifest".', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-plugins',
+				'category'            => 'acrossai-plugins',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -77,7 +77,7 @@ class Verify_Plugin_Checksums extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'plugins',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'integrity',
 						'sub_group_label' => __( 'Integrity', 'acrossai-abilities-manager' ),
 					),

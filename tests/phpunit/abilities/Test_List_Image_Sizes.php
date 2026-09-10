@@ -43,7 +43,7 @@ class Test_List_Image_Sizes extends WP_UnitTestCase {
 	}
 
 	public function test_targets_the_media_category(): void {
-		$this->assertStringContainsString( "'acrossai-abilities-manager-media'", $this->src );
+		$this->assertStringContainsString( "'acrossai-media'", $this->src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {

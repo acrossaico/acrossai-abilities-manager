@@ -31,7 +31,7 @@ class Update_Comment extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Comment', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Update a comment via POST /wp/v2/comments/{id}. Only the supplied fields are touched.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-comments',
+				'category'            => 'acrossai-comments',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -65,7 +65,7 @@ class Update_Comment extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'comments',
+						'tab_group'       => 'content',
 						'sub_group'       => 'manage',
 						'sub_group_label' => __( 'Manage', 'acrossai-abilities-manager' ),
 					),

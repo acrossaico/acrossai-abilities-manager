@@ -30,7 +30,7 @@ class Get_Style_Guide extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Elementor Style Guide', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Build a style-guide summary from the active Elementor kit: global colors, typography, buttons, form defaults, layout, custom CSS.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

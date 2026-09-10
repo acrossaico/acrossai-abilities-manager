@@ -44,7 +44,7 @@ class Test_Get_Wp_Config_Constant extends WP_UnitTestCase {
 	}
 
 	public function test_targets_the_file_manager_category(): void {
-		$this->assertStringContainsString( "'acrossai-abilities-manager-file-manager'", $this->src );
+		$this->assertStringContainsString( "'acrossai-file-manager'", $this->src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {

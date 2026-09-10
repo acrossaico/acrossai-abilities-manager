@@ -37,7 +37,7 @@ class Audit_Options_Health extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Audit Options Health', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return options-table diagnostics: option count, total value bytes, autoload bytes, oversized-autoload count, expired-transient count, and the top-N autoloaded options by byte size. Never returns option values.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

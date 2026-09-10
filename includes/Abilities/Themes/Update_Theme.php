@@ -36,7 +36,7 @@ class Update_Theme extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Theme', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Apply the pending update for one or more installed themes. Accepts stylesheet directory names (e.g. "twentytwentyfour") or theme names (resolved via Theme_Helpers). Re-running when no update is available is a no-op.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-themes',
+				'category'            => 'acrossai-themes',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'update_themes' );
@@ -85,7 +85,7 @@ class Update_Theme extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'themes',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'lifecycle',
 						'sub_group_label' => __( 'Lifecycle', 'acrossai-abilities-manager' ),
 					),

@@ -72,7 +72,7 @@ class Test_Ability_Suggestions_Kill_Switch extends WP_UnitTestCase {
 			);
 		}
 		return array(
-			'category'       => 'acrossai-abilities-manager-content',
+			'category'       => 'acrossai-content',
 			'category_label' => 'Acrossai Abilities Manager Content',
 			'slug'           => 'content/update-page',
 			'slug_label'     => 'Update Page',

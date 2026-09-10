@@ -30,7 +30,7 @@ class Check_Plugin_Updates extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Check Updates', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Check for available WordPress core, plugin, and theme updates.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-plugins',
+				'category'            => 'acrossai-plugins',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -64,7 +64,7 @@ class Check_Plugin_Updates extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'plugins',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'info',
 						'sub_group_label' => __( 'Info', 'acrossai-abilities-manager' ),
 					),

@@ -55,7 +55,7 @@ class Test_Delete_Role extends WP_UnitTestCase {
 	public function test_ability_name_and_category(): void {
 		$src = $this->sources['delete_role'];
 		$this->assertStringContainsString( "'users/delete-role'", $src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-users'", $src );
+		$this->assertStringContainsString( "'acrossai-users'", $src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {

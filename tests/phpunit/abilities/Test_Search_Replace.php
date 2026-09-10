@@ -58,7 +58,7 @@ class Test_Search_Replace extends WP_UnitTestCase {
 	public function test_ability_name_and_category(): void {
 		$src = $this->sources['search_replace'];
 		$this->assertStringContainsString( "'database/search-replace'", $src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-database'", $src );
+		$this->assertStringContainsString( "'acrossai-database'", $src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {

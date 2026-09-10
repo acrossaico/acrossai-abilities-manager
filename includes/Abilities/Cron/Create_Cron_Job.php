@@ -31,7 +31,7 @@ class Create_Cron_Job extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create Cron Job', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Schedule a WP-Cron event. Pass "schedule" (e.g. hourly, daily, or any registered name) for a recurring event; omit it for a one-off via wp_schedule_single_event().', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cron',
+				'category'            => 'acrossai-cron',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

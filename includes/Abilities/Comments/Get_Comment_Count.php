@@ -34,7 +34,7 @@ class Get_Comment_Count extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Comment Count', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return per-status comment counters (approved, moderated, spam, trash, post-trashed) and total_comments. Optionally scoped to a single post id.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-comments',
+				'category'            => 'acrossai-comments',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -63,7 +63,7 @@ class Get_Comment_Count extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'comments',
+						'tab_group'       => 'content',
 						'sub_group'       => 'introspection',
 						'sub_group_label' => __( 'Introspection', 'acrossai-abilities-manager' ),
 					),

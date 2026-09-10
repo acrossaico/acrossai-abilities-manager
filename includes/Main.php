@@ -392,6 +392,16 @@ final class Main {
 		$abilities_rest = \AcrossAI_Abilities_Manager\Includes\Modules\Abilities\Rest\AcrossAI_Abilities_Rest_Controller::instance();
 		$this->loader->add_action( 'rest_api_init', $abilities_rest, 'register_routes' );
 
+		// Feature 101: rewrite stored `acrossai-abilities-manager-*` category
+		// slugs to `acrossai-*`. Also called from Activator::activate(), but an
+		// in-place upgrade (composer, wp-cli, file replace) never re-activates,
+		// so admin_init is the path that actually catches most sites. Guarded by
+		// its own completion flag, so this is one option read per admin request
+		// once it has run. Priority 1 — the DB-defined abilities it repairs
+		// register on wp_abilities_api_init, which is later.
+		$category_slug_migration = \AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Category_Slug_Migration::class;
+		$this->loader->add_action( 'admin_init', $category_slug_migration, 'maybe_migrate', 1 );
+
 		// Library Registry — collect add-on definitions at init P99 (Feature 027).
 		// Named variable before Loader call — Boot Flow Rule variable-first pattern.
 		$ability_library_registry = \AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Ability_Library_Registry::instance();

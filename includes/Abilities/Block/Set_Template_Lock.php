@@ -43,7 +43,7 @@ class Set_Template_Lock extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Set Template Lock', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Set the `templateLock` attribute on a container block. Modes: `all` (freeze), `insert` (allow content edits, block structural), `contentOnly` (WP 6.5+), `false` (no lock). `clear: true` removes the attribute.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

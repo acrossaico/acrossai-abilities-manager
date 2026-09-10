@@ -36,7 +36,7 @@ class Set_Permalink_Structure extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Set Permalink Structure', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Sets permalink_structure. "structure" accepts a preset name (plain, day-and-name, month-and-name, numeric, post-name) or a custom structure string like "/%year%/%postname%/". Rewrite rules are flushed automatically. category_base and tag_base are optional.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-settings',
+				'category'            => 'acrossai-settings',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -82,7 +82,7 @@ class Set_Permalink_Structure extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'configuration',
 						'sub_group'       => 'permalinks',
 						'sub_group_label' => __( 'Permalinks', 'acrossai-abilities-manager' ),
 					),

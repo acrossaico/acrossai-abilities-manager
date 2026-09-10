@@ -27,7 +27,7 @@ class Test_Rank_Math_Category_Registrar extends WP_UnitTestCase {
 	}
 
 	public function test_registers_correct_category_slug(): void {
-		$this->assertStringContainsString( "'acrossai-abilities-manager-rank-math'", $this->src );
+		$this->assertStringContainsString( "'acrossai-rank-math'", $this->src );
 	}
 
 	public function test_uses_wp_register_ability_category(): void {

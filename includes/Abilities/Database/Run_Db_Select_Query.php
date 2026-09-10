@@ -30,7 +30,7 @@ class Run_Db_Select_Query extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Run SELECT Query', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Executes a read-only SQL query (SELECT, SHOW, DESCRIBE, EXPLAIN). Pass the query in "sql" (or the alias "query"). Write statements are rejected. Results are capped by the limit parameter.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

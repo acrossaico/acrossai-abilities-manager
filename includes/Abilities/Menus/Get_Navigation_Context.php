@@ -31,7 +31,7 @@ class Get_Navigation_Context extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Navigation Context', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return one envelope containing every nav menu (id, name, item count) and every theme-registered nav-menu location, with the location→menu assignments resolved.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-menus',
+				'category'            => 'acrossai-menus',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -54,7 +54,7 @@ class Get_Navigation_Context extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'menus',
 						'sub_group_label' => __( 'Menus', 'acrossai-abilities-manager' ),
 					),

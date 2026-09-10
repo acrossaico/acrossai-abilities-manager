@@ -30,7 +30,7 @@ class Extract_Db_Schema extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Extract Database Schema', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Returns the full schema for every table in the database: columns, indexes, and CREATE TABLE SQL.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

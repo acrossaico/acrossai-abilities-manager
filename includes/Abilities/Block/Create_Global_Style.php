@@ -46,7 +46,7 @@ class Create_Global_Style extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create Global Style', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Creates Global Styles for a theme. Defaults to the database (wp_global_styles). Pass source=child_theme / theme / plugin to write theme.json. Provide either "content" (full theme.json JSON object or string) or "section" + "data" to seed a single section.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -109,7 +109,7 @@ class Create_Global_Style extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'global-styles',
 						'sub_group_label' => __( 'Global Styles', 'acrossai-abilities-manager' ),
 					),

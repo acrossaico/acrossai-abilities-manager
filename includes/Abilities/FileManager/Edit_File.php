@@ -49,7 +49,7 @@ class Edit_File extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create or Overwrite File', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Creates a new file or overwrites an existing one within the WordPress installation. Parent directory must already exist. Path must be relative to ABSPATH. Refuses wp-config.php and .htaccess at ABSPATH root.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -99,7 +99,7 @@ class Edit_File extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'file-manager',
+						'tab_group'       => 'files',
 						'sub_group'       => 'files',
 						'sub_group_label' => __( 'Files', 'acrossai-abilities-manager' ),
 					),

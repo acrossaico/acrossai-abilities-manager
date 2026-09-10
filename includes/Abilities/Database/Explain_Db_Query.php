@@ -30,7 +30,7 @@ class Explain_Db_Query extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Explain Query', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Runs EXPLAIN on a SELECT query and returns the MySQL query execution plan. Useful for diagnosing slow queries.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

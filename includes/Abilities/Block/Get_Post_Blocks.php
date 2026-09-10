@@ -8,7 +8,7 @@
  * @since      0.0.24
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\Block;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Block_Tree;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
@@ -33,7 +33,7 @@ class Get_Post_Blocks extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Post Blocks', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return a post\'s parsed Gutenberg block tree with each block annotated with its canonical integer-array path. Pass "path" to scope to a subtree (avoids fetching the whole page just to read one block), "depth" to bound how far below that subtree to descend (-1 unlimited, 0 subtree root only), and "include_html: false" to strip every node\'s innerHTML and innerContent when you only need structure. Paths use the same raw parse_blocks() index scheme as blocks/add-block / blocks/update-post-block / blocks/remove-block.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );
@@ -85,8 +85,8 @@ class Get_Post_Blocks extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
-						'sub_group'       => 'posts',
+						'tab_group'       => 'blocks',
+						'sub_group'       => 'post-blocks',
 						'sub_group_label' => __( 'Posts', 'acrossai-abilities-manager' ),
 					),
 					'show_in_rest' => true,

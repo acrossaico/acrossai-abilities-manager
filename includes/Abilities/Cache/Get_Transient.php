@@ -35,7 +35,7 @@ class Get_Transient extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Transient', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Read one transient by name via get_transient() (or get_site_transient() when site:true). Returns exists:false for absent entries so callers can distinguish that state from a transient whose stored value is literally false.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cache',
+				'category'            => 'acrossai-cache',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

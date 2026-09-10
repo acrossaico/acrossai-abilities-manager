@@ -31,7 +31,7 @@ class Validate_Content extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Validate Content', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Validate a block tree for shape and mutation safety. Accepts either post_id (fetch stored content), blocks[] (structured), or content (raw markup). Returns issues with severity + block path.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

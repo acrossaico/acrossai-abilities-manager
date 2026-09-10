@@ -30,7 +30,7 @@ class List_Media extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Media', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List media items via GET /wp/v2/media. Supports search (across title, caption, description, and alt-text), pagination, and a mime_type filter.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-media',
+				'category'            => 'acrossai-media',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -68,7 +68,7 @@ class List_Media extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'media',
+						'tab_group'       => 'content',
 						'sub_group'       => 'manage',
 						'sub_group_label' => __( 'Manage', 'acrossai-abilities-manager' ),
 					),

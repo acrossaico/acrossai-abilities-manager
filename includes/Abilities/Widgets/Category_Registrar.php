@@ -44,7 +44,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-widgets',
+			'acrossai-widgets',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Widgets', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for enumerating legacy widget sidebars and per-sidebar widget assignments.', 'acrossai-abilities-manager' ),

@@ -31,7 +31,7 @@ class Audit_Content extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Audit Content', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Run authoring-quality audit rules: missing alt text on core/image, buttons with no URL, headings without content, and other block-level smells. Accepts post_id, blocks[], or content.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

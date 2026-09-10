@@ -32,7 +32,7 @@ class Audit_Health extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Audit Database Health', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Bounded snapshot combining storage totals, engine mix, index issue counts, and options/autoload/transient rollup. One-call orientation read; delegates detail to audit-index-health and audit-options-health.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -44,7 +44,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-menus',
+			'acrossai-menus',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Menus', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for managing nav menus and menu items via the core REST endpoints.', 'acrossai-abilities-manager' ),

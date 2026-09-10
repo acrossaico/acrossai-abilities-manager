@@ -41,7 +41,7 @@ class Test_Get_Db_Prefix extends WP_UnitTestCase {
 	}
 
 	public function test_targets_the_database_category(): void {
-		$this->assertStringContainsString( "'acrossai-abilities-manager-database'", $this->src );
+		$this->assertStringContainsString( "'acrossai-database'", $this->src );
 	}
 
 	public function test_permission_callback_gates_on_manage_options(): void {

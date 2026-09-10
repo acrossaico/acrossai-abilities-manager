@@ -27,7 +27,7 @@ class Delete_Form_Submission extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Elementor Pro Form Submission', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Permanently delete an Elementor Pro Form widget submission plus its associated field values. Requires confirm=true. Requires Elementor Pro.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array(

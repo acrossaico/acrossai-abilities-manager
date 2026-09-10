@@ -36,7 +36,7 @@ class List_Plugins extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Plugins (Conflict Testing)', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Returns every installed plugin with its file identifier, name, version, DB-recorded active state, and any plugins it declares as required (WordPress 6.5+ Requires Plugins header).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-debugging',
+				'category'            => 'acrossai-debugging',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -70,7 +70,7 @@ class List_Plugins extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'debugging',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'conflict-testing',
 						'sub_group_label' => __( 'Conflict Testing', 'acrossai-abilities-manager' ),
 					),

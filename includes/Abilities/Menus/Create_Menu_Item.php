@@ -31,7 +31,7 @@ class Create_Menu_Item extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Create Menu Item', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Create a menu item via POST /wp/v2/menu-items. title and (object/object_id or url) are required.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-menus',
+				'category'            => 'acrossai-menus',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -87,7 +87,7 @@ class Create_Menu_Item extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'menu-items',
 						'sub_group_label' => __( 'Menu Items', 'acrossai-abilities-manager' ),
 					),

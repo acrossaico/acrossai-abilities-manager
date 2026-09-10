@@ -31,7 +31,7 @@ class Get_Media_Meta extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Media Meta', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Fetch the REST-exposed meta map for a media item (only keys registered with register_meta show_in_rest=true are returned).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-media',
+				'category'            => 'acrossai-media',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -63,7 +63,7 @@ class Get_Media_Meta extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'media',
+						'tab_group'       => 'content',
 						'sub_group'       => 'meta',
 						'sub_group_label' => __( 'Meta', 'acrossai-abilities-manager' ),
 					),

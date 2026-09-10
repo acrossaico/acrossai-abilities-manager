@@ -31,7 +31,7 @@ class Delete_Post extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Post', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Delete a post (any post type) via wp_delete_post(). Defaults to trash; pass force=true to delete permanently. When a published post is force-deleted, the response includes a suggested_redirect target for the dead URL.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -65,7 +65,7 @@ class Delete_Post extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'posts',
 						'sub_group_label' => __( 'Posts', 'acrossai-abilities-manager' ),
 					),

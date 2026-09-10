@@ -31,7 +31,7 @@ class Delete_User extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete User', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Delete a WordPress user. Optionally reassign their content to another user.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-users',
+				'category'            => 'acrossai-users',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

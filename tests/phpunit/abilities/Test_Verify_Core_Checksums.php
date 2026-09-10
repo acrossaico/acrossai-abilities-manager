@@ -36,7 +36,7 @@ class Test_Verify_Core_Checksums extends WP_UnitTestCase {
 
 	public function test_registers_correct_slug_and_category(): void {
 		$this->assertStringContainsString( "'core/verify-core-checksums'", $this->src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-core'", $this->src );
+		$this->assertStringContainsString( "'acrossai-core'", $this->src );
 	}
 
 	public function test_permission_callback_gates_manage_options(): void {

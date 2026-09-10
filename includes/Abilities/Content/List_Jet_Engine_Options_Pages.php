@@ -31,7 +31,7 @@ class List_Jet_Engine_Options_Pages extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Options Pages', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List Jet Engine options pages (slug, name, option key, fields). Requires Jet Engine to be active.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -54,7 +54,7 @@ class List_Jet_Engine_Options_Pages extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'options-pages',
 						'sub_group_label' => __( 'Options Pages', 'acrossai-abilities-manager' ),
 					),

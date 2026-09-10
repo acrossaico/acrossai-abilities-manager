@@ -30,7 +30,7 @@ class Flush_Transients extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Flush Transients', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Deletes WordPress transients. Use scope "expired" (default) to remove only expired transients, or "all" to remove every transient regardless of expiry.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-cache',
+				'category'            => 'acrossai-cache',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

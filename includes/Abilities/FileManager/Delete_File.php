@@ -45,7 +45,7 @@ class Delete_File extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete File', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Deletes a file within the WordPress installation. Path must be relative to ABSPATH. Requires confirm:true, refuses wp-config.php and .htaccess, writes a .bak.<timestamp> copy before deleting, and invalidates OPcache when available.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -86,7 +86,7 @@ class Delete_File extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'file-manager',
+						'tab_group'       => 'files',
 						'sub_group'       => 'files',
 						'sub_group_label' => __( 'Files', 'acrossai-abilities-manager' ),
 					),

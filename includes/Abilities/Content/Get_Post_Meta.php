@@ -32,7 +32,7 @@ class Get_Post_Meta extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Post Meta', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Fetch post meta via get_post_meta(). Pass key="" (the default) to retrieve every meta key for the post.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -72,7 +72,7 @@ class Get_Post_Meta extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'posts',
 						'sub_group_label' => __( 'Posts', 'acrossai-abilities-manager' ),
 					),

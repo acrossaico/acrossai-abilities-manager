@@ -35,7 +35,7 @@ class Cleanup_Expired_Transients extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Cleanup Expired Transients', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Delete expired transient timeout+value pairs in a bounded batch (default 100, max 500). Dry-run first: live writes require both dry_run=false AND confirm=true. Never returns transient names or values.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -81,7 +81,7 @@ class Cleanup_Expired_Transients extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group' => 'database',
+						'tab_group' => 'cache',
 						'sub_group' => 'safe-writes',
 					),
 					'show_in_rest' => true,

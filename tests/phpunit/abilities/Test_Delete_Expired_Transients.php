@@ -38,7 +38,7 @@ class Test_Delete_Expired_Transients extends WP_UnitTestCase {
 
 	public function test_registers_correct_slug_and_category(): void {
 		$this->assertStringContainsString( "'cache/delete-expired-transients'", $this->src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-cache'", $this->src );
+		$this->assertStringContainsString( "'acrossai-cache'", $this->src );
 	}
 
 	public function test_permission_callback_gates_manage_options(): void {

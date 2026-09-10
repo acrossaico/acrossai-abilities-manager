@@ -28,7 +28,7 @@ class List_Global_Widgets extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Elementor Global Widgets', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List all Elementor global (reusable) widgets — elementor_library posts with template_type=widget.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array( 'type' => 'object', 'properties' => array(), 'required' => array(), 'additionalProperties' => false ),

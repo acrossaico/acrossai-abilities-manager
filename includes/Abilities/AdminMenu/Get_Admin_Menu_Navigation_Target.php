@@ -36,7 +36,7 @@ class Get_Admin_Menu_Navigation_Target extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Admin Menu Navigation Target', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Resolve a natural-language hint (e.g. "settings > reading", "media library") to the closest matching admin URL by scoring token-overlap against the current admin-menu tree. Returns the top hit with a confidence in [0, 1] plus the top three alternates.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-admin-menu',
+				'category'            => 'acrossai-admin-menu',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -68,7 +68,7 @@ class Get_Admin_Menu_Navigation_Target extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'configuration',
 						'sub_group'       => 'admin-menu',
 						'sub_group_label' => __( 'Admin Menu', 'acrossai-abilities-manager' ),
 					),

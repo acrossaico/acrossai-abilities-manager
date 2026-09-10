@@ -31,7 +31,7 @@ class Generate_Query_Section extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Generate Query Section', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Generate a dynamic core/query section from a query-section recipe ID + input (post_type, per_page, template shape). Returns block tree only; does not save.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

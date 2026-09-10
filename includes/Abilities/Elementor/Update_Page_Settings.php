@@ -30,7 +30,7 @@ class Update_Page_Settings extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Elementor Page Settings', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Update the Elementor document-level page settings (layout, title, background, custom CSS). Merges new keys into existing settings; use force_replace=true to overwrite the full settings object.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

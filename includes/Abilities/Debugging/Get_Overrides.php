@@ -34,7 +34,7 @@ class Get_Overrides extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Conflict-Test Overrides', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Returns the current per-plugin override map and reports whether the underlying mu-plugin mechanism is deployed, missing, or stale.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-debugging',
+				'category'            => 'acrossai-debugging',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -64,7 +64,7 @@ class Get_Overrides extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'debugging',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'conflict-testing',
 						'sub_group_label' => __( 'Conflict Testing', 'acrossai-abilities-manager' ),
 					),

@@ -39,7 +39,7 @@ class Suggest_Design_Fixes extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Suggest Design Fixes', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Convert design-evaluation issues into concrete remediation suggestions. Accepts post_id (re-runs design evaluation) or issues[] (pass-through mode).', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

@@ -37,7 +37,7 @@ class Delete_Block_Pattern extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Block Pattern', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Deletes a pattern from one storage location: db, theme /patterns, or plugin /patterns. Auto-detects the source; returns error_code=multiple_locations on ambiguity. For theme deletions, the child theme is preferred unless theme_type=parent is set explicitly.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

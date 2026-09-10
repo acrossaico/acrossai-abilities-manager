@@ -44,7 +44,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-taxonomies',
+			'acrossai-taxonomies',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Taxonomies', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for inspecting taxonomies and managing terms across any taxonomy.', 'acrossai-abilities-manager' ),

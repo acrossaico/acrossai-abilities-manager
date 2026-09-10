@@ -36,7 +36,7 @@ class List_Admin_Menu_Pages extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Admin Menu Pages', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Enumerate every top-level admin menu entry plus its submenus. Reads the WP core $menu / $submenu globals populated after the admin_menu hook. Returns an empty result with a clear message when invoked outside the admin request lifecycle.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-admin-menu',
+				'category'            => 'acrossai-admin-menu',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -58,7 +58,7 @@ class List_Admin_Menu_Pages extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'configuration',
 						'sub_group'       => 'admin-menu',
 						'sub_group_label' => __( 'Admin Menu', 'acrossai-abilities-manager' ),
 					),

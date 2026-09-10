@@ -57,7 +57,7 @@ final class Category_Registrar {
 			return;
 		}
 		wp_register_ability_category(
-			'acrossai-abilities-manager-elementor',
+			'acrossai-elementor',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager — Elementor', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for managing Elementor page-builder documents: widget-schema discovery, element operations, template CRUD, kit and theme-builder management, design audits, and Elementor Pro custom-code and form-submission management.', 'acrossai-abilities-manager' ),

@@ -30,7 +30,7 @@ class Read_Reusable_Block extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Read Reusable Block', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return a single reusable block (wp_block CPT) by ID: title, slug, status, raw content, and the parsed block tree.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

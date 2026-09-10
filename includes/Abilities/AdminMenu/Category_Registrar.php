@@ -42,7 +42,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-admin-menu',
+			'acrossai-admin-menu',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager - Admin Menu', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for introspecting the WordPress admin menu: pages, submenus, settings, and current-screen context.', 'acrossai-abilities-manager' ),

@@ -26,7 +26,7 @@ class Update_Experiment extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Elementor Experiment', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Update an Elementor experiment state (active | inactive | default). Writes to elementor_experiment_<name> option.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array(

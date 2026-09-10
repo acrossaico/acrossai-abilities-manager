@@ -56,7 +56,7 @@ class Test_Feature_089_File_Consolidation extends WP_UnitTestCase {
 
 	public function test_list_directory_uses_expected_slug_and_category(): void {
 		$this->assertStringContainsString( "'file-manager/list-directory'", $this->files['list_directory'] );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-file-manager'", $this->files['list_directory'] );
+		$this->assertStringContainsString( "'acrossai-file-manager'", $this->files['list_directory'] );
 	}
 
 	public function test_list_directory_gates_on_manage_options(): void {
@@ -111,7 +111,7 @@ class Test_Feature_089_File_Consolidation extends WP_UnitTestCase {
 
 	public function test_copy_file_uses_expected_slug_and_category(): void {
 		$this->assertStringContainsString( "'file-manager/copy-file'", $this->files['copy_file'] );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-file-manager'", $this->files['copy_file'] );
+		$this->assertStringContainsString( "'acrossai-file-manager'", $this->files['copy_file'] );
 	}
 
 	public function test_copy_file_gates_on_manage_options(): void {
@@ -167,7 +167,7 @@ class Test_Feature_089_File_Consolidation extends WP_UnitTestCase {
 
 	public function test_move_file_uses_expected_slug_and_category(): void {
 		$this->assertStringContainsString( "'file-manager/move-file'", $this->files['move_file'] );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-file-manager'", $this->files['move_file'] );
+		$this->assertStringContainsString( "'acrossai-file-manager'", $this->files['move_file'] );
 	}
 
 	public function test_move_file_gates_on_manage_options(): void {

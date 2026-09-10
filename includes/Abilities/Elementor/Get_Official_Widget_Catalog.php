@@ -31,7 +31,7 @@ class Get_Official_Widget_Catalog extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Elementor Official Widget Catalog', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the canonical Elementor widget catalog (Basic / Pro / Theme / WooCommerce). Uses a 12-hour transient over the seeded catalog.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );

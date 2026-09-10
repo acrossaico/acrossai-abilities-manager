@@ -37,7 +37,7 @@ class Update_Site_Logo extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Site Logo', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Sets the site (custom) logo to a media library attachment_id. Pass 0 to remove. Stored as the `custom_logo` theme_mod; the active theme must support custom-logo for it to render.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-settings',
+				'category'            => 'acrossai-settings',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -70,7 +70,7 @@ class Update_Site_Logo extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'site-identity',
 						'sub_group_label' => __( 'Site Identity', 'acrossai-abilities-manager' ),
 					),

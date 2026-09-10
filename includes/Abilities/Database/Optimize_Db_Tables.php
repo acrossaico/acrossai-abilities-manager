@@ -30,7 +30,7 @@ class Optimize_Db_Tables extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Optimize Database Tables', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Runs OPTIMIZE TABLE on the specified tables. Defaults to all WordPress-prefixed tables when no tables are provided. Reclaims unused space and defragments data files.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

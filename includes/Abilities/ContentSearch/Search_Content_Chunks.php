@@ -32,7 +32,7 @@ class Search_Content_Chunks extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Search Content Chunks', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Split search-matching post content into paragraph-length chunks and return the ones that contain the query substring. Fallback implementation — no persistent chunk table. Backed by the same WP_Query `s=` search as content-search-items.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content-search',
+				'category'            => 'acrossai-content-search',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -66,7 +66,7 @@ class Search_Content_Chunks extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'content-search',
+						'tab_group'       => 'content',
 						'sub_group'       => 'search',
 						'sub_group_label' => __( 'Search', 'acrossai-abilities-manager' ),
 					),

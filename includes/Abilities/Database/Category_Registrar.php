@@ -47,7 +47,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-database',
+			'acrossai-database',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Database', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for inspecting and operating on the WordPress database: schema, queries, stats, and maintenance.', 'acrossai-abilities-manager' ),

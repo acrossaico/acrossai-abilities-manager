@@ -30,7 +30,7 @@ class Delete_Option extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Delete Option', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Delete a wp_options row via delete_option(). Idempotent — succeeds even if the option does not exist.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-options',
+				'category'            => 'acrossai-options',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -55,7 +55,7 @@ class Delete_Option extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'configuration',
 						'sub_group'       => 'manage',
 						'sub_group_label' => __( 'Manage', 'acrossai-abilities-manager' ),
 					),

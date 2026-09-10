@@ -31,7 +31,7 @@ class Update_Term extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Term', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Update a term in a taxonomy via POST /wp/v2/{rest_base}/{id}.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-taxonomies',
+				'category'            => 'acrossai-taxonomies',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -65,7 +65,7 @@ class Update_Term extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'terms',
 						'sub_group_label' => __( 'Terms', 'acrossai-abilities-manager' ),
 					),

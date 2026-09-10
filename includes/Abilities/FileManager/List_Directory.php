@@ -39,7 +39,7 @@ class List_Directory extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Directory', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Recursively list entries under a directory inside the WordPress installation. Path must be relative to ABSPATH. Results are bounded by max_depth (default 5, max 20) and max_entries (default 1000, max 5000); when either bound is reached the response sets truncated:true. Symlinks are not followed.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-file-manager',
+				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -100,7 +100,7 @@ class List_Directory extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'file-manager',
+						'tab_group'       => 'files',
 						'sub_group'       => 'files',
 						'sub_group_label' => __( 'Files', 'acrossai-abilities-manager' ),
 					),

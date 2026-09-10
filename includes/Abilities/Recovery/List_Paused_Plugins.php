@@ -31,7 +31,7 @@ class List_Paused_Plugins extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Paused Plugins', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Returns every plugin WordPress has paused after a fatal error, with the captured error details (type, file, line, message). Returns an empty array when no plugins are paused.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-recovery',
+				'category'            => 'acrossai-recovery',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -71,7 +71,7 @@ class List_Paused_Plugins extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'recovery',
 						'sub_group_label' => __( 'Recovery Mode', 'acrossai-abilities-manager' ),
 					),

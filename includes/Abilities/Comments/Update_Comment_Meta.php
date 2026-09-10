@@ -31,7 +31,7 @@ class Update_Comment_Meta extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Update Comment Meta', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Write meta values on a comment via POST /wp/v2/comments/{id} with a meta object. Only keys registered with register_meta show_in_rest=true accept writes.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-comments',
+				'category'            => 'acrossai-comments',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -64,7 +64,7 @@ class Update_Comment_Meta extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'comments',
+						'tab_group'       => 'content',
 						'sub_group'       => 'meta',
 						'sub_group_label' => __( 'Meta', 'acrossai-abilities-manager' ),
 					),

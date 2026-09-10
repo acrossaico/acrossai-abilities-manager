@@ -44,7 +44,7 @@ class Set_Allowed_Blocks extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Set Allowed Blocks', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Set the `allowedBlocks` attribute on a container block. Empty array removes the restriction. Rejects non-container targets.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

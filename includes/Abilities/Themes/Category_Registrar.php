@@ -47,7 +47,7 @@ final class Category_Registrar {
 	 */
 	public function register(): void {
 		wp_register_ability_category(
-			'acrossai-abilities-manager-themes',
+			'acrossai-themes',
 			array(
 				'label'       => __( 'Acrossai Abilities Manager â Theme Management', 'acrossai-abilities-manager' ),
 				'description' => __( 'Abilities for managing WordPress themes: install, activate, list, and delete.', 'acrossai-abilities-manager' ),

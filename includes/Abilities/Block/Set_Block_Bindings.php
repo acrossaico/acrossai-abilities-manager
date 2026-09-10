@@ -32,7 +32,7 @@ class Set_Block_Bindings extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Set Block Bindings', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Merge or replace metadata.bindings on the target block. Validates sources against WP_Block_Bindings_Registry (WP 6.5+). `clear` is a list of attribute names to delete.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

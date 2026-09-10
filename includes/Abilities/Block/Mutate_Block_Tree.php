@@ -34,7 +34,7 @@ class Mutate_Block_Tree extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Mutate Block Tree', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Apply an ordered list of primitive mutations (insert, remove, move, update, duplicate) to a post\'s block tree in a single atomic operation. Reverts on any failure.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-block',
+				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );

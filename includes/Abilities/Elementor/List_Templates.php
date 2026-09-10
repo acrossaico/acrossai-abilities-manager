@@ -24,7 +24,7 @@ class List_Templates extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Elementor Templates', 'acrossai-abilities-manager' ),
 				'description'         => __( 'List saved Elementor templates (elementor_library CPT). Filter by template_type and status.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-elementor',
+				'category'            => 'acrossai-elementor',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array(

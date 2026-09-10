@@ -32,7 +32,7 @@ class List_Upload_Mime_Types extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'List Allowed Upload MIME Types', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Returns the effective allowlist for the upload-media ability — the site\'s standard allowlist (from get_allowed_mime_types()) merged with the extras persisted by this plugin. Each row is annotated by source: WordPress core default, this plugin, or another plugin/filter. The plugin\'s extras only apply during upload-media calls; regular Media Library uploads via wp-admin are not affected.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-media',
+				'category'            => 'acrossai-media',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
@@ -83,7 +83,7 @@ class List_Upload_Mime_Types extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'media',
+						'tab_group'       => 'configuration',
 						'sub_group'       => 'manage',
 						'sub_group_label' => __( 'Manage', 'acrossai-abilities-manager' ),
 					),

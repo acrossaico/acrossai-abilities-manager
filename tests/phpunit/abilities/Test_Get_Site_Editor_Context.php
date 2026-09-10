@@ -24,7 +24,7 @@ class Test_Get_Site_Editor_Context extends WP_UnitTestCase {
 
 	public function test_slug_and_category_unchanged(): void {
 		$this->assertStringContainsString( "'blocks/get-site-editor-context'", $this->src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-block'", $this->src );
+		$this->assertStringContainsString( "'acrossai-block'", $this->src );
 	}
 
 	public function test_existing_output_fields_preserved(): void {

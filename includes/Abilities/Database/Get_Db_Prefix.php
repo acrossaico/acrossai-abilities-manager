@@ -33,7 +33,7 @@ class Get_Db_Prefix extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Get Database Prefix', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return the current-blog database table prefix and the multisite base (network) prefix.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-database',
+				'category'            => 'acrossai-database',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' );
