@@ -127,7 +127,7 @@ class Update_Block_Template extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'templates',
 						'sub_group_label' => __( 'Templates', 'acrossai-abilities-manager' ),
 					),

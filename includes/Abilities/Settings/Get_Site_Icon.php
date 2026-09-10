@@ -54,7 +54,7 @@ class Get_Site_Icon extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'site-identity',
 						'sub_group_label' => __( 'Site Identity', 'acrossai-abilities-manager' ),
 					),

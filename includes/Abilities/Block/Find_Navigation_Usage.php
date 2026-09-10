@@ -72,7 +72,7 @@ class Find_Navigation_Usage extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'site-editor',
 						'sub_group_label' => __( 'Site Editor', 'acrossai-abilities-manager' ),
 					),

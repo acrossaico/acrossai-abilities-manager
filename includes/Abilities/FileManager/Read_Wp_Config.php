@@ -73,7 +73,7 @@ class Read_Wp_Config extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'file-manager',
+						'tab_group'       => 'files',
 						'sub_group'       => 'wp-config',
 						'sub_group_label' => __( 'WP Config', 'acrossai-abilities-manager' ),
 					),

@@ -63,7 +63,7 @@ class Get_Media_Meta extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'media',
+						'tab_group'       => 'content',
 						'sub_group'       => 'meta',
 						'sub_group_label' => __( 'Meta', 'acrossai-abilities-manager' ),
 					),

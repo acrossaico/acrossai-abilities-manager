@@ -57,7 +57,7 @@ class List_Rewrite_Rules extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'settings',
+						'tab_group'       => 'configuration',
 						'sub_group'       => 'permalinks',
 						'sub_group_label' => __( 'Permalinks', 'acrossai-abilities-manager' ),
 					),

@@ -75,7 +75,7 @@ class Uninstall_Plugin extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'plugins',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'lifecycle',
 						'sub_group_label' => __( 'Lifecycle', 'acrossai-abilities-manager' ),
 					),

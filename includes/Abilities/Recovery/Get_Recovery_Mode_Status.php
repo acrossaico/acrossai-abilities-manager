@@ -55,7 +55,7 @@ class Get_Recovery_Mode_Status extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'recovery',
 						'sub_group_label' => __( 'Recovery Mode', 'acrossai-abilities-manager' ),
 					),

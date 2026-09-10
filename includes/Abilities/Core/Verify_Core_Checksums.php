@@ -82,7 +82,7 @@ class Verify_Core_Checksums extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'integrity',
 						'sub_group_label' => __( 'Integrity', 'acrossai-abilities-manager' ),
 					),

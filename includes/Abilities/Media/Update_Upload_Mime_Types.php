@@ -122,7 +122,7 @@ class Update_Upload_Mime_Types extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'media',
+						'tab_group'       => 'configuration',
 						'sub_group'       => 'manage',
 						'sub_group_label' => __( 'Manage', 'acrossai-abilities-manager' ),
 					),

@@ -102,7 +102,7 @@ class List_Block_Template_Parts extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'template-parts',
 						'sub_group_label' => __( 'Template Parts', 'acrossai-abilities-manager' ),
 					),

@@ -76,7 +76,7 @@ class List_Cpt_Item_Revisions extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'cpt',
 						'sub_group_label' => __( 'Custom Post Types', 'acrossai-abilities-manager' ),
 					),

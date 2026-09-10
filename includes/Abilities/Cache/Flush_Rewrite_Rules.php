@@ -59,7 +59,7 @@ class Flush_Rewrite_Rules extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'cache',
+						'tab_group'       => 'configuration',
 					),
 					'show_in_rest' => true,
 					'mcp'          => array(

@@ -41,8 +41,8 @@ class Test_Block_Writers_Return_Content_Flag extends WP_UnitTestCase {
 	 */
 	public static function block_writer_provider(): array {
 		return array(
-			'add-block'         => array( 'includes/Abilities/Content/Add_Block.php', 'blocks/add-block' ),
-			'update-post-block' => array( 'includes/Abilities/Content/Update_Post_Block.php', 'blocks/update-post-block' ),
+			'add-block'         => array( 'includes/Abilities/Block/Add_Block.php', 'blocks/add-block' ),
+			'update-post-block' => array( 'includes/Abilities/Block/Update_Post_Block.php', 'blocks/update-post-block' ),
 		);
 	}
 

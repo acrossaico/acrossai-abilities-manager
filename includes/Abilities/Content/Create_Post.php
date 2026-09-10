@@ -78,7 +78,7 @@ class Create_Post extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'posts',
 						'sub_group_label' => __( 'Posts', 'acrossai-abilities-manager' ),
 					),

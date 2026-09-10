@@ -59,7 +59,7 @@ class Update_Jet_Engine_Options_Page_Field extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'options-pages',
 						'sub_group_label' => __( 'Options Pages', 'acrossai-abilities-manager' ),
 					),

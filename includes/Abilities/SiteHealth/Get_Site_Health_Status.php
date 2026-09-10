@@ -82,7 +82,7 @@ class Get_Site_Health_Status extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'read',
 						'sub_group_label' => __( 'Read Site Health', 'acrossai-abilities-manager' ),
 					),

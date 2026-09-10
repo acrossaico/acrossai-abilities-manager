@@ -2073,3 +2073,58 @@ alongside the autoplay change that made the YouTube contact render-time. Related
 [[DEC-ADMIN-THIRD-PARTY-EMBED]] (how to embed) and
 [[DEC-ADMIN-EMBED-AUTOPLAY-EXCEPTION]] (when autoplay is permitted) — this entry is the reporting
 obligation the second one triggers.
+
+---
+
+### 2026-09-10 — Ability tabs are task families, capped at thirteen (DEC-ABILITY-FAMILY-TAXONOMY)
+
+**Context**
+The Ability Integrations screen had 18 tabs, derived from `meta.acrossai.tab_group`. One of them,
+`core`, held 105 of the ~450 abilities — nine whole folders plus parts of two more. It was not a
+subject; it was where abilities landed when nobody chose. Fourteen of the other tabs mapped 1:1 to a
+single card, so the tab level bought them nothing. Two folders were split arbitrarily across two tabs
+(`Settings/` 10 `core` + 1 `settings`; `SiteHealth/` 3 + 3), which made the same card render twice
+showing a different half of itself each time.
+
+Separately, Feature 100 will expose one MCP tool per family. That turns the tab count from a UI
+preference into a number with a measurable ceiling.
+
+**Decision**
+Tabs are **task families named for what an administrator is doing**, not for where the code lives.
+Thirteen of them: `content`, `blocks`, `appearance`, `configuration`, `users`, `updates`, `cron`,
+`cache`, `database`, `files`, `diagnostics`, plus `elementor` and `rank-math` when active.
+
+Three rules follow:
+
+1. **`tab_group` is assigned per ability, not per folder.** Five categories legitimately span two
+   families — an ability is filed by its job. `LibraryCard` already renders membership chips, so a
+   card in two tabs announces itself.
+2. **Thirteen is a ceiling, not a coincidence.** Anthropic documents tool-selection accuracy degrading
+   past 30–50 available tools; production telemetry puts Haiku below 90% between 10 and 15 and Sonnet
+   below 90% at 30. Adding a fourteenth family is cheap in wp-admin and not cheap in an AI client.
+   Adding one is a decision, not a reflex.
+3. **Move a file between folders only when its slug namespace already disagrees with its folder.**
+   Eight abilities registering as `blocks/*` inside `Content/` were moved to `Block/`; their slugs did
+   not change, so no MCP client was affected. Three superficially similar candidates were left alone
+   because their slug matched their folder — moving them would relocate the inconsistency or force a
+   breaking slug rename.
+
+**Tradeoffs**
+- Gained: every tab has a describable job, and the tab set is the same concept the MCP tool set will
+  use — one taxonomy instead of two.
+- Made harder: a category's enable toggle and All/Specific mode are keyed by category, so a card
+  spanning two families shows one shared switch in both places. Turning `Block` off from Appearance
+  also removes its authoring abilities from Blocks. The chips warn; the control is genuinely shared.
+- Made harder: `?tab=core` and nine other deep links no longer resolve (they fall back to `All`,
+  silently, per spec 052).
+- Reconsider: if the five spanning categories are ever split into real separate categories, the shared
+  switch disappears and this tradeoff goes away. That needs a config migration — `acrossai_library_config`
+  is keyed by category.
+
+**Evidence**
+Feature 101. 229 `tab_group` declarations changed, 8 files moved, `core` retired. The runtime has no
+allow-list, no `register_tab()` and no server-side validation, so nothing fails when an ability is
+misfiled — `tests/phpunit/Modules/Library/Test_Ability_Family_Map.php` is the only guard and holds the
+canonical map. Related: [[PATTERN-ABILITY-LIBRARY-TAB-AUTO-DERIVE]] (the derivation and its
+silent-misplacement failure mode, which `core` was a slow-motion instance of) and
+[[DEC-META-ACROSSAI-NAMESPACE]] (which establishes the field).

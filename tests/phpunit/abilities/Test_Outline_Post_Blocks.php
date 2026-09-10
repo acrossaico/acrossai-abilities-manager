@@ -18,7 +18,7 @@ class Test_Outline_Post_Blocks extends WP_UnitTestCase {
 		parent::setUp();
 		$plugin_root = dirname( __DIR__, 3 );
 		$this->src   = (string) file_get_contents(
-			$plugin_root . '/includes/Abilities/Content/Outline_Post_Blocks.php'
+			$plugin_root . '/includes/Abilities/Block/Outline_Post_Blocks.php'
 		);
 	}
 
@@ -28,7 +28,7 @@ class Test_Outline_Post_Blocks extends WP_UnitTestCase {
 
 	public function test_registers_correct_slug_and_category(): void {
 		$this->assertStringContainsString( "'blocks/outline-post-blocks'", $this->src );
-		$this->assertStringContainsString( "'acrossai-abilities-manager-content'", $this->src );
+		$this->assertStringContainsString( "'acrossai-abilities-manager-block'", $this->src );
 	}
 
 	public function test_permission_callback_matches_sibling_abilities(): void {

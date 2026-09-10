@@ -65,7 +65,7 @@ class Install_Theme extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'themes',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'lifecycle',
 						'sub_group_label' => __( 'Lifecycle', 'acrossai-abilities-manager' ),
 					),

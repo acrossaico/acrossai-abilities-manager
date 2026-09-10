@@ -64,7 +64,7 @@ class Clear_Debug_Log extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'file-manager',
+						'tab_group'       => 'files',
 						'sub_group'       => 'debug',
 						'sub_group_label' => __( 'Debug', 'acrossai-abilities-manager' ),
 					),

@@ -58,7 +58,7 @@ class List_Themes extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'themes',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'info',
 						'sub_group_label' => __( 'Info', 'acrossai-abilities-manager' ),
 					),

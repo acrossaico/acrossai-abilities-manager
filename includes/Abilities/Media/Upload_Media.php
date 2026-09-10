@@ -133,7 +133,7 @@ class Upload_Media extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'media',
+						'tab_group'       => 'content',
 						'sub_group'       => 'manage',
 						'sub_group_label' => __( 'Manage', 'acrossai-abilities-manager' ),
 					),

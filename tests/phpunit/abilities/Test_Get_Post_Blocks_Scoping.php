@@ -107,7 +107,7 @@ class Test_Get_Post_Blocks_Scoping extends WP_UnitTestCase {
 	 * @return mixed
 	 */
 	private function invoke( string $method, array $args ) {
-		$class  = 'AcrossAI_Abilities_Manager\\Includes\\Abilities\\Content\\Get_Post_Blocks';
+		$class  = 'AcrossAI_Abilities_Manager\\Includes\\Abilities\\Block\\Get_Post_Blocks';
 		$refl   = new ReflectionMethod( $class, $method );
 		$refl->setAccessible( true );
 		return $refl->invokeArgs( null, $args );
@@ -256,7 +256,7 @@ class Test_Get_Post_Blocks_Scoping extends WP_UnitTestCase {
 	}
 
 	public function test_reflection_confirms_all_new_helpers_are_private_static(): void {
-		$refl = new ReflectionClass( 'AcrossAI_Abilities_Manager\\Includes\\Abilities\\Content\\Get_Post_Blocks' );
+		$refl = new ReflectionClass( 'AcrossAI_Abilities_Manager\\Includes\\Abilities\\Block\\Get_Post_Blocks' );
 		foreach ( array( 'sanitize_path', 'parent_path', 'normalise_scoped_root', 'truncate_depth', 'truncate_recursive', 'strip_html', 'format_path_error' ) as $name ) {
 			$this->assertTrue( $refl->hasMethod( $name ), "Get_Post_Blocks::{$name}() must exist" );
 			$m = $refl->getMethod( $name );

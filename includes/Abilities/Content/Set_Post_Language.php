@@ -61,7 +61,7 @@ class Set_Post_Language extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'content',
 						'sub_group'       => 'multilanguage',
 						'sub_group_label' => __( 'Multilanguage', 'acrossai-abilities-manager' ),
 					),

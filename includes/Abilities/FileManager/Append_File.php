@@ -115,7 +115,7 @@ class Append_File extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'file-manager',
+						'tab_group'       => 'files',
 						'sub_group'       => 'files',
 						'sub_group_label' => __( 'Files', 'acrossai-abilities-manager' ),
 					),

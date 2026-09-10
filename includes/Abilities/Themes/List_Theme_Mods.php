@@ -56,7 +56,7 @@ class List_Theme_Mods extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'themes',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'introspection',
 						'sub_group_label' => __( 'Introspection', 'acrossai-abilities-manager' ),
 					),

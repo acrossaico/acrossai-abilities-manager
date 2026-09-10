@@ -67,7 +67,7 @@ class Check_Wp_Core_Update extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'lifecycle',
 						'sub_group_label' => __( 'Lifecycle', 'acrossai-abilities-manager' ),
 					),

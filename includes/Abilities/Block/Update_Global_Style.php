@@ -123,7 +123,7 @@ class Update_Global_Style extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'global-styles',
 						'sub_group_label' => __( 'Global Styles', 'acrossai-abilities-manager' ),
 					),

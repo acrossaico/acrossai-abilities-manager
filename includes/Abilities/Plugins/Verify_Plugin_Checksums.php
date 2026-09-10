@@ -77,7 +77,7 @@ class Verify_Plugin_Checksums extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'plugins',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'integrity',
 						'sub_group_label' => __( 'Integrity', 'acrossai-abilities-manager' ),
 					),

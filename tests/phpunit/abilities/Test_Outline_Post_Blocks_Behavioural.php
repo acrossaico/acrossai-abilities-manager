@@ -15,7 +15,7 @@
 
 namespace AcrossAI_Abilities_Manager\Tests\PHPUnit\Abilities;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Content\Outline_Post_Blocks;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Block\Outline_Post_Blocks;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Block_Tree;
 use WP_UnitTestCase;
 

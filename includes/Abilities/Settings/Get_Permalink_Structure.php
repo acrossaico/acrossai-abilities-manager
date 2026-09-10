@@ -57,7 +57,7 @@ class Get_Permalink_Structure extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'configuration',
 						'sub_group'       => 'permalinks',
 						'sub_group_label' => __( 'Permalinks', 'acrossai-abilities-manager' ),
 					),

@@ -8,7 +8,7 @@
  * @since      0.0.24
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\Block;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Block_Tree;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
@@ -32,7 +32,7 @@ class Add_Block extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Add Block', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Insert a new Gutenberg block into a post at the given parent_path and sibling index. If index >= current sibling count, the block is appended.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-abilities-manager-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );
@@ -88,8 +88,8 @@ class Add_Block extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
-						'sub_group'       => 'posts',
+						'tab_group'       => 'blocks',
+						'sub_group'       => 'post-blocks',
 						'sub_group_label' => __( 'Posts', 'acrossai-abilities-manager' ),
 					),
 					'show_in_rest' => true,

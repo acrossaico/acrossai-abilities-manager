@@ -127,7 +127,7 @@ class Update_Block_Style_Variation extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'block-style-variations',
 						'sub_group_label' => __( 'Block Style Variations', 'acrossai-abilities-manager' ),
 					),

@@ -60,7 +60,7 @@ class Find_Internal_Links extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'content-search',
+						'tab_group'       => 'content',
 						'sub_group'       => 'find',
 						'sub_group_label' => __( 'Find', 'acrossai-abilities-manager' ),
 					),

@@ -64,7 +64,7 @@ class List_Image_Sizes extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'media',
+						'tab_group'       => 'content',
 						'sub_group'       => 'introspection',
 						'sub_group_label' => __( 'Introspection', 'acrossai-abilities-manager' ),
 					),

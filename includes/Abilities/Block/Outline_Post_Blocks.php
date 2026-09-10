@@ -9,7 +9,7 @@
  * @since      0.0.32
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\Block;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Block_Tree;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
@@ -44,7 +44,7 @@ class Outline_Post_Blocks extends Ability_Definition {
 			'args' => array(
 				'label'               => __( 'Outline Post Blocks', 'acrossai-abilities-manager' ),
 				'description'         => __( 'Return a flat, depth-first index of a post\'s Gutenberg blocks — canonical path, block type, child count, byte size, and a short text preview — without any block content. Cheap way to locate a block before editing it via blocks/add-block, blocks/update-post-block, or blocks/remove-block; paths returned here are drop-in usable with those abilities. Paths are positional and valid as of the response\'s post_modified_gmt: re-run the outline after any write rather than caching paths across edits. The "contains" filter matches only within the extracted text preview (up to max_text characters), so raise max_text for deeper substring searches.', 'acrossai-abilities-manager' ),
-				'category'            => 'acrossai-abilities-manager-content',
+				'category'            => 'acrossai-abilities-manager-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
 					return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' );
@@ -110,8 +110,8 @@ class Outline_Post_Blocks extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
-						'sub_group'       => 'posts',
+						'tab_group'       => 'blocks',
+						'sub_group'       => 'post-blocks',
 						'sub_group_label' => __( 'Posts', 'acrossai-abilities-manager' ),
 					),
 					'show_in_rest' => true,

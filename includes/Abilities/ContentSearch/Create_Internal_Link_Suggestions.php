@@ -75,7 +75,7 @@ class Create_Internal_Link_Suggestions extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'content-search',
+						'tab_group'       => 'content',
 						'sub_group'       => 'internal-links',
 						'sub_group_label' => __( 'Internal Links', 'acrossai-abilities-manager' ),
 					),

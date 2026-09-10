@@ -81,7 +81,7 @@ class Update_Theme_Json extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'theme-json-settings',
 						'sub_group_label' => __( 'theme.json Settings', 'acrossai-abilities-manager' ),
 					),

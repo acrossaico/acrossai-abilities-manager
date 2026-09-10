@@ -20,7 +20,7 @@ class Test_Update_Post_Block_Nested extends WP_UnitTestCase {
 		parent::setUp();
 		$plugin_root = dirname( __DIR__, 3 );
 		$this->src   = (string) file_get_contents(
-			$plugin_root . '/includes/Abilities/Content/Update_Post_Block.php'
+			$plugin_root . '/includes/Abilities/Block/Update_Post_Block.php'
 		);
 	}
 

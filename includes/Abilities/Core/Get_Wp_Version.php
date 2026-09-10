@@ -56,7 +56,7 @@ class Get_Wp_Version extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'updates',
 						'sub_group'       => 'introspection',
 						'sub_group_label' => __( 'Introspection', 'acrossai-abilities-manager' ),
 					),

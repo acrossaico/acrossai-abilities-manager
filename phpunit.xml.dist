@@ -40,6 +40,7 @@
 			<file>tests/phpunit/abilities/Test_Block_Writers_Return_Content_Flag.php</file>
 		</testsuite>
 		<testsuite name="library-unit">
+			<file>tests/phpunit/Modules/Library/Test_Ability_Family_Map.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Ability_Definition.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Ability_Library_Registry.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Ability_Library_Config.php</file>

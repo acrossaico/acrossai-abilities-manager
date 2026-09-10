@@ -54,7 +54,7 @@ class Unset_Site_Maintenance_Mode extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'site-health',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'maintenance',
 						'sub_group_label' => __( 'Maintenance', 'acrossai-abilities-manager' ),
 					),

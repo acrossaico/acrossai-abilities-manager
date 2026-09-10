@@ -81,7 +81,7 @@ class Cleanup_Expired_Transients extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group' => 'database',
+						'tab_group' => 'cache',
 						'sub_group' => 'safe-writes',
 					),
 					'show_in_rest' => true,

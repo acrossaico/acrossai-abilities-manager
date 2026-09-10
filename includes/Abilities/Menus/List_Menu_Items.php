@@ -66,7 +66,7 @@ class List_Menu_Items extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'menu-items',
 						'sub_group_label' => __( 'Menu Items', 'acrossai-abilities-manager' ),
 					),

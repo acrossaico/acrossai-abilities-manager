@@ -372,15 +372,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Media\List_Image_Sizes();
 		new Menus\Get_Navigation_Context();
 		new Menus\List_Navigation_Locations();
-		new Content\Update_Post_Block();
+		new Block\Update_Post_Block();
 		// Feature 066 — Block tree mutation & nested editing.
-		new Content\Get_Post_Blocks();
-		new Content\Outline_Post_Blocks();
-		new Content\Add_Block();
-		new Content\Remove_Block();
-		new Content\Duplicate_Block();
-		new Content\Move_Block();
-		new Content\Insert_Pattern();
+		new Block\Get_Post_Blocks();
+		new Block\Outline_Post_Blocks();
+		new Block\Add_Block();
+		new Block\Remove_Block();
+		new Block\Duplicate_Block();
+		new Block\Move_Block();
+		new Block\Insert_Pattern();
 		new Content\Inspect_Post_Autosaves();
 		new Block\Get_Site_Editor_Context();
 		new Block\Refresh_Site_Editor_Context();

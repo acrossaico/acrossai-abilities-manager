@@ -72,7 +72,7 @@ class Search_Options extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'configuration',
 						'sub_group'       => 'search',
 						'sub_group_label' => __( 'Search', 'acrossai-abilities-manager' ),
 					),

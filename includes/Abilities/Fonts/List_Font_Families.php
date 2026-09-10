@@ -70,7 +70,7 @@ class List_Font_Families extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'font-families',
 						'sub_group_label' => __( 'Font Families', 'acrossai-abilities-manager' ),
 					),

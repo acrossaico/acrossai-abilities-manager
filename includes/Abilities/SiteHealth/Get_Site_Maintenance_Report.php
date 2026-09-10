@@ -66,7 +66,7 @@ class Get_Site_Maintenance_Report extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'core',
+						'tab_group'       => 'diagnostics',
 						'sub_group'       => 'site-health',
 						'sub_group_label' => __( 'Site Health', 'acrossai-abilities-manager' ),
 					),

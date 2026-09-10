@@ -63,7 +63,7 @@ class Refresh_Content_Index_Batch extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'content-search',
+						'tab_group'       => 'content',
 						'sub_group'       => 'index',
 						'sub_group_label' => __( 'Index', 'acrossai-abilities-manager' ),
 					),

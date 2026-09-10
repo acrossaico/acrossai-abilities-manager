@@ -84,7 +84,7 @@ class Create_Zip_Backup extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'file-manager',
+						'tab_group'       => 'files',
 						'sub_group'       => 'backups',
 						'sub_group_label' => __( 'Backups', 'acrossai-abilities-manager' ),
 					),

@@ -98,7 +98,7 @@ class Delete_Block_Template_Part extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'blocks',
+						'tab_group'       => 'appearance',
 						'sub_group'       => 'template-parts',
 						'sub_group_label' => __( 'Template Parts', 'acrossai-abilities-manager' ),
 					),
