@@ -91,6 +91,12 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		$loader->add_action( 'wp_abilities_api_categories_init', Recovery\Category_Registrar::instance(), 'register' );
 		// Feature 063 — Widgets category.
 		$loader->add_action( 'wp_abilities_api_categories_init', Widgets\Category_Registrar::instance(), 'register' );
+		// Feature 061 — Debugging category. Its registrar shipped with the
+		// feature but was never wired here, so the category never existed and
+		// WP rejected all seven Debugging abilities on every request with
+		// _doing_it_wrong. Registering the abilities is not enough; a category
+		// must be registered before any ability may claim it.
+		$loader->add_action( 'wp_abilities_api_categories_init', Debugging\Category_Registrar::instance(), 'register' );
 	}
 
 	/**
