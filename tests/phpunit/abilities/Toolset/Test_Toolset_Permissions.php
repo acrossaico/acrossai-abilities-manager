@@ -293,13 +293,13 @@ class Test_Toolset_Permissions extends TestCase {
 	/* ----------------------------------------------------------------- */
 
 	/**
-	 * A registered Toolset hides itself from the transport's ability pickers.
+	 * A registered Toolset declares itself as a tool-level ability.
 	 *
-	 * An operator curating tools wants the abilities, not the 13 dispatchers
-	 * that exist to reach them. The hook belongs to acrossai-mcp-manager; this
-	 * plugin only contributes to it.
+	 * The transport hides these on its Abilities tab and offers only these on
+	 * its Tools tab. The hook belongs to acrossai-mcp-manager; this plugin only
+	 * contributes to it.
 	 */
-	public function test_registered_toolset_adds_itself_to_the_hide_list(): void {
+	public function test_registered_toolset_declares_itself(): void {
 		$this->given_member( 'content/get-post' );
 
 		$toolset = new Fixture_Toolset();
@@ -307,34 +307,34 @@ class Test_Toolset_Permissions extends TestCase {
 
 		$this->assertSame(
 			array( 'toolset/content' ),
-			$toolset->hide_from_tool_pickers( array() )
+			$toolset->declare_tool_level_ability( array() )
 		);
 	}
 
 	/**
 	 * The slug is contributed before registration has run.
 	 *
-	 * This is the case that decides the whole design. The transport builds its
-	 * hide-list during admin page setup, which happens BEFORE
+	 * This is the case that decides the whole design. The transport builds the
+	 * list during admin page setup, which happens BEFORE
 	 * `wp_abilities_api_init`. Gating on "have I registered yet?" therefore
-	 * suppresses every Toolset and all 13 show up in the picker — which is
-	 * exactly what shipped first and had to be reverted.
+	 * declares nothing at all — which is exactly what shipped first and had to
+	 * be reverted.
 	 */
 	public function test_slug_is_contributed_before_registration_runs(): void {
 		$toolset = new Fixture_Toolset();
 
 		$this->assertSame(
 			array( 'toolset/content' ),
-			$toolset->hide_from_tool_pickers( array() ),
-			'The hide-list is built before registration; withholding here hides nothing at all.'
+			$toolset->declare_tool_level_ability( array() ),
+			'The list is built before registration; withholding here declares nothing at all.'
 		);
 	}
 
 	/**
 	 * A Toolset that never registered still contributes, and that is fine.
 	 *
-	 * `register()` bails on an empty group. Hiding a slug nothing has claimed
-	 * is a no-op, so there is nothing to protect against — and the alternative
+	 * `register()` bails on an empty group. Naming a slug nothing has claimed
+	 * is inert, so there is nothing to protect against — and the alternative
 	 * costs the case above.
 	 */
 	public function test_unregistered_toolset_still_contributes(): void {
@@ -342,7 +342,7 @@ class Test_Toolset_Permissions extends TestCase {
 		$toolset = new Fixture_Toolset();
 		$toolset->register();
 
-		$this->assertSame( array( 'toolset/content' ), $toolset->hide_from_tool_pickers( array() ) );
+		$this->assertSame( array( 'toolset/content' ), $toolset->declare_tool_level_ability( array() ) );
 	}
 
 	/**
@@ -350,7 +350,7 @@ class Test_Toolset_Permissions extends TestCase {
 	 *
 	 * The one outcome worth protecting against: on a collision the slug belongs
 	 * to another plugin, so contributing it would hide THEIR ability from the
-	 * operator's picker.
+	 * Abilities tab and misrepresent it as a tool-level entry.
 	 */
 	public function test_collided_slug_is_not_hidden(): void {
 		$this->given_member( 'content/get-post' );
@@ -364,7 +364,7 @@ class Test_Toolset_Permissions extends TestCase {
 		$toolset = new Fixture_Toolset();
 		$toolset->register();
 
-		$this->assertSame( array(), $toolset->hide_from_tool_pickers( array() ) );
+		$this->assertSame( array(), $toolset->declare_tool_level_ability( array() ) );
 	}
 
 	/**
@@ -378,15 +378,15 @@ class Test_Toolset_Permissions extends TestCase {
 
 		$this->assertSame(
 			array( 'mcp-adapter/discover-abilities', 'toolset/content' ),
-			$toolset->hide_from_tool_pickers( array( 'mcp-adapter/discover-abilities' ) )
+			$toolset->declare_tool_level_ability( array( 'mcp-adapter/discover-abilities' ) )
 		);
 	}
 
 	/**
 	 * A junk value from an earlier callback does not drag the Toolsets along.
 	 *
-	 * Returning it untouched would surface all 13 dispatchers in the picker
-	 * because of someone else's bug.
+	 * Returning it untouched would list all 13 dispatchers on the Abilities tab
+	 * and drop them from the Tools tab pool, because of someone else's bug.
 	 */
 	public function test_junk_input_still_yields_the_toolset(): void {
 		$this->given_member( 'content/get-post' );
@@ -394,8 +394,8 @@ class Test_Toolset_Permissions extends TestCase {
 		$toolset = new Fixture_Toolset();
 		$toolset->register();
 
-		$this->assertSame( array( 'toolset/content' ), $toolset->hide_from_tool_pickers( null ) );
-		$this->assertSame( array( 'toolset/content' ), $toolset->hide_from_tool_pickers( 'nonsense' ) );
+		$this->assertSame( array( 'toolset/content' ), $toolset->declare_tool_level_ability( null ) );
+		$this->assertSame( array( 'toolset/content' ), $toolset->declare_tool_level_ability( 'nonsense' ) );
 	}
 
 	/**
