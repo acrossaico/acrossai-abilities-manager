@@ -41,7 +41,7 @@ class Refresh_Llms_Route extends Base_Rank_Math_Ability {
 	}
 
 	protected function sub_group(): string {
-		return 'rank-math-routes';
+		return 'rank-math-sitemap';
 	}
 
 	protected function rank_math_cap(): string {

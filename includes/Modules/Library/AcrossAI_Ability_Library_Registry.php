@@ -438,9 +438,15 @@ class AcrossAI_Ability_Library_Registry {
 			if ( isset( $item['sub_group'] ) && '' !== $item['sub_group'] ) {
 				$clean_sub = self::sanitize_sub_group( (string) $item['sub_group'] );
 				if ( '' !== $clean_sub ) {
-					$entry['sub_group']       = $clean_sub;
+					$entry['sub_group'] = $clean_sub;
+					// sanitize_text_field(), not wp_kses_post(): the label lands in
+					// window.acrossaiAbilityLibraryData as JSON and LibraryCard
+					// renders it as a React text node, so it is never parsed as
+					// HTML. wp_kses_post() entity-encodes a bare ampersand, which
+					// then shows up literally as "Modules &amp; Roles" in the
+					// sub-group heading.
 					$entry['sub_group_label'] = isset( $item['sub_group_label'] ) && '' !== $item['sub_group_label']
-						? wp_kses_post( (string) $item['sub_group_label'] )
+						? sanitize_text_field( (string) $item['sub_group_label'] )
 						: ucwords( str_replace( '-', ' ', $clean_sub ) );
 				}
 			}

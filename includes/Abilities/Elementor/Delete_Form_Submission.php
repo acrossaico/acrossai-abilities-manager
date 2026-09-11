@@ -51,7 +51,7 @@ class Delete_Form_Submission extends Ability_Definition {
 					'additionalProperties' => false,
 				),
 				'meta' => array(
-					'acrossai'     => array( 'tab_group' => 'elementor', 'sub_group' => 'elementor', 'sub_group_label' => __( 'Elementor', 'acrossai-abilities-manager' ) ),
+					'acrossai'     => array( 'tab_group' => 'elementor', 'sub_group' => 'elementor-forms', 'sub_group_label' => __( 'Form Submissions', 'acrossai-abilities-manager' ) ),
 					'show_in_rest' => true,
 					'mcp'          => array( 'public' => false, 'type' => 'tool' ),
 					'annotations'  => array( 'readonly' => false, 'destructive' => true, 'idempotent' => false ),

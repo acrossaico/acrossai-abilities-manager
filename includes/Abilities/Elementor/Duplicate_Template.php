@@ -49,7 +49,7 @@ class Duplicate_Template extends Ability_Definition {
 					'additionalProperties' => false,
 				),
 				'meta' => array(
-					'acrossai'     => array( 'tab_group' => 'elementor', 'sub_group' => 'elementor', 'sub_group_label' => __( 'Elementor', 'acrossai-abilities-manager' ) ),
+					'acrossai'     => array( 'tab_group' => 'elementor', 'sub_group' => 'elementor-templates', 'sub_group_label' => __( 'Templates & Theme Builder', 'acrossai-abilities-manager' ) ),
 					'show_in_rest' => true,
 					'mcp'          => array( 'public' => false, 'type' => 'tool' ),
 					'annotations'  => array( 'readonly' => false, 'destructive' => false, 'idempotent' => false ),

@@ -53,6 +53,33 @@ abstract class Base_Audit_Ability extends Ability_Definition { // phpcs:ignore
 		return false;
 	}
 
+	/**
+	 * Library sub-group slug.
+	 *
+	 * Read-only audits and write-mode subtree fixes are two different jobs, so
+	 * they land in two different sub-groups: `discover(sub_group=...)` on the
+	 * Elementor Toolset can then return "what can I inspect" without also
+	 * returning "what can mutate the document". The destructive flag is the
+	 * only thing that separates them, so derive from it rather than asking
+	 * every subclass to repeat itself.
+	 *
+	 * @return string
+	 */
+	protected function sub_group(): string {
+		return $this->is_destructive() ? 'elementor-design-fixes' : 'elementor-design-audit';
+	}
+
+	/**
+	 * Human-readable label for {@see self::sub_group()}.
+	 *
+	 * @return string
+	 */
+	protected function sub_group_label(): string {
+		return $this->is_destructive()
+			? __( 'Design Fixes', 'acrossai-abilities-manager' )
+			: __( 'Design Audit', 'acrossai-abilities-manager' );
+	}
+
 	protected function ability(): array {
 		$readonly    = ! $this->is_destructive();
 		$destructive = $this->is_destructive();
@@ -92,7 +119,7 @@ abstract class Base_Audit_Ability extends Ability_Definition { // phpcs:ignore
 					'additionalProperties' => false,
 				),
 				'meta' => array(
-					'acrossai'     => array( 'tab_group' => 'elementor', 'sub_group' => 'elementor', 'sub_group_label' => __( 'Elementor', 'acrossai-abilities-manager' ) ),
+					'acrossai'     => array( 'tab_group' => 'elementor', 'sub_group' => $this->sub_group(), 'sub_group_label' => $this->sub_group_label() ),
 					'show_in_rest' => true,
 					'mcp'          => array( 'public' => false, 'type' => 'tool' ),
 					'annotations'  => array( 'readonly' => $readonly, 'destructive' => $destructive, 'idempotent' => $readonly ),

@@ -47,6 +47,6 @@ final class Rank_Math extends Base_Toolset_Ability {
 	 * @return string
 	 */
 	protected function toolset_description(): string {
-		return __( 'Work with Rank Math SEO: manage redirections and the 404 monitor, analyse and optimise content, read and change settings, manage sitemaps and schema, run instant indexing, and read analytics and module status. Only present when Rank Math is active. action=discover lists this group; action=info returns schemas; action=execute runs one ability.', 'acrossai-abilities-manager' );
+		return __( 'Work with Rank Math SEO: manage redirections and the 404 monitor, analyse and optimise content, read and change settings, manage sitemaps and schema, run instant indexing, and read analytics and module status. Only present when Rank Math is active. Narrow action=discover with sub_group: rank-math-redirections (redirects and 404 logs), rank-math-content (SEO meta, scores, audits, internal links), rank-math-status (status, backups, import/export, maintenance), rank-math-content-ai (Content AI and AI visibility), rank-math-settings (all settings writes, including the Instant Indexing settings), rank-math-instant-indexing (submitting URLs and the indexing log), rank-math-sitemap (sitemaps and llms.txt routes), rank-math-analytics, rank-math-admin (modules and role capabilities) and rank-math-schema. action=info returns schemas; action=execute runs one ability.', 'acrossai-abilities-manager' );
 	}
 }

@@ -38,7 +38,7 @@ class List_404_Logs extends Base_Rank_Math_Ability {
 	}
 
 	protected function sub_group(): string {
-		return 'rank-math-404-monitor';
+		return 'rank-math-redirections';
 	}
 
 	protected function rank_math_cap(): string {

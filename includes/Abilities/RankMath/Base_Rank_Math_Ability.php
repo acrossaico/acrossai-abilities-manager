@@ -178,13 +178,41 @@ abstract class Base_Rank_Math_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * Optional sub-group label override. Empty string uses the auto-derived
-	 * ucwords(str_replace('-', ' ', sub_group)) form.
+	 * Optional per-ability sub-group label override.
+	 *
+	 * Empty string falls back to {@see self::sub_group_labels()}, and then to
+	 * the auto-derived ucwords(str_replace('-', ' ', sub_group)) form.
 	 *
 	 * @return string
 	 */
 	protected function sub_group_label(): string {
 		return '';
+	}
+
+	/**
+	 * Display label for every Rank Math sub-group, in one place.
+	 *
+	 * The derived form would read "Rank Math Redirections" inside a panel that
+	 * already says Rank Math, and it cannot express a sub-group that merged two
+	 * of Rank Math's own modules (404 logs sit with redirections because that is
+	 * one workflow, not two). A slug missing here still renders — it just falls
+	 * back to the derived label.
+	 *
+	 * @return array<string, string> Sub-group slug => label.
+	 */
+	protected function sub_group_labels(): array {
+		return array(
+			'rank-math-content'          => __( 'Content & SEO Meta', 'acrossai-abilities-manager' ),
+			'rank-math-redirections'     => __( 'Redirections & 404s', 'acrossai-abilities-manager' ),
+			'rank-math-status'           => __( 'Status & Backups', 'acrossai-abilities-manager' ),
+			'rank-math-content-ai'       => __( 'Content AI & Visibility', 'acrossai-abilities-manager' ),
+			'rank-math-settings'         => __( 'Settings', 'acrossai-abilities-manager' ),
+			'rank-math-instant-indexing' => __( 'Instant Indexing', 'acrossai-abilities-manager' ),
+			'rank-math-sitemap'          => __( 'Sitemaps & Routes', 'acrossai-abilities-manager' ),
+			'rank-math-analytics'        => __( 'Analytics', 'acrossai-abilities-manager' ),
+			'rank-math-admin'            => __( 'Modules & Roles', 'acrossai-abilities-manager' ),
+			'rank-math-schema'           => __( 'Schema', 'acrossai-abilities-manager' ),
+		);
 	}
 
 	/**
@@ -203,11 +231,15 @@ abstract class Base_Rank_Math_Ability extends Ability_Definition {
 	 * @return array<string,mixed>
 	 */
 	protected function ability(): array {
-		$acrossai = array(
+		$sub_group = $this->sub_group();
+		$acrossai  = array(
 			'tab_group' => self::TAB_GROUP,
-			'sub_group' => $this->sub_group(),
+			'sub_group' => $sub_group,
 		);
-		$label    = $this->sub_group_label();
+		$label     = $this->sub_group_label();
+		if ( '' === $label ) {
+			$label = $this->sub_group_labels()[ $sub_group ] ?? '';
+		}
 		if ( '' !== $label ) {
 			$acrossai['sub_group_label'] = $label;
 		}
