@@ -58,8 +58,8 @@ class Get_Theme_Builder_Conditions extends Ability_Definition {
 				'meta'                => array(
 					'acrossai'     => array(
 						'tab_group'       => 'elementor',
-						'sub_group'       => 'elementor',
-						'sub_group_label' => __( 'Elementor', 'acrossai-abilities-manager' ),
+						'sub_group'       => 'elementor-templates',
+						'sub_group_label' => __( 'Templates & Theme Builder', 'acrossai-abilities-manager' ),
 					),
 					'show_in_rest' => true,
 					'mcp'          => array( 'public' => false, 'type' => 'tool' ),

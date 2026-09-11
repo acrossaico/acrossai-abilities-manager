@@ -42,7 +42,7 @@ class Get_Seo_Analysis_Results extends Base_Rank_Math_Ability {
 	}
 
 	protected function sub_group(): string {
-		return 'rank-math-seo-analysis';
+		return 'rank-math-content';
 	}
 
 	protected function rank_math_cap(): string {

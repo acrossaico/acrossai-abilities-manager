@@ -49,7 +49,7 @@ class Update_Kit_Settings extends Ability_Definition {
 					'additionalProperties' => false,
 				),
 				'meta' => array(
-					'acrossai'     => array( 'tab_group' => 'elementor', 'sub_group' => 'elementor', 'sub_group_label' => __( 'Elementor', 'acrossai-abilities-manager' ) ),
+					'acrossai'     => array( 'tab_group' => 'elementor', 'sub_group' => 'elementor-kits', 'sub_group_label' => __( 'Kits & Global Styles', 'acrossai-abilities-manager' ) ),
 					'show_in_rest' => true,
 					'mcp'          => array( 'public' => false, 'type' => 'tool' ),
 					'annotations'  => array( 'readonly' => false, 'destructive' => false, 'idempotent' => true ),

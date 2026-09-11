@@ -48,7 +48,7 @@ class Update_Ai_Visibility_Object extends Base_Rank_Math_Ability {
 	}
 
 	protected function sub_group(): string {
-		return 'rank-math-ai-visibility';
+		return 'rank-math-content-ai';
 	}
 
 	protected function rank_math_cap(): string {

@@ -90,6 +90,25 @@ class Test_Ability_Library_Registry extends TestCase {
 		$this->assertSame( 'Core', $rows[0]['sub_group_label'] );
 	}
 
+	/**
+	 * A sub-group label reaches the JS as JSON and is rendered by LibraryCard
+	 * as a React text node, never as HTML. Running it through wp_kses_post()
+	 * would entity-encode the ampersand and the heading would read
+	 * "Modules &amp;amp; Roles" on screen.
+	 */
+	public function test_registry_keeps_an_ampersand_in_a_sub_group_label_unencoded(): void {
+		$row = $this->valid_row(
+			array(
+				'sub_group'       => 'admin',
+				'sub_group_label' => 'Modules & Roles',
+			)
+		);
+
+		$rows = $this->normalize( array( $row ) );
+
+		$this->assertSame( 'Modules & Roles', $rows[0]['sub_group_label'] );
+	}
+
 	public function test_registry_strips_invalid_sub_group_characters(): void {
 		$row = $this->valid_row(
 			array(

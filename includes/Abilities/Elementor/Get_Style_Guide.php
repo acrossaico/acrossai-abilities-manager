@@ -64,8 +64,8 @@ class Get_Style_Guide extends Ability_Definition {
 				'meta'                => array(
 					'acrossai'     => array(
 						'tab_group'       => 'elementor',
-						'sub_group'       => 'elementor',
-						'sub_group_label' => __( 'Elementor', 'acrossai-abilities-manager' ),
+						'sub_group'       => 'elementor-guidance',
+						'sub_group_label' => __( 'Discovery & Guidance', 'acrossai-abilities-manager' ),
 					),
 					'show_in_rest' => true,
 					'mcp'          => array( 'public' => false, 'type' => 'tool' ),

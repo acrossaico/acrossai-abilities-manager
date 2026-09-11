@@ -45,7 +45,7 @@ class Reset_Role_Capabilities extends Base_Rank_Math_Ability {
 	}
 
 	protected function sub_group(): string {
-		return 'rank-math-role-manager';
+		return 'rank-math-admin';
 	}
 
 	protected function rank_math_cap(): string {

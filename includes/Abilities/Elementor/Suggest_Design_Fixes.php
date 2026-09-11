@@ -29,7 +29,7 @@ class Suggest_Design_Fixes extends Ability_Definition {
 				'permission_callback' => static function (): bool { return current_user_can( 'manage_options' ) && current_user_can( 'edit_posts' ); },
 				'input_schema'        => array( 'type' => 'object', 'properties' => array( 'post_id' => array( 'type' => 'integer', 'minimum' => 1 ), 'subtree_id' => array( 'type' => 'string' ) ), 'required' => array( 'post_id' ), 'additionalProperties' => false ),
 				'output_schema' => array( 'type' => 'object', 'properties' => array( 'success' => array( 'type' => 'boolean' ), 'post_id' => array( 'type' => 'integer' ), 'recommendations' => array( 'type' => 'array' ), 'source_policy' => array( 'type' => 'string' ), 'message' => array( 'type' => 'string' ), 'error_code' => array( 'type' => 'string' ) ), 'required' => array( 'success' ), 'additionalProperties' => false ),
-				'meta' => array( 'acrossai' => array( 'tab_group' => 'elementor', 'sub_group' => 'elementor', 'sub_group_label' => __( 'Elementor', 'acrossai-abilities-manager' ) ), 'show_in_rest' => true, 'mcp' => array( 'public' => false, 'type' => 'tool' ), 'annotations' => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ) ),
+				'meta' => array( 'acrossai' => array( 'tab_group' => 'elementor', 'sub_group' => 'elementor-design-audit', 'sub_group_label' => __( 'Design Audit', 'acrossai-abilities-manager' ) ), 'show_in_rest' => true, 'mcp' => array( 'public' => false, 'type' => 'tool' ), 'annotations' => array( 'readonly' => true, 'destructive' => false, 'idempotent' => true ) ),
 			),
 		);
 	}

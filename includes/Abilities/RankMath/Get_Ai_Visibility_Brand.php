@@ -40,7 +40,7 @@ class Get_Ai_Visibility_Brand extends Base_Rank_Math_Ability {
 	}
 
 	protected function sub_group(): string {
-		return 'rank-math-ai-visibility';
+		return 'rank-math-content-ai';
 	}
 
 	/**

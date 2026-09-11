@@ -61,8 +61,8 @@ class Add_Text_Editor extends Ability_Definition {
 				'meta'                => array(
 					'acrossai'     => array(
 						'tab_group'       => 'elementor',
-						'sub_group'       => 'elementor',
-						'sub_group_label' => __( 'Elementor', 'acrossai-abilities-manager' ),
+						'sub_group'       => 'elementor-elements',
+						'sub_group_label' => __( 'Elements & Widgets', 'acrossai-abilities-manager' ),
 					),
 					'show_in_rest' => true,
 					'mcp'          => array( 'public' => false, 'type' => 'tool' ),
