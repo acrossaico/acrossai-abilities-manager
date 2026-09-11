@@ -42,6 +42,7 @@
 		<testsuite name="library-unit">
 			<file>tests/phpunit/abilities/Toolset/Test_Toolset_Dispatch.php</file>
 			<file>tests/phpunit/abilities/Toolset/Test_Toolset_Permissions.php</file>
+			<file>tests/phpunit/Utilities/Test_Protected_Abilities_Toolset_Coverage.php</file>
 			<file>tests/phpunit/abilities/Test_Category_Registrar_Wiring.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Ability_Group.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Ability_Group_Map.php</file>
