@@ -2178,3 +2178,68 @@ neighbouring comments about `sub_group` and `card_variant` are untouched, becaus
 display-only and the claim is still true of them. Related: [[DEC-ABILITY-GROUP-TAXONOMY]] (what the
 groups are and why thirteen is a ceiling) and [[PATTERN-ABILITY-LIBRARY-TAB-AUTO-DERIVE]] (how the
 identifier is consumed, and its silent-misplacement failure mode).
+
+---
+
+### 2026-09-11 — DEC-TOOLSET-DISPATCH-CONTRACT — One dispatcher ability per group, with three permission layers that must not be collapsed
+
+**Status**: Active
+**Scope**: Abilities/Toolset (every route by which an MCP client reaches the ability catalogue)
+**Tags**: toolset, dispatcher, mcp, permissions, exposure, wp-ability-execute, feature-100
+
+**Decision**: Each ability group gets one Toolset — a single ability taking `action = discover | info | execute` that routes to the abilities in its own group. All behaviour lives on `Base_Toolset_Ability`; the thirteen subclasses declare four things each (`group`, `slug`, `toolset_label`, `toolset_description`) and carry no logic. A subclass that grows logic means the logic belongs on the base.
+
+Toolsets register directly on `wp_abilities_api_init` rather than through `Ability_Definition`. A definition would publish a row on the Integrations screen, and a Toolset is plumbing — an operator toggling one would take its whole group offline with nothing on screen saying why. For the same reason they are protected (`AcrossAI_Protected_Abilities`, contributed per-instance) and declared as tool-level abilities to the transport, and they ship `meta.mcp.public = false` so the vendor default server's catalogue does not silently grow by thirteen.
+
+**Three permission layers, none skippable:**
+
+1. The Toolset's own capability (`acrossai_toolset_capability`, default `read`) gates the *listing*. Deliberately low — hardcoding `manage_options` would lock out a legitimately-scoped editor while protecting nothing, because every run still passes the target's own check.
+2. For `execute`, the target's own `check_permissions()` runs *before* dispatch, so a denial is a real authorisation failure rather than a soft miss.
+3. Dispatch goes through `WP_Ability::execute()` — **never** `do_execute()` and never the raw callback. That is what keeps normalisation, input validation, `AcrossAI_Ability_Override_Processor`, access control, output validation and all four lifecycle actions in the loop.
+
+Layers 2 and 3 mean the target's permission check runs twice on a permitted call. **This is intentional and must not be optimised away.** `Test_Toolset_Permissions::test_dispatch_invokes_execute_and_checks_twice` asserts the count is exactly two, so removing either layer fails loudly.
+
+**Miss versus denial.** The two are different and are reported differently, matching the sibling transport's own meta tools:
+
+| Outcome | Response | Why |
+|---|---|---|
+| Ability does not exist | soft `ability_not_found` | a typo; the caller can correct it |
+| Exists, wrong group | soft `ability_not_in_group`, naming the right tool | the single most useful thing a Toolset can say |
+| Hidden by policy | **`WP_Error` 403** raised in `permission_callback` | an operator decision; retrying will never help |
+
+**Exposure is a seam, not a hardcode.** `acrossai_toolset_member_visible( $visible, $ability, $group, $context )` is applied in `members()`, which gates all three actions from one place. Nothing here hooks it; the sibling `acrossai-mcp-manager` does, to apply per-server exposure. The rule this establishes: **every route into the ability catalogue must answer the same exposure question.** Toolsets were a fourth route and initially answered none of it, so an ability an operator had hidden for one server was still listed and still executable through its Toolset.
+
+**Tradeoffs**
+- Gained: an assistant works through ~450 abilities a group at a time instead of receiving the whole catalogue unfiltered. Thirteen tool definitions sit well inside the range where model tool-selection stays reliable — see [[DEC-ABILITY-GROUP-TAXONOMY]] for why thirteen is a ceiling.
+- Made harder: four surfaces now reach the same catalogue (three meta tools plus Toolsets), and each new one must be wired into exposure, protection and tool-level declaration. The seam above is what makes that a hook rather than a rewrite.
+- Reconsider: if the transport ever gains native grouping, the dispatchers become redundant plumbing.
+
+**Evidence**
+Verified against a live WordPress 7.1 site, not inferred: thirteen Toolsets registered with member counts matching the Feature 101 group map; `info` and `execute` working end to end; cross-group and Toolset-to-Toolset dispatch both refused; a per-server override taking `toolset-users` from 16 members to 15 with `info` reporting `not_found` and `execute` returning 403. Related: [[DEC-ABILITY-GROUP-IDENTIFIER-LOAD-BEARING]] (retagging an ability moves it between tools), [[DEC-TOOLSET-SLUG-NAMESPACE]], [[BUG-MCP-SOFT-FAILURE-COLLAPSED]].
+
+---
+
+### 2026-09-11 — DEC-TOOLSET-SLUG-NAMESPACE — `toolset/` names abilities that act on the catalogue itself, and is not a vendor prefix
+
+**Status**: Active
+**Scope**: Abilities/Plugin-wide (slug conventions)
+**Tags**: slug, namespace, toolset, mcp, tool-naming, feature-100
+
+**Decision**: Amends the topic-namespace convention rather than breaking it. Topic namespaces (`blocks/`, `database/`, `users/`) name **the resource an ability acts on**. `toolset/` is reserved for abilities that act on **the ability catalogue itself**. `toolset/content` is therefore consistent with `content/get-post`, not an exception to it.
+
+The vendor sanitizer maps `/` to `-`, so clients see `toolset-content`; the longest is `toolset-configuration` at 21 characters against a 128 limit, so no `mcp_adapter_tool_name` filter is needed.
+
+**Evaluated against WordPress.com and deliberately not copied.** Their MCP tools reference names the equivalent facades `wpcom-mcp-content-authoring`, `wpcom-mcp-site` — a product prefix with no collective noun. Two reasons that scheme does not transfer:
+
+1. **Their prefix names the service.** `wpcom-` tells a model "this operates on WordPress.com", a genuine capability boundary when several servers are connected. An `acrossai-` prefix would name the *plugin vendor*, which is not a boundary a model needs — the client already namespaces by server (`mcp__<server>__toolset-content`). It would be the third redundant namespace in one identifier.
+2. **The prefix carries no discriminative signal** — it is constant across all thirteen, so it cannot help a model choose between them. What it *can* do is mislead: `acrossai-users` reads like "an AcrossAI users ability" (one operation), where `toolset-users` reads like "the users toolset" (a container). That nudge matters at exactly the moment a model decides whether to send `action: discover`.
+
+`acrossai-toolset-<group>` was offered as a branding compromise and declined.
+
+**Tradeoffs**
+- Gained: the thirteen dispatchers cluster under a prefix that states what they are, distinct from the ~450 topic-namespaced abilities they reach.
+- Made harder: diverges from a widely-referenced reference implementation, so expect the question again.
+- Reconsider: only on an explicit ask. Renaming is breaking for every connected MCP client with no back-compat alias, and is cheap only while the surface is unreleased.
+
+**Evidence**
+WordPress.com MCP tools reference, read 2026-09-11. This entry exists because Feature 100's planning brief called for it explicitly: without it "a later cleanup pass will 'correct' the slugs and silently rename every tool." Related: [[DEC-SLUG-CONVENTION-VERB-FIRST]], [[DEC-TOOLSET-DISPATCH-CONTRACT]].
