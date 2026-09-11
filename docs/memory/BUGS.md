@@ -1513,7 +1513,7 @@ via `<directory>` rather than `<file>` entries.
 PHPUnit 10's `<directory>` element defaults to `suffix="Test.php"`. The project uses
 `Test_*.php` (prefix), so `<directory>tests/phpunit/Modules/X</directory>` matches zero
 files and silently emits no test failures — `vendor/bin/phpunit` reports an unchanged
-test count even though the new suite "ran." Same failure-mode family as
+test count even though the new suite "ran." Same failure-mode group as
 BUG-PHPUNIT-ABSPATH-SILENT-EXIT and BUG-PHPUNIT-BERLINDDB-SCOPE.
 
 **Prevention**
@@ -2019,3 +2019,53 @@ At this plugin's scale, moving the three `meta.acrossai` display fields to top-l
 - `wp-includes/abilities-api/class-wp-ability.php:281+` — `prepare_properties()`, which validates but does not strip.
 
 ---
+
+### 2026-09-11 — BUG-HOOK-GATED-ON-LATER-HOOK — A filter callback that waits for a later hook contributes nothing, and every unit test still passes
+
+**Status**: Active
+**Scope**: Plugin-wide (any callback whose output depends on state another hook populates)
+**Tags**: hooks, load-order, filter, plugins_loaded, wp_abilities_api_init, silent-failure, feature-100
+
+**Bug**: Registering a filter from a constructor at `plugins_loaded` P20 is fine — the callback is attached long before anything reads it. Gating its **output** on a *later* hook having fired is not, and the failure is silent.
+
+`Base_Toolset_Ability` hooks `acrossai_mcp_manager_tool_abilities` to declare the thirteen Toolsets as tool-level abilities. The first version returned early unless `register()` had already run — and `register()` runs on `wp_abilities_api_init`, which fires much later than the admin page setup that builds the list. Result: a list of 3 where it should have been 16, all thirteen Toolsets still listed on the Abilities tab, and nothing anywhere reporting a problem.
+
+Every unit test passed, because the tests called the callback directly after arranging registration. Only loading the real admin page and reading `window.acrossaiMcpAbilities` showed the truth.
+
+The reasoning error was repeated **within the same session**: the same false premise ("this list is read before the Toolsets exist") was then used to argue for a hardcoded thirteen-slug constant in `AcrossAI_Protected_Abilities`, which measurement disproved — 13 protected both before *and* after registry init.
+
+**Prevention**:
+- **Separate two questions that look like one.** "Is my callback attached yet?" is answered at `plugins_loaded`. "Has the state my callback reads been populated yet?" is answered by whichever hook populates it, often far later. Only the first is safe to rely on.
+- **Contribute a known value; withdraw on a positively-detected conflict.** A Toolset knows its own slug without consulting any registry, so it contributes it unconditionally and withholds only once `register()` has *found* another plugin holding it. Correct-by-default, self-correcting once more is known.
+- **A unit test that arranges the state cannot catch this.** Verify the consumer, in its real lifecycle — here, `window.acrossaiMcpAbilities` on the rendered page, and a harness asserting the filter resolves identically *before* and *after* `wp_get_abilities()`.
+- Generalising one load-order bug into a rule is itself a trap: the second time, the rule was wrong and cost a needless duplicate list plus a drift test to guard it.
+
+**Evidence**: live Abilities tab showed 3 hidden slugs with all 13 Toolsets still listed; after inverting the guard, 16 on both the Abilities and Tools tabs and `0 of 439` matches when searching "toolset". The protected-slug harness measured 13 before and 13 after registry initialisation, no duplicates.
+
+**References**:
+- `includes/Abilities/Toolset/Base_Toolset_Ability.php` — `contribute_own_slug()` and the `$slug_taken_by_other` property docblock, which record the inversion and why.
+- `tests/phpunit/abilities/Toolset/Test_Toolset_Permissions.php::test_slug_is_contributed_before_registration_runs` — names the ordering case so it cannot be re-derived.
+
+---
+
+### 2026-09-11 — BUG-MCP-SOFT-FAILURE-COLLAPSED — The MCP adapter rewrites `{ success: false, error: string }` into a bare protocol error, discarding every other field
+
+**Status**: Active
+**Scope**: Abilities (any ability returning a structured failure to an MCP client)
+**Tags**: mcp, mcp-adapter, error-handling, error-code, soft-failure, tool-result, feature-100
+
+**Bug**: The vendor adapter's `ToolsHandler` inspects every tool result and, when it matches `is_array && array_key_exists('success') && false === $result['success'] && isset($result['error']) && is_string($result['error'])`, replaces the **entire payload** with that one string as an `isError: true` result. The branch is labelled "Backward compatibility".
+
+So an ability returning `{ success: false, error: "...", error_code: "ability_not_in_group", action: "execute", group: "users" }` delivers to the client only the message. `error_code` and all context are gone — and a caller that cannot read the code cannot self-correct, which is the entire reason for returning a soft failure instead of raising one.
+
+**Prevention**:
+- **Do not name the key `error`** when the payload is meant to survive. Toolsets use `error_message` alongside `error_code`; the trigger is the *combination* of `success: false` and a string `error`, so renaming either half is enough, and the key is the harmless one to change.
+- The obvious tidy-up — "why is this called `error_message`?" — silently reintroduces the bug, so the reason is recorded at the field in `Base_Toolset_Ability`'s output schema, not only here.
+- Genuine policy denials should be `WP_Error` from `permission_callback` instead, where `isError` is the *correct* shape. See [[DEC-TOOLSET-DISPATCH-CONTRACT]] for the miss-versus-denial split.
+- The three plugin-owned meta tools in the sibling `acrossai-mcp-manager` still return `'error' => ...` and still hit this. Worth fixing there if their failures ever need to carry a code.
+
+**Evidence**: calling `toolset-content` with an ability from another group returned a bare protocol error carrying only the sentence; after renaming the key, the same call returned `{"success":false,"error_message":"...","error_code":"ability_not_in_group"}` with the code intact.
+
+**References**:
+- `wordpress/mcp-adapter/includes/Handlers/Tools/ToolsHandler.php` — the "Backward compatibility" branch and `create_error_result()`.
+- `includes/Abilities/Toolset/Base_Toolset_Ability.php` — the output-schema comment explaining why the field is not called `error`.

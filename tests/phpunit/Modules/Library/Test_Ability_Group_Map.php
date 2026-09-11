@@ -1,8 +1,8 @@
 <?php
 /**
- * Tests: Feature 101 — the ability family map.
+ * Tests: Feature 101 — the ability group map.
  *
- * Every bundled ability declares a `tab_group` naming the family it belongs
+ * Every bundled ability declares a `tab_group` naming the group it belongs
  * to on the Ability Integrations screen. There is no allow-list, no
  * server-side validation and no registration call for tab_group values — a
  * wrong or half-applied value produces a plausible-looking tab, no error and
@@ -20,12 +20,12 @@ namespace AcrossAI_Abilities_Manager\Tests\Modules\Library;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Pins every ability's tab_group to the Feature 101 family map.
+ * Pins every ability's tab_group to the Feature 101 group map.
  */
-class Test_Ability_Family_Map extends TestCase {
+class Test_Ability_Group_Map extends TestCase {
 
 	/**
-	 * Folders whose every ability shares one family.
+	 * Folders whose every ability shares one group.
 	 *
 	 * @var array<string, string>
 	 */
@@ -65,7 +65,7 @@ class Test_Ability_Family_Map extends TestCase {
 	);
 
 	/**
-	 * Settings sub_group => family.
+	 * Settings sub_group => group.
 	 *
 	 * @var array<string, string>
 	 */
@@ -75,7 +75,7 @@ class Test_Ability_Family_Map extends TestCase {
 	);
 
 	/**
-	 * Abilities whose family is not derivable from their folder or sub_group.
+	 * Abilities whose group is not derivable from their folder or sub_group.
 	 *
 	 * Each is a multi-purpose ability whose slug correctly matches its folder —
 	 * it is filed by the job it does, not by where the file lives.
@@ -93,7 +93,7 @@ class Test_Ability_Family_Map extends TestCase {
 	);
 
 	/**
-	 * Expected ability count per family, excluding the conditional
+	 * Expected ability count per group, excluding the conditional
 	 * integrations (Elementor, Rank Math) which are not swept.
 	 *
 	 * @var array<string, int>
@@ -156,14 +156,14 @@ class Test_Ability_Family_Map extends TestCase {
 	}
 
 	/**
-	 * The family an ability is required to declare.
+	 * The group an ability is required to declare.
 	 *
 	 * @param string $folder    Enclosing folder name.
 	 * @param string $slug      Ability slug.
 	 * @param string $sub_group Declared sub_group.
-	 * @return string|null Family, or null when no rule covers it.
+	 * @return string|null Group, or null when no rule covers it.
 	 */
-	private function expected_family( string $folder, string $slug, string $sub_group ): ?string {
+	private function expected_group( string $folder, string $slug, string $sub_group ): ?string {
 		if ( isset( self::SLUG_OVERRIDES[ $slug ] ) ) {
 			return self::SLUG_OVERRIDES[ $slug ];
 		}
@@ -187,16 +187,93 @@ class Test_Ability_Family_Map extends TestCase {
 	}
 
 	/**
-	 * Every ability declares the family the map assigns it.
+	 * The group block sits in the ability's own meta, not inside a schema.
+	 *
+	 * Every other test here greps the file for `'tab_group' => '...'`, which
+	 * says nothing about WHERE the declaration landed. A sweep that wrote the
+	 * `acrossai` block into an input-schema property named `meta` satisfies
+	 * every one of them while the ability registers with no group at all:
+	 * invisible to its Toolset, absent from the Integrations screen, and
+	 * carrying a polluted input schema. That is what happened to
+	 * `users/update-user`, and nothing failed.
+	 *
+	 * The invariant is structural: walking up from the `acrossai` key, the
+	 * nearest enclosing key at the ability-argument level must be `meta`.
 	 */
-	public function test_every_ability_declares_its_mapped_family(): void {
+	public function test_group_block_is_declared_on_the_ability_meta(): void {
+		$misfiled = array();
+
+		foreach ( $this->ability_files() as $file ) {
+			$lines  = explode( "\n", (string) file_get_contents( $file ) );
+			$anchor = null;
+
+			foreach ( $lines as $i => $line ) {
+				if ( ! preg_match( "/^\t*'acrossai'\s*=>/", $line ) ) {
+					continue;
+				}
+
+				// Walk upward to the nearest enclosing argument-level key.
+				for ( $j = $i - 1; $j >= 0; $j-- ) {
+					if ( preg_match( "/^\t{4}'([a-z_]+)'\s*=>\s*array\(/", $lines[ $j ], $m ) ) {
+						$anchor = $m[1];
+						break;
+					}
+				}
+				break;
+			}
+
+			if ( null !== $anchor && 'meta' !== $anchor ) {
+				$misfiled[] = sprintf(
+					'%s (nested under %s)',
+					str_replace( $this->abilities_dir() . '/', '', $file ),
+					$anchor
+				);
+			}
+		}
+
+		$this->assertSame(
+			array(),
+			$misfiled,
+			"The acrossai group block must sit in the ability's own meta, not inside a schema: "
+				. implode( ', ', $misfiled )
+		);
+	}
+
+	/**
+	 * Every swept ability file path.
+	 *
+	 * @return string[]
+	 */
+	private function ability_files(): array {
+		$skip = array( 'Elementor', 'RankMath', 'Integrations', 'Utilities', 'Rest' );
+		$out  = array();
+
+		foreach ( glob( $this->abilities_dir() . '/*', GLOB_ONLYDIR ) as $dir ) {
+			if ( in_array( basename( $dir ), $skip, true ) ) {
+				continue;
+			}
+			foreach ( glob( $dir . '/*.php' ) as $file ) {
+				$src = (string) file_get_contents( $file );
+				if ( preg_match( "/'tab_group'\s*=>\s*'[a-z0-9-]+'/", $src ) ) {
+					$out[] = $file;
+				}
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Every ability declares the group the map assigns it.
+	 */
+	public function test_every_ability_declares_its_mapped_group(): void {
 		$wrong = array();
 
 		foreach ( $this->abilities() as list( $folder, $slug, $sub_group, $actual ) ) {
-			$expected = $this->expected_family( $folder, $slug, $sub_group );
+			$expected = $this->expected_group( $folder, $slug, $sub_group );
 
 			if ( null === $expected ) {
-				$wrong[] = "{$folder}/{$slug}: no family rule (sub_group '{$sub_group}')";
+				$wrong[] = "{$folder}/{$slug}: no group rule (sub_group '{$sub_group}')";
 				continue;
 			}
 			if ( $expected !== $actual ) {
@@ -207,7 +284,7 @@ class Test_Ability_Family_Map extends TestCase {
 		$this->assertSame(
 			array(),
 			$wrong,
-			"Abilities filed under the wrong family:\n  " . implode( "\n  ", $wrong )
+			"Abilities filed under the wrong group:\n  " . implode( "\n  ", $wrong )
 		);
 	}
 
@@ -231,9 +308,9 @@ class Test_Ability_Family_Map extends TestCase {
 	}
 
 	/**
-	 * Family sizes match the map, so a whole folder cannot go missing.
+	 * Group sizes match the map, so a whole folder cannot go missing.
 	 */
-	public function test_family_sizes_match_the_map(): void {
+	public function test_group_sizes_match_the_map(): void {
 		$counts = array();
 
 		foreach ( $this->abilities() as list( , , , $tab_group ) ) {
@@ -248,17 +325,17 @@ class Test_Ability_Family_Map extends TestCase {
 	}
 
 	/**
-	 * Every family key title-cases into a usable label.
+	 * Every group key title-cases into a usable label.
 	 *
 	 * Spec 037 FR-007 forbids a separate display-label field — the key IS the
 	 * label — so a key containing anything the formatter mangles is a bug.
 	 */
-	public function test_every_family_key_is_label_safe(): void {
+	public function test_every_group_key_is_label_safe(): void {
 		foreach ( array_keys( self::EXPECTED_COUNTS ) as $key ) {
 			$this->assertMatchesRegularExpression(
 				'/^[a-z]+(-[a-z]+)*$/',
 				$key,
-				"Family key '{$key}' must be lowercase words separated by single hyphens."
+				"Group key '{$key}' must be lowercase words separated by single hyphens."
 			);
 		}
 	}

@@ -52,11 +52,6 @@ class Update_User extends Ability_Definition {
 						'url'              => array( 'type' => 'string' ),
 						'password'         => array( 'type' => 'string' ),
 						'meta'             => array(
-							'acrossai'    => array(
-								'tab_group'       => 'users',
-								'sub_group'       => 'users',
-								'sub_group_label' => __( 'Users', 'acrossai-abilities-manager' ),
-							),
 							'type'        => 'object',
 							'description' => __( 'Map of user_meta key => value to set. String values that look like JSON are auto-decoded into arrays/objects.', 'acrossai-abilities-manager' ),
 						),
@@ -107,6 +102,11 @@ class Update_User extends Ability_Definition {
 					),
 				),
 				'meta'                => array(
+					'acrossai'     => array(
+						'tab_group'       => 'users',
+						'sub_group'       => 'users',
+						'sub_group_label' => __( 'Users', 'acrossai-abilities-manager' ),
+					),
 					'show_in_rest' => true,
 					'mcp'          => array(
 						'public' => false,

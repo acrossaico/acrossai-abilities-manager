@@ -33,6 +33,12 @@ class AcrossAI_Protected_Abilities {
 	 * - mcp-adapter/execute-ability
 	 * - mcp-adapter/get-ability-info
 	 *
+	 * The Toolset dispatchers are protected too, but they are not listed here:
+	 * each one adds its own slug through the filter below, from
+	 * `Base_Toolset_Ability`. A Toolset is the only thing that knows its own
+	 * slug, so repeating the set here would be a second copy free to drift from
+	 * the first every time a group is added or renamed.
+	 *
 	 * Other plugins can extend this list via the filter.
 	 *
 	 * @since  0.1.0

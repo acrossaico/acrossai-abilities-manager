@@ -1,6 +1,6 @@
-# Planning: Ability Family Tabs (Feature 101)
+# Planning: Ability Group Tabs (Feature 101)
 
-Replace the Ability Integrations screen's 18 tabs with **13 task families**, assigning
+Replace the Ability Integrations screen's 18 tabs with **13 task groups**, assigning
 `meta.acrossai.tab_group` per ability rather than per folder. Shorten category slugs from
 `acrossai-abilities-manager-*` to `acrossai-*` behind a two-store migration. Fix a pre-existing bug
 found during verification: the Debugging category was never registered.
@@ -33,10 +33,10 @@ What was missing was that nobody had chosen the assignments.
 
 ```markdown
 # 1. Branch
-/speckit.git.feature "101-ability-family-tabs"
+/speckit.git.feature "101-ability-group-tabs"
 
 # 2. Specify
-/speckit.specify "Regroup the Ability Integrations screen into 13 task families named for what an
+/speckit.specify "Regroup the Ability Integrations screen into 13 task groups named for what an
 administrator is doing, replacing 18 tabs of which one — core — holds 105 of ~450 abilities.
 
 FAMILIES, with the categories each draws from:
@@ -54,19 +54,19 @@ FAMILIES, with the categories each draws from:
   elementor     63  (only when active)
   rank-math     61  (only when active)
 
-ASSIGN tab_group PER ABILITY, not per folder. Five categories legitimately span two families because
+ASSIGN tab_group PER ABILITY, not per folder. Five categories legitimately span two groups because
 their abilities serve two different jobs: Block (authoring vs theme design), Settings (branding vs
 permalinks), Media (library vs upload policy), Cache (transients vs a permalinks operation), Database
 (data layer vs a transient duplicate). Each such card renders in both tabs showing its relevant
 subset, and LibraryCard already names every tab a card belongs to.
 
-Do NOT reintroduce a general-purpose family. `core` is retired. Its 105 abilities are exactly what
+Do NOT reintroduce a general-purpose group. `core` is retired. Its 105 abilities are exactly what
 this feature exists to disperse, and it formed one copy-paste at a time despite
 PATTERN-ABILITY-LIBRARY-TAB-AUTO-DERIVE already warning about that failure mode.
 
-THIRTEEN IS A CEILING. Feature 100 exposes one MCP tool per family, and Anthropic documents
+THIRTEEN IS A CEILING. Feature 100 exposes one MCP tool per group, and Anthropic documents
 tool-selection accuracy degrading past 30-50 available tools; production telemetry places Haiku below
-90% between 10 and 15 and Sonnet below 90% at 30. A fourteenth family is cheap in wp-admin and
+90% between 10 and 15 and Sonnet below 90% at 30. A fourteenth group is cheap in wp-admin and
 expensive in an AI client. Record this in DECISIONS.md so a future addition is a decision, not a
 reflex.
 
@@ -104,14 +104,14 @@ not shadowed by content.
 
 REPOINT PINNED_FIRST_TAB_GROUP in src/js/ability-library/components/LibraryPage.js from 'core' to
 'content'. Once core stops existing the pin silently degrades to a no-op and ordering becomes
-alphabetical, so the constant must move or the most-used family lands mid-alphabet. Update the Jest
+alphabetical, so the constant must move or the most-used group lands mid-alphabet. Update the Jest
 test that pins it — the test uses fixtures, so it will NOT catch a stale constant.
 
 GUARD EVERYTHING WITH TESTS, AND VERIFY EACH BY BREAKING WHAT IT GUARDS. The runtime has no
 allow-list, no register_tab() and no server-side validation of tab_group, so a wrong value produces a
 plausible tab with no error and no failing test. That is how core reached 105 despite a documented
 warning. Add:
-  - Test_Ability_Family_Map — the canonical map, core retirement, family sizes, label-safety, and the
+  - Test_Ability_Group_Map — the canonical map, core retirement, group sizes, label-safety, and the
     moved files' category/sub_group/slug consistency. Verify by misfiling one ability.
   - Test_Category_Slug_Migration — allow-list correctness, content/content-search ordering,
     non-category strings untouched, idempotency, newer-preference-wins, and a coverage test asserting
@@ -177,4 +177,4 @@ passing."
   `options/patch-option-value` is destructive while `options/update-option` is not. Any UI or tool
   gating on this flag will mislead.
 - **Splitting the five spanning categories** into real separate categories is the natural follow-up.
-- **Feature 100's spec needs a follow-up edit** — its grouping key changes from category to family.
+- **Feature 100's spec needs a follow-up edit** — its grouping key changes from category to group.

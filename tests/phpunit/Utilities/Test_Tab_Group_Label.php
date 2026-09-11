@@ -33,9 +33,9 @@ class Test_Tab_Group_Label extends TestCase {
 	 */
 	public static function shared_fixture(): array {
 		return array(
-			// Feature 101 families. Every key must title-case cleanly, because
+			// Feature 101 groups. Every key must title-case cleanly, because
 			// spec 037 FR-007 forbids a separate display-label field — the key
-			// IS the label. This fixture is what stops a family being named
+			// IS the label. This fixture is what stops a group being named
 			// something the formatter renders badly.
 			'content'          => 'Content',
 			'blocks'           => 'Blocks',

@@ -11,12 +11,12 @@ Snapshot taken 2026-09-10. **Total abilities:** 451 across 25 topic namespaces.
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
 
-## Families
+## Groups
 
 Tabs on the Ability Integrations screen. `tab_group` is assigned per ability, so a category
-may legitimately span two families (Feature 101, `DEC-ABILITY-FAMILY-TAXONOMY`).
+may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 
-| Family | Abilities |
+| Group | Abilities |
 |---|---:|
 | `content` — Content | 71 |
 | `appearance` — Appearance | 64 |

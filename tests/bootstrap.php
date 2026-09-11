@@ -125,6 +125,17 @@ if ( ! function_exists( 'apply_filters' ) ) {
 	 * @return mixed Fixture value when one is registered, else $value.
 	 */
 	function apply_filters( string $hook, mixed $value, mixed ...$args ): mixed {
+		// A callback lets a test decide per call — needed when the filter's
+		// answer depends on its arguments (e.g. per-ability visibility) rather
+		// than being one fixed value. Kept in its own global so the value form
+		// below behaves exactly as before, including for filters whose value
+		// legitimately IS a callable.
+		if ( isset( $GLOBALS['acrossai_test_filter_callbacks'][ $hook ] )
+			&& is_callable( $GLOBALS['acrossai_test_filter_callbacks'][ $hook ] )
+		) {
+			return call_user_func( $GLOBALS['acrossai_test_filter_callbacks'][ $hook ], $value, ...$args );
+		}
+
 		if ( isset( $GLOBALS['acrossai_test_filter_values'][ $hook ] ) ) {
 			return $GLOBALS['acrossai_test_filter_values'][ $hook ];
 		}
@@ -470,7 +481,9 @@ if ( ! function_exists( 'wp_cache_delete' ) ) {
 if ( ! function_exists( 'is_user_logged_in' ) ) {
 	/** Stub: returns false (no session in unit tests). */
 	function is_user_logged_in(): bool {
-		return false;
+		// Defaults to false when the global is unset, so every test written
+		// before this became configurable behaves exactly as it did.
+		return ! empty( $GLOBALS['acrossai_test_logged_in'] );
 	}
 }
 
@@ -1183,6 +1196,123 @@ if ( ! function_exists( 'rest_url' ) ) {
 	 */
 	function rest_url( string $path = '' ): string {
 		return 'https://example.test/wp-json/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! class_exists( 'WP_Ability' ) ) {
+	/**
+	 * Minimal stand-in for WordPress's WP_Ability.
+	 *
+	 * Only the accessors this plugin's code actually reads. Constructed from
+	 * the same shape `wp_register_ability()` takes, so a fixture reads like a
+	 * real registration.
+	 */
+	class WP_Ability {
+
+		/** @var string */
+		private string $name;
+
+		/** @var array<string, mixed> */
+		private array $args;
+
+		/**
+		 * @param string               $name Ability name.
+		 * @param array<string, mixed> $args Registration args.
+		 */
+		public function __construct( string $name, array $args = array() ) {
+			$this->name = $name;
+			$this->args = $args;
+		}
+
+		/** @return string */
+		public function get_name(): string {
+			return $this->name;
+		}
+
+		/** @return string */
+		public function get_label(): string {
+			return (string) ( $this->args['label'] ?? '' );
+		}
+
+		/** @return string */
+		public function get_description(): string {
+			return (string) ( $this->args['description'] ?? '' );
+		}
+
+		/** @return string */
+		public function get_category(): string {
+			return (string) ( $this->args['category'] ?? '' );
+		}
+
+		/** @return array<string, mixed> */
+		public function get_input_schema(): array {
+			return (array) ( $this->args['input_schema'] ?? array() );
+		}
+
+		/** @return array<string, mixed> */
+		public function get_output_schema(): array {
+			return (array) ( $this->args['output_schema'] ?? array() );
+		}
+
+		/** @return array<string, mixed> */
+		public function get_meta(): array {
+			return (array) ( $this->args['meta'] ?? array() );
+		}
+
+		/**
+		 * @param  string $key           Meta key.
+		 * @param  mixed  $default_value Fallback.
+		 * @return mixed
+		 */
+		public function get_meta_item( string $key, $default_value = null ) {
+			$meta = $this->get_meta();
+			return array_key_exists( $key, $meta ) ? $meta[ $key ] : $default_value;
+		}
+	}
+}
+
+if ( ! function_exists( 'wp_register_ability' ) ) {
+	/**
+	 * Stub: records a registration and returns the ability, mirroring core's
+	 * `?WP_Ability` return so a caller can tell success from failure.
+	 *
+	 * @param  string               $name Ability name.
+	 * @param  array<string, mixed> $args Ability args.
+	 * @return WP_Ability|null
+	 */
+	function wp_register_ability( string $name, array $args ) {
+		if ( ! empty( $GLOBALS['acrossai_test_register_fails'] ) ) {
+			return null;
+		}
+
+		$ability                                    = new WP_Ability( $name, $args );
+		$GLOBALS['acrossai_test_abilities'][ $name ] = $ability;
+
+		return $ability;
+	}
+}
+
+if ( ! function_exists( 'wp_has_ability' ) ) {
+	/**
+	 * Stub of wp_has_ability().
+	 *
+	 * @param  string $name Ability name.
+	 * @return bool
+	 */
+	function wp_has_ability( string $name ): bool {
+		return isset( $GLOBALS['acrossai_test_abilities'][ $name ] );
+	}
+}
+
+if ( ! function_exists( 'wp_get_ability' ) ) {
+	/**
+	 * Stub of wp_get_ability().
+	 *
+	 * @param  string $name Ability name.
+	 * @return mixed Ability object, or null when unregistered.
+	 */
+	function wp_get_ability( string $name ) {
+		return $GLOBALS['acrossai_test_abilities'][ $name ] ?? null;
 	}
 }
 

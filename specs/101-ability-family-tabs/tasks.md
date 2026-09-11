@@ -1,6 +1,6 @@
-# Tasks: Ability Family Tabs
+# Tasks: Ability Group Tabs
 
-**Branch**: `101-ability-family-tabs` | **Spec**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md)
+**Branch**: `101-ability-group-tabs` | **Spec**: [spec.md](./spec.md) | **Plan**: [plan.md](./plan.md)
 **Status**: All complete — commits `4984d23`, `5a8aed5`, `9614520`
 
 > **Provenance.** Reconstructed after implementation to complete the artifact set. The ordering below
@@ -23,18 +23,18 @@ Plugin root is the repository root. `includes/` is PHP, `src/js/` is JavaScript,
 - [x] **T001** `[US1]` Enumerate every `tab_group` declaration and its folder, to size the change and
   find folders declaring more than one value. Found two: `Settings/` at 10 `core` + 1 `settings`, and
   `SiteHealth/` at 3 + 3.
-- [x] **T002** `[US1]` Read every ability's slug, label and sub-group to assign families by job rather
-  than folder name. This is what moved Cron out of a proposed "Performance" family — all sixteen of
+- [x] **T002** `[US1]` Read every ability's slug, label and sub-group to assign groups by job rather
+  than folder name. This is what moved Cron out of a proposed "Performance" group — all sixteen of
   its abilities manage scheduled tasks, which is automation, not speed.
 - [x] **T003** `[US2]` Identify categories serving more than one job. Found five: Block, Settings,
   Media, Cache, Database.
-- [x] **T004** `[US1]` Verify the platform imposes no constraint on family identifiers — no
+- [x] **T004** `[US1]` Verify the platform imposes no constraint on group identifiers — no
   allow-list, no validation, never persisted — and confirm the label is derived from the identifier,
   so no identifier may contain an ampersand.
 
 ## Phase 2: Foundational — the one file move
 
-**Blocking**: T005 must precede the family sweep so the moved files are swept in their new home.
+**Blocking**: T005 must precede the group sweep so the moved files are swept in their new home.
 
 - [x] **T005** `[US2]` Move eight abilities from `includes/Abilities/Content/` to
   `includes/Abilities/Block/`, updating namespace, category and sub-group. Identifiers unchanged.
@@ -45,7 +45,7 @@ Plugin root is the repository root. `includes/` is PHP, `src/js/` is JavaScript,
   original plan** — the impact analysis had been scoped to `tab_group`, which is unpersisted and
   unasserted, and was silent about the file move added later. 89 tests failed before this was done.
 
-## Phase 3: User Story 1 — thirteen families
+## Phase 3: User Story 1 — thirteen groups
 
 - [x] **T009** `[US1]` Reassign 229 `tab_group` declarations, driven per folder with per-ability
   exceptions for the five split categories. Dry-run first; counts matched the map exactly before
@@ -54,8 +54,8 @@ Plugin root is the repository root. `includes/` is PHP, `src/js/` is JavaScript,
   rewrite the surrounding comment, which described the retired value.
 - [x] **T011** `[US1]` Update the Jest tests pinning the old pinned tab, and add one asserting `core`
   is no longer special.
-- [x] **T012** `[US1]` Extend the shared PHP/JS label fixture with all thirteen family identifiers, so
-  a future family whose name renders badly fails a test.
+- [x] **T012** `[US1]` Extend the shared PHP/JS label fixture with all thirteen group identifiers, so
+  a future group whose name renders badly fails a test.
 - [x] **T013** `[US1]` Rebuild JavaScript assets.
 
 ## Phase 4: User Story 3 — stored values survive
@@ -73,10 +73,10 @@ Plugin root is the repository root. `includes/` is PHP, `src/js/` is JavaScript,
 
 ## Phase 5: User Story 4 — guards
 
-- [x] **T019** `[US4]` Add `Test_Ability_Family_Map`: the canonical map, `core` retirement, family
+- [x] **T019** `[US4]` Add `Test_Ability_Group_Map`: the canonical map, `core` retirement, group
   sizes, label-safety, and the moved files' consistency.
 - [x] **T020** `[US4]` Verify it by deliberately misfiling `media/upload-media` and confirming the
-  failure names the ability, the expected family and the declared one.
+  failure names the ability, the expected group and the declared one.
 - [x] **T021** `[P]` `[US4]` Add `Test_Category_Slug_Migration`: allow-list correctness, the
   `content`/`content-search` shadowing case, non-category strings left alone, idempotency, and that a
   newer preference is never overwritten by an older one.
@@ -99,9 +99,9 @@ Plugin root is the repository root. `includes/` is PHP, `src/js/` is JavaScript,
 
 - [x] **T027** `[P]` Add a changelog entry covering the regrouping, the fixed half-cards, the file
   move, the changed bulk-action scope, and the ten deep links that stop resolving.
-- [x] **T028** `[P]` Rewrite the tab-selection playbook to say *pick the family by the job, not the
+- [x] **T028** `[P]` Rewrite the tab-selection playbook to say *pick the group by the job, not the
   folder*, and record the file-relocation test.
-- [x] **T029** `[P]` Record the family taxonomy as a decision, including why thirteen is a ceiling.
+- [x] **T029** `[P]` Record the group taxonomy as a decision, including why thirteen is a ceiling.
 - [x] **T030** `[P]` Record the durable lessons, including that the impact analysis in T008 was scoped
   to the field rather than the operation.
 - [x] **T031** Verify in the running site: thirteen tabs, Content first, no Core; Configuration shows
@@ -119,7 +119,7 @@ T001-T004  (understand)
     ↓
 T005-T008  (move files) ──── blocking: the sweep must see files in their final home
     ↓
-T009-T013  (families)
+T009-T013  (groups)
     ↓
 T014-T018  (rename + migration)
     ↓
@@ -131,4 +131,4 @@ T027-T033  (document, verify) ─────┘
 ## Parallel opportunities
 
 T018, T021, T027–T030 are independent of their neighbours. Everything else is sequential, because the
-file move must precede the family sweep and the rename must precede its own guards.
+file move must precede the group sweep and the rename must precede its own guards.
