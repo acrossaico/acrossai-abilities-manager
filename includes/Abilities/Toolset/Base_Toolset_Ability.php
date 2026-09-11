@@ -110,6 +110,7 @@ abstract class Base_Toolset_Ability {
 	public function __construct() {
 		add_action( 'wp_abilities_api_init', array( $this, 'register' ), 20 );
 		add_filter( 'acrossai_mcp_manager_tool_abilities', array( $this, 'declare_tool_level_ability' ) );
+		add_filter( 'acrossai_abilities_manager_protected_slugs', array( $this, 'protect_own_slug' ) );
 	}
 
 	/**
@@ -144,9 +145,45 @@ abstract class Base_Toolset_Ability {
 	 * @return string[]
 	 */
 	public function declare_tool_level_ability( $slugs ): array {
-		// A prior callback returning junk would otherwise take the Toolsets down
-		// with it — listing all 13 on the Abilities tab AND dropping them from
-		// the Tools tab pool. The hook's owner normalises the same way.
+		return $this->contribute_own_slug( $slugs );
+	}
+
+	/**
+	 * Keep this Toolset out of the sitewide abilities surface.
+	 *
+	 * A Toolset is not an ability anyone edits. Listed as an ordinary one it
+	 * invites an operator to override or disable it, and that takes the whole
+	 * group behind it offline — seven abilities in the smallest group, sixty-
+	 * four in the largest — with nothing on screen saying why. Protection is
+	 * what makes `AcrossAI_Abilities_Write_Controller` refuse the write.
+	 *
+	 * Same shape as the tool-level declaration above and for the same reason:
+	 * a Toolset is the only thing that knows its own slug, so it says so
+	 * itself rather than having the list repeated somewhere that can drift.
+	 *
+	 * @since  0.0.34
+	 * @param  mixed $slugs Slugs collected so far.
+	 * @return string[]
+	 */
+	public function protect_own_slug( $slugs ): array {
+		return $this->contribute_own_slug( $slugs );
+	}
+
+	/**
+	 * Add this Toolset's slug to a list it belongs on.
+	 *
+	 * Both published lists want the same answer to the same question — "which
+	 * slugs are Toolsets?" — so they share one implementation. The collision
+	 * guard matters equally to both: protecting or tool-listing a slug another
+	 * plugin holds would act on THEIR ability.
+	 *
+	 * @since  0.0.34
+	 * @param  mixed $slugs Slugs collected so far.
+	 * @return string[]
+	 */
+	private function contribute_own_slug( $slugs ): array {
+		// A prior callback returning junk would otherwise take the Toolsets
+		// down with it. Both hooks' owners normalise the same way.
 		$slugs = is_array( $slugs ) ? $slugs : array();
 
 		if ( $this->slug_taken_by_other ) {

@@ -52,6 +52,7 @@ class Test_Toolset_Permissions extends TestCase {
 		unset( $GLOBALS['acrossai_test_logged_in'] );
 		unset( $GLOBALS['acrossai_test_filter_values']['acrossai_toolset_capability'] );
 		unset( $GLOBALS['acrossai_test_filter_callbacks']['acrossai_toolset_member_visible'] );
+		$GLOBALS['acrossai_test_hooks'] = array();
 		AcrossAI_Ability_Group::flush();
 		parent::tearDown();
 	}
@@ -396,6 +397,59 @@ class Test_Toolset_Permissions extends TestCase {
 
 		$this->assertSame( array( 'toolset/content' ), $toolset->declare_tool_level_ability( null ) );
 		$this->assertSame( array( 'toolset/content' ), $toolset->declare_tool_level_ability( 'nonsense' ) );
+	}
+
+	/**
+	 * A Toolset protects its own slug.
+	 *
+	 * Protection is what makes AcrossAI_Abilities_Write_Controller refuse a
+	 * write. Without it a Toolset reads as an ordinary ability an operator can
+	 * override or disable, which takes the whole group behind it offline.
+	 */
+	public function test_toolset_protects_its_own_slug(): void {
+		$toolset = new Fixture_Toolset();
+
+		$this->assertSame(
+			array( 'mcp-adapter/discover-abilities', 'toolset/content' ),
+			$toolset->protect_own_slug( array( 'mcp-adapter/discover-abilities' ) )
+		);
+	}
+
+	/**
+	 * A slug another plugin holds is neither protected nor tool-listed.
+	 *
+	 * Acting on a collided slug would act on THEIR ability — protecting it
+	 * would block writes to something that is not ours to protect.
+	 */
+	public function test_collided_slug_is_not_protected(): void {
+		$this->given_member( 'content/get-post' );
+
+		$GLOBALS['acrossai_test_abilities']['toolset/content'] = new Fixture_Ability(
+			'toolset/content',
+			array( 'label' => 'Someone else', 'description' => 'Not ours.' )
+		);
+
+		$toolset = new Fixture_Toolset();
+		$toolset->register();
+
+		$this->assertSame( array(), $toolset->protect_own_slug( array() ) );
+		$this->assertSame( array(), $toolset->declare_tool_level_ability( array() ) );
+	}
+
+	/**
+	 * Both published lists get the same answer from one implementation.
+	 *
+	 * They ask the same question — "which slugs are Toolsets?" — so they share
+	 * a helper. If the two ever disagree, one of them has grown a special case
+	 * that belongs in the shared path or in neither.
+	 */
+	public function test_both_lists_receive_the_same_slug(): void {
+		$toolset = new Fixture_Toolset();
+
+		$this->assertSame(
+			$toolset->declare_tool_level_ability( array() ),
+			$toolset->protect_own_slug( array() )
+		);
 	}
 
 	/**
