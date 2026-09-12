@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-12. **Total abilities:** 476 across 26 topic namespaces.
+Snapshot taken 2026-09-12. **Total abilities:** 537 across 27 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -21,6 +21,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `content` — Content | 71 |
 | `appearance` — Appearance | 64 |
 | `elementor` — Elementor | 62 |
+| `litespeed-cache` — Litespeed Cache | 61 |
 | `rank-math` — Rank Math | 61 |
 | `blocks` — Blocks | 52 |
 | `contact-form-7` — Contact Form 7 | 25 |
@@ -51,6 +52,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `elementor/` | 62 | `acrossai-elementor` |
 | `file-manager/` | 23 | `acrossai-file-manager` |
 | `fonts/` | 8 | `acrossai-fonts` |
+| `litespeed/` | 61 | `acrossai-litespeed-cache`, `cache-exc_cat` |
 | `media/` | 11 | `acrossai-media` |
 | `menus/` | 12 | `acrossai-menus` |
 | `options/` | 7 | `acrossai-options` |
@@ -384,6 +386,67 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `fonts/` | `fonts/get-font-family` | appearance | font-families | Get Font Family |
 | `fonts/` | `fonts/list-font-faces` | appearance | font-faces | List Font Faces |
 | `fonts/` | `fonts/list-font-families` | appearance | font-families | List Font Families |
+| `litespeed/` | `litespeed/apply-preset` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/export-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/flush-object-cache` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-advanced-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-autoload-summary` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-cache-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-cache-status` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-cache-vary` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-crawler-map` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-crawler-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-crawler-status` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-database-summary` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-environment-report` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-media-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-media-status` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-object-cache-status` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-optimization-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-optimization-status` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/get-purge-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/list-cache-exclusions` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/list-crawlers` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/list-myisam-tables` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/list-optimization-exclusions` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/list-preset-backups` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/list-settings-areas` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/plan-database-cleanup` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/purge-by-tag` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/purge-cache` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/purge-optimization-cache` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/purge-post` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/purge-taxonomy` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/purge-url` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/reset-crawler` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/restore-preset-backup` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/run-crawler` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/set-cache-state` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/set-crawler-state` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/test-object-cache-connection` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-advanced-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-browser-cache-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-cache-exclusions` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-cache-scope` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-cache-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-cache-ttl` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-cache-vary` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-crawler-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-css-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-font-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-guest-mode` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-html-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-js-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-lazyload-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-localization-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-media-exclusions` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-object-cache-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-optimization-exclusions` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-placeholder-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-purge-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-scheduled-purge` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-tuning-settings` | litespeed-cache |  |  |
+| `litespeed/` | `litespeed/update-viewport-settings` | litespeed-cache |  |  |
 | `media/` | `media/delete-media` | content | manage | Delete Media |
 | `media/` | `media/get-media` | content | manage | Get Media |
 | `media/` | `media/get-media-meta` | content | meta | Get Media Meta |

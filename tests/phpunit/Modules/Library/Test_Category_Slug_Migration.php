@@ -216,8 +216,12 @@ class Test_Category_Slug_Migration extends TestCase {
 		// pattern requiring the leading quote silently misses it — and would
 		// miss any future base class that follows the same style.
 		$patterns = array(
-			"/'category'\s*=>\s*'acrossai-([a-z-]+)'/",
-			"/const\s+CATEGORY\s*=\s*'acrossai-([a-z-]+)'/",
+			// [a-z0-9-] and not [a-z-]: the original pattern stopped at the first digit, so a slug
+			// like `acrossai-contact-form-7` matched nothing at all and was silently skipped —
+			// the category went unlisted in OWNED for two releases and this test stayed green
+			// (BUG-INVENTORY-GREP-MISS).
+			"/'category'\s*=>\s*'acrossai-([a-z0-9-]+)'/",
+			"/const\s+CATEGORY\s*=\s*'acrossai-([a-z0-9-]+)'/",
 		);
 
 		foreach ( glob( $dir . '/*/*.php' ) as $file ) {
