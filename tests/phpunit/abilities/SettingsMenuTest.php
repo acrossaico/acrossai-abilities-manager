@@ -34,12 +34,67 @@ class SettingsMenuTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Accepts the maximum valid value (200).
+	 * Accepts the maximum valid value, whatever the shared bound currently is.
 	 *
 	 * @return void
 	 */
 	public function test_sanitize_per_page_accepts_maximum(): void {
-		$this->assertSame( 200, SettingsMenu::instance()->sanitize_per_page( 200 ) );
+		$this->assertSame(
+			SettingsMenu::MAX_PER_PAGE,
+			SettingsMenu::instance()->sanitize_per_page( SettingsMenu::MAX_PER_PAGE )
+		);
+	}
+
+	/**
+	 * The advertised maximum must be the one the REST layer honours.
+	 *
+	 * These two drifted: the field offered 200, the sanitiser accepted it, and the REST `per_page`
+	 * argument capped at 100 and clamped silently — no error, so an operator who set 150 kept
+	 * seeing 100 rows with nothing indicating the setting had been ignored (issue #185). Three
+	 * places have to agree, and only a test can keep them agreeing.
+	 *
+	 * @return void
+	 */
+	public function test_max_per_page_matches_the_rest_argument(): void {
+		$source = file_get_contents(
+			dirname( __DIR__, 3 ) . '/includes/Modules/Abilities/Rest/AcrossAI_Abilities_Read_Controller.php'
+		);
+
+		$this->assertIsString( $source );
+		$this->assertSame(
+			1,
+			preg_match(
+				"/'per_page'\s*=>\s*array\((?:[^)]*?)'maximum'\s*=>\s*(\d+)/s",
+				(string) $source,
+				$m
+			),
+			'Could not read the REST per_page maximum — has the argument been restructured?'
+		);
+		$this->assertSame(
+			SettingsMenu::MAX_PER_PAGE,
+			(int) $m[1],
+			'SettingsMenu::MAX_PER_PAGE must equal the REST per_page maximum.'
+		);
+	}
+
+	/**
+	 * The JS constant must agree too.
+	 *
+	 * `AbilitiesList` clamps the stored setting before sending it, and computes nothing from a
+	 * bound the server will not honour.
+	 *
+	 * @return void
+	 */
+	public function test_max_per_page_matches_the_js_constant(): void {
+		$source = file_get_contents( dirname( __DIR__, 3 ) . '/src/js/abilities/constants.js' );
+
+		$this->assertIsString( $source );
+		$this->assertSame(
+			1,
+			preg_match( '/export const MAX_PER_PAGE = (\d+);/', (string) $source, $m ),
+			'src/js/abilities/constants.js must export MAX_PER_PAGE.'
+		);
+		$this->assertSame( SettingsMenu::MAX_PER_PAGE, (int) $m[1] );
 	}
 
 	/**

@@ -68,6 +68,22 @@ class SettingsMenu {
 	public const TAB_SLUG = 'abilities';
 
 	/**
+	 * Largest page size the abilities list can actually serve.
+	 *
+	 * Must match `per_page`'s `maximum` in `AcrossAI_Abilities_Read_Controller` — the REST argument
+	 * is the real bound, and anything above it is clamped there with no error. This field used to
+	 * offer 200 while REST capped at 100, so an operator setting 150 or 200 kept seeing 100 rows
+	 * per page with nothing indicating the setting had been ignored (issue #185).
+	 *
+	 * The cap exists to bound response size: each row carries its full input and output JSON
+	 * Schema, measured at roughly 1.4 KB, so 100 rows is already ~140 KB.
+	 *
+	 * @since 0.0.35
+	 * @var   int
+	 */
+	public const MAX_PER_PAGE = 100;
+
+	/**
 	 * Registers the "Abilities" tab on the shared AcrossAI Settings page.
 	 *
 	 * Hooked to the `acrossai_settings_tabs` filter provided by
@@ -283,7 +299,10 @@ class SettingsMenu {
 	 */
 	public function sanitize_per_page( $value ): int {
 		$int = absint( $value );
-		return ( $int < 1 || $int > 200 ) ? 20 : $int;
+
+		// Out-of-range resets to the default — unchanged behaviour. Only the upper bound moved,
+		// from 200 to the value REST actually honours (issue #185).
+		return ( $int < 1 || $int > self::MAX_PER_PAGE ) ? 20 : $int;
 	}
 
 	/**
@@ -295,9 +314,16 @@ class SettingsMenu {
 	public function render_per_page_field(): void {
 		$value = (int) get_option( 'acrossai_abilities_per_page', 20 );
 		printf(
-			'<input type="number" id="acrossai_abilities_per_page" name="acrossai_abilities_per_page" value="%s" min="1" max="200" step="1" /><p class="description">%s</p>',
+			'<input type="number" id="acrossai_abilities_per_page" name="acrossai_abilities_per_page" value="%s" min="1" max="%s" step="1" /><p class="description">%s</p>',
 			esc_attr( (string) $value ),
-			esc_html__( 'Number of abilities shown per page. Default: 20. Min: 1. Max: 200.', 'acrossai-abilities-manager' )
+			esc_attr( (string) self::MAX_PER_PAGE ),
+			esc_html(
+				sprintf(
+					/* translators: %d is the maximum abilities per page. */
+					__( 'Number of abilities shown per page. Default: 20. Min: 1. Max: %d.', 'acrossai-abilities-manager' ),
+					self::MAX_PER_PAGE
+				)
+			)
 		);
 	}
 

@@ -14,3 +14,13 @@
  * @type {string}
  */
 export const ALL_TABS_KEY = '__all__';
+
+/**
+ * Largest page size the abilities list can serve.
+ *
+ * Mirrors the REST `per_page` `maximum` in `AcrossAI_Abilities_Read_Controller` and
+ * `SettingsMenu::MAX_PER_PAGE`. Three places have to agree; when they did not, the settings screen
+ * advertised 200, the sanitiser accepted it, and REST clamped to 100 with no error — so the list
+ * showed 100 rows while the pager described a 200-row page size (issue #185).
+ */
+export const MAX_PER_PAGE = 100;
