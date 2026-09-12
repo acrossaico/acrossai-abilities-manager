@@ -84,6 +84,7 @@ class AcrossAI_Category_Slug_Migration {
 	 * @var string[]
 	 */
 	private const OWNED = array(
+		'acf',
 		'admin-menu',
 		'block',
 		'cache',
