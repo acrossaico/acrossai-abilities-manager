@@ -15,7 +15,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { STORE_NAME } from '../store/index';
 import AbilitiesTable from './AbilitiesTable';
 import GroupTabs from './GroupTabs';
-import { ALL_TABS_KEY } from '../constants';
+import { ALL_TABS_KEY, MAX_PER_PAGE } from '../constants';
 import { titleCaseTabLabel } from '../../shared/titleCaseTabLabel';
 import AbilitiesToolbar, { AbilitiesPagerBelow } from './AbilitiesToolbar';
 import { loadColumnPrefs, LS_KEY } from '../columns';
@@ -42,8 +42,11 @@ export default function AbilitiesList() {
 	const [statusFilter, setStatusFilter] = useState('');
 	const [sortDir, setSortDir] = useState('asc');
 	const [page, setPage] = useState(1);
+	// Upper bound mirrors the REST `per_page` maximum and SettingsMenu::MAX_PER_PAGE. A stored
+	// value above it (saved before the bound was aligned) is clamped here rather than sent and
+	// silently reduced server-side, so the pager and the data agree (issue #185).
 	const perPage = Math.min(
-		200,
+		MAX_PER_PAGE,
 		Math.max(
 			1,
 			parseInt(window.acrossaiAbilitiesManager?.perPage, 10) || 20
@@ -80,6 +83,7 @@ export default function AbilitiesList() {
 		activeTab,
 		toolsetCounts,
 		toolsetTotal,
+		serverPages,
 	} = useSelect(
 		(select) => ({
 			abilities: select(STORE_NAME).getAbilities(),
@@ -89,6 +93,7 @@ export default function AbilitiesList() {
 			activeTab: select(STORE_NAME).getActiveTab(),
 			toolsetCounts: select(STORE_NAME).getToolsetCounts(),
 			toolsetTotal: select(STORE_NAME).getToolsetTotal(),
+			serverPages: select(STORE_NAME).getPages(),
 		}),
 		[]
 	);
@@ -96,7 +101,11 @@ export default function AbilitiesList() {
 	const dispatch = useDispatch(STORE_NAME);
 
 	// ---- derived pagination values ----
-	const totalPages = Math.ceil(total / perPage) || 1;
+	// Prefer the server's X-WP-TotalPages over recomputing from `perPage`. The two can disagree:
+	// the REST `per_page` argument is capped, so a larger requested page size is served at the cap
+	// while the client-side arithmetic would still describe the size that was asked for. Reporting
+	// a page count the data does not match is worse than reporting a smaller one (issue #185).
+	const totalPages = serverPages || Math.ceil(total / perPage) || 1;
 
 	// ---- column visibility helpers ----
 	function toggleColumn(key) {

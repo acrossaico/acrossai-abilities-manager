@@ -24,6 +24,7 @@ const CLEAR_ERROR = 'CLEAR_ERROR';
 const SET_CATEGORIES = 'SET_CATEGORIES';
 const SET_VIEW = 'SET_VIEW';
 const SET_ACTIVE_TAB = 'SET_ACTIVE_TAB';
+const SET_LIST_PARAMS = 'SET_LIST_PARAMS';
 const SET_TOOLSET_COUNTS = 'SET_TOOLSET_COUNTS';
 const SET_SAVED = 'SET_SAVED';
 const UPDATE_DRAFT = 'UPDATE_DRAFT';
@@ -56,6 +57,10 @@ const DEFAULT_STATE = {
 	abilities: [],
 	// Feature 102: the selected toolset tab. ALL_TABS_KEY means "no toolset filter".
 	activeTab: ALL_TABS_KEY,
+	// The query behind the rows currently on screen — page, per_page, search, filters, tab_group.
+	// Kept so `fetchAbilities()` with no arguments can mean "re-fetch what is displayed" rather
+	// than "fetch the server defaults". See the action for why that distinction matters.
+	listParams: {},
 	toolsetCounts: {},
 	// Unfiltered ability total, for the strip's "All" entry. Distinct from `total`, which is the
 	// current query's filtered total and therefore equals the toolset's own count on a toolset view.
@@ -118,6 +123,9 @@ function reducer(state = DEFAULT_STATE, action) {
 
 		case SET_ACTIVE_TAB:
 			return { ...state, activeTab: action.activeTab };
+
+		case SET_LIST_PARAMS:
+			return { ...state, listParams: action.params };
 
 		case SET_TOOLSET_COUNTS:
 			return {
@@ -226,15 +234,44 @@ const actions = {
 	clearError: () => ({ type: CLEAR_ERROR }),
 
 	// Thunks
-	fetchAbilities(params = {}) {
-		return async ({ dispatch }) => {
+	setListParams: (params) => ({ type: SET_LIST_PARAMS, params }),
+
+	/**
+	 * Fetch the abilities list.
+	 *
+	 * Passing no arguments means **re-fetch what is currently displayed**, not "fetch the server
+	 * defaults". The distinction is the whole point of this signature: every bulk action ends by
+	 * refreshing the list, and each one called `fetchAbilities()` bare. Because the parameters used
+	 * to live only in the component, that produced an empty query string — so applying a bulk
+	 * action silently dropped the toolset filter, the page size, the current page, the search term
+	 * and the source/status filters, and the table jumped back to an unfiltered page 1 at the
+	 * server's default page size while the tab strip and pager kept claiming the old state
+	 * (issue #185).
+	 *
+	 * Remembering the last query here fixes all five call sites at once and, more importantly,
+	 * removes the trap for the sixth: a future bulk action gets correct behaviour by default.
+	 *
+	 * @param {Object} [params] Query params. Omit to reuse the last set.
+	 * @return {Function} Thunk.
+	 */
+	fetchAbilities(params) {
+		return async ({ dispatch, select }) => {
+			// `undefined` means "whatever is on screen". An explicit `{}` is still an explicit
+			// request for no parameters, and is honoured as such.
+			const effective =
+				undefined === params ? select.getListParams() : params;
+
+			if (undefined !== params) {
+				dispatch({ type: SET_LIST_PARAMS, params });
+			}
+
 			listRequestId += 1;
 			const requestId = listRequestId;
 
 			dispatch({ type: SET_LOADING, isLoading: true });
 			try {
 				const { abilities, total, pages } =
-					await api.getAbilities(params);
+					await api.getAbilities(effective);
 
 				// Drop a response that a later request has already superseded.
 				if (requestId !== listRequestId) {
@@ -513,6 +550,7 @@ const selectors = {
 	getSaveError: (state) => state.saveError,
 	getView: (state) => state.view,
 	getActiveTab: (state) => state.activeTab,
+	getListParams: (state) => state.listParams,
 	getToolsetCounts: (state) => state.toolsetCounts,
 	getToolsetTotal: (state) => state.toolsetTotal,
 	getSavedAbility: (state) => state.savedAbility,
