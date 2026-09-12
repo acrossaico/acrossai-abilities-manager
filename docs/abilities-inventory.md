@@ -6,17 +6,15 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-10. **Total abilities:** 451 across 25 topic namespaces.
+Snapshot taken 2026-09-12. **Total abilities:** 476 across 26 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
 
 ## Groups
 
-The toolset strip on the Custom Abilities screen — Feature 102 retired the Ability Integrations
-screen these were tabs on, and they are now a filter over the one abilities table. `tab_group` is
-assigned per ability, so a category may legitimately span two groups (Feature 101,
-`DEC-ABILITY-GROUP-TAXONOMY`).
+Tabs on the Ability Integrations screen. `tab_group` is assigned per ability, so a category
+may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 
 | Group | Abilities |
 |---|---:|
@@ -25,6 +23,7 @@ assigned per ability, so a category may legitimately span two groups (Feature 10
 | `elementor` — Elementor | 62 |
 | `rank-math` — Rank Math | 61 |
 | `blocks` — Blocks | 52 |
+| `contact-form-7` — Contact Form 7 | 25 |
 | `updates` — Updates | 23 |
 | `files` — Files | 23 |
 | `diagnostics` — Diagnostics | 20 |
@@ -43,6 +42,7 @@ assigned per ability, so a category may legitimately span two groups (Feature 10
 | `blocks/` | 87 | `acrossai-block` |
 | `cache/` | 7 | `acrossai-cache` |
 | `comments/` | 12 | `acrossai-comments` |
+| `contact-form-7/` | 25 | `acrossai-contact-form-7` |
 | `content-search/` | 11 | `acrossai-content-search` |
 | `content/` | 29 | `acrossai-content` |
 | `core/` | 6 | `acrossai-core` |
@@ -186,6 +186,31 @@ assigned per ability, so a category may legitimately span two groups (Feature 10
 | `comments/` | `comments/unapprove-comment` | content | moderation | Unapprove Comment |
 | `comments/` | `comments/update-comment` | content | manage | Update Comment |
 | `comments/` | `comments/update-comment-meta` | content | meta | Update Comment Meta |
+| `contact-form-7/` | `contact-form-7/add-form-field` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/create-form` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/delete-form` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/duplicate-form` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/find-form` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/get-additional-settings` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/get-form` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/get-form-shortcode` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/get-form-template` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/get-mail` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/get-messages` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/list-field-types` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/list-form-fields` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/list-forms` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/list-mail-tags` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/remove-form-field` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/toggle-mail-2` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/update-additional-settings` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/update-form` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/update-form-field` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/update-form-template` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/update-mail` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/update-messages` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/validate-form-config` | contact-form-7 |  |  |
+| `contact-form-7/` | `contact-form-7/validate-mail-tags` | contact-form-7 |  |  |
 | `content-search/` | `content-search/apply-internal-link-suggestion` | content | internal-links | Apply Internal Link Suggestion |
 | `content-search/` | `content-search/audit-internal-links` | content | audit | Audit Internal Links |
 | `content-search/` | `content-search/create-internal-link-suggestions` | content | internal-links | Create Internal Link Suggestions |
@@ -266,68 +291,68 @@ assigned per ability, so a category may legitimately span two groups (Feature 10
 | `database/` | `database/search-replace` | database | queries | Search Replace |
 | `database/` | `database/set-option-autoload` | database | safe-writes | Set Option Autoload |
 | `database/` | `database/update-db-rows` | database | queries | Update Rows |
-| `elementor/` | `elementor/add-button` | elementor | elementor | Add Elementor Button |
-| `elementor/` | `elementor/add-container` | elementor | elementor | Add Elementor Container |
-| `elementor/` | `elementor/add-heading` | elementor | elementor | Add Elementor Heading |
-| `elementor/` | `elementor/add-image` | elementor | elementor | Add Elementor Image |
-| `elementor/` | `elementor/add-post-tabs` | elementor | elementor | Add Elementor Post Tabs |
-| `elementor/` | `elementor/add-text-editor` | elementor | elementor | Add Elementor Text Editor |
-| `elementor/` | `elementor/add-widget` | elementor | elementor | Add Elementor Widget |
-| `elementor/` | `elementor/clear-cache` | elementor | elementor | Clear Elementor Cache |
-| `elementor/` | `elementor/clone-data` | elementor | elementor | Clone Elementor Document Data |
-| `elementor/` | `elementor/create-custom-code` | elementor | elementor | Create Elementor Pro Custom Code |
-| `elementor/` | `elementor/create-page` | elementor | elementor | Create Elementor Page |
-| `elementor/` | `elementor/create-template` | elementor | elementor | Create Elementor Template |
-| `elementor/` | `elementor/delete-custom-code` | elementor | elementor | Delete Elementor Pro Custom Code |
-| `elementor/` | `elementor/delete-element` | elementor | elementor | Delete Elementor Element |
-| `elementor/` | `elementor/delete-form-submission` | elementor | elementor | Delete Elementor Pro Form Submission |
-| `elementor/` | `elementor/delete-template` | elementor | elementor | Delete Elementor Template |
-| `elementor/` | `elementor/duplicate-element` | elementor | elementor | Duplicate Elementor Element |
-| `elementor/` | `elementor/duplicate-template` | elementor | elementor | Duplicate Elementor Template |
-| `elementor/` | `elementor/empty-trash` | elementor | elementor | Empty Elementor Template Trash |
-| `elementor/` | `elementor/evaluate-design` | elementor | elementor | Evaluate Elementor Design |
-| `elementor/` | `elementor/evaluate-render-context` | elementor | elementor | Evaluate Elementor Render Context |
-| `elementor/` | `elementor/export-template` | elementor | elementor | Export Elementor Template |
-| `elementor/` | `elementor/find-elements` | elementor | elementor | Find Elementor Elements |
-| `elementor/` | `elementor/find-template-for-pattern` | elementor | elementor | Find Elementor Template For Pattern |
-| `elementor/` | `elementor/get-custom-code` | elementor | elementor | Get Elementor Pro Custom Code |
-| `elementor/` | `elementor/get-data` | elementor | elementor | Get Elementor Document Data |
-| `elementor/` | `elementor/get-element` | elementor | elementor | Get Elementor Element |
-| `elementor/` | `elementor/get-form-submission` | elementor | elementor | Get Elementor Pro Form Submission |
-| `elementor/` | `elementor/get-kit-settings` | elementor | elementor | Get Elementor Kit Settings |
-| `elementor/` | `elementor/get-maintenance-mode` | elementor | elementor | Get Elementor Maintenance Mode |
-| `elementor/` | `elementor/get-official-pattern-guidance` | elementor | elementor | Get Elementor Pattern Guidance |
-| `elementor/` | `elementor/get-official-widget-catalog` | elementor | elementor | Get Elementor Official Widget Catalog |
-| `elementor/` | `elementor/get-style-guide` | elementor | elementor | Get Elementor Style Guide |
-| `elementor/` | `elementor/get-template` | elementor | elementor | Get Elementor Template |
-| `elementor/` | `elementor/get-theme-builder-conditions` | elementor | elementor | Get Theme Builder Conditions |
-| `elementor/` | `elementor/get-theme-context` | elementor | elementor | Get Elementor Theme Context |
-| `elementor/` | `elementor/get-widget-controls` | elementor | elementor | Get Elementor Widget Controls |
-| `elementor/` | `elementor/import-template` | elementor | elementor | Import Elementor Template |
-| `elementor/` | `elementor/list-custom-code` | elementor | elementor | List Elementor Pro Custom Code |
-| `elementor/` | `elementor/list-experiments` | elementor | elementor | List Elementor Experiments |
-| `elementor/` | `elementor/list-form-submissions` | elementor | elementor | List Elementor Pro Form Submissions |
-| `elementor/` | `elementor/list-global-widgets` | elementor | elementor | List Elementor Global Widgets |
-| `elementor/` | `elementor/list-kits` | elementor | elementor | List Elementor Kits |
-| `elementor/` | `elementor/list-templates` | elementor | elementor | List Elementor Templates |
-| `elementor/` | `elementor/merge-element-settings` | elementor | elementor | Merge Elementor Element Settings |
-| `elementor/` | `elementor/move-element` | elementor | elementor | Move Elementor Element |
-| `elementor/` | `elementor/patch-data` | elementor | elementor | Patch Elementor Document Data |
-| `elementor/` | `elementor/remove-element` | elementor | elementor | Remove Elementor Element |
-| `elementor/` | `elementor/reorder-elements` | elementor | elementor | Reorder Elementor Elements |
-| `elementor/` | `elementor/replace-urls` | elementor | elementor | Replace URLs in Elementor Documents |
-| `elementor/` | `elementor/restore-template` | elementor | elementor | Restore Elementor Template |
-| `elementor/` | `elementor/set-active-kit` | elementor | elementor | Set Active Elementor Kit |
-| `elementor/` | `elementor/suggest-design-fixes` | elementor | elementor | Suggest Elementor Design Fixes |
-| `elementor/` | `elementor/update-custom-code` | elementor | elementor | Update Elementor Pro Custom Code |
-| `elementor/` | `elementor/update-data` | elementor | elementor | Update Elementor Document Data |
-| `elementor/` | `elementor/update-element` | elementor | elementor | Update Elementor Element |
-| `elementor/` | `elementor/update-experiment` | elementor | elementor | Update Elementor Experiment |
-| `elementor/` | `elementor/update-kit-settings` | elementor | elementor | Update Elementor Kit Settings |
-| `elementor/` | `elementor/update-maintenance-mode` | elementor | elementor | Update Elementor Maintenance Mode |
-| `elementor/` | `elementor/update-page-settings` | elementor | elementor | Update Elementor Page Settings |
-| `elementor/` | `elementor/update-template` | elementor | elementor | Update Elementor Template |
-| `elementor/` | `elementor/update-theme-builder-conditions` | elementor | elementor | Update Theme Builder Conditions |
+| `elementor/` | `elementor/add-button` | elementor | elementor-elements | Add Elementor Button |
+| `elementor/` | `elementor/add-container` | elementor | elementor-elements | Add Elementor Container |
+| `elementor/` | `elementor/add-heading` | elementor | elementor-elements | Add Elementor Heading |
+| `elementor/` | `elementor/add-image` | elementor | elementor-elements | Add Elementor Image |
+| `elementor/` | `elementor/add-post-tabs` | elementor | elementor-elements | Add Elementor Post Tabs |
+| `elementor/` | `elementor/add-text-editor` | elementor | elementor-elements | Add Elementor Text Editor |
+| `elementor/` | `elementor/add-widget` | elementor | elementor-elements | Add Elementor Widget |
+| `elementor/` | `elementor/clear-cache` | elementor | elementor-system | Clear Elementor Cache |
+| `elementor/` | `elementor/clone-data` | elementor | elementor-documents | Clone Elementor Document Data |
+| `elementor/` | `elementor/create-custom-code` | elementor | elementor-custom-code | Create Elementor Pro Custom Code |
+| `elementor/` | `elementor/create-page` | elementor | elementor-documents | Create Elementor Page |
+| `elementor/` | `elementor/create-template` | elementor | elementor-templates | Create Elementor Template |
+| `elementor/` | `elementor/delete-custom-code` | elementor | elementor-custom-code | Delete Elementor Pro Custom Code |
+| `elementor/` | `elementor/delete-element` | elementor | elementor-elements | Delete Elementor Element |
+| `elementor/` | `elementor/delete-form-submission` | elementor | elementor-forms | Delete Elementor Pro Form Submission |
+| `elementor/` | `elementor/delete-template` | elementor | elementor-templates | Delete Elementor Template |
+| `elementor/` | `elementor/duplicate-element` | elementor | elementor-elements | Duplicate Elementor Element |
+| `elementor/` | `elementor/duplicate-template` | elementor | elementor-templates | Duplicate Elementor Template |
+| `elementor/` | `elementor/empty-trash` | elementor | elementor-templates | Empty Elementor Template Trash |
+| `elementor/` | `elementor/evaluate-design` | elementor | elementor-design-audit | Evaluate Elementor Design |
+| `elementor/` | `elementor/evaluate-render-context` | elementor | elementor-guidance | Evaluate Elementor Render Context |
+| `elementor/` | `elementor/export-template` | elementor | elementor-templates | Export Elementor Template |
+| `elementor/` | `elementor/find-elements` | elementor | elementor-elements | Find Elementor Elements |
+| `elementor/` | `elementor/find-template-for-pattern` | elementor | elementor-templates | Find Elementor Template For Pattern |
+| `elementor/` | `elementor/get-custom-code` | elementor | elementor-custom-code | Get Elementor Pro Custom Code |
+| `elementor/` | `elementor/get-data` | elementor | elementor-documents | Get Elementor Document Data |
+| `elementor/` | `elementor/get-element` | elementor | elementor-elements | Get Elementor Element |
+| `elementor/` | `elementor/get-form-submission` | elementor | elementor-forms | Get Elementor Pro Form Submission |
+| `elementor/` | `elementor/get-kit-settings` | elementor | elementor-kits | Get Elementor Kit Settings |
+| `elementor/` | `elementor/get-maintenance-mode` | elementor | elementor-system | Get Elementor Maintenance Mode |
+| `elementor/` | `elementor/get-official-pattern-guidance` | elementor | elementor-guidance | Get Elementor Pattern Guidance |
+| `elementor/` | `elementor/get-official-widget-catalog` | elementor | elementor-guidance | Get Elementor Official Widget Catalog |
+| `elementor/` | `elementor/get-style-guide` | elementor | elementor-guidance | Get Elementor Style Guide |
+| `elementor/` | `elementor/get-template` | elementor | elementor-templates | Get Elementor Template |
+| `elementor/` | `elementor/get-theme-builder-conditions` | elementor | elementor-templates | Get Theme Builder Conditions |
+| `elementor/` | `elementor/get-theme-context` | elementor | elementor-guidance | Get Elementor Theme Context |
+| `elementor/` | `elementor/get-widget-controls` | elementor | elementor-guidance | Get Elementor Widget Controls |
+| `elementor/` | `elementor/import-template` | elementor | elementor-templates | Import Elementor Template |
+| `elementor/` | `elementor/list-custom-code` | elementor | elementor-custom-code | List Elementor Pro Custom Code |
+| `elementor/` | `elementor/list-experiments` | elementor | elementor-system | List Elementor Experiments |
+| `elementor/` | `elementor/list-form-submissions` | elementor | elementor-forms | List Elementor Pro Form Submissions |
+| `elementor/` | `elementor/list-global-widgets` | elementor | elementor-kits | List Elementor Global Widgets |
+| `elementor/` | `elementor/list-kits` | elementor | elementor-kits | List Elementor Kits |
+| `elementor/` | `elementor/list-templates` | elementor | elementor-templates | List Elementor Templates |
+| `elementor/` | `elementor/merge-element-settings` | elementor | elementor-elements | Merge Elementor Element Settings |
+| `elementor/` | `elementor/move-element` | elementor | elementor-elements | Move Elementor Element |
+| `elementor/` | `elementor/patch-data` | elementor | elementor-documents | Patch Elementor Document Data |
+| `elementor/` | `elementor/remove-element` | elementor | elementor-elements | Remove Elementor Element |
+| `elementor/` | `elementor/reorder-elements` | elementor | elementor-elements | Reorder Elementor Elements |
+| `elementor/` | `elementor/replace-urls` | elementor | elementor-system | Replace URLs in Elementor Documents |
+| `elementor/` | `elementor/restore-template` | elementor | elementor-templates | Restore Elementor Template |
+| `elementor/` | `elementor/set-active-kit` | elementor | elementor-kits | Set Active Elementor Kit |
+| `elementor/` | `elementor/suggest-design-fixes` | elementor | elementor-design-audit | Suggest Elementor Design Fixes |
+| `elementor/` | `elementor/update-custom-code` | elementor | elementor-custom-code | Update Elementor Pro Custom Code |
+| `elementor/` | `elementor/update-data` | elementor | elementor-documents | Update Elementor Document Data |
+| `elementor/` | `elementor/update-element` | elementor | elementor-elements | Update Elementor Element |
+| `elementor/` | `elementor/update-experiment` | elementor | elementor-system | Update Elementor Experiment |
+| `elementor/` | `elementor/update-kit-settings` | elementor | elementor-kits | Update Elementor Kit Settings |
+| `elementor/` | `elementor/update-maintenance-mode` | elementor | elementor-system | Update Elementor Maintenance Mode |
+| `elementor/` | `elementor/update-page-settings` | elementor | elementor-documents | Update Elementor Page Settings |
+| `elementor/` | `elementor/update-template` | elementor | elementor-templates | Update Elementor Template |
+| `elementor/` | `elementor/update-theme-builder-conditions` | elementor | elementor-templates | Update Theme Builder Conditions |
 | `file-manager/` | `file-manager/append-file` | files | files | Append to File |
 | `file-manager/` | `file-manager/clear-debug-log` | files | debug | Clear Debug Log |
 | `file-manager/` | `file-manager/copy-file` | files | files | Copy File |

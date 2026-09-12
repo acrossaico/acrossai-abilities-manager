@@ -2292,3 +2292,35 @@ ability stays on screen reading **Force Block**.
 - `tests/phpunit/Modules/Library/Test_Library_Processor_No_Gate.php` — mutation-verified guard against a
   gate returning.
 - `specs/102-abilities-toolset-tabs/` — spec, plan and the translation.
+
+---
+
+### 2026-09-12 — A toolset claims only the ability prefixes its host actually registers (DEC-TOOLSET-PREFIX-CLAIM-ONLY-WHAT-EXISTS)
+
+**Status**
+Active
+
+**Decision**
+`AcrossAI_Toolset_Integration::ability_prefixes()` exists to adopt abilities registered by the *host*
+plugin, which carry none of our metadata. When the host registers none, the integration returns an
+empty array — it does not claim its own namespace.
+
+Contact Form 7 is the first case: verified across all 111 PHP files of v6.1.7, it registers no
+abilities, so all 25 in the group are ours and already carry `meta.acrossai.tab_group`. Claiming the
+`contact-form-7` prefix would file any ability CF7 adds in a future release under our label
+automatically, with our description telling a client we provide it, and nobody deciding that.
+
+The declaration still owns the group key, the display name and the MCP description, and still
+generates the dispatcher — an empty prefix list costs nothing else.
+
+**Tradeoffs**
+- Gained: adopting a host's abilities stays a deliberate act, one release at a time, rather than a
+  standing claim on a namespace.
+- Made harder: if CF7 does ship abilities later they land in **Other** until someone adds the prefix.
+  That is the intended failure — visible and in the catch-all, never silently mislabelled as ours.
+- Reconsider: if a host announces an ability namespace it commits to, claiming the prefix up front
+  becomes reasonable. Nothing here does.
+
+**Where to look next**
+`includes/Abilities/Integrations/Contact_Form_7.php`,
+`includes/Abilities/Integrations/AcrossAI_Toolset_Integrations.php` (`prefix_map()`, `CATCH_ALL_GROUP`).

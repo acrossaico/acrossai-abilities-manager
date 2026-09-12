@@ -2202,3 +2202,91 @@ mutation-verified (omitting `source`, and setting it to `'db'`, each fail).
 - `includes/Modules/Abilities/AcrossAI_Library_Gate_Migration.php` — `block_abilities()`.
 - `includes/Utilities/AcrossAI_Ability_Source_Detector.php` — RF-04, and why it needs a `provider`.
 - [[BUG-NORMALIZE-REGISTRY-SOURCE-DEFAULT]] — the same field, the mirror-image mistake on the PHP side.
+
+---
+
+### 2026-09-12 — An output property typed `array` and fed an associative array fails the ability's own schema, after the write (BUG-ARRAY-TYPED-OUTPUT-IS-A-JSON-OBJECT)
+
+**Status**
+Active
+
+**Why this is durable**
+PHP does not distinguish a list from a map; JSON does. Every one of the ~476 abilities declares an
+`output_schema`, and any property declared `'type' => 'array'` that is handed an associative array
+encodes as a JSON object and fails validation. Nothing in the static toolchain can see it.
+
+**Finding**
+`contact-form-7/update-additional-settings` declared `'settings' => array( 'type' => 'array' )` and
+returned `Form_Repository::parse_additional_settings()`, which is keyed by setting name. Every
+successful write therefore came back to the caller as
+`ability_invalid_output — output[settings] is not of type array`, *after* the form had already been
+saved: WP core validates the output of `execute()`, so the side effect is committed and only the
+report is lost. A caller sees a failure, retries, and writes twice.
+
+It passed `composer phpcs`, `composer phpstan` at level 8 and all 2497 unit tests. It surfaced on the
+first live execution, and only because the ability was executed rather than asserted about — the
+suite's own tests inspect source text, and the schema and the value that violates it live in two
+different methods of the same class.
+
+The read ability was correct by accident: `get-additional-settings` had hand-rolled a list of
+`{key, value, writable}` rows. The two shapes for the same data were the second bug hiding behind the
+first — a caller that read settings, changed one and read the result back got two different shapes.
+
+**Prevention**
+- Return **lists of records** from abilities, not maps: `[{key, value}]`, never `{key: value}`. A list
+  survives the round trip through JSON with its declared type intact, and it leaves room for the
+  per-row metadata that a map has nowhere to put.
+- When a read and a write expose the same data, they must share one shaping helper. Here that is
+  `Form_Repository::describe_additional_settings()`, called by both.
+- Pin it: `Test_Contact_Form_7_Architecture::test_array_typed_output_is_never_fed_an_associative_map()`
+  parses each ability's `output_properties()` for keys declared `type => array` and fails if one is
+  assigned from a known map-returning repository method. Mutation-verified against the original bug.
+- Static analysis will not help. PHPStan sees `array` on both sides and is satisfied. The only
+  reliable check is executing the ability.
+
+**Where to look next**
+`includes/Abilities/ContactForm7/Update_Additional_Settings.php`,
+`includes/Abilities/Utilities/ContactForm7/Form_Repository.php::describe_additional_settings()`,
+`tests/phpunit/abilities/Test_Contact_Form_7_Architecture.php`.
+
+---
+
+### 2026-09-12 — The GET run route cannot express typed input, so readonly abilities are unverifiable over it (BUG-GET-RUN-ROUTE-CANNOT-EXPRESS-TYPED-INPUT)
+
+**Status**
+Active
+
+**Why this is durable**
+This is the obvious way to exercise an ability by hand, it looks like it works, and it produces
+failures that read exactly like defects in the ability being tested. Three separate dead ends cost
+most of a verification session.
+
+**Finding**
+`WP_REST_Abilities_V1_Run_Controller::get_input_from_request()` takes `input` from
+`get_query_params()` for GET and DELETE, and from the JSON body for POST. The endpoint declares
+`input` as one union-typed argument, so no per-property coercion runs against the ability's own
+`input_schema`. Consequences, all of which look like the ability's fault:
+
+- Every value arrives as a **string**. A property declared `integer` fails with
+  `input[form_id] is not of type integer`. Bracket notation (`?input[form_id]=5`) fixes the *shape* —
+  PHP parses it into an array — but not the *type*.
+- An ability with **no input properties cannot be called at all**: absent `input` defaults to `null`,
+  and `null` is not an object, so validation fails before the ability runs.
+- The route enforces GET for `readonly` abilities and POST for writers, so writers are fine and
+  readers are not. That asymmetry is what makes it look like a bug in the readers.
+
+Two other harnesses are also unavailable: `wp eval` registers only the abilities other plugins
+register directly (45 of them, none of ours) because this plugin's Library Processor does not run
+under WP-CLI; and the MCP adapter's generic `mcp-adapter-execute-ability` refuses anything with
+`mcp.public !== true`, which is every individual ability — only the toolset dispatchers are public.
+
+**Prevention**
+Verify abilities **in process**. A temporary mu-plugin exposing one authenticated REST route that
+calls `wp_get_ability( $name )->check_permissions( $input )` then `->execute( $input )` takes a real
+JSON body, so integers stay integers and `{}` stays an object; it runs in the same request context
+where the abilities actually register, and it exercises the whole chain including schema validation
+and the permission callback. Delete it before committing.
+
+**Where to look next**
+`wp-content/plugins/woocommerce/vendor/wordpress/abilities-api/includes/rest-api/endpoints/class-wp-rest-abilities-v1-run-controller.php`
+(`get_input_from_request()`, `get_run_args()`).

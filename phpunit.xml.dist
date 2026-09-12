@@ -208,6 +208,8 @@
 			<file>tests/phpunit/abilities/Test_Rank_Math_Status_Repository.php</file>
 			<file>tests/phpunit/abilities/Test_Rank_Math_Settings_Registry.php</file>
 			<file>tests/phpunit/abilities/Test_Rank_Math_Get_Status.php</file>
+			<file>tests/phpunit/abilities/Test_Contact_Form_7_Architecture.php</file>
+			<file>tests/phpunit/abilities/Test_Contact_Form_7_Suite_Contract.php</file>
 			<file>tests/phpunit/abilities/Test_Rank_Math_Architecture.php</file>
 			<file>tests/phpunit/abilities/Test_Rank_Math_Settings_Writer.php</file>
 			<file>tests/phpunit/abilities/Test_Rank_Math_Settings_Abilities.php</file>
