@@ -25,6 +25,7 @@ use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Registry_Quer
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Sanitizer;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Group;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Protected_Abilities;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\AcrossAI_Toolset_Integrations;
 
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
@@ -112,6 +113,9 @@ class AcrossAI_Abilities_Read_Controller {
 			array(
 				'counts' => AcrossAI_Ability_Group::counts(),
 				'total'  => $total,
+				// Only groups whose integration declares a name. Everything else is derived from the
+				// key client-side, so this stays small (issue #184).
+				'labels' => AcrossAI_Toolset_Integrations::labels(),
 			)
 		);
 	}

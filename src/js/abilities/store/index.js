@@ -62,6 +62,9 @@ const DEFAULT_STATE = {
 	// than "fetch the server defaults". See the action for why that distinction matters.
 	listParams: {},
 	toolsetCounts: {},
+	// Group => display name, for the groups whose integration declares one. Everything else falls
+	// back to the derived label, so this map is usually tiny (issue #184).
+	toolsetLabels: {},
 	// Unfiltered ability total, for the strip's "All" entry. Distinct from `total`, which is the
 	// current query's filtered total and therefore equals the toolset's own count on a toolset view.
 	toolsetTotal: 0,
@@ -132,6 +135,7 @@ function reducer(state = DEFAULT_STATE, action) {
 				...state,
 				toolsetCounts: action.counts,
 				toolsetTotal: action.total,
+				toolsetLabels: action.labels || {},
 			};
 
 		case SET_SAVED: {
@@ -512,10 +516,19 @@ const actions = {
 							? payload.counts
 							: {},
 					total: payload ? Number(payload.total) || 0 : 0,
+					labels:
+						payload && 'object' === typeof payload.labels
+							? payload.labels
+							: {},
 				});
 			} catch {
 				// Non-fatal — the toolset strip degrades to "All" only.
-				dispatch({ type: SET_TOOLSET_COUNTS, counts: {}, total: 0 });
+				dispatch({
+					type: SET_TOOLSET_COUNTS,
+					counts: {},
+					total: 0,
+					labels: {},
+				});
 			}
 		};
 	},
@@ -552,6 +565,7 @@ const selectors = {
 	getActiveTab: (state) => state.activeTab,
 	getListParams: (state) => state.listParams,
 	getToolsetCounts: (state) => state.toolsetCounts,
+	getToolsetLabels: (state) => state.toolsetLabels,
 	getToolsetTotal: (state) => state.toolsetTotal,
 	getSavedAbility: (state) => state.savedAbility,
 	getDraftAbility: (state) => state.draftAbility,

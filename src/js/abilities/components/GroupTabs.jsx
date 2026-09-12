@@ -29,12 +29,19 @@ import { buildUrlFromTab } from '../urlSync';
  *
  * @param {Object}   props           Component props.
  * @param {Object}   props.counts    Map of toolset id => ability count.
+ * @param {Object}   props.labels    Map of toolset id => declared display name, where one exists.
  * @param {string}   props.activeTab Currently selected toolset, or ALL_TABS_KEY.
  * @param {number}   props.total     Total ability count, for the "All" entry.
  * @param {Function} props.onSelect  Called with the toolset id when an entry is chosen.
  * @return {import('react').ReactElement} Rendered strip.
  */
-export default function GroupTabs({ counts, activeTab, total, onSelect }) {
+export default function GroupTabs({
+	counts,
+	labels,
+	activeTab,
+	total,
+	onSelect,
+}) {
 	const groups = Object.keys(counts || {}).sort();
 
 	const entries = [
@@ -45,7 +52,11 @@ export default function GroupTabs({ counts, activeTab, total, onSelect }) {
 		},
 		...groups.map((key) => ({
 			key,
-			label: titleCaseTabLabel(key),
+			// A declared name wins over the derived one. The derivation cannot know an acronym —
+			// `acf` becomes "Acf", which reads as a typo — so an integration supplies its own
+			// (issue #184). Everything else still derives, which is why this is a fallback and not
+			// a lookup table.
+			label: (labels || {})[key] || titleCaseTabLabel(key),
 			count: counts[key],
 		})),
 	];

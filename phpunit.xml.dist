@@ -55,6 +55,8 @@
 			<file>tests/phpunit/Admin/Test_Integrations_Settings_Capability.php</file>
 			<file>tests/phpunit/Admin/Test_Integrations_Redirect.php</file>
 			<file>tests/phpunit/Utilities/Test_Key_Sanitizer.php</file>
+			<file>tests/phpunit/Utilities/Test_Ability_Group_Tagger.php</file>
+			<file>tests/phpunit/abilities/Toolset/Test_Toolset_Group_Coverage.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Library_Processor_No_Gate.php</file>
 		</testsuite>
 		<testsuite name="includes-unit">
