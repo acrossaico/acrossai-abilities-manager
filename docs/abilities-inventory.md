@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-12. **Total abilities:** 537 across 27 topic namespaces.
+Snapshot taken 2026-09-12. **Total abilities:** 566 across 29 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -30,8 +30,10 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `diagnostics` — Diagnostics | 20 |
 | `configuration` — Configuration | 19 |
 | `database` — Database | 17 |
+| `acf` — Acf | 16 |
 | `cron` — Cron | 16 |
 | `users` — Users | 16 |
+| `` —  | 13 |
 | `cache` — Cache | 7 |
 
 ## Namespaces
@@ -40,7 +42,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 |---|---:|---|
 | `acrossai/` | 7 | `acrossai-debugging` |
 | `admin-menu/` | 5 | `acrossai-admin-menu` |
-| `blocks/` | 87 | `acrossai-block` |
+| `blocks/` | 92 | `acrossai-block`, `acrossai-acf` |
 | `cache/` | 7 | `acrossai-cache` |
 | `comments/` | 12 | `acrossai-comments` |
 | `contact-form-7/` | 25 | `acrossai-contact-form-7` |
@@ -48,6 +50,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `content/` | 29 | `acrossai-content` |
 | `core/` | 6 | `acrossai-core` |
 | `cron/` | 16 | `acrossai-cron` |
+| `custom-fields/` | 11 | `acrossai-acf` |
 | `database/` | 18 | `acrossai-database` |
 | `elementor/` | 62 | `acrossai-elementor` |
 | `file-manager/` | 23 | `acrossai-file-manager` |
@@ -63,6 +66,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `site-health/` | 6 | `acrossai-site-health` |
 | `taxonomies/` | 10 | `acrossai-taxonomies` |
 | `themes/` | 7 | `acrossai-themes` |
+| `toolset/` | 13 | `acrossai-toolset` |
 | `users/` | 16 | `acrossai-users` |
 | `widgets/` | 2 | `acrossai-widgets` |
 
@@ -111,6 +115,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `blocks/` | `blocks/generate-landing-page` | blocks | generation | Generate Landing Page |
 | `blocks/` | `blocks/generate-query-section` | blocks | generation | Generate Query Section |
 | `blocks/` | `blocks/generate-section` | blocks | generation | Generate Section |
+| `blocks/` | `blocks/get-acf-block-fields` | acf |  |  |
 | `blocks/` | `blocks/get-block-guidance` | blocks | generation | Get Block Guidance |
 | `blocks/` | `blocks/get-post-blocks` | blocks | post-blocks | Get Post Blocks |
 | `blocks/` | `blocks/get-site-editor-context` | appearance | site-editor | Get Site Editor Context |
@@ -118,8 +123,10 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `blocks/` | `blocks/get-site-editor-summary` | appearance | site-editor | Get Site Editor Summary |
 | `blocks/` | `blocks/get-style-book` | blocks | block-info | Get Style Book |
 | `blocks/` | `blocks/get-style-guide` | appearance | site-editor | Get Style Guide |
+| `blocks/` | `blocks/insert-acf-block` | acf |  |  |
 | `blocks/` | `blocks/insert-pattern` | blocks | post-blocks | Insert Pattern |
 | `blocks/` | `blocks/insert-reusable-block-into-post` | blocks | patterns | Insert Reusable Block Into Post |
+| `blocks/` | `blocks/list-acf-blocks` | acf |  |  |
 | `blocks/` | `blocks/list-block-areas` | appearance | site-editor | List Block Areas |
 | `blocks/` | `blocks/list-block-categories` | blocks | block-info | List Block Categories |
 | `blocks/` | `blocks/list-block-patterns` | blocks | patterns | List Block Patterns |
@@ -149,6 +156,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `blocks/` | `blocks/read-reusable-block` | blocks | patterns | Read Reusable Block |
 | `blocks/` | `blocks/read-theme-json` | appearance | theme-json-settings | Read theme.json |
 | `blocks/` | `blocks/refresh-site-editor-context` | appearance | site-editor | Refresh Site Editor Context |
+| `blocks/` | `blocks/register-acf-block` | acf |  |  |
 | `blocks/` | `blocks/remove-block` | blocks | post-blocks | Remove Block |
 | `blocks/` | `blocks/replace-block-text` | blocks | mutation | Replace Block Text |
 | `blocks/` | `blocks/serialize-blocks` | blocks | content | Serialize Blocks |
@@ -159,6 +167,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `blocks/` | `blocks/suggest-copy-fixes` | blocks | analysis | Suggest Copy Fixes |
 | `blocks/` | `blocks/suggest-design-fixes` | blocks | analysis | Suggest Design Fixes |
 | `blocks/` | `blocks/transform-blocks` | blocks | mutation | Transform Blocks |
+| `blocks/` | `blocks/update-acf-block-data` | acf |  |  |
 | `blocks/` | `blocks/update-block-pattern` | blocks | patterns | Update Block Pattern |
 | `blocks/` | `blocks/update-block-style-variation` | appearance | block-style-variations | Update Block Style Variation |
 | `blocks/` | `blocks/update-block-template` | appearance | templates | Update Block Template |
@@ -275,6 +284,17 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `cron/` | `cron/run-cron-job-now` | cron | write | Run Cron Job Now |
 | `cron/` | `cron/test-wp-cron` | cron | read | Test WP-Cron |
 | `cron/` | `cron/update-cron-job` | cron | write | Update Cron Job |
+| `custom-fields/` | `custom-fields/add-acf-flex-layout` | acf |  |  |
+| `custom-fields/` | `custom-fields/add-acf-repeater-row` | acf |  |  |
+| `custom-fields/` | `custom-fields/delete-acf-field` | acf |  |  |
+| `custom-fields/` | `custom-fields/get-acf-field` | acf |  |  |
+| `custom-fields/` | `custom-fields/get-acf-fields` | acf |  |  |
+| `custom-fields/` | `custom-fields/remove-acf-flex-layout` | acf |  |  |
+| `custom-fields/` | `custom-fields/remove-acf-repeater-row` | acf |  |  |
+| `custom-fields/` | `custom-fields/reorder-acf-repeater-rows` | acf |  |  |
+| `custom-fields/` | `custom-fields/update-acf-field` | acf |  |  |
+| `custom-fields/` | `custom-fields/update-acf-fields` | acf |  |  |
+| `custom-fields/` | `custom-fields/update-acf-repeater-row` | acf |  |  |
 | `database/` | `database/audit-core-table-engines` | database | engine | Audit Core Table Engines |
 | `database/` | `database/audit-health` | database | audit | Audit Database Health |
 | `database/` | `database/audit-index-health` | database | audit | Audit Index Health |
@@ -589,6 +609,19 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `themes/` | `themes/list-theme-mods` | updates | introspection | List Theme Mods |
 | `themes/` | `themes/list-themes` | updates | info | List Themes |
 | `themes/` | `themes/update-theme` | updates | lifecycle | Update Theme |
+| `toolset/` | `toolset/appearance` |  |  |  |
+| `toolset/` | `toolset/blocks` |  |  |  |
+| `toolset/` | `toolset/cache` |  |  |  |
+| `toolset/` | `toolset/configuration` |  |  |  |
+| `toolset/` | `toolset/content` |  |  |  |
+| `toolset/` | `toolset/cron` |  |  |  |
+| `toolset/` | `toolset/database` |  |  |  |
+| `toolset/` | `toolset/diagnostics` |  |  |  |
+| `toolset/` | `toolset/elementor` |  |  |  |
+| `toolset/` | `toolset/files` |  |  |  |
+| `toolset/` | `toolset/rank-math` |  |  |  |
+| `toolset/` | `toolset/updates` |  |  |  |
+| `toolset/` | `toolset/users` |  |  |  |
 | `users/` | `users/add-role-capability` | users | roles | Add Role Capability |
 | `users/` | `users/add-user-capability` | users | users | Add User Capability |
 | `users/` | `users/create-role` | users | roles | Create Role |

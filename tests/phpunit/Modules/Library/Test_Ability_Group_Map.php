@@ -128,7 +128,7 @@ class Test_Ability_Group_Map extends TestCase {
 	 * @return array<int, array{0:string,1:string,2:string,3:string}>
 	 */
 	private function abilities(): array {
-		$skip = array( 'Elementor', 'RankMath', 'ContactForm7', 'LiteSpeed', 'Integrations', 'Utilities', 'Rest' );
+		$skip = array( 'Acf', 'Elementor', 'RankMath', 'ContactForm7', 'LiteSpeed', 'Integrations', 'Utilities', 'Rest' );
 		$out  = array();
 
 		foreach ( glob( $this->abilities_dir() . '/*', GLOB_ONLYDIR ) as $dir ) {
@@ -245,7 +245,7 @@ class Test_Ability_Group_Map extends TestCase {
 	 * @return string[]
 	 */
 	private function ability_files(): array {
-		$skip = array( 'Elementor', 'RankMath', 'ContactForm7', 'LiteSpeed', 'Integrations', 'Utilities', 'Rest' );
+		$skip = array( 'Acf', 'Elementor', 'RankMath', 'ContactForm7', 'LiteSpeed', 'Integrations', 'Utilities', 'Rest' );
 		$out  = array();
 
 		foreach ( glob( $this->abilities_dir() . '/*', GLOB_ONLYDIR ) as $dir ) {

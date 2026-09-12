@@ -79,6 +79,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 
 		// Feature 104 — LiteSpeed Cache category (self-guards on the host probe inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', LiteSpeed\Category_Registrar::instance(), 'register' );
+
+		// Feature 105 — ACF category (self-guards on the host probe inside register()).
+		$loader->add_action( 'wp_abilities_api_categories_init', Acf\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Settings\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Fonts\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Content\Category_Registrar::instance(), 'register' );
@@ -565,6 +568,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_litespeed_abilities();
 		}
 
+		// Feature 105 — ACF suite. Gated on ACF being loaded at all; the 11 Pro-only abilities are
+		// gated a second time, individually, because ACF Pro REPLACES free ACF rather than extending
+		// it and only one edition is ever active. The per-ability gate is the FIELD TYPE, not
+		// function_exists(): add_row()/update_row()/delete_row() ship in both editions, so a function
+		// check would register six abilities on free ACF that can never succeed.
+		if ( defined( 'ACF_VERSION' ) && function_exists( 'acf_get_setting' ) ) {
+			$this->register_acf_abilities();
+		}
+
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
 		// so every group it may cover already exists. Each declines to register
 		// itself when its group has no registered abilities, which is why the two
@@ -971,6 +983,41 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new LiteSpeed\List_Settings_Areas();
 		new LiteSpeed\Restore_Preset_Backup();
 		new LiteSpeed\Update_Advanced_Settings();
+	}
+
+	/**
+	 * Feature 105 — instantiate the ACF ability classes.
+	 *
+	 * All 16 are constructed here; the Pro-only ones decline at execute() time via
+	 * Base_Acf_Ability::requires_pro() and required_field_types() rather than being skipped here.
+	 * Registering them and having them report acf_pro_required is better than omitting them
+	 * silently: an operator on free ACF sees the ability exists and learns why it will not run,
+	 * which a missing row cannot tell them.
+	 *
+	 * @return void
+	 */
+	private function register_acf_abilities(): void {
+		// Field values on any target — free ACF and Pro (5).
+		new Acf\Delete_Acf_Field();
+		new Acf\Get_Acf_Field();
+		new Acf\Get_Acf_Fields();
+		new Acf\Update_Acf_Field();
+		new Acf\Update_Acf_Fields();
+
+		// Repeater and flexible-content rows — Pro only (6).
+		new Acf\Add_Acf_Flex_Layout();
+		new Acf\Add_Acf_Repeater_Row();
+		new Acf\Remove_Acf_Flex_Layout();
+		new Acf\Remove_Acf_Repeater_Row();
+		new Acf\Reorder_Acf_Repeater_Rows();
+		new Acf\Update_Acf_Repeater_Row();
+
+		// ACF blocks — Pro only (5).
+		new Acf\Get_Acf_Block_Fields();
+		new Acf\Insert_Acf_Block();
+		new Acf\List_Acf_Blocks();
+		new Acf\Register_Acf_Block();
+		new Acf\Update_Acf_Block_Data();
 	}
 
 	/**

@@ -97,6 +97,17 @@ foreach ( glob( $source_dir . '/*', GLOB_ONLYDIR ) as $dir ) {
 			$slug = $prefix . $m[1];
 		}
 
+		// Subclasses that supply the WHOLE slug, namespace included. A suite spanning two slug
+		// namespaces cannot use a single base prefix — the ACF suite is `custom-fields/*` for field
+		// data and `blocks/*` for block operations — so its base concatenates nothing and each
+		// ability returns its full name. Without this branch every such ability is silently skipped
+		// and the inventory under-reports.
+		if ( '' === $slug
+			&& preg_match( "/function slug\(\)\s*:\s*string\s*\{\s*return\s*'([a-z0-9-]+\/[a-z0-9-]+)'/", $src, $m )
+		) {
+			$slug = $m[1];
+		}
+
 		if ( '' === $slug || ! str_contains( $slug, '/' ) ) {
 			continue;
 		}
