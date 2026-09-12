@@ -150,3 +150,62 @@ Admin submenu page + React app for creating, editing, and managing custom abilit
 - **Asset data**: `window.acrossaiAbilities = { restNamespace, nonce, currentUserId }` via `wp_add_inline_script()` (not `wp_localize_script`)
 - **Slug display**: prefix `acrossai/` shown read-only; user edits suffix only
 - **Separate webpack entry**: `build/js/abilities.js` + `build/js/abilities.asset.php` — does not share bundle with main manager assets
+
+## Abilities Toolset Tabs — the registration gate removed
+
+**Spec**: `specs/102-abilities-toolset-tabs/` | **Status**: Complete
+
+Merged the Ability Integrations screen into the Custom Abilities list and deleted the access model it
+owned. Those two screens were never two views of one thing — one sat silently upstream of the other.
+
+### The problem
+
+`AcrossAI_Ability_Library_Processor::register_abilities()` ran at `wp_abilities_api_init` priority 5 and
+called `wp_register_ability()` only for definitions its `is_permitted()` check accepted: a category with
+`enabled === false` was skipped entirely, and a category in `mode === 'specific'` registered only the
+slugs ticked in `sub_keys`. So switching a card off on Ability Integrations did not *hide* those
+abilities — it stopped them existing. `wp_get_abilities()` never saw them, so they were absent from the
+Custom Abilities table, from REST, and from the MCP tool catalogue, with nothing on any screen saying so.
+Searching the table for a switched-off category returned "No abilities found".
+
+Meanwhile that table already had a complete per-ability model — `site_allowed` (Default / Force Allow /
+Force Block) and MCP exposure, editable from the form and from bulk actions. Two independent
+off-switches, one of which erased its own evidence.
+
+### What shipped
+
+- **The gate is gone.** `is_permitted()` and its call site are deleted; every first-party definition
+  registers unconditionally. `AcrossAI_Ability_Library_Registry` and the Processor are retained — they
+  are what registers the ~390-ability catalogue at all.
+- **One-time translation** (`AcrossAI_Library_Gate_Migration`, `init` P100) converts what the old
+  configuration blocked into explicit `site_allowed = false` override rows, never overwriting an
+  override an administrator already set, then removes `acrossai_library_config`.
+- **Toolset strip** on the abilities list: All plus one tab per `tab_group`, counts from
+  `GET /acrossai/v1/abilities/toolsets`, filtering the same flat table. **Toolset column** between
+  Category and Source.
+- **Third-party opt-ins** (`acrossai_integrations` option) moved to a new Settings → **Integrations**
+  tab (`acrossai_settings_tabs`, priority 20) as server-rendered checkboxes, keeping the
+  `acrossai_integration_toggle_capability` filter behind an unconditional `manage_options` floor. Only
+  plugins that gate their own abilities behind their own master switch appear — currently ACF. Plugins
+  whose abilities this plugin supplies directly (Rank Math, Elementor) need no opt-in and are
+  deliberately absent; the copy says so, because an empty list otherwise reads as a bug.
+- **Deleted**: the Integrations submenu (301 redirect from its slug), the
+  `acrossai-abilities-library/v1` REST namespace, `AcrossAI_Ability_Library_Config`,
+  `Ability_Definition::is_all_enabled()` / `is_all_disabled()` / `bulk_toggle_state()`,
+  `Admin\Main::is_library_page()`, the `ability-library` JS and SCSS bundles, and the 584 KB inline
+  definitions payload.
+
+### Key technical decisions
+
+- **Migration hook timing.** Definitions are collected at `init` priority 99, so the translation runs at
+  P100. An earlier attempt at `plugins_loaded` P1 saw an empty registry, produced an empty plan, and
+  deleted the source option anyway — see `BUG-HOOK-GATED-ON-LATER-HOOK`. It now refuses to claim the
+  done-flag when the registry is empty.
+- **`tab_group` is read-only here.** It is per-ability (`meta.acrossai.tab_group`) and load-bearing for
+  the MCP tool catalogue, so re-tagging an ability moves it between MCP tools
+  (`DEC-ABILITY-GROUP-IDENTIFIER-LOAD-BEARING`).
+- **The strip is not `TabPanel`.** This screen is hand-rolled classic wp-admin markup end to end, so the
+  strip is a plain `<nav>` of links styled from SCSS rather than `@wordpress/components` classes and
+  focus model (`DEC-DESIGN-OVERRIDES-DATAVIEWS`).
+- **Counts come from their own route**, returning `{ counts, total }` — deriving the All total from a
+  filtered list made it show the filtered count.

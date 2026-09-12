@@ -71,6 +71,12 @@ class AcrossAI_Abilities_Rest_Controller {
 	 * @return void
 	 */
 	public function register_routes(): void {
+		// Literal-segment routes first. AcrossAI_Abilities_Write_Controller registers
+		// '/abilities/(?P<slug>[^/]+)', and WP_REST_Server::dispatch() takes the first regex match in
+		// registration order — so any literal registered after it is unreachable
+		// (BUG-REST-ROUTE-ORDER-LITERAL-BEFORE-WILDCARD).
+		AcrossAI_Abilities_Read_Controller::instance()->register_literal_routes();
+
 		AcrossAI_Abilities_Category_Controller::instance()->register_routes();
 		AcrossAI_Abilities_Write_Controller::instance()->register_routes();
 		AcrossAI_Abilities_Read_Controller::instance()->register_routes();

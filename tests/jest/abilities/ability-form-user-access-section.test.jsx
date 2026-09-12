@@ -137,6 +137,9 @@ globalThis.acrossaiAbilitiesManager = {
 	rest_namespace: 'acrossai/v1',
 	current_user_id: 1,
 	access_control_available: true,
+	// Required since the SEC-006 hardening: AbilityForm will not mount <AccessControl> without
+	// a slug, because the component would otherwise fetch /wpb-ac/v1/undefined/...
+	access_control_slug: 'abilities',
 };
 
 const AbilityForm =

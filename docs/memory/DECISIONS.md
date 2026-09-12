@@ -2243,3 +2243,52 @@ The vendor sanitizer maps `/` to `-`, so clients see `toolset-content`; the long
 
 **Evidence**
 WordPress.com MCP tools reference, read 2026-09-11. This entry exists because Feature 100's planning brief called for it explicitly: without it "a later cleanup pass will 'correct' the slugs and silently rename every tool." Related: [[DEC-SLUG-CONVENTION-VERB-FIRST]], [[DEC-TOOLSET-DISPATCH-CONTRACT]].
+
+---
+
+### 2026-09-12 — An access control that blocks *registration* erases its own evidence (DEC-ACCESS-CONTROL-MUST-LEAVE-EVIDENCE)
+
+**Status**
+Active
+
+**Why this is durable**
+This is a design rule about where an access control may sit, not a fact about the feature that produced
+it. It applies to any future gate over abilities, REST routes, menu items or MCP tools.
+
+**Decision**
+An access control MUST NOT work by preventing the controlled object from existing. It must let the
+object register and then deny access to it, so the object stays listable with its state visible.
+
+Feature 102 removed a gate that failed this test. The Ability Integrations screen's per-category switch
+did not hide abilities — it skipped `wp_register_ability()` for them. Consequences, none of them
+obvious from the switch:
+
+- The abilities table lists *registered* abilities, so a switched-off category vanished from it
+  entirely, with nothing on screen explaining why.
+- Searching that table for one of those abilities returned "No abilities found" — indistinguishable
+  from the ability not existing.
+- REST and the MCP tool catalogue lost them too, because they read the same registry.
+- Two independent off-switches existed for the same concern, and the upstream one was invisible to the
+  downstream one.
+
+Replaced by the per-ability `site_allowed` override, which registers everything and unregisters blocked
+abilities afterwards at `wp_abilities_api_init` P100001. Same fail-closed outcome, one owner, and the
+ability stays on screen reading **Force Block**.
+
+**Tradeoffs**
+- Gained: a single access model; blocked abilities remain discoverable and editable; the state is
+  visible where the operator looks for it.
+- Cost: everything registers, so the enforcement layer must be correct on every path — the PATH A/B
+  split ([[ARCH-ADV-001]]) becomes load-bearing rather than incidental.
+- Cost: migrating away from a registration-blocking gate is irreversible and unattended. Its own
+  translation had to reproduce the retired rule exactly, including a `(bool)` coercion that reads worse
+  than the strict comparison a fresh implementation would choose.
+- Reconsider: only if an object is so expensive to register that registering-then-denying is
+  measurably unaffordable. Cheapness of the block is never the justification — visibility is.
+
+**References**:
+- `includes/Modules/Library/AcrossAI_Ability_Library_Processor.php:63-80` — the loop, and the comment
+  recording why there is no gate in it.
+- `tests/phpunit/Modules/Library/Test_Library_Processor_No_Gate.php` — mutation-verified guard against a
+  gate returning.
+- `specs/102-abilities-toolset-tabs/` — spec, plan and the translation.

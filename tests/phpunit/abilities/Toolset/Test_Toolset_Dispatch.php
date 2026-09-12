@@ -16,7 +16,7 @@
 namespace AcrossAI_Abilities_Manager\Tests\Abilities\Toolset;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Toolset\Base_Toolset_Ability;
-use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Ability_Group;
+use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Group;
 use PHPUnit\Framework\TestCase;
 use WP_Ability;
 

@@ -12,6 +12,7 @@
 
 namespace AcrossAI_Abilities_Manager\Includes\Modules\Library;
 
+use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Key_Sanitizer;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Tab_Group_Label;
 
 // Exit if accessed directly.
@@ -176,6 +177,34 @@ class AcrossAI_Ability_Library_Registry {
 		$definitions = self::apply_suggested_plugins_decoration( self::$definitions ?? array() );
 		$definitions = self::apply_suggested_abilities_decoration( $definitions );
 		return $definitions;
+	}
+
+	/**
+	 * Publish the validated definition rows as a filter value.
+	 *
+	 * The module-facing accessor for the full definition set, mirroring
+	 * {@see self::get_tab_group_summary()}. Consumers outside the Library module MUST read the
+	 * filter rather than calling this class: Constitution Module Contract #3 forbids
+	 * sibling-module reach-through, and #4 designates actions and filters as the sanctioned
+	 * integration point.
+	 *
+	 * The tab-group summary is not sufficient for every consumer — the gate translation
+	 * (`AcrossAI_Library_Gate_Migration`) needs the whole row (`category`, `slug`, `name`,
+	 * `card_variant`) to decide what a retired configuration blocked, so it reads this instead.
+	 *
+	 * Registered in `includes/Main.php` as the provider for
+	 * `acrossai_ability_library_definitions`. Consumers call
+	 * `apply_filters( 'acrossai_ability_library_definitions', array() )` and never reference this
+	 * class, which is what keeps the dependency one-directional.
+	 *
+	 * @since  0.0.34
+	 * @param  mixed $definitions Incoming filter value; ignored, this is the provider.
+	 * @return array<int, array<string, mixed>> Validated definition rows.
+	 */
+	public function provide_definitions( $definitions = array() ): array {
+		unset( $definitions );
+
+		return $this->get_definitions();
 	}
 
 	/**
@@ -414,8 +443,8 @@ class AcrossAI_Ability_Library_Registry {
 				array_flip( self::ALLOWED_ARGS_FIELDS )
 			);
 
-			$category = AcrossAI_Ability_Library_Config::sanitize_key_field( (string) $item['category'] );
-			$slug     = AcrossAI_Ability_Library_Config::sanitize_key_field( (string) $item['slug'] );
+			$category = AcrossAI_Key_Sanitizer::key( (string) $item['category'] );
+			$slug     = AcrossAI_Key_Sanitizer::key( (string) $item['slug'] );
 			// Preserve the namespace/name slash: sanitize_key() strips '/', corrupting names like 'plugin/ability'.
 			$name = preg_replace( '/[^a-z0-9_\-\/]/', '', strtolower( (string) $item['name'] ) );
 
@@ -439,12 +468,11 @@ class AcrossAI_Ability_Library_Registry {
 				$clean_sub = self::sanitize_sub_group( (string) $item['sub_group'] );
 				if ( '' !== $clean_sub ) {
 					$entry['sub_group'] = $clean_sub;
-					// sanitize_text_field(), not wp_kses_post(): the label lands in
-					// window.acrossaiAbilityLibraryData as JSON and LibraryCard
-					// renders it as a React text node, so it is never parsed as
-					// HTML. wp_kses_post() entity-encodes a bare ampersand, which
-					// then shows up literally as "Modules &amp; Roles" in the
-					// sub-group heading.
+					// sanitize_text_field(), not wp_kses_post(): the label reaches the
+					// client as JSON and is rendered as a React text node, so it is
+					// never parsed as HTML. wp_kses_post() entity-encodes a bare
+					// ampersand, which then shows up literally as "Modules &amp;
+					// Roles" wherever the label is displayed.
 					$entry['sub_group_label'] = isset( $item['sub_group_label'] ) && '' !== $item['sub_group_label']
 						? sanitize_text_field( (string) $item['sub_group_label'] )
 						: ucwords( str_replace( '-', ' ', $clean_sub ) );
@@ -457,9 +485,9 @@ class AcrossAI_Ability_Library_Registry {
 			// changing it moves an ability between tools. See
 			// DEC-ABILITY-GROUP-IDENTIFIER-LOAD-BEARING. Closes the
 			// PATTERN-LIBRARY-ARGS-RAW-PASSTHROUGH gap for this field by
-			// sanitizing at the Registry boundary via sanitize_key_field().
+			// sanitizing at the Registry boundary via AcrossAI_Key_Sanitizer::key().
 			if ( isset( $item['tab_group'] ) && '' !== $item['tab_group'] ) {
-				$clean_tab = AcrossAI_Ability_Library_Config::sanitize_key_field( (string) $item['tab_group'] );
+				$clean_tab = AcrossAI_Key_Sanitizer::key( (string) $item['tab_group'] );
 				if ( '' !== $clean_tab ) {
 					$entry['tab_group'] = $clean_tab;
 				}
@@ -467,11 +495,11 @@ class AcrossAI_Ability_Library_Registry {
 
 			// Feature 060 — optional card_variant pass-through.
 			// Display-only; never written to saved configuration. Sanitized at
-			// the Registry boundary via sanitize_key_field() so the JS
+			// the Registry boundary via AcrossAI_Key_Sanitizer::key() so the JS
 			// receives a predictable key shape (e.g. 'integration'). Mirrors
 			// the tab_group treatment above.
 			if ( isset( $item['card_variant'] ) && '' !== $item['card_variant'] ) {
-				$clean_variant = AcrossAI_Ability_Library_Config::sanitize_key_field( (string) $item['card_variant'] );
+				$clean_variant = AcrossAI_Key_Sanitizer::key( (string) $item['card_variant'] );
 				if ( '' !== $clean_variant ) {
 					$entry['card_variant'] = $clean_variant;
 				}
@@ -495,7 +523,7 @@ class AcrossAI_Ability_Library_Registry {
 	 * @return string Sanitized key; may be empty if input cannot be sanitized.
 	 */
 	private static function sanitize_sub_group( string $raw ): string {
-		return AcrossAI_Ability_Library_Config::sanitize_key_field( $raw );
+		return AcrossAI_Key_Sanitizer::key( $raw );
 	}
 
 	/**

@@ -29,7 +29,7 @@
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Toolset;
 
-use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Ability_Group;
+use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Group;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Input_Normalizer;
 use WP_Ability;
 use WP_Error;

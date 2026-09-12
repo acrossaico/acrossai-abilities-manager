@@ -46,6 +46,20 @@ class Menu {
 	public const QUICK_CONNECT_SLUG = 'admin.php?page=acrossai-abilities-manager&quick-connect=1&step=1';
 
 	/**
+	 * Menu slug of the retired Ability Integrations page.
+	 *
+	 * Feature 102 removed that page: the registration gate it hosted is gone, its task-family tabs
+	 * became a filter on the abilities list, and its one surviving control — the third-party
+	 * opt-ins — moved to the settings screen. The slug is kept as a constant because external
+	 * documentation links to it and `Integrations_Redirect` must 301 it to the abilities page.
+	 * Shared with the test fixtures so the string exists once.
+	 *
+	 * @since 0.0.34
+	 * @var   string
+	 */
+	public const INTEGRATIONS_LEGACY_SLUG = 'acrossai-abilities-integrations';
+
+	/**
 	 * Plugin name
 	 *
 	 * @since 0.0.1

@@ -298,11 +298,6 @@ final class Main {
 		// than at an absolute slot other plugins are also competing for.
 		$this->loader->add_action( 'admin_menu', $main_menu, 'reorder_submenu', 999 );
 
-		// Library submenu page — second position, immediately after main menu (Feature 027/031).
-		// Named variable before Loader call — Boot Flow Rule variable-first pattern.
-		$ability_library_menu = \AcrossAI_Abilities_Manager\Admin\Partials\LibraryMenu::instance();
-		$this->loader->add_action( 'admin_menu', $ability_library_menu, 'register_submenu' );
-
 		// Quick Connect onboarding wizard (Feature 099). No page of its own — it
 		// renders through Partials\Menu when `?quick-connect=1` is present. The
 		// page class owns its enqueue per PATTERN-PARTIALS-SELF-ENQUEUE, keeping
@@ -311,6 +306,17 @@ final class Main {
 		$this->loader->add_action( 'admin_enqueue_scripts', $quick_connect_page, 'enqueue_assets' );
 		$this->loader->add_filter( 'admin_body_class', $quick_connect_page, 'add_body_class' );
 		$this->loader->add_action( 'in_admin_header', $quick_connect_page, 'suppress_admin_notices', 1000 );
+
+		// Feature 102: the retired Ability Integrations URL. `admin_page_access_denied` is the hook
+		// that actually catches it — core denies an unregistered `page` in
+		// wp-admin/includes/menu.php:384, reached from admin.php:163, which is BEFORE
+		// do_action( 'admin_init' ) at admin.php:180. An admin_init handler at any priority is too
+		// late and the visitor gets "Sorry, you are not allowed to access this page". admin_init
+		// priority 1 is registered too, for the case where something else still registers the
+		// legacy slug and access is therefore never denied.
+		$integrations_redirect = \AcrossAI_Abilities_Manager\Admin\Partials\Integrations_Redirect::instance();
+		$this->loader->add_action( 'admin_page_access_denied', $integrations_redirect, 'maybe_redirect', 1 );
+		$this->loader->add_action( 'admin_init', $integrations_redirect, 'maybe_redirect', 1 );
 
 		// Priority 5: early enough to redirect before other admin_init work
 		// renders anything, late enough that the plugin API is available.
@@ -344,6 +350,13 @@ final class Main {
 		// manager's SettingsMenu owns both concerns. Variable-first per AC-HOOKS-MAIN.
 		$core_settings_menu = \AcrossAI_Abilities_Manager\Admin\Partials\Core_Settings_Menu::instance();
 		$this->loader->add_action( 'admin_init', $core_settings_menu, 'register_settings' );
+
+		// Feature 102 — third-party integration opt-ins, relocated from the retired Ability
+		// Integrations page. Renders inside the same Abilities tab as the section above; admin-only,
+		// so it belongs in define_admin_hooks() (Boot Flow Rule). Variable-first per AC-HOOKS-MAIN.
+		$integrations_settings_menu = \AcrossAI_Abilities_Manager\Admin\Partials\Integrations_Settings_Menu::instance();
+		$this->loader->add_filter( 'acrossai_settings_tabs', $integrations_settings_menu, 'register_tab' );
+		$this->loader->add_action( 'admin_init', $integrations_settings_menu, 'register_settings' );
 
 		// Uninstall Settings section is wired LAST — priority 20 pushes it below
 		// every default-priority section (Display Settings above, plus
@@ -415,10 +428,12 @@ final class Main {
 		// apply_filters( 'acrossai_ability_library_tab_group_summary', array() ).
 		$this->loader->add_filter( 'acrossai_ability_library_tab_group_summary', $ability_library_registry, 'get_tab_group_summary' );
 
-		// Library REST orchestrator — acrossai-abilities-library/v1 namespace (Feature 027).
-		// Named variable before Loader call — Boot Flow Rule variable-first pattern.
-		$ability_library_rest = \AcrossAI_Abilities_Manager\Includes\Modules\Library\Rest\AcrossAI_Ability_Library_Rest_Controller::instance();
-		$this->loader->add_action( 'rest_api_init', $ability_library_rest, 'register_routes' );
+		// Feature 102: the same seam for the full definition rows. The gate translation lives in
+		// the Abilities module and needs whole definitions, not the tab-group summary — reading
+		// the Registry directly would be the sibling-module reach-through Module Contract #3
+		// forbids. Consumers call:
+		// apply_filters( 'acrossai_ability_library_definitions', array() ).
+		$this->loader->add_filter( 'acrossai_ability_library_definitions', $ability_library_registry, 'provide_definitions' );
 	}
 
 	/**
@@ -435,6 +450,25 @@ final class Main {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+
+		// Feature 102 — translate the retired library gate into per-ability overrides.
+		//
+		// init P100, i.e. immediately after AcrossAI_Ability_Library_Registry::collect() at init P99
+		// (see below). The translation reads that registry, so anything earlier sees zero
+		// definitions.
+		//
+		// This was originally plugins_loaded P1 and that was wrong in the worst way: the migration
+		// ran, found no definitions, translated nothing, and still retired the source option —
+		// silently discarding the configuration it existed to preserve. Do not move this earlier
+		// than init P100 without also proving get_definitions() is populated at the new point.
+		//
+		// It is deliberately NOT admin_init: the exposure this closes is reachable via REST and MCP,
+		// neither of which loads wp-admin, so an admin-only trigger would leave a site nobody
+		// administers serving every previously blocked ability. init fires on every request path.
+		//
+		// Public hook, so registered here rather than in define_admin_hooks() (Boot Flow Rule).
+		$gate_migration = \AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Library_Gate_Migration::instance();
+		$this->loader->add_action( 'init', $gate_migration, 'maybe_migrate', 100 );
 
 		// Ability Override Processor — boot at plugins_loaded P20 and bust cache on override save.
 		// Named variable before Loader calls satisfies the Boot Flow Rule (SEC-PLAN-002).

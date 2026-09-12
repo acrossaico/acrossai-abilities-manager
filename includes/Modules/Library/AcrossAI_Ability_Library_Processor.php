@@ -67,56 +67,16 @@ class AcrossAI_Ability_Library_Processor {
 		}
 
 		$definitions = AcrossAI_Ability_Library_Registry::instance()->get_definitions();
-		$config      = AcrossAI_Ability_Library_Config::get_config();
 
+		// Feature 102: every definition registers. The per-category gate that used to sit here
+		// (is_permitted()) could stop an ability existing at all, which made it invisible to the
+		// abilities screen — an operator who switched a category off then searched for one of its
+		// abilities was told it did not exist. Availability is now decided solely by the
+		// per-ability site_allowed override, which AcrossAI_Ability_Override_Processor enforces by
+		// unregistering blocked abilities at wp_abilities_api_init P100001. Same fail-closed
+		// outcome, one owner, and the ability stays listed with its reason on screen.
 		foreach ( $definitions as $definition ) {
-			if ( ! $this->is_permitted( $definition, $config ) ) {
-				continue;
-			}
 			wp_register_ability( $definition['name'], $definition['args'] );
 		}
-	}
-
-	/**
-	 * Determine whether a definition is permitted by the saved config.
-	 *
-	 * FR-013: category absent → enabled by default.
-	 * FR-014: category disabled → skip.
-	 * FR-015: mode=all → all slugs permitted.
-	 * FR-016: mode=specific → only explicitly enabled slugs permitted.
-	 * FR-017: slug absent in Specific mode → disabled by default (D6).
-	 *
-	 * @since  0.1.0
-	 * @param  array<string, mixed>                $definition Validated definition from the Registry.
-	 * @param  array<string, array<string, mixed>> $config Saved config from site option.
-	 * @return bool
-	 */
-	private function is_permitted( array $definition, array $config ): bool {
-		$category = $definition['category'];
-		$slug     = $definition['slug'];
-
-		// Category absent from config → permitted with default all-mode (FR-013).
-		if ( ! isset( $config[ $category ] ) ) {
-			return true;
-		}
-
-		$entry   = $config[ $category ];
-		$enabled = isset( $entry['enabled'] ) ? (bool) $entry['enabled'] : true;
-
-		// Category is disabled (FR-014).
-		if ( ! $enabled ) {
-			return false;
-		}
-
-		$mode = isset( $entry['mode'] ) && 'specific' === $entry['mode'] ? 'specific' : 'all';
-
-		// All mode → all slugs for this category are permitted (FR-015).
-		if ( 'all' === $mode ) {
-			return true;
-		}
-
-		// Specific mode: slug must be explicitly enabled; absent defaults to false (FR-016, FR-017).
-		// Note: sub_keys is the on-disk wire key — intentionally preserved for backwards compat.
-		return isset( $entry['sub_keys'][ $slug ] ) && (bool) $entry['sub_keys'][ $slug ];
 	}
 }

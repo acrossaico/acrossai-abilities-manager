@@ -2,12 +2,14 @@
  * Feature 099 — screen 4: what the abilities cover.
  *
  * Read-only by design (spec FR-018). Its job is to convey breadth before the
- * transport ask, not to be a second configuration surface — the Integrations
- * admin page already owns that.
+ * transport ask, not to be a second configuration surface — per-ability access
+ * is set on the abilities list.
  *
  * Groups come from the server via the Library module's published filter, using
- * the shared labelling rule, so this screen and the Integrations page cannot
- * disagree (spec SC-004).
+ * the shared labelling rule, so this screen and the toolset strip on the
+ * abilities list cannot disagree (spec SC-004). Feature 102 retired the
+ * Ability Integrations page these labels used to be shared with; the rule and
+ * the filter are unchanged, so the guarantee still holds.
  *
  * @package
  */

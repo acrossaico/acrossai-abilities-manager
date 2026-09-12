@@ -17,7 +17,7 @@
 namespace AcrossAI_Abilities_Manager\Tests\Modules\Library\Integrations;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
-use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Ability_Library_Config;
+use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Integration_Settings;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Ability_Library_Registry;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Integrations\AcrossAI_Integration_Ability_Base;
 use PHPUnit\Framework\TestCase;
@@ -224,7 +224,7 @@ class Test_Integration_Ability_Base extends TestCase {
 		$log     = array();
 		$subject = $this->make_mock( true, array(), null, $log );
 
-		acrossai_test_site_options( array( AcrossAI_Ability_Library_Config::OPTION_KEY => array() ) );
+		acrossai_test_site_options( array( AcrossAI_Integration_Settings::OPTION_KEY => array() ) );
 
 		$subject->maybe_enable();
 
@@ -237,9 +237,7 @@ class Test_Integration_Ability_Base extends TestCase {
 
 		acrossai_test_site_options(
 			array(
-				AcrossAI_Ability_Library_Config::OPTION_KEY => array(
-					'mock' => array( 'enabled' => false, 'mode' => 'all', 'sub_keys' => array() ),
-				),
+				AcrossAI_Integration_Settings::OPTION_KEY => array( 'mock' => false ),
 			)
 		);
 
@@ -258,9 +256,7 @@ class Test_Integration_Ability_Base extends TestCase {
 
 		acrossai_test_site_options(
 			array(
-				AcrossAI_Ability_Library_Config::OPTION_KEY => array(
-					'mock' => array( 'enabled' => true, 'mode' => 'all', 'sub_keys' => array() ),
-				),
+				AcrossAI_Integration_Settings::OPTION_KEY => array( 'mock' => true ),
 			)
 		);
 
@@ -275,9 +271,7 @@ class Test_Integration_Ability_Base extends TestCase {
 
 		acrossai_test_site_options(
 			array(
-				AcrossAI_Ability_Library_Config::OPTION_KEY => array(
-					'mock' => array( 'enabled' => true, 'mode' => 'all', 'sub_keys' => array() ),
-				),
+				AcrossAI_Integration_Settings::OPTION_KEY => array( 'mock' => true ),
 			)
 		);
 
@@ -301,9 +295,7 @@ class Test_Integration_Ability_Base extends TestCase {
 
 		acrossai_test_site_options(
 			array(
-				AcrossAI_Ability_Library_Config::OPTION_KEY => array(
-					'mock' => array( 'enabled' => true, 'mode' => 'all', 'sub_keys' => array() ),
-				),
+				AcrossAI_Integration_Settings::OPTION_KEY => array( 'mock' => true ),
 			)
 		);
 
@@ -341,85 +333,6 @@ class Test_Integration_Ability_Base extends TestCase {
 		// permission_callback also fail-closed.
 		$perm = $rows[0]['args']['permission_callback'];
 		$this->assertFalse( $perm() );
-	}
-
-	// -------------------------------------------------------------------------
-	// Regression: sparse-storage must NOT strip an integration ON entry.
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Reproduces the 2026-07-27 bug: toggling an integration on, saving, then
-	 * reloading showed the toggle back OFF because sparse-storage was written
-	 * under the "missing = enabled" assumption. Integration categories INVERT
-	 * that default (missing = disabled per FR-008), so { enabled: true, mode:
-	 * 'all', sub_keys: {} } for an integration is NOT the default state and
-	 * MUST be preserved by save_config().
-	 */
-	public function test_save_config_preserves_integration_on_state(): void {
-		$this->seed_integration_in_registry( 'acf' );
-
-		AcrossAI_Ability_Library_Config::save_config(
-			array(
-				'acf' => array(
-					'enabled'  => true,
-					'mode'     => 'all',
-					'sub_keys' => array(),
-				),
-			)
-		);
-
-		// Re-read from the option store — the entry MUST still be there.
-		$this->assertTrue( AcrossAI_Ability_Library_Config::is_integration_enabled( 'acf' ) );
-
-		$config = AcrossAI_Ability_Library_Config::get_config();
-		$this->assertArrayHasKey( 'acf', $config );
-		$this->assertTrue( $config['acf']['enabled'] );
-	}
-
-	/**
-	 * Sparse storage still applies to integration entries at their OWN default
-	 * (enabled=false), so saving an explicit OFF for an integration is dropped
-	 * from the option — which reads back correctly as OFF via
-	 * is_integration_enabled() thanks to the inverted default.
-	 */
-	public function test_save_config_strips_integration_off_default(): void {
-		$this->seed_integration_in_registry( 'acf' );
-
-		AcrossAI_Ability_Library_Config::save_config(
-			array(
-				'acf' => array(
-					'enabled'  => false,
-					'mode'     => 'all',
-					'sub_keys' => array(),
-				),
-			)
-		);
-
-		$this->assertFalse( AcrossAI_Ability_Library_Config::is_integration_enabled( 'acf' ) );
-
-		$config = AcrossAI_Ability_Library_Config::get_config();
-		$this->assertArrayNotHasKey( 'acf', $config );
-	}
-
-	/**
-	 * Regular (non-integration) categories continue to strip the ON default
-	 * — behaviour unchanged for the ~10 existing library cards.
-	 */
-	public function test_save_config_still_strips_regular_on_default(): void {
-		// No seed → Registry has no integration slugs → 'block' is treated as
-		// a regular category with default enabled=true.
-		AcrossAI_Ability_Library_Config::save_config(
-			array(
-				'block' => array(
-					'enabled'  => true,
-					'mode'     => 'all',
-					'sub_keys' => array(),
-				),
-			)
-		);
-
-		$config = AcrossAI_Ability_Library_Config::get_config();
-		$this->assertArrayNotHasKey( 'block', $config );
 	}
 
 	// -------------------------------------------------------------------------
@@ -534,9 +447,7 @@ class Test_Integration_Ability_Base extends TestCase {
 		// Independent maybe_enable(): only mock-b is toggled on.
 		acrossai_test_site_options(
 			array(
-				AcrossAI_Ability_Library_Config::OPTION_KEY => array(
-					'mock-b' => array( 'enabled' => true, 'mode' => 'all', 'sub_keys' => array() ),
-				),
+				AcrossAI_Integration_Settings::OPTION_KEY => array( 'mock-b' => true ),
 			)
 		);
 
@@ -573,9 +484,7 @@ class Test_Integration_Ability_Base extends TestCase {
 	public function test_deactivating_plugin_does_not_mutate_saved_config(): void {
 		acrossai_test_site_options(
 			array(
-				AcrossAI_Ability_Library_Config::OPTION_KEY => array(
-					'mock' => array( 'enabled' => true, 'mode' => 'all', 'sub_keys' => array() ),
-				),
+				AcrossAI_Integration_Settings::OPTION_KEY => array( 'mock' => true ),
 			)
 		);
 
@@ -587,52 +496,60 @@ class Test_Integration_Ability_Base extends TestCase {
 		$subject->push_definition( array() );
 		$subject->maybe_enable();
 
-		$config = AcrossAI_Ability_Library_Config::get_config();
-		$this->assertArrayHasKey( 'mock', $config );
-		$this->assertTrue( $config['mock']['enabled'] );
+		// The intent is unchanged — deactivating the target plugin must not discard the operator's
+		// opt-in — but the opt-in now lives in its own option, so that is what is asserted.
+		$this->assertTrue(
+			AcrossAI_Integration_Settings::is_enabled( 'mock' ),
+			'Deactivating the target plugin must leave the saved opt-in intact.'
+		);
 	}
 
-	// -------------------------------------------------------------------------
-	// US4 — Default-OFF: is_integration_enabled() semantics under all shapes.
-	// -------------------------------------------------------------------------
-
-	public function test_is_integration_enabled_false_when_config_missing(): void {
-		acrossai_test_site_options( array( AcrossAI_Ability_Library_Config::OPTION_KEY => array() ) );
-		$this->assertFalse( AcrossAI_Ability_Library_Config::is_integration_enabled( 'acf' ) );
-	}
-
-	public function test_is_integration_enabled_false_when_entry_disabled(): void {
+	public function test_is_enabled_true_only_when_entry_explicitly_enabled(): void {
 		acrossai_test_site_options(
 			array(
-				AcrossAI_Ability_Library_Config::OPTION_KEY => array(
-					'acf' => array( 'enabled' => false, 'mode' => 'all', 'sub_keys' => array() ),
-				),
+				AcrossAI_Integration_Settings::OPTION_KEY => array( 'acf' => true ),
 			)
 		);
-		$this->assertFalse( AcrossAI_Ability_Library_Config::is_integration_enabled( 'acf' ) );
+		$this->assertTrue( AcrossAI_Integration_Settings::is_enabled( 'acf' ) );
 	}
 
-	public function test_is_integration_enabled_true_only_when_entry_explicitly_enabled(): void {
-		acrossai_test_site_options(
-			array(
-				AcrossAI_Ability_Library_Config::OPTION_KEY => array(
-					'acf' => array( 'enabled' => true, 'mode' => 'all', 'sub_keys' => array() ),
-				),
-			)
+	public function test_is_enabled_false_when_option_absent_entirely(): void {
+		acrossai_test_site_options( array() );
+		$this->assertFalse(
+			AcrossAI_Integration_Settings::is_enabled( 'acf' ),
+			'Absent means off — the opposite of the retired category config, where absent meant permitted.'
 		);
-		$this->assertTrue( AcrossAI_Ability_Library_Config::is_integration_enabled( 'acf' ) );
 	}
 
-	public function test_is_integration_enabled_false_when_entry_not_array(): void {
-		// Defensive: a legacy or corrupted entry shape must not crash.
+	public function test_is_enabled_false_for_a_falsy_entry(): void {
 		acrossai_test_site_options(
 			array(
-				AcrossAI_Ability_Library_Config::OPTION_KEY => array(
-					'acf' => 'not-an-array',
-				),
+				AcrossAI_Integration_Settings::OPTION_KEY => array( 'acf' => false ),
 			)
 		);
-		$this->assertFalse( AcrossAI_Ability_Library_Config::is_integration_enabled( 'acf' ) );
+		$this->assertFalse( AcrossAI_Integration_Settings::is_enabled( 'acf' ) );
+	}
+
+	public function test_is_enabled_coerces_a_corrupted_entry_without_crashing(): void {
+		// Defensive: the store is written as slug => bool, but nothing stops other code putting
+		// something else there. A present entry means the operator opted in, so a truthy value
+		// reads as ON — the point of the test is that it neither crashes nor silently flips a
+		// site's integrations off.
+		acrossai_test_site_options(
+			array(
+				AcrossAI_Integration_Settings::OPTION_KEY => array( 'acf' => 'yes' ),
+			)
+		);
+		$this->assertTrue( AcrossAI_Integration_Settings::is_enabled( 'acf' ) );
+	}
+
+	public function test_is_enabled_returns_false_when_the_option_is_not_an_array(): void {
+		acrossai_test_site_options(
+			array(
+				AcrossAI_Integration_Settings::OPTION_KEY => 'corrupted',
+			)
+		);
+		$this->assertFalse( AcrossAI_Integration_Settings::is_enabled( 'acf' ) );
 	}
 
 	// -------------------------------------------------------------------------

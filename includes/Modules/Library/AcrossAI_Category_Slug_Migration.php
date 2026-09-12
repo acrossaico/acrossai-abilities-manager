@@ -40,6 +40,19 @@ class AcrossAI_Category_Slug_Migration {
 	public const DONE_OPTION = 'acrossai_category_slug_migration_done';
 
 	/**
+	 * Site option whose top-level keys this migration rewrites.
+	 *
+	 * Declared here rather than read from `AcrossAI_Ability_Library_Config::OPTION_KEY`: Feature 102
+	 * deletes that class, and this one is retained. The option itself outlives it — the gate
+	 * translation reads it once and then removes it — so the name is duplicated deliberately. Two
+	 * literals are the correct shape when the class that used to own the name is going away.
+	 *
+	 * @since 0.0.34
+	 * @var   string
+	 */
+	public const SOURCE_OPTION = 'acrossai_library_config';
+
+	/**
 	 * The prefix being retired.
 	 *
 	 * @var string
@@ -129,7 +142,7 @@ class AcrossAI_Category_Slug_Migration {
 	 * @return void
 	 */
 	private static function migrate_library_config(): void {
-		$config = get_site_option( AcrossAI_Ability_Library_Config::OPTION_KEY, null );
+		$config = get_site_option( self::SOURCE_OPTION, null );
 
 		if ( ! is_array( $config ) || array() === $config ) {
 			return;
@@ -152,7 +165,7 @@ class AcrossAI_Category_Slug_Migration {
 		}
 
 		if ( $changed ) {
-			update_site_option( AcrossAI_Ability_Library_Config::OPTION_KEY, $migrated );
+			update_site_option( self::SOURCE_OPTION, $migrated );
 		}
 	}
 
