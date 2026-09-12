@@ -27,6 +27,7 @@ use AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\AcrossAI_Toolset_
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/AcrossAI_Toolset_Integration.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/AcrossAI_Catch_All_Integration.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Rank_Math.php';
+require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Contact_Form_7.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/AcrossAI_Toolset_Integrations.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Utilities/AcrossAI_Ability_Group_Tagger.php';
 

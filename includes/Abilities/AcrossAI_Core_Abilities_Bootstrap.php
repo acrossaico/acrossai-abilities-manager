@@ -73,6 +73,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		$loader->add_action( 'wp_abilities_api_categories_init', Elementor\Category_Registrar::instance(), 'register' );
 		// Feature 069 — Rank Math category (self-guards on class_exists inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', RankMath\Category_Registrar::instance(), 'register' );
+
+		// Feature 103 — Contact Form 7 category (self-guards on class_exists inside register()).
+		$loader->add_action( 'wp_abilities_api_categories_init', ContactForm7\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Settings\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Fonts\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Content\Category_Registrar::instance(), 'register' );
@@ -541,6 +544,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_rank_math_abilities();
 		}
 
+		// Feature 103 — Contact Form 7 ability suite (25 abilities under contact-form-7/*).
+		// Gated at boot, the Elementor shape rather than the Rank Math one: CF7 has no notion of
+		// modules or entitlements that could change within a request, so there is nothing to defer
+		// to runtime. The suite's guard still re-checks availability inside execute(), because CF7
+		// can be deactivated after the abilities were registered in the same request.
+		if ( class_exists( 'WPCF7_ContactForm' ) ) {
+			$this->register_contact_form_7_abilities();
+		}
+
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
 		// so every group it may cover already exists. Each declines to register
 		// itself when its group has no registered abilities, which is why the two
@@ -821,6 +833,48 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			'elementor',
 			'rank-math',
 		) );
+	}
+
+	/**
+	 * Feature 103 — instantiate the Contact Form 7 ability classes.
+	 *
+	 * @return void
+	 */
+	private function register_contact_form_7_abilities(): void {
+		// Forms — the lifecycle.
+		new ContactForm7\List_Forms();
+		new ContactForm7\Get_Form();
+		new ContactForm7\Find_Form();
+		new ContactForm7\Get_Form_Shortcode();
+		new ContactForm7\Create_Form();
+		new ContactForm7\Update_Form();
+		new ContactForm7\Duplicate_Form();
+		new ContactForm7\Delete_Form();
+
+		// Fields — the template and its tags.
+		new ContactForm7\List_Form_Fields();
+		new ContactForm7\List_Field_Types();
+		new ContactForm7\Get_Form_Template();
+		new ContactForm7\Update_Form_Template();
+		new ContactForm7\Add_Form_Field();
+		new ContactForm7\Update_Form_Field();
+		new ContactForm7\Remove_Form_Field();
+
+		// Mail — notifications and their tags.
+		new ContactForm7\Get_Mail();
+		new ContactForm7\Update_Mail();
+		new ContactForm7\Toggle_Mail_2();
+		new ContactForm7\List_Mail_Tags();
+		new ContactForm7\Validate_Mail_Tags();
+
+		// Messages.
+		new ContactForm7\Get_Messages();
+		new ContactForm7\Update_Messages();
+
+		// Settings and validation.
+		new ContactForm7\Get_Additional_Settings();
+		new ContactForm7\Update_Additional_Settings();
+		new ContactForm7\Validate_Form_Config();
 	}
 
 	/**
