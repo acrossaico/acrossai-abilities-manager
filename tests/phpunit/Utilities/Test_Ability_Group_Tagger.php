@@ -144,7 +144,8 @@ class Test_Ability_Group_Tagger extends TestCase {
 	 * Individually placed abilities beat their prefix.
 	 *
 	 * `core/*` in particular: a prefix rule would create a `core` group, and Feature 101 retired that
-	 * deliberately after it became a 105-ability catch-all.
+	 * deliberately after it became a 105-ability catch-all. WordPress core is the only thing placed
+	 * this way — a third-party ability with no toolset goes to the catch-all, not into one of ours.
 	 *
 	 * @param  string $name     Ability name.
 	 * @param  string $expected Group.
@@ -164,7 +165,6 @@ class Test_Ability_Group_Tagger extends TestCase {
 			'site info'   => array( 'core/get-site-info', 'diagnostics' ),
 			'environment' => array( 'core/get-environment-info', 'diagnostics' ),
 			'user info'   => array( 'core/get-user-info', 'users' ),
-			'mcp tracker' => array( 'mcp-tracker/get-activity', 'diagnostics' ),
 		);
 	}
 
@@ -186,6 +186,22 @@ class Test_Ability_Group_Tagger extends TestCase {
 		$this->assertSame(
 			AcrossAI_Toolset_Integrations::CATCH_ALL_GROUP,
 			$this->tagged( array(), 'some-plugin/do-a-thing' )
+		);
+	}
+
+	/**
+	 * A third-party ability is never absorbed into one of this plugin's curated groups.
+	 *
+	 * MCP Tracker's single ability is the live example. Filing it under Diagnostics would read as
+	 * though this plugin provided it, and would start Diagnostics down the road `core` took — a
+	 * curated group slowly becoming the place unclassified things land.
+	 *
+	 * @return void
+	 */
+	public function test_a_third_party_ability_is_not_absorbed_into_a_curated_group(): void {
+		$this->assertSame(
+			AcrossAI_Toolset_Integrations::CATCH_ALL_GROUP,
+			$this->tagged( array(), 'mcp-tracker/get-activity' )
 		);
 	}
 

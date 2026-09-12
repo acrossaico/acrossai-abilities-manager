@@ -43,11 +43,15 @@ class AcrossAI_Ability_Group_Tagger {
 	/**
 	 * Abilities placed individually, because their plugin does not warrant a toolset.
 	 *
-	 * WordPress core registers a handful of abilities and the MCP Tracker one; neither is an
-	 * integration, and neither should create a group. Note `core/*` in particular: a rule keyed on the
-	 * name prefix would produce a `core` group, and Feature 101 retired `core` deliberately after it
-	 * had accumulated 105 abilities as a catch-all. Placing these three by hand is what keeps that
-	 * decision from being undone by a general rule.
+	 * WordPress core's abilities are placed here because a rule keyed on the name prefix would produce
+	 * a `core` group, and Feature 101 retired `core` deliberately after it had accumulated 105
+	 * abilities as a catch-all. Placing these three by hand is what keeps that decision from being
+	 * undone by a general rule.
+	 *
+	 * Only genuinely first-party abilities belong in this list. An ability from a third-party plugin
+	 * with no toolset of its own — MCP Tracker's, for instance — is left to fall through to the
+	 * catch-all instead. Placing it in one of our curated groups would imply this plugin owns it, and
+	 * would quietly grow Diagnostics into the same bucket `core` became.
 	 *
 	 * @since 0.0.35
 	 * @var   array<string, string>
@@ -56,7 +60,6 @@ class AcrossAI_Ability_Group_Tagger {
 		'core/get-site-info'        => 'diagnostics',
 		'core/get-environment-info' => 'diagnostics',
 		'core/get-user-info'        => 'users',
-		'mcp-tracker/get-activity'  => 'diagnostics',
 	);
 
 	/**
