@@ -1,5 +1,10 @@
 # Feature 104 — LiteSpeed Cache abilities (inputs for /speckit-specify)
 
+> **Updated after implementation.** The suite shipped with **61** abilities, not the 60 planned. Three
+> changes came out of reading LiteSpeed's source more closely during the build — each recorded in the
+> "Changes made during implementation" section at the end of this brief. The ability list below is the
+> original plan; the shipped list is pinned by `tests/phpunit/abilities/Test_LiteSpeed_Suite_Contract.php`.
+
 This file is the natural-language brief that `/speckit-specify` should turn into `spec.md`. Do not treat it as the spec itself.
 
 ## One-sentence goal
@@ -14,7 +19,7 @@ LiteSpeed Cache is one of the most-installed performance plugins on WordPress (7
 
 Without a suite, an assistant has no route to LiteSpeed at all. Its 201 settings live under prefixed option names it owns, its cache is purged through class methods rather than options, and there is no REST surface to borrow. Worse, the naive route is actively harmful: writing a LiteSpeed option with `update_option()` skips the type-casting and the side effects that make a change real — the conditional purge, the cron cleanup, the `.htaccess` rewrite and the CDN sync — so the option changes and the site's actual behaviour does not.
 
-**This does not overlap the existing `cache` toolset.** That group is generic WordPress transients and the object-cache drop-in (`cache/flush-transients`, `cache/get-transient`, `cache/flush-object-cache`, …). This suite is LiteSpeed's own page cache, optimisation pipeline, crawler and database optimiser. The one deliberate near-duplicate is `litespeed/flush-litespeed-object-cache`, which goes through LiteSpeed's own handler so its summary and hooks stay consistent.
+**This does not overlap the existing `cache` toolset.** That group is generic WordPress transients and the object-cache drop-in (`cache/flush-transients`, `cache/get-transient`, `cache/flush-object-cache`, …). This suite is LiteSpeed's own page cache, optimisation pipeline, crawler and database optimiser. The one deliberate near-duplicate is `litespeed/flush-object-cache`, which goes through LiteSpeed's own handler so its summary and hooks stay consistent.
 
 ## Scope
 
@@ -142,7 +147,7 @@ All under the `litespeed/` namespace, category `acrossai-litespeed-cache`, `meta
 
 52. **`litespeed/test-object-cache-connection`** — Prove the configured backend is reachable before relying on it. Wraps `Object_Cache::test_connection()`. Read-only.
 
-53. **`litespeed/flush-litespeed-object-cache`** — Flush through LiteSpeed's own handler so its summary and hooks stay consistent. Deliberately distinct from the existing `cache/flush-object-cache`, and the description must say which to prefer.
+53. **`litespeed/flush-object-cache`** — Flush through LiteSpeed's own handler so its summary and hooks stay consistent. Deliberately distinct from the existing `cache/flush-object-cache`, and the description must say which to prefer.
 
 54. **`litespeed/update-browser-cache-settings`** — Browser cache on/off and TTL.
 
@@ -265,3 +270,70 @@ Gate the whole suite at boot on the host being present, and re-check inside `exe
 
 `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → implement. Commit the brief alone first, house message shape:
 `docs(specs): 104 litespeed-cache-abilities — feature brief for /speckit-specify`.
+
+
+## Changes made during implementation
+
+Three items in the list above turned out not to be buildable as specified. None was worked around with
+reflection, a private-method call or reimplemented SQL; each was replaced by something honest.
+
+### Dropped — `optimize-database` and `convert-tables-to-innodb`
+
+LiteSpeed exposes no entry point for running a cleanup that an ability can call:
+`DB_Optm::handler()` takes its type from `$_GET` via `Router::verify_type()` and ends in
+`Admin::redirect()`, which exits; `handler_clean_db_cli()` returns `false` unless `WP_CLI` is defined;
+`_db_clean()` is private; and the class fires no action or filter. Defining `WP_CLI` would change
+behaviour for every plugin in the request, reflection would break on any LiteSpeed release, and
+reimplementing the SQL abandons the rule that the host's database belongs to the host.
+
+The counting API is public, so the read-only abilities are unaffected.
+
+### Added — `plan-database-cleanup`, which is the better answer anyway
+
+Rather than leave a dead end, the suite now points at the abilities that **can** do the work, all of
+which this plugin already ships: `cache/delete-expired-transients` and `cache/flush-transients` for
+transients, `comments/delete-comment` for spam, trashed comments and trackbacks, and
+`database/delete-db-rows` for revisions, trashed posts, auto-drafts and orphaned meta. Each row is
+flagged `safe`; the four raw-delete rows say plainly that deleting posts rows leaves postmeta behind
+and needs a second pass, which is exactly why LiteSpeed itself has a separate `orphaned_post_meta`
+type. `list-myisam-tables` likewise points at `database/convert-core-tables-to-innodb`, which fully
+restores the dropped conversion capability through an ability that already existed.
+
+`suggested_abilities()` — already on `Ability_Definition` and used by the Contact Form 7 suite — now
+carries these cross-references on eleven abilities. A contract test asserts every slug named in a
+suggestion resolves, so a suggestion cannot become a dead end.
+
+### Dropped — `import-settings`
+
+`Import::import()` takes a **file path** and calls `file_get_contents()` on it; there is no data
+entry point. Supporting it would mean materialising caller-supplied content on disk for LiteSpeed to
+parse. `export-settings` is retained, and `apply-preset` plus `restore-preset-backup` already cover
+moving between known configurations with a backup as the way back.
+
+### Added — `list-settings-areas`
+
+Took the freed slot. With twelve settings writers each owning one area, this is the discovery call
+that maps an option key to the ability that writes it, so a client does not have to guess.
+
+## What live verification found
+
+All 61 abilities were executed against a running site. Three defects surfaced that no unit test had:
+
+1. **`get-crawler-status`, `run-crawler` and `reset-crawler` declared `status` as an array** while
+   feeding it a keyed summary, so every call failed its own output schema with
+   `ability_invalid_output` (`BUG-ARRAY-TYPED-OUTPUT-IS-A-JSON-OBJECT`, the second time this has bitten
+   after Feature 103). The Feature 103 guard only inspected `Settings_Repository`, which is why it
+   missed this; the guard is now indirection-aware and covers every map-returning repository method.
+2. **`update-optimization-exclusions` hardcoded the `optimize-css` area** while its key map spans
+   `optimize-css`, `optimize-js` and `optimize-tuning`, so four of its seven types returned
+   `setting_not_writable`. All three exclusion abilities now resolve the area from the key via
+   `Settings_Repository::area_for()`, and a test asserts every key those maps can name is owned by
+   some area.
+3. **The category-slug migration's `OWNED` list was missing the new category** — caught by the
+   existing cross-cutting test. Following that up revealed a **pre-existing blind spot in that test**:
+   its scan pattern captured `[a-z-]+`, so any slug containing a digit matched nothing at all.
+   `acrossai-contact-form-7` had therefore been invisible to it since Feature 103. Both the pattern
+   and the missing entries are fixed.
+
+Separately, `composer phpstan` was found to analyse nothing — filed as issue #190, not fixed here.
+Running PHPStan with a working config surfaced three further defects in this suite, all fixed.

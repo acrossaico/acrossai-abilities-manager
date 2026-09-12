@@ -76,6 +76,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 
 		// Feature 103 — Contact Form 7 category (self-guards on class_exists inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', ContactForm7\Category_Registrar::instance(), 'register' );
+
+		// Feature 104 — LiteSpeed Cache category (self-guards on the host probe inside register()).
+		$loader->add_action( 'wp_abilities_api_categories_init', LiteSpeed\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Settings\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Fonts\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Content\Category_Registrar::instance(), 'register' );
@@ -553,6 +556,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_contact_form_7_abilities();
 		}
 
+		// Feature 104 — LiteSpeed Cache ability suite (60 abilities under litespeed/*).
+		// Same boot-time gate as Contact Form 7: LiteSpeed has no notion of modules or entitlements
+		// that could change within a request, so there is nothing to defer to runtime. The suite's
+		// guard still re-checks availability inside execute(), because the plugin can be deactivated
+		// after the abilities were registered in the same request.
+		if ( class_exists( '\\LiteSpeed\\Core' ) ) {
+			$this->register_litespeed_abilities();
+		}
+
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
 		// so every group it may cover already exists. Each declines to register
 		// itself when its group has no registered abilities, which is why the two
@@ -875,6 +887,90 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new ContactForm7\Get_Additional_Settings();
 		new ContactForm7\Update_Additional_Settings();
 		new ContactForm7\Validate_Form_Config();
+	}
+
+	/**
+	 * Feature 104 — instantiate the LiteSpeed Cache ability classes.
+	 *
+	 * @return void
+	 */
+	private function register_litespeed_abilities(): void {
+		// Purging and cache control (9).
+		new LiteSpeed\Get_Cache_Status();
+		new LiteSpeed\Get_Purge_Settings();
+		new LiteSpeed\Purge_By_Tag();
+		new LiteSpeed\Purge_Cache();
+		new LiteSpeed\Purge_Post();
+		new LiteSpeed\Purge_Taxonomy();
+		new LiteSpeed\Purge_Url();
+		new LiteSpeed\Update_Purge_Settings();
+		new LiteSpeed\Update_Scheduled_Purge();
+
+		// Cache settings (10).
+		new LiteSpeed\Get_Cache_Settings();
+		new LiteSpeed\Get_Cache_Vary();
+		new LiteSpeed\List_Cache_Exclusions();
+		new LiteSpeed\Set_Cache_State();
+		new LiteSpeed\Update_Cache_Exclusions();
+		new LiteSpeed\Update_Cache_Scope();
+		new LiteSpeed\Update_Cache_Settings();
+		new LiteSpeed\Update_Cache_Ttl();
+		new LiteSpeed\Update_Cache_Vary();
+		new LiteSpeed\Update_Guest_Mode();
+
+		// Page optimisation (11).
+		new LiteSpeed\Get_Optimization_Settings();
+		new LiteSpeed\Get_Optimization_Status();
+		new LiteSpeed\List_Optimization_Exclusions();
+		new LiteSpeed\Purge_Optimization_Cache();
+		new LiteSpeed\Update_Css_Settings();
+		new LiteSpeed\Update_Font_Settings();
+		new LiteSpeed\Update_Html_Settings();
+		new LiteSpeed\Update_Js_Settings();
+		new LiteSpeed\Update_Localization_Settings();
+		new LiteSpeed\Update_Optimization_Exclusions();
+		new LiteSpeed\Update_Tuning_Settings();
+
+		// Media and lazy load (6).
+		new LiteSpeed\Get_Media_Settings();
+		new LiteSpeed\Get_Media_Status();
+		new LiteSpeed\Update_Lazyload_Settings();
+		new LiteSpeed\Update_Media_Exclusions();
+		new LiteSpeed\Update_Placeholder_Settings();
+		new LiteSpeed\Update_Viewport_Settings();
+
+		// Crawler (8).
+		new LiteSpeed\Get_Crawler_Map();
+		new LiteSpeed\Get_Crawler_Settings();
+		new LiteSpeed\Get_Crawler_Status();
+		new LiteSpeed\List_Crawlers();
+		new LiteSpeed\Reset_Crawler();
+		new LiteSpeed\Run_Crawler();
+		new LiteSpeed\Set_Crawler_State();
+		new LiteSpeed\Update_Crawler_Settings();
+
+		// Database reporting (3).
+		new LiteSpeed\Get_Autoload_Summary();
+		new LiteSpeed\Get_Database_Summary();
+		new LiteSpeed\Plan_Database_Cleanup();
+		new LiteSpeed\List_Myisam_Tables();
+
+		// Object and browser cache (5).
+		new LiteSpeed\Flush_Object_Cache();
+		new LiteSpeed\Get_Object_Cache_Status();
+		new LiteSpeed\Test_Object_Cache_Connection();
+		new LiteSpeed\Update_Browser_Cache_Settings();
+		new LiteSpeed\Update_Object_Cache_Settings();
+
+		// Presets and diagnostics (8).
+		new LiteSpeed\Apply_Preset();
+		new LiteSpeed\Export_Settings();
+		new LiteSpeed\Get_Advanced_Settings();
+		new LiteSpeed\Get_Environment_Report();
+		new LiteSpeed\List_Preset_Backups();
+		new LiteSpeed\List_Settings_Areas();
+		new LiteSpeed\Restore_Preset_Backup();
+		new LiteSpeed\Update_Advanced_Settings();
 	}
 
 	/**
