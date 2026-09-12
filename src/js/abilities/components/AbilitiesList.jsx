@@ -82,6 +82,7 @@ export default function AbilitiesList() {
 		error,
 		activeTab,
 		toolsetCounts,
+		toolsetLabels,
 		toolsetTotal,
 		serverPages,
 	} = useSelect(
@@ -92,6 +93,7 @@ export default function AbilitiesList() {
 			error: select(STORE_NAME).getError(),
 			activeTab: select(STORE_NAME).getActiveTab(),
 			toolsetCounts: select(STORE_NAME).getToolsetCounts(),
+			toolsetLabels: select(STORE_NAME).getToolsetLabels(),
 			toolsetTotal: select(STORE_NAME).getToolsetTotal(),
 			serverPages: select(STORE_NAME).getPages(),
 		}),
@@ -130,7 +132,9 @@ export default function AbilitiesList() {
 			: sprintf(
 					/* translators: %s is a toolset name, e.g. "Cache". */
 					__('Search %s abilities…', 'acrossai-abilities-manager'),
-					titleCaseTabLabel(activeTab)
+					// Same precedence as the strip: a declared name beats the derived one, so the
+					// placeholder and the tab it belongs to never disagree.
+					toolsetLabels[activeTab] || titleCaseTabLabel(activeTab)
 				);
 
 	// Fetch whenever filters change.
@@ -393,6 +397,7 @@ export default function AbilitiesList() {
 			{/* Tablenav */}
 			<GroupTabs
 				counts={toolsetCounts}
+				labels={toolsetLabels}
 				activeTab={activeTab}
 				total={toolsetTotal}
 				onSelect={(key) => dispatch.setActiveTab(key)}

@@ -57,6 +57,43 @@ const render = (el) => act(() => root.render(el));
 
 const COUNTS = { cache: 7, content: 29, settings: 11 };
 
+describe('GroupTabs — declared labels beat the derived one', () => {
+	// The strip derives a label from the group key via titleCaseTabLabel, which cannot know an
+	// acronym: `acf` becomes "Acf", which reads as a typo. An integration declares its own name and
+	// the route returns it, so the declaration wins where there is one (issue #184).
+	test('a declared label is used in place of the derived one', () => {
+		render(
+			createElement(GroupTabs, {
+				counts: { acf: 6, cache: 7 },
+				labels: { acf: 'Advanced Custom Fields' },
+				activeTab: ALL_TABS_KEY,
+				total: 425,
+				onSelect: () => {},
+			})
+		);
+
+		const text = container.textContent;
+		expect(text).toContain('Advanced Custom Fields');
+		expect(text).not.toContain('Acf');
+		// A group with no declared label still derives one.
+		expect(text).toContain('Cache');
+	});
+
+	test('missing labels fall back to the derived rule', () => {
+		render(
+			createElement(GroupTabs, {
+				counts: { acf: 6 },
+				activeTab: ALL_TABS_KEY,
+				total: 6,
+				onSelect: () => {},
+			})
+		);
+
+		// No `labels` prop at all — the strip must not throw, and must still name the tab.
+		expect(container.textContent).toContain('Acf');
+	});
+});
+
 describe('GroupTabs — navigation links, not tabs', () => {
 	test('renders All plus one entry per toolset, alphabetically', () => {
 		render(

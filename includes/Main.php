@@ -470,6 +470,14 @@ final class Main {
 		$gate_migration = \AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Library_Gate_Migration::instance();
 		$this->loader->add_action( 'init', $gate_migration, 'maybe_migrate', 100 );
 
+		// Feature 184: give abilities registered by other plugins a toolset. Hooked to the core
+		// wp_register_ability_args filter at P10 so the value is on the WP_Ability itself, which is
+		// what makes the tab strip, the counts, the Toolset column and the MCP dispatchers all agree
+		// without any of them knowing the tagger exists. Well before the override processor's
+		// P100000; the two touch different keys.
+		$group_tagger = \AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Group_Tagger::class;
+		$this->loader->add_filter( 'wp_register_ability_args', $group_tagger, 'tag', 10, 2 );
+
 		// Ability Override Processor — boot at plugins_loaded P20 and bust cache on override save.
 		// Named variable before Loader calls satisfies the Boot Flow Rule (SEC-PLAN-002).
 		$override_processor = \AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Ability_Override_Processor::instance();

@@ -805,6 +805,52 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Toolset\Diagnostics();
 		new Toolset\Elementor();
 		new Toolset\Rank_Math();
+
+		$this->register_integration_toolsets( array(
+			'content',
+			'blocks',
+			'appearance',
+			'configuration',
+			'users',
+			'updates',
+			'cron',
+			'cache',
+			'database',
+			'files',
+			'diagnostics',
+			'elementor',
+			'rank-math',
+		) );
+	}
+
+	/**
+	 * One dispatcher per integration that does not already have a hand-written one.
+	 *
+	 * The thirteen above are curated first-party groups: few, stable, and worth a file each.
+	 * Integrations are the opposite — the set grows, and each has already declared its group, label and
+	 * description once. Generating from that declaration is what keeps adding an integration to a
+	 * single class, instead of a class here plus a tagger entry plus a `new` line.
+	 *
+	 * Forgetting a dispatcher is otherwise silent: the group still gets a tab, a count and a REST
+	 * filter, and is simply unreachable over MCP, with `Base_Toolset_Ability` then telling callers to
+	 * "use that tool instead" for a tool that was never created.
+	 *
+	 * `Elementor` and `Rank_Math` are integrations that predate this and keep their own classes; their
+	 * groups appear in `$claimed` so nothing double-registers. Retiring either is now a deletion — the
+	 * descriptor already carries the same four answers.
+	 *
+	 * @since  0.0.35
+	 * @param  string[] $claimed Groups a hand-written dispatcher already serves.
+	 * @return void
+	 */
+	private function register_integration_toolsets( array $claimed ): void {
+		foreach ( Integrations\AcrossAI_Toolset_Integrations::all() as $group => $integration ) {
+			if ( in_array( $group, $claimed, true ) ) {
+				continue;
+			}
+
+			new Toolset\Integration_Toolset( $integration );
+		}
 	}
 
 }

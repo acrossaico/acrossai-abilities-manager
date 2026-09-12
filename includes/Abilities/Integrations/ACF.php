@@ -96,7 +96,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 0.1.0
  */
-class ACF extends AcrossAI_Integration_Ability_Base {
+class ACF extends AcrossAI_Integration_Ability_Base implements AcrossAI_Toolset_Integration {
 
 	/**
 	 * The tab_group identifier for the "Acf" tab on the Ability Library page.
@@ -118,6 +118,95 @@ class ACF extends AcrossAI_Integration_Ability_Base {
 	 */
 	protected function slug(): string {
 		return self::TAB_GROUP;
+	}
+
+	/**
+	 * Register the opt-in hooks, then declare this integration's toolset.
+	 *
+	 * Self-registration rather than a `new ACF()` inside the registry: the base constructor hooks
+	 * `plugins_loaded` and `acrossai_abilities_api_init`, so a second instance would push the
+	 * display-only Library rows twice. One instance is created in `Main::define_public_hooks()`, and
+	 * this is the route a third-party integration would use too.
+	 *
+	 * @since 0.0.35
+	 */
+	public function __construct() {
+		parent::__construct();
+
+		add_filter(
+			'acrossai_toolset_integrations',
+			function ( $integrations ) {
+				$integrations   = is_array( $integrations ) ? $integrations : array();
+				$integrations[] = $this;
+
+				return $integrations;
+			}
+		);
+	}
+
+	/**
+	 * Toolset key.
+	 *
+	 * Same value as {@see self::slug()}, reached through the toolset contract rather than the opt-in
+	 * one. The two happen to coincide for ACF and need not for every integration: an integration with
+	 * no opt-in has no slug at all.
+	 *
+	 * @since  0.0.35
+	 * @return string
+	 */
+	public function group(): string {
+		return self::TAB_GROUP;
+	}
+
+	/**
+	 * Display name for the toolset.
+	 *
+	 * Drops the "(AI)" the opt-in label carries. That suffix distinguishes ACF's AI feature from ACF
+	 * itself, which matters next to a switch that turns that feature on; in a list of toolsets it
+	 * reads as a different product.
+	 *
+	 * @since  0.0.35
+	 * @return string
+	 */
+	public function toolset_label(): string {
+		return __( 'Advanced Custom Fields', 'acrossai-abilities-manager' );
+	}
+
+	/**
+	 * What this toolset covers, for an MCP client.
+	 *
+	 * @since  0.0.35
+	 * @return string
+	 */
+	public function toolset_description(): string {
+		return __(
+			'Advanced Custom Fields: inspect and create field groups, and register custom post types and taxonomies through ACF. Use this for anything about ACF field structure — the shape of the fields themselves, not the values stored against a post. Registering post types or taxonomies changes site structure and requires administrator rights. These abilities come from ACF and appear only when its AI feature is enabled. action=discover lists this group; action=info returns schemas; action=execute runs one ability.',
+			'acrossai-abilities-manager'
+		);
+	}
+
+	/**
+	 * Ability names ACF registers.
+	 *
+	 * ACF namespaces its own abilities `acf/*`. This plugin registers none of them — the three rows in
+	 * {@see self::abilities()} are display-only and never reach `wp_get_abilities()` — so every
+	 * ability in this group arrives through the tagger.
+	 *
+	 * @since  0.0.35
+	 * @return string[]
+	 */
+	public function ability_prefixes(): array {
+		return array( 'acf' );
+	}
+
+	/**
+	 * Whether ACF is present.
+	 *
+	 * @since  0.0.35
+	 * @return bool
+	 */
+	public function is_active(): bool {
+		return $this->is_plugin_active();
 	}
 
 	/**
