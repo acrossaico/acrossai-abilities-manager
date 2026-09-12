@@ -59,6 +59,18 @@ class Test_Quick_Connect_Submenu_Order extends TestCase {
 	}
 
 	/**
+	 * An unrelated row sharing the `acrossai` parent menu.
+	 *
+	 * These fixtures need *some* sibling between Abilities and the end of the group, to prove the
+	 * reorder places Quick Connect relatively rather than at an absolute slot. Until Feature 102
+	 * that sibling was the Ability Integrations page; using a retired slug here would read as if
+	 * the page still existed, and what the test actually needs is any row it does not own.
+	 *
+	 * @var string
+	 */
+	private const SIBLING_SLUG = 'acrossai-addons';
+
+	/**
 	 * Read back the slug order.
 	 *
 	 * @return array<int, string> Slugs in render order.
@@ -78,13 +90,13 @@ class Test_Quick_Connect_Submenu_Order extends TestCase {
 			$this->row( 'AcrossAI', 'acrossai' ),
 			$this->row( 'Quick Connect', Menu::QUICK_CONNECT_SLUG ),
 			$this->row( 'Abilities', Menu::ABILITIES_SLUG ),
-			$this->row( 'Integrations', 'acrossai-abilities-integrations' ),
+			$this->row( 'Add-ons', self::SIBLING_SLUG ),
 		);
 
 		$this->menu->reorder_submenu();
 
 		$this->assertSame(
-			array( 'acrossai', Menu::ABILITIES_SLUG, Menu::QUICK_CONNECT_SLUG, 'acrossai-abilities-integrations' ),
+			array( 'acrossai', Menu::ABILITIES_SLUG, Menu::QUICK_CONNECT_SLUG, self::SIBLING_SLUG ),
 			$this->slugs()
 		);
 	}
@@ -96,7 +108,7 @@ class Test_Quick_Connect_Submenu_Order extends TestCase {
 		$GLOBALS['submenu'][ Menu::PARENT_SLUG ] = array(
 			$this->row( 'AcrossAI', 'acrossai' ),
 			$this->row( 'Abilities', Menu::ABILITIES_SLUG ),
-			$this->row( 'Integrations', 'acrossai-abilities-integrations' ),
+			$this->row( 'Add-ons', self::SIBLING_SLUG ),
 			$this->row( 'Settings', 'acrossai-settings' ),
 			$this->row( 'Quick Connect', Menu::QUICK_CONNECT_SLUG ),
 		);
@@ -104,7 +116,7 @@ class Test_Quick_Connect_Submenu_Order extends TestCase {
 		$this->menu->reorder_submenu();
 
 		$this->assertSame(
-			array( 'acrossai', Menu::ABILITIES_SLUG, Menu::QUICK_CONNECT_SLUG, 'acrossai-abilities-integrations', 'acrossai-settings' ),
+			array( 'acrossai', Menu::ABILITIES_SLUG, Menu::QUICK_CONNECT_SLUG, self::SIBLING_SLUG, 'acrossai-settings' ),
 			$this->slugs()
 		);
 	}

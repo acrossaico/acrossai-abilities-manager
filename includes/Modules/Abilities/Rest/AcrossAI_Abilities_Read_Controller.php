@@ -23,6 +23,8 @@ use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Abilities_Formatter;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Merger;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Registry_Query;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Sanitizer;
+use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Group;
+use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Protected_Abilities;
 
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
@@ -33,6 +35,86 @@ defined( 'ABSPATH' ) || exit;
  * @since 0.1.0
  */
 class AcrossAI_Abilities_Read_Controller {
+
+
+	/**
+	 * Register literal-segment routes that must win over the slug wildcard.
+	 *
+	 * Called by the orchestrator BEFORE any sub-controller's register_routes(), because
+	 * AcrossAI_Abilities_Write_Controller registers '/abilities/(?P<slug>[^/]+)' and runs first.
+	 * WP_REST_Server::dispatch() walks routes in registration order and takes the first regex
+	 * match, so a literal registered after that wildcard is unreachable — '/abilities/toolsets'
+	 * would dispatch as an ability named "toolsets" and 404
+	 * (BUG-REST-ROUTE-ORDER-LITERAL-BEFORE-WILDCARD).
+	 *
+	 * Registering it inside register_routes() is NOT sufficient, even placed above this
+	 * controller's own wildcard — verified live: the route landed at index 4 with the wildcard
+	 * already at index 2.
+	 *
+	 * @since  0.1.0
+	 * @return void
+	 */
+	public function register_literal_routes(): void {
+		$permission = array( AcrossAI_Abilities_Rest_Controller::instance(), 'check_permission' );
+
+		// Toolset counts. MUST be registered before the '/abilities/(?P<slug>[^/]+)' route below:
+		// WordPress matches in registration order, so a wildcard registered first would swallow
+		// 'toolsets' as an ability slug (BUG-REST-ROUTE-ORDER-LITERAL-BEFORE-WILDCARD).
+		//
+		// Counts are served here, and not localised into the admin page, because
+		// AcrossAI_Ability_Override_Processor prunes site_allowed=false abilities on every request
+		// EXCEPT this namespace (PATH A/B). A count taken during page render would omit exactly the
+		// blocked abilities the screen then lists (BUG-PATH-B-AGGREGATE-UNDERCOUNT).
+		register_rest_route(
+			AcrossAI_Abilities_Rest_Controller::REST_NAMESPACE,
+			'/abilities/toolsets',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_toolset_counts' ),
+					'permission_callback' => $permission,
+				),
+			)
+		);
+	}
+
+	/**
+	 * GET /abilities/toolsets — ability count per toolset.
+	 *
+	 * Served from this namespace deliberately. AcrossAI_Ability_Override_Processor prunes
+	 * site_allowed=false abilities from the registry on every request except this one (PATH A/B),
+	 * so a count taken anywhere else — notably during an admin page render — would omit exactly the
+	 * blocked abilities the abilities screen then lists, and the strip would contradict the table
+	 * (BUG-PATH-B-AGGREGATE-UNDERCOUNT).
+	 *
+	 * @since  0.1.0
+	 * @param  \WP_REST_Request $request Request object.
+	 * @return \WP_REST_Response
+	 */
+	public function get_toolset_counts( \WP_REST_Request $request ) {
+		unset( $request );
+
+		// The overall total ships with the per-toolset counts rather than being read off the list
+		// response: the list's total is the *filtered* total, so on a toolset view it is that
+		// toolset's count — using it for the "All" entry made All read 7 while 419 abilities
+		// existed. Counted here, on the same PATH A read as the counts, so the two agree.
+		$total = 0;
+
+		foreach ( array_keys( wp_get_abilities() ) as $slug ) {
+			if ( AcrossAI_Protected_Abilities::is_protected( (string) $slug ) ) {
+				continue;
+			}
+
+			++$total;
+		}
+
+		return rest_ensure_response(
+			array(
+				'counts' => AcrossAI_Ability_Group::counts(),
+				'total'  => $total,
+			)
+		);
+	}
 
 	/**
 	 * Singleton instance.
@@ -89,50 +171,55 @@ class AcrossAI_Abilities_Read_Controller {
 					'callback'            => array( $this, 'get_abilities' ),
 					'permission_callback' => $permission,
 					'args'                => array(
-						'page'     => array(
+						'page'      => array(
 							'type'              => 'integer',
 							'minimum'           => 1,
 							'default'           => 1,
 							'sanitize_callback' => 'absint',
 						),
-						'per_page' => array(
+						'per_page'  => array(
 							'type'              => 'integer',
 							'minimum'           => 1,
 							'maximum'           => 100,
 							'default'           => 20,
 							'sanitize_callback' => 'absint',
 						),
-						'search'   => array(
+						'search'    => array(
 							'type'              => 'string',
 							'default'           => '',
 							'sanitize_callback' => 'sanitize_text_field',
 						),
-						'orderby'  => array(
+						'orderby'   => array(
 							'type'    => 'string',
 							'enum'    => array( 'ability_slug', 'label', 'status', 'source', 'updated_at', 'created_at' ),
 							'default' => 'ability_slug',
 						),
-						'order'    => array(
+						'order'     => array(
 							'type'    => 'string',
 							'enum'    => array( 'asc', 'desc', 'ASC', 'DESC' ),
 							'default' => 'asc',
 						),
-						'source'   => array(
+						'source'    => array(
 							'type' => 'string',
 							'enum' => array( 'db', 'plugin', 'theme', 'core', '' ),
 						),
-						'status'   => array(
+						'status'    => array(
 							'type' => 'string',
 							'enum' => array( 'draft', 'publish', '' ),
 						),
-						'category' => array(
+						'category'  => array(
 							'type'              => 'string',
 							'default'           => '',
 							'sanitize_callback' => 'sanitize_text_field',
 						),
-						'editable' => array(
+						'editable'  => array(
 							'type' => 'string',
 							'enum' => array( 'true', 'false', '1', '0', '' ),
+						),
+						'tab_group' => array(
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_key',
 						),
 					),
 				),
@@ -177,9 +264,14 @@ class AcrossAI_Abilities_Read_Controller {
 	 */
 	public function get_abilities( \WP_REST_Request $request ) {
 		$source = (string) ( $request->get_param( 'source' ) ?? '' );
+		$status = (string) ( $request->get_param( 'status' ) ?? '' );
 
 		// source=db: query the custom abilities table only (includes drafts).
-		if ( 'db' === $source ) {
+		//
+		// status=draft is routed here too. Only a DB-created ability can be a draft, and a draft is
+		// never registered, so wp_get_abilities() cannot satisfy the filter — the registry branch
+		// would return an empty set and read as broken. Feature 102 FR-015a.
+		if ( 'db' === $source || 'draft' === $status ) {
 			$params   = array(
 				'page'     => $request->get_param( 'page' ),
 				'per_page' => $request->get_param( 'per_page' ),
@@ -201,6 +293,13 @@ class AcrossAI_Abilities_Read_Controller {
 		// All other cases: merge WP registry abilities with DB overrides.
 		// This returns all WP-registered abilities (plugin/theme/core + published DB abilities)
 		// merged with any stored site overrides — the same data set shown on the sitewide page.
+		// Resolve a toolset to its members through AcrossAI_Ability_Group — never by re-reading
+		// meta.acrossai.tab_group here. That class is the single seam and already excludes protected
+		// slugs, which is what keeps the toolset dispatcher abilities out of their own toolsets
+		// (DEC-PROTECTED-SLUGS-PATTERN).
+		$tab_group = (string) ( $request->get_param( 'tab_group' ) ?? '' );
+		$slugs     = ( '' !== $tab_group ) ? AcrossAI_Ability_Group::member_names( $tab_group ) : null;
+
 		$registry_params = array(
 			'search'   => (string) ( $request->get_param( 'search' ) ?? '' ),
 			'orderby'  => 'ability_slug' === $request->get_param( 'orderby' ) ? 'slug' : (string) ( $request->get_param( 'orderby' ) ?? 'slug' ),
@@ -208,6 +307,8 @@ class AcrossAI_Abilities_Read_Controller {
 			'source'   => $source,
 			'page'     => (int) ( $request->get_param( 'page' ) ?? 1 ),
 			'per_page' => (int) ( $request->get_param( 'per_page' ) ?? 20 ),
+			'status'   => $status,
+			'slugs'    => $slugs,
 		);
 
 		$result   = AcrossAI_Ability_Registry_Query::query( $registry_params, $this->db_query );

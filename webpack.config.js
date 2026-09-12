@@ -86,16 +86,6 @@ module.exports = {
 			'src/scss/abilities',
 			'admin.scss'
 		),
-		'js/ability-library': path.resolve(
-			process.cwd(),
-			'src/js/ability-library',
-			'index.js'
-		),
-		'css/ability-library': path.resolve(
-			process.cwd(),
-			'src/scss/ability-library',
-			'admin.scss'
-		),
 		'js/mcp-abilities-extension': path.resolve(
 			process.cwd(),
 			'src/js/mcp-abilities-extension',

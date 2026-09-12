@@ -7,6 +7,7 @@
  * @since 0.2.0
  */
 import { createReduxStore, register } from '@wordpress/data';
+import { ALL_TABS_KEY } from '../constants';
 import * as api from '../api/client';
 
 export const STORE_NAME = 'acrossai/abilities';
@@ -22,6 +23,8 @@ const SET_SAVE_ERROR = 'SET_SAVE_ERROR';
 const CLEAR_ERROR = 'CLEAR_ERROR';
 const SET_CATEGORIES = 'SET_CATEGORIES';
 const SET_VIEW = 'SET_VIEW';
+const SET_ACTIVE_TAB = 'SET_ACTIVE_TAB';
+const SET_TOOLSET_COUNTS = 'SET_TOOLSET_COUNTS';
 const SET_SAVED = 'SET_SAVED';
 const UPDATE_DRAFT = 'UPDATE_DRAFT';
 const CLEAR_DRAFT = 'CLEAR_DRAFT';
@@ -51,6 +54,12 @@ const OVERRIDABLE_FIELDS = [
 // ---------------------------------------------------------------------------
 const DEFAULT_STATE = {
 	abilities: [],
+	// Feature 102: the selected toolset tab. ALL_TABS_KEY means "no toolset filter".
+	activeTab: ALL_TABS_KEY,
+	toolsetCounts: {},
+	// Unfiltered ability total, for the strip's "All" entry. Distinct from `total`, which is the
+	// current query's filtered total and therefore equals the toolset's own count on a toolset view.
+	toolsetTotal: 0,
 	total: 0,
 	pages: 1,
 	categories: [],
@@ -106,6 +115,16 @@ function reducer(state = DEFAULT_STATE, action) {
 
 		case SET_VIEW:
 			return { ...state, view: action.view };
+
+		case SET_ACTIVE_TAB:
+			return { ...state, activeTab: action.activeTab };
+
+		case SET_TOOLSET_COUNTS:
+			return {
+				...state,
+				toolsetCounts: action.counts,
+				toolsetTotal: action.total,
+			};
 
 		case SET_SAVED: {
 			const saved = action.ability;
@@ -182,8 +201,25 @@ function reducer(state = DEFAULT_STATE, action) {
 // ---------------------------------------------------------------------------
 // Action creators
 // ---------------------------------------------------------------------------
+/**
+ * Monotonic id for list requests.
+ *
+ * `fetchAbilities` had no ordering guard, so whichever response landed last won. Feature 102 made
+ * that reliably visible: a deep-linked toolset fires an unfiltered fetch (before the toolset list
+ * has loaded and the tab can be validated) and then a filtered one, and the unfiltered response —
+ * bigger, so usually slower — arrived second and replaced the filtered rows. The strip said
+ * "Cache 7" while the table showed all 419.
+ *
+ * The hazard is not new and is not specific to toolsets: typing quickly in the search box could
+ * always land an older response last. Sequencing every list request fixes both.
+ *
+ * @type {number}
+ */
+let listRequestId = 0;
+
 const actions = {
 	setView: (view) => ({ type: SET_VIEW, view }),
+	setActiveTab: (activeTab) => ({ type: SET_ACTIVE_TAB, activeTab }),
 	setSaved: (ability) => ({ type: SET_SAVED, ability }),
 	updateDraft: (patch) => ({ type: UPDATE_DRAFT, patch }),
 	clearDraft: () => ({ type: CLEAR_DRAFT }),
@@ -192,12 +228,25 @@ const actions = {
 	// Thunks
 	fetchAbilities(params = {}) {
 		return async ({ dispatch }) => {
+			listRequestId += 1;
+			const requestId = listRequestId;
+
 			dispatch({ type: SET_LOADING, isLoading: true });
 			try {
 				const { abilities, total, pages } =
 					await api.getAbilities(params);
+
+				// Drop a response that a later request has already superseded.
+				if (requestId !== listRequestId) {
+					return;
+				}
+
 				dispatch({ type: SET_ABILITIES, abilities, total, pages });
 			} catch (err) {
+				if (requestId !== listRequestId) {
+					return;
+				}
+
 				// FR-036: keep last-loaded data, show error notice
 				dispatch({ type: SET_ERROR, error: err.message });
 			}
@@ -415,6 +464,25 @@ const actions = {
 		};
 	},
 
+	fetchToolsetCounts() {
+		return async ({ dispatch }) => {
+			try {
+				const payload = await api.getToolsetCounts();
+				dispatch({
+					type: SET_TOOLSET_COUNTS,
+					counts:
+						payload && 'object' === typeof payload.counts
+							? payload.counts
+							: {},
+					total: payload ? Number(payload.total) || 0 : 0,
+				});
+			} catch {
+				// Non-fatal — the toolset strip degrades to "All" only.
+				dispatch({ type: SET_TOOLSET_COUNTS, counts: {}, total: 0 });
+			}
+		};
+	},
+
 	fetchCategories() {
 		return async ({ dispatch }) => {
 			try {
@@ -444,6 +512,9 @@ const selectors = {
 	getError: (state) => state.error,
 	getSaveError: (state) => state.saveError,
 	getView: (state) => state.view,
+	getActiveTab: (state) => state.activeTab,
+	getToolsetCounts: (state) => state.toolsetCounts,
+	getToolsetTotal: (state) => state.toolsetTotal,
 	getSavedAbility: (state) => state.savedAbility,
 	getDraftAbility: (state) => state.draftAbility,
 	getIsDirty: (state) => state.isDirty,

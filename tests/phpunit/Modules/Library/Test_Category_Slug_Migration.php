@@ -14,7 +14,6 @@
 
 namespace AcrossAI_Abilities_Manager\Tests\Modules\Library;
 
-use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Ability_Library_Config;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Category_Slug_Migration;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
@@ -104,7 +103,7 @@ class Test_Category_Slug_Migration extends TestCase {
 	 */
 	public function test_library_config_keys_are_rewritten(): void {
 		update_site_option(
-			AcrossAI_Ability_Library_Config::OPTION_KEY,
+			AcrossAI_Category_Slug_Migration::SOURCE_OPTION,
 			array(
 				'acrossai-abilities-manager-content' => array(
 					'enabled'  => false,
@@ -117,7 +116,7 @@ class Test_Category_Slug_Migration extends TestCase {
 
 		$this->invoke( 'migrate_library_config' );
 
-		$config = get_site_option( AcrossAI_Ability_Library_Config::OPTION_KEY );
+		$config = get_site_option( AcrossAI_Category_Slug_Migration::SOURCE_OPTION );
 
 		$this->assertArrayHasKey( 'acrossai-content', $config );
 		$this->assertArrayNotHasKey( 'acrossai-abilities-manager-content', $config );
@@ -136,7 +135,7 @@ class Test_Category_Slug_Migration extends TestCase {
 	 */
 	public function test_existing_new_key_is_not_clobbered_by_legacy(): void {
 		update_site_option(
-			AcrossAI_Ability_Library_Config::OPTION_KEY,
+			AcrossAI_Category_Slug_Migration::SOURCE_OPTION,
 			array(
 				'acrossai-content'                   => array( 'enabled' => true ),
 				'acrossai-abilities-manager-content' => array( 'enabled' => false ),
@@ -145,7 +144,7 @@ class Test_Category_Slug_Migration extends TestCase {
 
 		$this->invoke( 'migrate_library_config' );
 
-		$config = get_site_option( AcrossAI_Ability_Library_Config::OPTION_KEY );
+		$config = get_site_option( AcrossAI_Category_Slug_Migration::SOURCE_OPTION );
 
 		$this->assertTrue( $config['acrossai-content']['enabled'] );
 		$this->assertCount( 1, $config );
@@ -156,11 +155,11 @@ class Test_Category_Slug_Migration extends TestCase {
 	 */
 	public function test_empty_config_is_a_no_op(): void {
 		$this->invoke( 'migrate_library_config' );
-		$this->assertFalse( get_site_option( AcrossAI_Ability_Library_Config::OPTION_KEY ) );
+		$this->assertFalse( get_site_option( AcrossAI_Category_Slug_Migration::SOURCE_OPTION ) );
 
-		update_site_option( AcrossAI_Ability_Library_Config::OPTION_KEY, array() );
+		update_site_option( AcrossAI_Category_Slug_Migration::SOURCE_OPTION, array() );
 		$this->invoke( 'migrate_library_config' );
-		$this->assertSame( array(), get_site_option( AcrossAI_Ability_Library_Config::OPTION_KEY ) );
+		$this->assertSame( array(), get_site_option( AcrossAI_Category_Slug_Migration::SOURCE_OPTION ) );
 	}
 
 	/**
@@ -168,15 +167,15 @@ class Test_Category_Slug_Migration extends TestCase {
 	 */
 	public function test_migration_is_idempotent(): void {
 		update_site_option(
-			AcrossAI_Ability_Library_Config::OPTION_KEY,
+			AcrossAI_Category_Slug_Migration::SOURCE_OPTION,
 			array( 'acrossai-abilities-manager-media' => array( 'enabled' => false ) )
 		);
 
 		$this->invoke( 'migrate_library_config' );
-		$first = get_site_option( AcrossAI_Ability_Library_Config::OPTION_KEY );
+		$first = get_site_option( AcrossAI_Category_Slug_Migration::SOURCE_OPTION );
 
 		$this->invoke( 'migrate_library_config' );
-		$second = get_site_option( AcrossAI_Ability_Library_Config::OPTION_KEY );
+		$second = get_site_option( AcrossAI_Category_Slug_Migration::SOURCE_OPTION );
 
 		$this->assertSame( $first, $second );
 		$this->assertArrayHasKey( 'acrossai-media', $second );
@@ -189,13 +188,13 @@ class Test_Category_Slug_Migration extends TestCase {
 		update_option( AcrossAI_Category_Slug_Migration::DONE_OPTION, '1' );
 
 		update_site_option(
-			AcrossAI_Ability_Library_Config::OPTION_KEY,
+			AcrossAI_Category_Slug_Migration::SOURCE_OPTION,
 			array( 'acrossai-abilities-manager-media' => array( 'enabled' => false ) )
 		);
 
 		AcrossAI_Category_Slug_Migration::maybe_migrate();
 
-		$config = get_site_option( AcrossAI_Ability_Library_Config::OPTION_KEY );
+		$config = get_site_option( AcrossAI_Category_Slug_Migration::SOURCE_OPTION );
 		$this->assertArrayHasKey( 'acrossai-abilities-manager-media', $config );
 	}
 

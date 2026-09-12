@@ -6,8 +6,7 @@
  * use rather than duplicated.
  *
  * Consumers:
- * - `src/js/ability-library/components/LibraryPage.js` (re-exports for the
- *   Integrations page and LibraryCard)
+ * - `src/js/abilities/` (the toolset strip on the abilities list)
  * - `src/js/quick-connect/` (wizard integrations screen)
  *
  * Must stay character-for-character identical to the PHP rule in

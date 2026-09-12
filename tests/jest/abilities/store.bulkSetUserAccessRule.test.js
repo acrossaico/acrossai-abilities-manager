@@ -121,7 +121,7 @@ describe('bulkSetUserAccessRule — slug pass-through (I4 regression guard)', ()
 		const [opts] = mockApiFetch.mock.calls[0];
 		// Path shape: /wpb-ac/v1/{ac_slug}/rules/acrossai-abilities/{ability_slug}
 		expect(opts.path).toMatch(
-			/^\/wpb-ac\/v1\/abilities\/rules\/acrossai-abilities\/acrossai-abilities-manager\/foo$/
+			/^\/wpb-ac\/v1\/abilities\/rules\/acrossai-abilities\/acrossai\/foo$/
 		);
 	});
 });

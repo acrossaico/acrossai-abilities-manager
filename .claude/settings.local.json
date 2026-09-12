@@ -213,5 +213,10 @@
       "Bash(echo \"\\(exit code $? — empty=clean\\)\")",
       "Bash(echo \"---exit=$?---\")"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "wordpress-7-0-default-mcp-server",
+    "deepwiki",
+    "mcp-local-wp"
+  ]
 }

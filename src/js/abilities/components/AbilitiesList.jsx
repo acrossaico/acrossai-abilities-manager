@@ -13,184 +13,18 @@ import { useState, useEffect, useCallback } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 import { STORE_NAME } from '../store/index';
-import SourceBadge from './cells/SourceBadge';
+import AbilitiesTable from './AbilitiesTable';
+import GroupTabs from './GroupTabs';
+import { ALL_TABS_KEY } from '../constants';
+import { titleCaseTabLabel } from '../../shared/titleCaseTabLabel';
+import AbilitiesToolbar, { AbilitiesPagerBelow } from './AbilitiesToolbar';
+import { loadColumnPrefs, LS_KEY } from '../columns';
 import UserAccessBulkModal from './UserAccessBulkModal';
 import BulkBusyOverlay from './BulkBusyOverlay';
-
-const SLUG_PREFIX = 'acrossai/';
-
-// ---------------------------------------------------------------------------
-// Cell renderers
-// ---------------------------------------------------------------------------
-
-function SlugCell({ item }) {
-	const slug = item.ability_slug || '';
-	const hasPrefix = slug.startsWith(SLUG_PREFIX);
-	const dimPart = hasPrefix ? SLUG_PREFIX : '';
-	const namePart = hasPrefix ? slug.slice(SLUG_PREFIX.length) : slug;
-	return (
-		<div className="slug-cell">
-			{dimPart && <span className="slug-dim">{dimPart}</span>}
-			<span className="slug-name">{namePart}</span>
-		</div>
-	);
-}
-
-function LabelCell({ item }) {
-	return (
-		<>
-			<div style={{ fontSize: '13px', fontWeight: 600 }}>
-				{item.label || '—'}
-			</div>
-			{item.provider && (
-				<div className="lbl-by">
-					{__('by', 'acrossai-abilities-manager')} {item.provider}
-				</div>
-			)}
-		</>
-	);
-}
-
-function CategoryCell({ item }) {
-	if (!item.category) {
-		return <span>—</span>;
-	}
-	return <span className="cpill">{item.category}</span>;
-}
-
-function StatusCell({ item }) {
-	const isCustom = 'db' === (item.source || 'db');
-	if (isCustom) {
-		return 'publish' === item.status ? (
-			<div className="sta sta-on">
-				<div className="sta-dot" />
-				{__('Enabled', 'acrossai-abilities-manager')}
-			</div>
-		) : (
-			<div className="sta sta-off">
-				<div className="sta-dot" />
-				{__('Disabled', 'acrossai-abilities-manager')}
-			</div>
-		);
-	}
-	const sa = item.site_allowed;
-	if (true === sa || 1 === sa) {
-		return (
-			<span className="ibadge ib-a">
-				{__('Allowed', 'acrossai-abilities-manager')}
-			</span>
-		);
-	}
-	if (false === sa || 0 === sa) {
-		return (
-			<span className="ibadge ib-b">
-				{__('Blocked', 'acrossai-abilities-manager')}
-			</span>
-		);
-	}
-	return (
-		<span className="ibadge ib-d">
-			{__('Default', 'acrossai-abilities-manager')}
-		</span>
-	);
-}
-
-const TYPE_MAP = {
-	noop: { cls: 'tb-n', label: 'noop' },
-	filter_hook: { cls: 'tb-f', label: 'filter_hook' },
-	wp_remote_post: { cls: 'tb-r', label: 'wp_remote_post' },
-	php_code: { cls: 'tb-p', label: 'php_code' },
-};
-
-function TypeCell({ item }) {
-	const type = item.callback_type || item._registry?.callback_type;
-	if (!type) {
-		return <span>—</span>;
-	}
-	const { cls, label } = TYPE_MAP[type] || TYPE_MAP.noop;
-	return <span className={`tbadge ${cls}`}>{label}</span>;
-}
-
-function McpCell({ item }) {
-	return item.show_in_mcp ? (
-		<span className="mcp-y">
-			{__('✓ Yes', 'acrossai-abilities-manager')}
-		</span>
-	) : (
-		<span className="mcp-n">
-			{__('○ No', 'acrossai-abilities-manager')}
-		</span>
-	);
-}
-
-// Protected slugs sourced from PHP AcrossAI_Protected_Abilities::get_protected_slugs()
-// via window.acrossaiAbilitiesManager.protected_slugs (DEC-PROTECTED-SLUGS-PATTERN — no duplicate list).
-const PROTECTED_SLUGS = window.acrossaiAbilitiesManager?.protected_slugs || [];
-
-function DescriptionCell({ item }) {
-	const desc = item.description || item._registry?.description || '';
-	if (!desc) {
-		return <span>—</span>;
-	}
-	const short = desc.length > 80 ? desc.slice(0, 80) + '…' : desc;
-	return <span title={desc}>{short}</span>;
-}
-
-function ShowInRestCell({ item }) {
-	const val = item.show_in_rest ?? item._registry?.show_in_rest ?? false;
-	return val ? (
-		<span className="mcp-y">
-			{__('✓ Yes', 'acrossai-abilities-manager')}
-		</span>
-	) : (
-		<span className="mcp-n">
-			{__('○ No', 'acrossai-abilities-manager')}
-		</span>
-	);
-}
 
 // ---------------------------------------------------------------------------
 // Column visibility constants
 // ---------------------------------------------------------------------------
-
-const COLUMN_DEFAULTS = {
-	label: true,
-	category: true,
-	source: true,
-	status: true,
-	type: true,
-	description: true,
-	show_in_rest: true,
-	mcp: true,
-};
-
-const COLUMN_LABELS = {
-	label: __('Label', 'acrossai-abilities-manager'),
-	category: __('Category', 'acrossai-abilities-manager'),
-	source: __('Source', 'acrossai-abilities-manager'),
-	status: __('Status', 'acrossai-abilities-manager'),
-	type: __('Type', 'acrossai-abilities-manager'),
-	description: __('Description', 'acrossai-abilities-manager'),
-	show_in_rest: __('Show in REST', 'acrossai-abilities-manager'),
-	mcp: __('MCP', 'acrossai-abilities-manager'),
-};
-
-const LS_KEY = 'acrossai_abilities_columns';
-
-function loadColumnPrefs() {
-	try {
-		const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
-		const result = { ...COLUMN_DEFAULTS };
-		Object.keys(COLUMN_DEFAULTS).forEach((key) => {
-			if (key in saved) {
-				result[key] = !!saved[key];
-			}
-		});
-		return result;
-	} catch {
-		return { ...COLUMN_DEFAULTS };
-	}
-}
 
 // ---------------------------------------------------------------------------
 // Main component
@@ -238,12 +72,23 @@ export default function AbilitiesList() {
 	const [visibleColumns, setVisibleColumns] = useState(loadColumnPrefs);
 	const [columnsOpen, setColumnsOpen] = useState(false);
 
-	const { abilities, total, isLoading, error } = useSelect(
+	const {
+		abilities,
+		total,
+		isLoading,
+		error,
+		activeTab,
+		toolsetCounts,
+		toolsetTotal,
+	} = useSelect(
 		(select) => ({
 			abilities: select(STORE_NAME).getAbilities(),
 			total: select(STORE_NAME).getTotal(),
 			isLoading: select(STORE_NAME).getIsLoading(),
 			error: select(STORE_NAME).getError(),
+			activeTab: select(STORE_NAME).getActiveTab(),
+			toolsetCounts: select(STORE_NAME).getToolsetCounts(),
+			toolsetTotal: select(STORE_NAME).getToolsetTotal(),
 		}),
 		[]
 	);
@@ -269,6 +114,16 @@ export default function AbilitiesList() {
 	const visibleCount = Object.values(visibleColumns).filter(Boolean).length;
 	const tableColSpan = visibleCount + 3; // +1 checkbox, +1 Slug, +1 Actions
 
+	// The search box names what it will search, so it is obvious the term is scoped to the toolset.
+	const searchPlaceholder =
+		ALL_TABS_KEY === activeTab
+			? __('Search abilities…', 'acrossai-abilities-manager')
+			: sprintf(
+					/* translators: %s is a toolset name, e.g. "Cache". */
+					__('Search %s abilities…', 'acrossai-abilities-manager'),
+					titleCaseTabLabel(activeTab)
+				);
+
 	// Fetch whenever filters change.
 	useEffect(() => {
 		dispatch.fetchAbilities({
@@ -279,9 +134,18 @@ export default function AbilitiesList() {
 			order: sortDir,
 			source: sourceFilter || undefined,
 			status: statusFilter || undefined,
+			tab_group: ALL_TABS_KEY === activeTab ? undefined : activeTab,
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [page, search, sourceFilter, statusFilter, sortDir]);
+	}, [page, search, sourceFilter, statusFilter, sortDir, activeTab]);
+
+	// Changing toolset resets paging AND clears the selection. Without the clear, rows ticked on one
+	// toolset stay selected while invisible on another, and Apply would act on slugs the operator can
+	// no longer see.
+	useEffect(() => {
+		setPage(1);
+		setSelected(new Set());
+	}, [activeTab]);
 
 	// Reset to page 1 whenever filters/search/sort change.
 	useEffect(() => {
@@ -518,592 +382,56 @@ export default function AbilitiesList() {
 			</ul>
 
 			{/* Tablenav */}
-			<div className="tablenav">
-				<div className="bulk-row">
-					<select
-						className="acrossai-abilities-list__bulk-select"
-						value={bulkAction}
-						onChange={(e) => setBulkAction(e.target.value)}
-						aria-label={__(
-							'Bulk actions',
-							'acrossai-abilities-manager'
-						)}
-					>
-						<option value="">
-							{__('Bulk Actions', 'acrossai-abilities-manager')}
-						</option>
-						<optgroup
-							label={__(
-								'Site Access',
-								'acrossai-abilities-manager'
-							)}
-						>
-							<option value="site_access:force_allow">
-								{__(
-									'Force Allow',
-									'acrossai-abilities-manager'
-								)}
-							</option>
-							<option value="site_access:inherit">
-								{__('Inherit', 'acrossai-abilities-manager')}
-							</option>
-							<option value="site_access:force_block">
-								{__(
-									'Force Block',
-									'acrossai-abilities-manager'
-								)}
-							</option>
-						</optgroup>
-						<optgroup
-							label={__(
-								'MCP Exposure',
-								'acrossai-abilities-manager'
-							)}
-						>
-							<option value="mcp:enable">
-								{__('Enable', 'acrossai-abilities-manager')}
-							</option>
-							<option value="mcp:default">
-								{__('Default', 'acrossai-abilities-manager')}
-							</option>
-							<option value="mcp:disable">
-								{__('Disable', 'acrossai-abilities-manager')}
-							</option>
-						</optgroup>
-						<optgroup
-							label={__(
-								'User Access',
-								'acrossai-abilities-manager'
-							)}
-						>
-							<option value="user_access:configure">
-								{__(
-									'Add / edit access rule…',
-									'acrossai-abilities-manager'
-								)}
-							</option>
-							<option value="user_access:reset">
-								{__(
-									'Reset to Default (allow everyone)',
-									'acrossai-abilities-manager'
-								)}
-							</option>
-						</optgroup>
-						<optgroup
-							label={__(
-								'Overrides',
-								'acrossai-abilities-manager'
-							)}
-						>
-							<option value="overrides:reset">
-								{__(
-									'Force Reset (clear all overrides)',
-									'acrossai-abilities-manager'
-								)}
-							</option>
-						</optgroup>
-					</select>
-					<button
-						type="button"
-						className="button"
-						onClick={handleBulkApply}
-					>
-						{__('Apply', 'acrossai-abilities-manager')}
-					</button>
-				</div>
+			<GroupTabs
+				counts={toolsetCounts}
+				activeTab={activeTab}
+				total={toolsetTotal}
+				onSelect={(key) => dispatch.setActiveTab(key)}
+			/>
 
-				<select
-					value={sourceFilter}
-					onChange={(e) => setSourceFilter(e.target.value)}
-					aria-label={__(
-						'Filter by source',
-						'acrossai-abilities-manager'
-					)}
-				>
-					<option value="">
-						{__('All Sources', 'acrossai-abilities-manager')}
-					</option>
-					<option value="db">
-						{__('Custom', 'acrossai-abilities-manager')}
-					</option>
-					<option value="plugin">
-						{__('Plugin', 'acrossai-abilities-manager')}
-					</option>
-					<option value="core">
-						{__('Core', 'acrossai-abilities-manager')}
-					</option>
-					<option value="theme">
-						{__('Theme', 'acrossai-abilities-manager')}
-					</option>
-				</select>
-
-				<select
-					value={statusFilter}
-					onChange={(e) => setStatusFilter(e.target.value)}
-					aria-label={__(
-						'Filter by status',
-						'acrossai-abilities-manager'
-					)}
-				>
-					<option value="">
-						{__('All Statuses', 'acrossai-abilities-manager')}
-					</option>
-					<option value="publish">
-						{__('Published', 'acrossai-abilities-manager')}
-					</option>
-					<option value="draft">
-						{__('Draft', 'acrossai-abilities-manager')}
-					</option>
-				</select>
-
-				<div className="tablenav-search">
-					<span className="search-icon" aria-hidden="true">
-						🔍
-					</span>
-					<input
-						type="text"
-						value={search}
-						placeholder={__(
-							'Search abilities…',
-							'acrossai-abilities-manager'
-						)}
-						onChange={(e) => setSearch(e.target.value)}
-						aria-label={__(
-							'Search abilities',
-							'acrossai-abilities-manager'
-						)}
-					/>
-				</div>
-
-				<div
-					className="columns-toggle"
-					style={{ position: 'relative' }}
-				>
-					<button
-						type="button"
-						className="button"
-						onClick={() => setColumnsOpen((o) => !o)}
-					>
-						{__('Columns', 'acrossai-abilities-manager')}{' '}
-						{columnsOpen ? '▴' : '▾'}
-					</button>
-					{columnsOpen && (
-						<div className="columns-panel">
-							{Object.keys(COLUMN_DEFAULTS).map((key) => (
-								<label
-									key={key}
-									htmlFor={`col-toggle-${key}`}
-									className="columns-panel-item"
-								>
-									<input
-										id={`col-toggle-${key}`}
-										type="checkbox"
-										checked={!!visibleColumns[key]}
-										onChange={() => toggleColumn(key)}
-									/>{' '}
-									{COLUMN_LABELS[key]}
-								</label>
-							))}
-						</div>
-					)}
-				</div>
-
-				<div className="tablenav-pages">
-					<span className="displaying-num">
-						{total} {__('items', 'acrossai-abilities-manager')}
-					</span>
-					<span className="pagination-links">
-						<button
-							className="button"
-							disabled={1 === page}
-							onClick={() => setPage(1)}
-						>
-							«
-						</button>
-						<button
-							className="button"
-							disabled={1 === page}
-							onClick={() => setPage((p) => p - 1)}
-						>
-							‹
-						</button>
-						<span className="paging-input">
-							{page} {__('of', 'acrossai-abilities-manager')}{' '}
-							{totalPages}
-						</span>
-						<button
-							className="button"
-							disabled={page >= totalPages}
-							onClick={() => setPage((p) => p + 1)}
-						>
-							›
-						</button>
-						<button
-							className="button"
-							disabled={page >= totalPages}
-							onClick={() => setPage(totalPages)}
-						>
-							»
-						</button>
-					</span>
-				</div>
-			</div>
+			<AbilitiesToolbar
+				bulkAction={bulkAction}
+				setBulkAction={setBulkAction}
+				handleBulkApply={handleBulkApply}
+				sourceFilter={sourceFilter}
+				setSourceFilter={setSourceFilter}
+				statusFilter={statusFilter}
+				setStatusFilter={setStatusFilter}
+				search={search}
+				setSearch={setSearch}
+				columnsOpen={columnsOpen}
+				setColumnsOpen={setColumnsOpen}
+				visibleColumns={visibleColumns}
+				toggleColumn={toggleColumn}
+				page={page}
+				setPage={setPage}
+				total={total}
+				totalPages={totalPages}
+				searchPlaceholder={searchPlaceholder}
+			/>
 
 			{/* WP-style table */}
-			<table className="wptable">
-				<colgroup>
-					<col style={{ width: '32px' }} />
-					<col className="col-slug" />
-					{!!visibleColumns.label && <col className="col-lbl" />}
-					{!!visibleColumns.category && <col className="col-cat" />}
-					{!!visibleColumns.source && <col className="col-src" />}
-					{!!visibleColumns.status && <col className="col-sta" />}
-					{!!visibleColumns.type && <col className="col-typ" />}
-					{!!visibleColumns.description && (
-						<col className="col-desc" />
-					)}
-					{!!visibleColumns.show_in_rest && (
-						<col className="col-rest" />
-					)}
-					{!!visibleColumns.mcp && <col className="col-mcp" />}
-					<col className="col-act" />
-				</colgroup>
-				<thead>
-					<tr>
-						<th className="chk-col">
-							<input
-								type="checkbox"
-								checked={allChecked}
-								onChange={toggleAll}
-								aria-label={__(
-									'Select all',
-									'acrossai-abilities-manager'
-								)}
-							/>
-						</th>
-						<th
-							className="sorted"
-							style={{ cursor: 'pointer' }}
-							onClick={toggleSort}
-						>
-							{__('Slug', 'acrossai-abilities-manager')}{' '}
-							{'asc' === sortDir ? '↑' : '↓'}
-						</th>
-						{!!visibleColumns.label && (
-							<th>{__('Label', 'acrossai-abilities-manager')}</th>
-						)}
-						{!!visibleColumns.category && (
-							<th>
-								{__('Category', 'acrossai-abilities-manager')}
-							</th>
-						)}
-						{!!visibleColumns.source && (
-							<th>
-								{__('Source', 'acrossai-abilities-manager')}
-							</th>
-						)}
-						{!!visibleColumns.status && (
-							<th>
-								{__('Status', 'acrossai-abilities-manager')}
-							</th>
-						)}
-						{!!visibleColumns.type && (
-							<th>{__('Type', 'acrossai-abilities-manager')}</th>
-						)}
-						{!!visibleColumns.description && (
-							<th>
-								{__(
-									'Description',
-									'acrossai-abilities-manager'
-								)}
-							</th>
-						)}
-						{!!visibleColumns.show_in_rest && (
-							<th>
-								{__(
-									'Show in REST',
-									'acrossai-abilities-manager'
-								)}
-							</th>
-						)}
-						{!!visibleColumns.mcp && (
-							<th>{__('MCP', 'acrossai-abilities-manager')}</th>
-						)}
-						<th>{__('Actions', 'acrossai-abilities-manager')}</th>
-					</tr>
-				</thead>
-				<tbody>
-					{isLoading && (
-						<tr>
-							<td
-								colSpan={tableColSpan}
-								style={{
-									textAlign: 'center',
-									padding: '20px',
-									color: '#646970',
-								}}
-							>
-								{__('Loading…', 'acrossai-abilities-manager')}
-							</td>
-						</tr>
-					)}
-					{!isLoading && 0 === abilities.length && (
-						<tr>
-							<td
-								colSpan={tableColSpan}
-								style={{
-									textAlign: 'center',
-									padding: '20px',
-									color: '#646970',
-								}}
-							>
-								{__(
-									'No abilities found.',
-									'acrossai-abilities-manager'
-								)}
-							</td>
-						</tr>
-					)}
-					{abilities.map((item) => {
-						const isCustom = 'db' === (item.source || 'db');
-						const itemSlug = item.ability_slug;
-						const isChecked = selected.has(itemSlug);
-						const statusCls = 'publish' === item.status ? 'e' : 'd';
+			<AbilitiesTable
+				abilities={abilities}
+				visibleColumns={visibleColumns}
+				selected={selected}
+				allChecked={allChecked}
+				toggleAll={toggleAll}
+				toggleOne={toggleOne}
+				sortDir={sortDir}
+				toggleSort={toggleSort}
+				isLoading={isLoading}
+				tableColSpan={tableColSpan}
+				handleStatusDropdown={handleStatusDropdown}
+				dispatch={dispatch}
+			/>
 
-						return (
-							<tr
-								key={item.ability_slug}
-								className={isCustom ? '' : 'inh-row'}
-							>
-								<td className="chk-col">
-									<input
-										type="checkbox"
-										checked={isChecked}
-										onChange={() => toggleOne(itemSlug)}
-										aria-label={`${__('Select', 'acrossai-abilities-manager')} ${item.ability_slug}`}
-									/>
-								</td>
-								<td>
-									<SlugCell item={item} />
-								</td>
-								{!!visibleColumns.label && (
-									<td>
-										<LabelCell item={item} />
-									</td>
-								)}
-								{!!visibleColumns.category && (
-									<td>
-										<CategoryCell item={item} />
-									</td>
-								)}
-								{!!visibleColumns.source && (
-									<td>
-										<SourceBadge
-											source={item.source || 'db'}
-										/>
-									</td>
-								)}
-								{!!visibleColumns.status && (
-									<td>
-										<StatusCell item={item} />
-									</td>
-								)}
-								{!!visibleColumns.type && (
-									<td>
-										<TypeCell item={item} />
-									</td>
-								)}
-								{!!visibleColumns.description && (
-									<td>
-										<DescriptionCell item={item} />
-									</td>
-								)}
-								{!!visibleColumns.show_in_rest && (
-									<td>
-										<ShowInRestCell item={item} />
-									</td>
-								)}
-								{!!visibleColumns.mcp && (
-									<td>
-										<McpCell item={item} />
-									</td>
-								)}
-								<td>
-									<div className="racts">
-										{isCustom ? (
-											<>
-												<button
-													type="button"
-													className="ra"
-													onClick={() =>
-														dispatch.setView({
-															mode: 'edit',
-															slug: item.ability_slug,
-															ability: item,
-														})
-													}
-												>
-													{__(
-														'Edit',
-														'acrossai-abilities-manager'
-													)}
-												</button>
-												<span className="ra-sep">
-													|
-												</span>
-												<select
-													className={`sdd ${statusCls}`}
-													value={statusCls}
-													onChange={(e) =>
-														handleStatusDropdown(
-															item,
-															e.target.value
-														)
-													}
-													aria-label={__(
-														'Change status',
-														'acrossai-abilities-manager'
-													)}
-												>
-													<option value="e">
-														{__(
-															'Enabled',
-															'acrossai-abilities-manager'
-														)}
-													</option>
-													<option value="d">
-														{__(
-															'Disabled',
-															'acrossai-abilities-manager'
-														)}
-													</option>
-												</select>
-												<span className="ra-sep">
-													|
-												</span>
-												<button
-													type="button"
-													className="ra del"
-													onClick={() => {
-														if (
-															// eslint-disable-next-line no-alert
-															window.confirm(
-																__(
-																	'Delete this ability? This cannot be undone.',
-																	'acrossai-abilities-manager'
-																)
-															)
-														) {
-															dispatch.deleteAbility(
-																item.ability_slug
-															);
-														}
-													}}
-												>
-													{__(
-														'Delete',
-														'acrossai-abilities-manager'
-													)}
-												</button>
-											</>
-										) : (
-											<>
-												<button
-													type="button"
-													className="ra"
-													onClick={() =>
-														dispatch.setView({
-															mode: 'edit',
-															slug: item.ability_slug,
-															ability: item,
-														})
-													}
-												>
-													{__(
-														'Edit',
-														'acrossai-abilities-manager'
-													)}
-												</button>
-												{item.has_override && (
-													<>
-														<span className="ra-sep">
-															|
-														</span>
-														<button
-															type="button"
-															className="ra"
-															onClick={() => {
-																if (
-																	// eslint-disable-next-line no-alert
-																	window.confirm(
-																		__(
-																			'Clear all overrides for this ability? This cannot be undone.',
-																			'acrossai-abilities-manager'
-																		)
-																	)
-																) {
-																	dispatch.clearOverrides(
-																		item.ability_slug
-																	);
-																}
-															}}
-														>
-															{__(
-																'Clear All Overrides',
-																'acrossai-abilities-manager'
-															)}
-														</button>
-													</>
-												)}
-											</>
-										)}
-									</div>
-								</td>
-							</tr>
-						);
-					})}
-				</tbody>
-			</table>
-
-			<div className="tablenav-pages tablenav-pages-below">
-				<span className="displaying-num">
-					{total} {__('items', 'acrossai-abilities-manager')}
-				</span>
-				<span className="pagination-links">
-					<button
-						className="button"
-						disabled={1 === page}
-						onClick={() => setPage(1)}
-					>
-						«
-					</button>
-					<button
-						className="button"
-						disabled={1 === page}
-						onClick={() => setPage((p) => p - 1)}
-					>
-						‹
-					</button>
-					<span className="paging-input">
-						{page} {__('of', 'acrossai-abilities-manager')}{' '}
-						{totalPages}
-					</span>
-					<button
-						className="button"
-						disabled={page >= totalPages}
-						onClick={() => setPage((p) => p + 1)}
-					>
-						›
-					</button>
-					<button
-						className="button"
-						disabled={page >= totalPages}
-						onClick={() => setPage(totalPages)}
-					>
-						»
-					</button>
-				</span>
-			</div>
+			<AbilitiesPagerBelow
+				page={page}
+				setPage={setPage}
+				total={total}
+				totalPages={totalPages}
+			/>
 			{userAccessModalOpen && (
 				<UserAccessBulkModal
 					slugs={[...selected]}

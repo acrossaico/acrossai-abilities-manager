@@ -11,19 +11,10 @@
  * @since 0.2.0
  */
 
-// ---------------------------------------------------------------------------
-// Fixed WP admin neutrals (safe to hardcode — WP design system constants)
-// ---------------------------------------------------------------------------
-$bg:      #f6f7f7;
-$row:     #f8f9fa;
-$border:  #e0e0e0;
-$border-dk: #c3c4c7;
-$txt:     #1e1e1e;
-$muted:   #646970;
-$soft:    #8c8f94;
-$green:   #00a32a;
-$red:     #d63638;
-$warn:    #dba617;
+@use 'tokens' as *;
+
+// Feature 102 — toolset strip, Toolset column, page header.
+@use 'toolset-tabs';
 
 // ---------------------------------------------------------------------------
 // Source badges (semantic role-fixed colors — NOT theme-adaptive)

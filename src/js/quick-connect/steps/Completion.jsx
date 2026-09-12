@@ -118,12 +118,6 @@ const Completion = () => {
 				<a className="qs-btn" href={bootstrap.adminUrl || '#'}>
 					{__('Go to Abilities', 'acrossai-abilities-manager')}
 				</a>
-				<a
-					className="qs-btn qs-btn--secondary"
-					href={bootstrap.integrationsUrl || '#'}
-				>
-					{__('Go to Integrations', 'acrossai-abilities-manager')}
-				</a>
 				<button
 					type="button"
 					className="qs-btn qs-btn--secondary"

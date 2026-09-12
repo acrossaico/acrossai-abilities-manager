@@ -257,7 +257,6 @@ class QuickConnectPage {
 			'restUrl'               => esc_url_raw( rest_url( 'acrossai/v1/quick-connect' ) ),
 			'restNonce'             => wp_create_nonce( 'wp_rest' ),
 			'adminUrl'              => esc_url_raw( admin_url( 'admin.php?page=acrossai-abilities-manager' ) ),
-			'integrationsUrl'       => esc_url_raw( admin_url( 'admin.php?page=acrossai-abilities-integrations' ) ),
 			'pluginInstallUrl'      => esc_url_raw( admin_url( 'plugin-install.php' ) ),
 			'logoUrl'               => esc_url_raw( $assets_url . 'acrossai-logo.svg' ),
 			'iconUrl'               => esc_url_raw( $assets_url . 'icon.svg' ),

@@ -13,8 +13,10 @@ host plugin is active on any given site — this is a source inventory, not a ru
 
 ## Groups
 
-Tabs on the Ability Integrations screen. `tab_group` is assigned per ability, so a category
-may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
+The toolset strip on the Custom Abilities screen — Feature 102 retired the Ability Integrations
+screen these were tabs on, and they are now a filter over the one abilities table. `tab_group` is
+assigned per ability, so a category may legitimately span two groups (Feature 101,
+`DEC-ABILITY-GROUP-TAXONOMY`).
 
 | Group | Abilities |
 |---|---:|

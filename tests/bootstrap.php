@@ -1488,3 +1488,27 @@ if ( ! function_exists( 'esc_html_e' ) ) {
 		echo esc_html( $text );
 	}
 }
+
+if ( ! function_exists( 'add_settings_error' ) ) {
+	/**
+	 * Stub: records settings errors so tests can assert a denial was surfaced.
+	 *
+	 * Feature 102 needs this for the integration opt-in save path, which reports a
+	 * refused change through the Settings API rather than by returning an error.
+	 * Each call appends to $GLOBALS['acrossai_test_settings_errors'].
+	 *
+	 * @param  string $setting Option slug the error belongs to.
+	 * @param  string $code    Error code.
+	 * @param  string $message Human-readable message.
+	 * @param  string $type    Notice type.
+	 * @return void
+	 */
+	function add_settings_error( string $setting, string $code, string $message, string $type = 'error' ): void {
+		$GLOBALS['acrossai_test_settings_errors'][] = array(
+			'setting' => $setting,
+			'code'    => $code,
+			'message' => $message,
+			'type'    => $type,
+		);
+	}
+}

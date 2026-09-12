@@ -1858,6 +1858,17 @@ The strip predicate encoded a single global assumption (`enabled === true`) rath
 
 **Tags**: sparse-storage, config, options, asymmetric-default, round-trip, silent-fail, feature-060
 
+**Update 2026-09-12 (Feature 102) — the subject is gone; the lesson is live in a new place.**
+`acrossai_library_config` and its `save_config()` strip rule were deleted with the registration gate, so
+the specific code this entry describes no longer exists. Do not read it as stale: the asymmetry that
+caused it is exactly what the replacement store is built on. `acrossai_integrations` is keyed
+`slug => bool` where **absent means OFF** — the inverted default from this bug, now the only default —
+and `AcrossAI_Integration_Settings::is_enabled()` is the single reader that encodes it. The gate
+translation also had to reproduce the old asymmetry faithfully to compute what was blocked; see
+`tests/phpunit/Modules/Abilities/Test_Library_Gate_Migration_Rules.php`, where the tick test
+deliberately mirrors the retired `(bool)` coercion rather than the stricter `true ===` that reads
+better. A migration must reproduce the old rule, not improve on it.
+
 ---
 
 ### 2026-08-14 — WP core silently expires the `.maintenance` marker 10 minutes after its `$upgrading` timestamp (BUG-WP-MAINTENANCE-MARKER-STALE-AT-10MIN)
@@ -2046,6 +2057,37 @@ The reasoning error was repeated **within the same session**: the same false pre
 - `includes/Abilities/Toolset/Base_Toolset_Ability.php` — `contribute_own_slug()` and the `$slug_taken_by_other` property docblock, which record the inversion and why.
 - `tests/phpunit/abilities/Toolset/Test_Toolset_Permissions.php::test_slug_is_contributed_before_registration_runs` — names the ordering case so it cannot be re-derived.
 
+**Second instance — Feature 102, and a harsher consequence.** The gate migration was wired at
+`plugins_loaded` P1 while the definitions it reads are collected at `init` P99
+([[PATTERN-ADDON-FILTER-LATE-INIT]]). It saw zero definitions, concluded nothing was blocked — and then
+**deleted its own source option**, discarding the operator's entire Integrations configuration on a live
+site. All 13 unit tests passed, for the reason already given above: they inject the definitions, so the
+decision logic was never wrong. The defect was only ever in *when* the real registry is read.
+
+**The new rule this adds: mind the fail-safe direction when the consumer also retires its input.** The
+2026-09-11 instance was benign — a callback contributed nothing and was recoverable on the next request.
+A consumer that *destroys* its input on the strength of an empty read is not recoverable. "Not populated
+yet" and "nothing to do" are indistinguishable at the call site, so a destructive consumer must
+distinguish them explicitly and treat the ambiguous case as not-ready:
+
+```php
+if ( array() === $definitions ) {
+	delete_option( self::DONE_OPTION ); // release the claim; try again next request
+	return;                             // never fall through to deleting the source
+}
+```
+
+**Mechanism worth knowing:** `wp_abilities_api_init` is not fired on a fixed hook. WP core fires it
+lazily from `WP_Abilities_Registry::get_instance()`
+(`wp-includes/abilities-api/class-wp-abilities-registry.php:313`), so *when* it runs depends on what
+first touches the registry. Do not reason about its position relative to other hooks; depend on `init`
+priorities you control instead.
+
+**Evidence**: `includes/Main.php` — migration moved from `plugins_loaded` P1 to `init` P100, directly
+after `collect()` at P99, with the reason recorded at the call site;
+`AcrossAI_Library_Gate_Migration::translate()` — the guard above. Live rehearsal after the fix predicted
+23 blocks by dry run and wrote exactly 23, none of which remained in `wp_get_abilities()`.
+
 ---
 
 ### 2026-09-11 — BUG-MCP-SOFT-FAILURE-COLLAPSED — The MCP adapter rewrites `{ success: false, error: string }` into a bare protocol error, discarding every other field
@@ -2069,3 +2111,94 @@ So an ability returning `{ success: false, error: "...", error_code: "ability_no
 **References**:
 - `wordpress/mcp-adapter/includes/Handlers/Tools/ToolsHandler.php` — the "Backward compatibility" branch and `create_error_result()`.
 - `includes/Abilities/Toolset/Base_Toolset_Ability.php` — the output-schema comment explaining why the field is not called `error`.
+
+---
+
+### 2026-09-12 — BUG-PATH-B-AGGREGATE-UNDERCOUNT — Ability counts computed during admin page render silently exclude every blocked ability
+
+**Status**: Active
+**Scope**: Abilities/Admin (any count, badge, or summary derived from the ability registry)
+**Tags**: path-a-b, override-processor, unregister, site_allowed, counts, admin-render, feature-102
+
+**Bug**: `AcrossAI_Ability_Override_Processor` runs two paths. On **PATH B** — every ordinary request —
+it registers `unregister_blocked_abilities()` at `wp_abilities_api_init` **P100001**, which calls
+`wp_unregister_ability()` for every override row with `false === $row->site_allowed`, after all plugin
+registrations so nothing can restore them. On **PATH A** — requests targeting this plugin's own REST
+namespace — that hook is never registered and the registry stays intact.
+
+That split is deliberate and load-bearing: it is the *only* reason a Force Blocked ability is still
+visible in the abilities list. The list is served over `acrossai/v1`, so it reads the unpruned registry.
+
+The trap: anything that counts abilities **during an admin page render** is on PATH B and therefore
+counts the pruned registry. Localise `AcrossAI_Ability_Group::counts()` into the page and a toolset whose
+abilities are all Force Blocked reports `0`, while opening that toolset lists every one of them from the
+PATH A read. The screen contradicts itself, and it hides precisely the abilities an administrator most
+needs to see.
+
+**Prevention**:
+- Serve any registry-derived aggregate from `acrossai/v1`, alongside the rows it describes — a response
+  header or a sibling route. Never compute it at page render.
+- The rule is *counts and rows must come from the same path*, not "counts are expensive". Caching the
+  wrong number does not help.
+- `AcrossAI_Ability_Registry_Query` reads `wp_get_abilities()` directly (line 53), so it inherits
+  whichever path it is called on. It is not a safe place to reason about totals either.
+
+**Evidence**: caught at plan stage on Feature 102 (security review finding SEC-002) before any code was
+written, by tracing `unregister_blocked_abilities()` (`AcrossAI_Ability_Override_Processor.php:383-400`)
+against the planned `toolsetCounts` payload. The plan's counts contract was moved into `acrossai/v1`
+before tasks were generated.
+
+**References**:
+- `includes/Modules/Abilities/AcrossAI_Ability_Override_Processor.php:160-167, 383-400` — the split and the unregister hook.
+- `specs/102-abilities-toolset-tabs/contracts/abilities-list.md` — "Toolset counts".
+- [[ARCH-ADV-001]] — the accepted deviation that introduced PATH A/B; this entry records its read-side consequence.
+
+---
+
+### 2026-09-12 — A `NOT NULL DEFAULT` silently reinstates the value a guard just stripped (BUG-COLUMN-DEFAULT-DEFEATS-STRIP-GUARD)
+
+**Scope**: Persistence / BerlinDB write paths
+
+**Symptom**
+`AcrossAI_Library_Gate_Migration` wrote 16 override rows for registry abilities and every one came back
+from the `source=db` listing as a *user-created* ability, with null label, status and callback. The
+blocks themselves worked, so nothing failed and no test caught it — the rows were simply mislabelled,
+and the abilities screen reported them as custom abilities.
+
+**Cause**
+`AcrossAI_Abilities_Query::save_override()` carries a deliberate guard:
+
+```php
+// SEC-002: save_override is exclusively for non-db (registry) abilities.
+if ( array_key_exists( 'source', $fields ) && 'db' === $fields['source'] ) {
+    unset( $fields['source'] );
+}
+```
+
+It strips a caller-supplied `'db'` — and then the column definition, `source varchar(50) NOT NULL
+DEFAULT 'db'`, puts exactly that value back on INSERT. The guard removes the field; MySQL supplies it.
+Net effect: the guard is not merely useless, it *guarantees* the value it exists to prevent whenever the
+caller omits `source` entirely.
+
+**Prevention**
+- A strip-guard is only meaningful when the column has no default, or its default is the safe value.
+  Before writing one, read the schema: `SHOW COLUMNS FROM <table> LIKE '<column>'`.
+- On this table `source` is caller-owned (RF-04). The REST write path satisfies it with
+  `AcrossAI_Ability_Source_Detector::detect()`; any other writer must set it explicitly. Rows written
+  from the definitions registry are always `'plugin'` — the detector cannot be used there because it
+  needs a registered ability's `provider`, and reading one during `init` would force
+  `wp_abilities_api_init` to fire early.
+- Assert the *stored* value, not the absence of a symptom. The first test here checked that migration
+  rows were missing from the `source=db` listing, which would also have passed if no row had been
+  written at all.
+
+**Evidence**: Feature 102. Found by reading the table on a live site after the migration ran — not by
+any test. Now guarded by a CI structural test asserting `'source' => 'plugin'` at every
+`save_override()` call site in the migration, and a wp-env test asserting the stored column value; both
+mutation-verified (omitting `source`, and setting it to `'db'`, each fail).
+
+**References**:
+- `includes/Modules/Abilities/Database/AcrossAI_Abilities_Query.php` — `save_override()` and the guard.
+- `includes/Modules/Abilities/AcrossAI_Library_Gate_Migration.php` — `block_abilities()`.
+- `includes/Utilities/AcrossAI_Ability_Source_Detector.php` — RF-04, and why it needs a `provider`.
+- [[BUG-NORMALIZE-REGISTRY-SOURCE-DEFAULT]] — the same field, the mirror-image mistake on the PHP side.

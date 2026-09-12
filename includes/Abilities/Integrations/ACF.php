@@ -7,10 +7,12 @@
  * but only registers them when the filter `acf/settings/enable_acf_ai`
  * returns true (see advanced-custom-fields/acf.php:184 and
  * advanced-custom-fields/src/AI/AI.php:58 as of ACF 6.x). This subclass
- * exposes that master switch as a toggle on the AcrossAI Ability Library page.
+ * exposes that master switch as a checkbox in AcrossAI Settings → Abilities.
  *
- * Toggle state persists in the shared `acrossai_library_config` option via the
- * base class + the existing REST controller — no ACF-specific storage.
+ * Toggle state persists in the `acrossai_integrations` option via the base class and the Settings
+ * API — no ACF-specific storage. Feature 102 moved it there from the shared
+ * `acrossai_library_config` option when the Ability Integrations page was retired; the switch
+ * itself is unchanged, and absent still means off.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager

@@ -8,7 +8,10 @@
  */
 import apiFetch from '@wordpress/api-fetch';
 
-const { rest_namespace: restNamespace } = window.acrossaiAbilitiesManager;
+// Defensive: a bare destructure throws at module-evaluation time if wp_localize_script has not
+// run, which takes the entire admin bundle down at import rather than degrading. It also made
+// this module impossible to import from a unit test (see #183).
+const { rest_namespace: restNamespace } = window.acrossaiAbilitiesManager || {};
 const BASE = `${restNamespace}/abilities`;
 
 /**
@@ -122,6 +125,20 @@ export async function deleteOverride(slug) {
  */
 export async function getCategories() {
 	return apiFetch({ path: `${BASE}/categories` });
+}
+
+/**
+ * Fetch the ability count per toolset.
+ *
+ * Served from this namespace rather than localised into the page on purpose: the override
+ * processor prunes site_allowed=false abilities from the registry on every request except this
+ * one, so a count taken during page render would omit exactly the blocked abilities the screen
+ * then lists (BUG-PATH-B-AGGREGATE-UNDERCOUNT).
+ *
+ * @return {Promise<Object>} Map of tab_group => count.
+ */
+export async function getToolsetCounts() {
+	return apiFetch({ path: `${BASE}/toolsets` });
 }
 
 /**

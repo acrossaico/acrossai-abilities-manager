@@ -34,6 +34,11 @@ class AcrossAI_Ability_Registry_Query {
 	 *   - string      $orderby     Field to sort by (slug|provider|source|status). Default 'slug'.
 	 *   - string      $order       Sort direction (asc|desc). Default 'asc'.
 	 *   - string      $source      Filter by source (plugin|theme|core|db).
+	 *   - string      $status      Filter by status (publish|draft). Registry rows are always
+	 *                              'publish'; only DB-created abilities can be drafts, and an
+	 *                              unpublished one is never registered, so 'draft' yields none here.
+	 *   - string[]    $slugs       Restrict to these ability names. Feature 102 passes the members
+	 *                              of one toolset, resolved by AcrossAI_Ability_Group::member_names().
 	 *   - bool|null   $has_override Filter to only overridden or non-overridden abilities.
 	 *   - int         $page        1-based page number. Default 1.
 	 *   - int         $per_page    Items per page (1–100). Default 20.
@@ -45,6 +50,8 @@ class AcrossAI_Ability_Registry_Query {
 		$orderby      = isset( $params['orderby'] ) ? (string) $params['orderby'] : 'slug';
 		$order        = isset( $params['order'] ) && 'desc' === strtolower( $params['order'] ) ? 'desc' : 'asc';
 		$source       = isset( $params['source'] ) ? (string) $params['source'] : '';
+		$status       = isset( $params['status'] ) ? (string) $params['status'] : '';
+		$slugs        = ( isset( $params['slugs'] ) && is_array( $params['slugs'] ) ) ? $params['slugs'] : null;
 		$has_override = isset( $params['has_override'] ) ? $params['has_override'] : null;
 		$page         = isset( $params['page'] ) ? max( 1, (int) $params['page'] ) : 1;
 		$per_page     = isset( $params['per_page'] ) ? min( 100, max( 1, (int) $params['per_page'] ) ) : 20;
@@ -69,6 +76,14 @@ class AcrossAI_Ability_Registry_Query {
 				continue;
 			}
 
+			// Restrict to an explicit slug set when one was supplied (Feature 102 toolset filter).
+			// Placed after the protected-slug skip so protected abilities stay excluded even when a
+			// caller names them, and before the source/search filters so it composes with both.
+			// Strict in_array per SEC-04 / R-PAT-2.
+			if ( null !== $slugs && ! in_array( $slug, $slugs, true ) ) {
+				continue;
+			}
+
 			// Retrieve any stored override for this ability.
 			$override = $db_query->get_override_by_slug( $slug );
 
@@ -82,6 +97,12 @@ class AcrossAI_Ability_Registry_Query {
 
 			// Apply source filter.
 			if ( '' !== $source && $merged['source'] !== $source ) {
+				continue;
+			}
+
+			// Apply status filter. Everything reachable through wp_get_abilities() is published by
+			// definition — a draft DB ability is never registered — so this only ever excludes.
+			if ( '' !== $status && ( isset( $merged['status'] ) ? (string) $merged['status'] : 'publish' ) !== $status ) {
 				continue;
 			}
 

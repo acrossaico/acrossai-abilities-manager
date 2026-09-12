@@ -13,7 +13,14 @@ jest.mock('@wordpress/i18n', () => ({
 }));
 
 // Heavy component deps — not needed for this pure function.
-jest.mock('@wordpress/data', () => ({}));
+// The store registers itself at module evaluation, so an empty mock makes the whole import chain
+// throw before a single assertion runs. Stub the two functions it actually calls.
+jest.mock('@wordpress/data', () => ({
+	createReduxStore: jest.fn((name, config) => config),
+	register: jest.fn(),
+	useSelect: jest.fn(),
+	useDispatch: jest.fn(),
+}));
 jest.mock('@wordpress/element', () => ({
 	useState: jest.fn(),
 	useEffect: jest.fn(),
@@ -22,6 +29,12 @@ jest.mock('@wordpress/element', () => ({
 }));
 jest.mock('@wordpress/components', () => ({}));
 jest.mock('@wordpress/api-fetch', () => jest.fn());
+
+// '@wpb/access-control' is a webpack alias to a Composer vendor path, so Jest cannot resolve it.
+// Mock it virtually, as tests/jest/abilities/ability-form-user-access-section.test.jsx does.
+jest.mock('@wpb/access-control', () => ({ AccessControl: () => null }), {
+	virtual: true,
+});
 
 const {
 	validateRequiredFields,

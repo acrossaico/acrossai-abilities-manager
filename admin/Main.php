@@ -9,10 +9,6 @@
 
 namespace AcrossAI_Abilities_Manager\Admin;
 
-use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
-use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Ability_Library_Registry;
-use AcrossAI_Abilities_Manager\Includes\Modules\Library\Rest\AcrossAI_Ability_Library_Rest_Controller;
-
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
@@ -86,15 +82,6 @@ class Main {
 	private $abilities_asset_file;
 
 	/**
-	 * Asset manifest for the Ability Library JS/CSS bundle.
-	 *
-	 * @since    0.1.0
-	 * @access   private
-	 * @var      array|null
-	 */
-	private $library_asset_file;
-
-	/**
 	 * Asset manifest for the MCP Manager Abilities-tab extension JS bundle.
 	 *
 	 * Feature 044: enqueued only on the sibling `acrossai-mcp-manager` plugin's
@@ -132,12 +119,6 @@ class Main {
 			error_log( 'acrossai-abilities-manager: build/js/abilities.asset.php not found — run npm run build.' );
 		}
 
-		// Load Ability Library asset file if it exists (built by @wordpress/scripts build).
-		$library_asset_path = \ACROSSAI_ABILITIES_MANAGER_PLUGIN_PATH . 'build/js/ability-library.asset.php';
-		if ( file_exists( $library_asset_path ) ) {
-			$this->library_asset_file = include $library_asset_path;
-		}
-
 		// Feature 044: MCP Manager Abilities-tab extension asset manifest.
 		$mcp_extension_asset_path = \ACROSSAI_ABILITIES_MANAGER_PLUGIN_PATH . 'build/js/mcp-abilities-extension.asset.php';
 		if ( file_exists( $mcp_extension_asset_path ) ) {
@@ -156,8 +137,7 @@ class Main {
 	 */
 	public function enqueue_styles( string $hook_suffix ) {
 		if ( ! $this->is_manager_page( $hook_suffix )
-			&& ! $this->is_settings_page( $hook_suffix )
-			&& ! $this->is_library_page( $hook_suffix ) ) {
+			&& ! $this->is_settings_page( $hook_suffix ) ) {
 			return;
 		}
 
@@ -185,17 +165,6 @@ class Main {
 			);
 			wp_enqueue_style( 'acrossai-abilities-manager-abilities' );
 		}
-
-		// Enqueue Ability Library styles only on Library submenu page (Feature 027).
-		if ( $this->library_asset_file && $this->is_library_page( $hook_suffix ) ) {
-			wp_register_style(
-				'acrossai-ability-library-css',
-				\ACROSSAI_ABILITIES_MANAGER_PLUGIN_URL . 'build/css/ability-library.css',
-				array(),
-				$this->library_asset_file['version']
-			);
-			wp_enqueue_style( 'acrossai-ability-library-css' );
-		}
 	}
 
 	/**
@@ -207,7 +176,6 @@ class Main {
 	public function enqueue_scripts( string $hook_suffix ) {
 		if ( ! $this->is_manager_page( $hook_suffix )
 			&& ! $this->is_settings_page( $hook_suffix )
-			&& ! $this->is_library_page( $hook_suffix )
 			&& ! $this->is_mcp_manager_abilities_tab() ) {
 			return;
 		}
@@ -274,34 +242,6 @@ class Main {
 			do_action( 'acrossai_abilities_form_settings_registered' );
 		}
 
-		// Enqueue Ability Library scripts only on Library submenu page (Feature 027).
-		// Data is injected here via wp_add_inline_script() — before position ensures
-		// window.acrossaiAbilityLibraryData exists when ability-library.js boots (AC-ENQUEUE-ADMIN).
-		if ( $this->library_asset_file && $this->is_library_page( $hook_suffix ) ) {
-			wp_register_script(
-				'acrossai-ability-library-js',
-				\ACROSSAI_ABILITIES_MANAGER_PLUGIN_URL . 'build/js/ability-library.js',
-				$this->library_asset_file['dependencies'],
-				$this->library_asset_file['version'],
-				true
-			);
-			wp_enqueue_script( 'acrossai-ability-library-js' );
-
-			wp_add_inline_script(
-				'acrossai-ability-library-js',
-				'window.acrossaiAbilityLibraryData = ' . wp_json_encode(
-					array(
-						'definitions'     => AcrossAI_Ability_Library_Registry::instance()->get_definitions(),
-						'restBase'        => rest_url( AcrossAI_Ability_Library_Rest_Controller::REST_NAMESPACE ),
-						'nonce'           => wp_create_nonce( 'wp_rest' ),
-						'addonsUrl'       => admin_url( 'admin.php?page=acrossai-addons' ),
-						'bulkToggleState' => Ability_Definition::bulk_toggle_state(),
-					)
-				) . ';',
-				'before'
-			);
-		}
-
 		// Feature 044: MCP Manager Abilities-tab extension. Appends the Action
 		// column with a deep-link Edit button (URL scheme owned by Feature 043).
 		// Depends on the sibling plugin's `acrossai-mcp-manager-abilities` handle
@@ -366,22 +306,6 @@ class Main {
 		// SettingsPage::SETTINGS_SLUG). The suffix derives from
 		// sanitize_title( 'AcrossAI' ) === 'acrossai'. Verified at TASK-T021.
 		return 'acrossai_page_acrossai-settings' === $hook_suffix;
-	}
-
-	/**
-	 * Checks whether the current admin screen is the Ability Library page.
-	 *
-	 * Uses the hook suffix captured by LibraryMenu::register_submenu(). WordPress generates the submenu hook
-	 * suffix from sanitize_title($menu_title), not the $menu_slug, so a hardcoded
-	 * string based on the parent slug would be wrong (and was: BUG-LIBRARY-HOOK-SUFFIX).
-	 *
-	 * @since    0.1.0
-	 * @param string $hook_suffix The hook suffix for the current admin screen.
-	 * @return bool
-	 */
-	private function is_library_page( string $hook_suffix ): bool {
-		$library_suffix = \AcrossAI_Abilities_Manager\Admin\Partials\LibraryMenu::instance()->get_hook_suffix();
-		return '' !== $library_suffix && $library_suffix === $hook_suffix;
 	}
 
 	/**

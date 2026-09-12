@@ -16,50 +16,9 @@ import { useEffect } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { addQueryArgs, getQueryArg, removeQueryArgs } from '@wordpress/url';
 import { STORE_NAME } from '../store/index';
+import { parseViewFromUrl, buildUrlFromView } from '../urlSync';
 
-/**
- * Parse a URL (or bare query string) into a `view` state value the store
- * accepts. Returns `'list'` unless the URL carries a supported action/slug
- * pair.
- *
- * Named export per PATTERN-NAMED-EXPORT-JEST.
- *
- * @param {string} url Any URL or `location.search`-style string.
- * @return {string|{mode:string, slug:string}} A value ready for `dispatch.setView(…)`.
- */
-export function parseViewFromUrl(url) {
-	const source = url || '';
-	const action = getQueryArg(source, 'action');
-	const slug = getQueryArg(source, 'slug');
-
-	if ('edit' === action && 'string' === typeof slug && '' !== slug) {
-		return { mode: 'edit', slug };
-	}
-
-	return 'list';
-}
-
-/**
- * Build the URL that represents the given `view`, preserving every other
- * query arg already on `currentUrl`. `action` and `slug` are owned by this
- * sync layer; `page` (WordPress admin routing key) and anything else pass
- * through verbatim.
- *
- * Named export per PATTERN-NAMED-EXPORT-JEST.
- *
- * @param {string|{mode:string, slug:string}} view       Current store view.
- * @param {string}                            currentUrl Current URL (typically `location.href`).
- * @return {string} A URL string with `action`/`slug` set to match the view.
- */
-export function buildUrlFromView(view, currentUrl) {
-	const stripped = removeQueryArgs(currentUrl || '', 'action', 'slug');
-
-	if (view && 'edit' === view.mode && view.slug) {
-		return addQueryArgs(stripped, { action: 'edit', slug: view.slug });
-	}
-
-	return stripped;
-}
+export { parseViewFromUrl, buildUrlFromView } from '../urlSync';
 
 /**
  * React hook — call once at the top of the app root component.

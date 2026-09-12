@@ -138,7 +138,9 @@
 
 namespace AcrossAI_Abilities_Manager\Includes\Modules\Library\Integrations;
 
-use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Ability_Library_Config;
+use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Integration_Settings;
+
+use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Key_Sanitizer;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -163,7 +165,7 @@ abstract class AcrossAI_Integration_Ability_Base {
 	 * Sanitized identifier for this integration.
 	 *
 	 * Used as BOTH the Library category slug AND the tab_group. Must survive
-	 * AcrossAI_Ability_Library_Config::sanitize_key_field() unchanged for the
+	 * AcrossAI_Key_Sanitizer::key() unchanged for the
 	 * integration to render.
 	 *
 	 * @since  0.1.0
@@ -246,7 +248,7 @@ abstract class AcrossAI_Integration_Ability_Base {
 			return;
 		}
 
-		if ( ! AcrossAI_Ability_Library_Config::is_integration_enabled( $this->slug() ) ) {
+		if ( ! AcrossAI_Integration_Settings::is_enabled( $this->slug() ) ) {
 			return;
 		}
 
@@ -317,7 +319,7 @@ abstract class AcrossAI_Integration_Ability_Base {
 			return $definitions;
 		}
 
-		$slug     = AcrossAI_Ability_Library_Config::sanitize_key_field( $this->slug() );
+		$slug     = AcrossAI_Key_Sanitizer::key( $this->slug() );
 		$label    = $this->label();
 		$fail_msg = __( 'This is a display-only integration row and cannot be executed directly.', 'acrossai-abilities-manager' );
 

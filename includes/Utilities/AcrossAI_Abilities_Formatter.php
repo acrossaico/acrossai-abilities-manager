@@ -45,6 +45,7 @@ class AcrossAI_Abilities_Formatter {
 			'status'          => $row->status,
 			'provider'        => $row->provider,
 			'source'          => $row->source,
+			'tab_group'       => '', // Feature 102: DB-created abilities belong to no toolset.
 			'editable'        => 'db' === $row->source,
 			'site_allowed'    => $row->site_allowed,
 			'callback_type'   => $row->callback_type,
@@ -133,6 +134,7 @@ class AcrossAI_Abilities_Formatter {
 			'status'          => 'publish',
 			'provider'        => $merged['provider'] ?? null,
 			'source'          => $merged['source'] ?? 'plugin',
+			'tab_group'       => $merged['tab_group'] ?? '',
 			'editable'        => false,
 			'site_allowed'    => $merged['site_allowed'] ?? null,
 			'callback_type'   => $merged['callback_type'] ?? null,

@@ -1,59 +1,19 @@
 /**
- * Jest tests for loadColumnPrefs() — Feature 025.
+ * Jest tests for loadColumnPrefs() — Feature 025, repointed in Feature 102 (task T017).
  *
- * Validates the merge-with-defaults pattern, normalisation of saved values,
- * graceful fallback on corrupt localStorage, and new-column visibility.
+ * Until Feature 102 this file did not test loadColumnPrefs() at all. It mocked five modules just
+ * to get past importing AbilitiesList.jsx, then declared its own copy of the function and asserted
+ * against that. The copy could drift from the real implementation without a single test failing —
+ * and adding a column to COLUMN_DEFAULTS in the component would have left the copy silently stale.
+ *
+ * Extracting the preferences into src/js/abilities/columns.js removed the reason for all of it:
+ * the real function is now importable on its own, with no component, no store and no @wordpress
+ * mocks. The assertions below are unchanged; only their subject is now the shipping code.
  *
  * @since 0.1.0
  */
 
-jest.mock('@wordpress/i18n', () => ({ __: (v) => v }));
-jest.mock('@wordpress/data', () => ({
-	createReduxStore: jest.fn((name, config) => config),
-	register: jest.fn(),
-	useSelect: jest.fn(),
-	useDispatch: jest.fn(),
-}));
-jest.mock('@wordpress/element', () => ({
-	useState: jest.fn(),
-	useEffect: jest.fn(),
-	useCallback: jest.fn(),
-}));
-jest.mock('../../../src/js/abilities/store/index', () => ({
-	STORE_NAME: 'test-store',
-}));
-jest.mock(
-	'../../../src/js/abilities/components/cells/SourceBadge',
-	() => () => null
-);
-
-const LS_KEY = 'acrossai_abilities_columns';
-
-const COLUMN_DEFAULTS = {
-	label: true,
-	category: true,
-	source: true,
-	status: true,
-	type: true,
-	description: true,
-	show_in_rest: true,
-	mcp: true,
-};
-
-function loadColumnPrefs() {
-	try {
-		const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
-		const result = { ...COLUMN_DEFAULTS };
-		Object.keys(COLUMN_DEFAULTS).forEach((key) => {
-			if (key in saved) {
-				result[key] = !!saved[key];
-			}
-		});
-		return result;
-	} catch {
-		return { ...COLUMN_DEFAULTS };
-	}
-}
+import { loadColumnPrefs, COLUMN_DEFAULTS, LS_KEY } from '../../../src/js/abilities/columns';
 
 beforeEach(() => {
 	localStorage.clear();

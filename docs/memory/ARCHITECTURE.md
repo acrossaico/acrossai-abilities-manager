@@ -1589,8 +1589,18 @@ Any WordPress plugin (separate from `acrossai-abilities-manager`) can add REGULA
 **Category slug guidance**
 Use a DISTINCT category slug per add-on plugin (e.g. `'my-plugin-acf'`). Reusing the integration's own slug (`'acf'`) would (a) fail WP core's category check on the add-on side (integration slugs are never pre-registered — see synthetic-row lifecycle in `PATTERN-LIBRARY-INTEGRATION-BASE`) and (b) attempt to merge abilities into the integration's read-only card — neither is intended.
 
-**Rendering**
-Add-on cards render as REGULAR library cards: toggle + expand chevron + All/Specific radio + per-ability checkboxes. Styled identically to the "Core" cards on other tabs. The integration's own toggle card (`card_variant='integration'`) sits alongside them on the same tab.
+**Rendering** — *rewritten by Feature 102 (2026-09-12).* There are no cards any more. An add-on's
+abilities appear as ordinary rows in the Custom Abilities table, under the toolset tab their
+`tab_group` names, with a Toolset column showing it. The toggle, expand chevron, All/Specific radio and
+per-ability checkboxes described here were the registration gate's UI and were deleted with it — access
+is now the per-ability Site access setting on each row. `card_variant='integration'` survives but no
+longer renders anything: it is how `AcrossAI_Integration_Settings::discover()` finds which integrations
+to list as opt-in checkboxes on the settings screen.
+
+**Status of the three-step contract**: unchanged and still all three required. Registering the category,
+extending `Ability_Definition`, and setting `meta.acrossai.tab_group` to the integration's published
+`TAB_GROUP` are exactly as before — step 1's failure mode (silent rejection by WP core) is unchanged,
+and step 3 now also decides the Toolset column and the MCP dispatcher tool.
 
 **Worked example**
 See `wp-content/mu-plugins/060-acf-tab-extension-demo.php` (Feature 060 quickstart Step 7) — registers two demo categories on `wp_abilities_api_categories_init` and instantiates three anonymous `Ability_Definition` subclasses targeting `ACF::TAB_GROUP`. Result: 3 extra cards on the ACF tab, 3 extra rows in the Custom Abilities table (12 total instead of 9).
@@ -1688,13 +1698,32 @@ MCP client with no back-compat alias. Multi-purpose abilities are what per-abili
 - Distinct from `PATTERN-LIBRARY-INTEGRATION-TAB-EXTENSION` — that pattern covers third-party plugins REGISTERING a new tab via `<Integration>::TAB_GROUP` const with the 3-step contract. This pattern is about correctly landing FIRST-party abilities in the RIGHT existing tab.
 - Related: `DEC-META-ACROSSAI-NAMESPACE` — establishes `meta.acrossai.tab_group` as the canonical field. This pattern documents the runtime consequence of that decision.
 
+**Update 2026-09-12 (Feature 102) — the pattern holds; the screen it named is gone.**
+The Ability Integrations page was retired and its tabs became the **toolset strip** on the Custom
+Abilities list. Two parts of this entry are now stale and two are more important than before:
+
+- **Stale**: the derivation is no longer client-side off a localised definitions payload — that payload
+  (584 KB) was deleted. `collectTabGroups()` and `LibraryPage.js` no longer exist. Groups and counts
+  now come from `GET /acrossai/v1/abilities/toolsets`, which resolves them through
+  `AcrossAI_Ability_Group` server-side.
+- **Unchanged and still the whole point**: there is still **no `register_tab()` call and no whitelist**.
+  A wrong `tab_group` still silently misfiles an ability and **nothing fails**. Moving the derivation
+  to the server did not add validation — it only moved where the unvalidated read happens.
+- **Now broader**: `tab_group` also drives the Toolset column and the toolset filter, and (per
+  `DEC-ABILITY-GROUP-IDENTIFIER-LOAD-BEARING`) which MCP dispatcher tool an ability answers under. One
+  mis-tagged declaration now misplaces the ability in three surfaces at once.
+- `tests/phpunit/Modules/Library/Test_Ability_Group_Map.php` remains the only guard. Keep it current.
+
 **Reference**
-- `src/js/ability-library/components/LibraryPage.js::collectTabGroups()` and `titleCaseTabLabel()` — the auto-derivation logic.
+- `AcrossAI_Ability_Group` + `GET /acrossai/v1/abilities/toolsets` — where the derivation lives after
+  Feature 102. `src/js/shared/titleCaseTabLabel.js` still owns the label rule, paired with
+  `includes/Utilities/AcrossAI_Tab_Group_Label.php`.
+- ~~`src/js/ability-library/components/LibraryPage.js::collectTabGroups()`~~ — deleted by Feature 102.
 - `tests/phpunit/Modules/Library/Test_Ability_Group_Map.php` — Feature 101's guard. The runtime has no validation, so this test is the only thing that fails when an ability is misfiled. Keep it current.
 - PR #128 (2026-08-14) — flipped 63 Elementor ability files from `'core'` to `'elementor'`; sole change needed to produce a working "Elementor" tab.
 - Feature 101 (2026-09-10) — regrouped 229 declarations into thirteen task groups and retired `core`.
 
-**Tags**: ability-library, ability-integrations, tab-derivation, meta-acrossai, tab_group, silent-misplacement, first-party, jsx-runtime-derivation
+**Tags**: ability-library, ability-integrations, tab-derivation, meta-acrossai, tab_group, silent-misplacement, first-party, jsx-runtime-derivation, toolset-strip, feature-102
 
 ---
 
@@ -1785,3 +1814,45 @@ links into screens the current path skips. See
 
 **Related**: `BUG-EFFECT-OBJECT-IDENTITY-LOOP` — same category of defect, where the screen looks
 correct and only a measurement disagrees.
+
+---
+
+### 2026-09-12 — PATTERN-NETWORK-OPTION-TO-PER-SITE-TABLE-MIGRATION — Migrating network-scoped state into per-site rows
+
+**Status**: Active
+**Scope**: Plugin-wide/Activator (any state migration crossing the network/site boundary)
+**Tags**: multisite, migration, site-option, per-site, activator, done-flag, hook-reachability, feature-102
+
+This plugin stores configuration **network-wide** and rows **per-site**. `AcrossAI_Ability_Library_Config`
+reads and writes with `get_site_option()` / `update_site_option()` (lines 33, 81), while
+`AcrossAI_Abilities_Table` sets `protected $global = false` with the comment "Use per-site table prefix"
+(lines 57, 63) — see [[SEC-03]]. Any migration that reads the first and writes the second crosses that
+boundary, and `AcrossAI_Activator::activate()` contains no `get_sites()`, `switch_to_blog()` or
+`is_multisite()` handling at all: it runs once, for one site.
+
+**Two rules, both learned the hard way at plan stage:**
+
+**1. Guard per site, never per network.** The done flag must be a per-site `get_option()`, because the
+target is per-site. A network-wide flag marks the whole network complete the moment the first site
+finishes — which is exactly the failure it was meant to prevent. Correspondingly, do not delete the
+network-scoped source once per-site targets exist unless every site's completion is tracked somewhere.
+Nothing tracks that today, so retaining a dead option on multisite is the correct trade: far cheaper than
+one un-migrated site.
+
+`AcrossAI_Category_Slug_Migration` already shows this shape — per-site `get_option( DONE_OPTION )` guard
+(line 111) over a network-wide rewrite (lines 132, 155). It is safe there **only** because it is an
+idempotent key rename with no per-site target. Do not copy it for anything that writes rows.
+
+**2. Match the trigger's reachability to the exposure's.** A migration triggered on `admin_init` runs only
+when someone opens wp-admin. If the state it corrects is reachable by REST, MCP or cron, that hook cannot
+close the gap — a site nobody administers stays in the pre-migration state indefinitely, serving whatever
+the migration was supposed to stop. Use an early all-paths hook (`plugins_loaded` / `init`) guarded by the
+idempotent flag; the steady-state cost is one cache-backed `get_option()` per request.
+
+**Evidence**: Feature 102 planning. The first draft triggered on `admin_init` and guarded per network;
+security review findings SEC-001 and architecture research R1 corrected both before implementation. The
+feature removes an ability-registration gate, so an un-migrated site would have served every ability its
+administrator had switched off — with no notice and no retry by explicit product decision.
+
+**Related**: [[PATTERN-OPTION-KEY-MIGRATION-OR-MONOTONIC]] — how to write the values once you are on the
+right site; this entry is about reaching every site in the first place.

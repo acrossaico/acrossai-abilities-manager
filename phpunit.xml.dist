@@ -43,12 +43,19 @@
 			<file>tests/phpunit/abilities/Toolset/Test_Toolset_Dispatch.php</file>
 			<file>tests/phpunit/abilities/Toolset/Test_Toolset_Permissions.php</file>
 			<file>tests/phpunit/abilities/Test_Category_Registrar_Wiring.php</file>
-			<file>tests/phpunit/Modules/Library/Test_Ability_Group.php</file>
+			<file>tests/phpunit/Utilities/Test_Ability_Group.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Ability_Group_Map.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Category_Slug_Migration.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Ability_Definition.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Ability_Library_Registry.php</file>
-			<file>tests/phpunit/Modules/Library/Test_Ability_Library_Config.php</file>
+			<file>tests/phpunit/Utilities/Test_Abilities_Formatter_Tab_Group.php</file>
+			<file>tests/phpunit/Modules/Abilities/Test_Library_Gate_Migration_Rules.php</file>
+			<file>tests/phpunit/Modules/Abilities/Test_Library_Gate_Migration_No_Request_Input.php</file>
+			<file>tests/phpunit/Modules/Library/Integrations/Test_Integration_Ability_Base.php</file>
+			<file>tests/phpunit/Admin/Test_Integrations_Settings_Capability.php</file>
+			<file>tests/phpunit/Admin/Test_Integrations_Redirect.php</file>
+			<file>tests/phpunit/Utilities/Test_Key_Sanitizer.php</file>
+			<file>tests/phpunit/Modules/Library/Test_Library_Processor_No_Gate.php</file>
 		</testsuite>
 		<testsuite name="includes-unit">
 			<file>tests/phpunit/Includes/Test_Boot_Resilience.php</file>

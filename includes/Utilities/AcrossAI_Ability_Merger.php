@@ -170,6 +170,16 @@ class AcrossAI_Ability_Merger {
 		$mcp_meta_raw = $ability->get_meta_item( 'mcp', null );
 		$mcp_meta     = is_array( $mcp_meta_raw ) ? $mcp_meta_raw : null;
 
+		// Feature 102: meta.acrossai.tab_group drives the Toolset column and the toolset
+		// filter on the abilities screen. Read-only here — the MCP tool catalogue is derived
+		// from the same value (DEC-ABILITY-GROUP-IDENTIFIER-LOAD-BEARING), so re-tagging an
+		// ability moves it between MCP tools. Nothing in this plugin writes it.
+		$acrossai_meta_raw = $ability->get_meta_item( 'acrossai', null );
+		$acrossai_meta     = is_array( $acrossai_meta_raw ) ? $acrossai_meta_raw : null;
+		$tab_group         = ( null !== $acrossai_meta && isset( $acrossai_meta['tab_group'] ) )
+			? (string) $acrossai_meta['tab_group']
+			: '';
+
 		$input_schema_raw  = $ability->get_input_schema();
 		$output_schema_raw = $ability->get_output_schema();
 
@@ -180,6 +190,7 @@ class AcrossAI_Ability_Merger {
 			'category'        => $ability->get_category(),
 			'provider'        => $provider,
 			'source'          => $ability->get_meta_item( 'source', null ),
+			'tab_group'       => $tab_group,
 			'show_in_rest'    => $ability->get_meta_item( 'show_in_rest', false ),
 			'callback_type'   => $ann_or_meta( 'callback_type' ),
 			'callback_config' => null, // execution config — not stored in WP_Ability.
