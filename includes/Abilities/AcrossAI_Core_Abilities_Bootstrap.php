@@ -352,6 +352,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Menus\Delete_Menu_Item();
 		// Feature 063 — Widgets category (2 abilities).
 		new Widgets\List_Widgets();
+		new Widgets\Add_Widget();
+		new Widgets\Deactivate_Widget();
+		new Widgets\Get_Widget();
+		new Widgets\Get_Widget_Management_Status();
+		new Widgets\List_Widget_Types();
+		new Widgets\Move_Widget();
+		new Widgets\Remove_Widget();
+		new Widgets\Reorder_Sidebar();
+		new Widgets\Update_Widget();
 		new Widgets\List_Sidebars();
 		new Options\Get_Option();
 		new Options\Update_Option();
