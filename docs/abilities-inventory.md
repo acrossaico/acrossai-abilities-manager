@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-13. **Total abilities:** 635 across 31 topic namespaces.
+Snapshot taken 2026-09-13. **Total abilities:** 653 across 32 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -30,6 +30,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `files` — Files | 23 |
 | `diagnostics` — Diagnostics | 20 |
 | `configuration` — Configuration | 19 |
+| `events-calendar` — Events Calendar | 18 |
 | `database` — Database | 17 |
 | `acf` — Acf | 16 |
 | `cron` — Cron | 16 |
@@ -56,6 +57,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `database/` | 18 | `acrossai-database` |
 | `editor/` | 4 | `acrossai-classic-editor` |
 | `elementor/` | 62 | `acrossai-elementor` |
+| `events/` | 18 | `acrossai-events-calendar` |
 | `file-manager/` | 23 | `acrossai-file-manager` |
 | `fonts/` | 8 | `acrossai-fonts` |
 | `litespeed/` | 61 | `acrossai-litespeed-cache`, `cache-exc_cat` |
@@ -384,6 +386,24 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `elementor/` | `elementor/update-page-settings` | elementor | elementor-documents | Update Elementor Page Settings |
 | `elementor/` | `elementor/update-template` | elementor | elementor-templates | Update Elementor Template |
 | `elementor/` | `elementor/update-theme-builder-conditions` | elementor | elementor-templates | Update Theme Builder Conditions |
+| `events/` | `events/create-event` | events-calendar |  |  |
+| `events/` | `events/create-organizer` | events-calendar |  |  |
+| `events/` | `events/create-venue` | events-calendar |  |  |
+| `events/` | `events/get-calendar-settings` | events-calendar |  |  |
+| `events/` | `events/get-event` | events-calendar |  |  |
+| `events/` | `events/get-organizer` | events-calendar |  |  |
+| `events/` | `events/get-venue` | events-calendar |  |  |
+| `events/` | `events/list-event-categories` | events-calendar |  |  |
+| `events/` | `events/list-events` | events-calendar |  |  |
+| `events/` | `events/list-organizers` | events-calendar |  |  |
+| `events/` | `events/list-venues` | events-calendar |  |  |
+| `events/` | `events/set-event-categories` | events-calendar |  |  |
+| `events/` | `events/trash-event` | events-calendar |  |  |
+| `events/` | `events/trash-organizer` | events-calendar |  |  |
+| `events/` | `events/trash-venue` | events-calendar |  |  |
+| `events/` | `events/update-event` | events-calendar |  |  |
+| `events/` | `events/update-organizer` | events-calendar |  |  |
+| `events/` | `events/update-venue` | events-calendar |  |  |
 | `file-manager/` | `file-manager/append-file` | files | files | Append to File |
 | `file-manager/` | `file-manager/clear-debug-log` | files | debug | Clear Debug Log |
 | `file-manager/` | `file-manager/copy-file` | files | files | Copy File |

@@ -115,6 +115,7 @@ class AcrossAI_Category_Slug_Migration {
 		'widgets',
 		'yoast-seo',
 		'classic-editor',
+		'events-calendar',
 	);
 
 	/**

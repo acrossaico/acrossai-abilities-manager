@@ -31,6 +31,7 @@ require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Contact_F
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/LiteSpeed_Cache.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Yoast_Seo.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Classic_Editor.php';
+require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Events_Calendar.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/AcrossAI_Toolset_Integrations.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Utilities/AcrossAI_Ability_Group_Tagger.php';
 

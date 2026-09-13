@@ -220,6 +220,9 @@
 			<file>tests/phpunit/abilities/Test_Classic_Editor_Architecture.php</file>
 			<file>tests/phpunit/abilities/Test_Classic_Editor_Guard.php</file>
 			<file>tests/phpunit/abilities/Test_Classic_Editor_Suite_Contract.php</file>
+			<file>tests/phpunit/abilities/Test_Events_Calendar_Architecture.php</file>
+			<file>tests/phpunit/abilities/Test_Events_Calendar_Guard.php</file>
+			<file>tests/phpunit/abilities/Test_Events_Calendar_Suite_Contract.php</file>
 			<file>tests/phpunit/abilities/Test_LiteSpeed_Architecture.php</file>
 			<file>tests/phpunit/abilities/Test_LiteSpeed_Suite_Contract.php</file>
 			<file>tests/phpunit/abilities/Test_Contact_Form_7_Architecture.php</file>
