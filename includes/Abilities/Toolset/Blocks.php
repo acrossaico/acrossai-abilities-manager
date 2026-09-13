@@ -47,6 +47,6 @@ final class Blocks extends Base_Toolset_Ability {
 	 * @return string
 	 */
 	protected function toolset_description(): string {
-		return __( 'Work with the block editor: read and mutate a post\'s block tree, insert and move and remove blocks, create and apply block patterns and reusable blocks, generate sections and landing pages, and analyse or validate existing content. For theme-level design such as global styles and templates, use the Appearance tool instead. action=discover lists this group; action=info returns schemas; action=execute runs one ability.', 'acrossai-abilities-manager' );
+		return __( 'Work with the block editor: read and mutate a post\'s block tree, insert and move and remove blocks, create and apply block patterns and reusable blocks, generate sections and landing pages, and analyse or validate existing content. These abilities all rewrite post_content, so run content/inspect-post-builder first on any existing post: a page built with Elementor or another page builder has no block tree to edit, and the write will not show up. For theme-level design such as global styles and templates, use the Appearance tool instead. action=discover lists this group; action=info returns schemas; action=execute runs one ability.', 'acrossai-abilities-manager' );
 	}
 }

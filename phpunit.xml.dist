@@ -215,6 +215,8 @@
 			<file>tests/phpunit/abilities/Test_Yoast_Architecture.php</file>
 			<file>tests/phpunit/abilities/Test_Yoast_Guard.php</file>
 			<file>tests/phpunit/abilities/Test_Yoast_Suite_Contract.php</file>
+			<file>tests/phpunit/abilities/Test_Post_Builder_Detector.php</file>
+			<file>tests/phpunit/abilities/Test_Content_Writers_Warn_About_Builders.php</file>
 			<file>tests/phpunit/abilities/Test_Classic_Editor_Architecture.php</file>
 			<file>tests/phpunit/abilities/Test_Classic_Editor_Guard.php</file>
 			<file>tests/phpunit/abilities/Test_Classic_Editor_Suite_Contract.php</file>

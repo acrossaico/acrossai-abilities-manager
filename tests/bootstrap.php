@@ -918,6 +918,52 @@ if ( ! function_exists( 'get_post_meta' ) ) {
 	}
 }
 
+if ( ! function_exists( 'get_post' ) ) {
+	/**
+	 * Stub: resolve a post from $__acrossai_test_posts.
+	 *
+	 * Feature 108. Rows are plain objects with at least ID, post_type and post_content, which is
+	 * all Post_Builder_Detector reads. Returns null for an unknown ID so the not-found branch is
+	 * reachable.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return object|null
+	 */
+	function get_post( int $post_id = 0 ) {
+		global $__acrossai_test_posts;
+		if ( ! is_array( $__acrossai_test_posts ) || ! isset( $__acrossai_test_posts[ $post_id ] ) ) {
+			return null;
+		}
+
+		// Must be a real WP_Post: callers type-check with instanceof, and a stdClass
+		// silently fails that check rather than erroring.
+		$post = new WP_Post();
+
+		foreach ( (array) $__acrossai_test_posts[ $post_id ] as $field => $value ) {
+			if ( property_exists( $post, $field ) ) {
+				$post->$field = $value;
+			}
+		}
+
+		return $post;
+	}
+}
+
+if ( ! function_exists( 'has_blocks' ) ) {
+	/**
+	 * Stub: WP core's has_blocks() is a substring test for the block delimiter, nothing more.
+	 *
+	 * Mirrors wp-includes/blocks.php exactly, including that it conflates empty with classic.
+	 *
+	 * @param mixed $post Post object or content string.
+	 * @return bool
+	 */
+	function has_blocks( $post = null ): bool {
+		$content = is_string( $post ) ? $post : ( is_object( $post ) ? (string) ( $post->post_content ?? '' ) : '' );
+		return false !== strpos( $content, '<!-- wp:' );
+	}
+}
+
 if ( ! function_exists( 'get_stylesheet' ) ) {
 	/** Stub: return an empty stylesheet so is_active_theme comparisons resolve to false. */
 	function get_stylesheet(): string {

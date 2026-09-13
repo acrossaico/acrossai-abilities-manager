@@ -96,6 +96,21 @@ class Normalize_Heading_Levels extends Ability_Definition {
 	 * @param array<string,mixed> $input Ability input payload.
 	 * @return array<string,mixed>
 	 */
+	/**
+	 * Where a caller should look before running this.
+	 *
+	 * @since  0.0.39
+	 * @return array<int, array<string, string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'content/inspect-post-builder',
+				'reason' => __( 'Run first on an existing post. A page built with Elementor or another page builder keeps its layout outside post_content, so this write can report success, change nothing a visitor sees, and be reverted the next time the page is saved in the builder.', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
 	public function execute( array $input = array() ): array {
 		$post_id     = absint( $input['post_id'] ?? 0 );
 		$top_level   = max( 2, min( 4, (int) ( $input['top_level'] ?? 2 ) ) );
