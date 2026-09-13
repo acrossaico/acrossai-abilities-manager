@@ -104,6 +104,10 @@ class Update_Cpt_Item extends Ability_Definition {
 	protected function suggested_abilities(): array {
 		return array(
 			array(
+				'slug'   => 'content/inspect-post-builder',
+				'reason' => __( 'Run first on an existing post. A page built with Elementor or another page builder keeps its layout outside post_content, so this write can report success, change nothing a visitor sees, and be reverted the next time the page is saved in the builder.', 'acrossai-abilities-manager' ),
+			),
+			array(
 				'slug'   => 'blocks/outline-post-blocks',
 				'reason' => __( 'For narrow edits, outline first to locate the target block cheaply — the outline is kilobytes even when the item body is hundreds.', 'acrossai-abilities-manager' ),
 				'saves'  => __( '~29K tokens vs full item rewrite on a 97 KB body', 'acrossai-abilities-manager' ),
