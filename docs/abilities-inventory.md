@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-13. **Total abilities:** 653 across 32 topic namespaces.
+Snapshot taken 2026-09-13. **Total abilities:** 669 across 33 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -34,6 +34,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `database` — Database | 17 |
 | `acf` — Acf | 16 |
 | `cron` — Cron | 16 |
+| `event-tickets` — Event Tickets | 16 |
 | `users` — Users | 16 |
 | `` —  | 13 |
 | `cache` — Cache | 7 |
@@ -72,6 +73,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `site-health/` | 6 | `acrossai-site-health` |
 | `taxonomies/` | 16 | `acrossai-taxonomies`, `acrossai-yoast-seo` |
 | `themes/` | 7 | `acrossai-themes` |
+| `tickets/` | 16 | `acrossai-event-tickets` |
 | `toolset/` | 13 | `acrossai-toolset` |
 | `users/` | 16 | `acrossai-users` |
 | `widgets/` | 2 | `acrossai-widgets` |
@@ -702,6 +704,22 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `themes/` | `themes/list-theme-mods` | updates | introspection | List Theme Mods |
 | `themes/` | `themes/list-themes` | updates | info | List Themes |
 | `themes/` | `themes/update-theme` | updates | lifecycle | Update Theme |
+| `tickets/` | `tickets/check-in-attendee` | event-tickets |  |  |
+| `tickets/` | `tickets/create-ticket` | event-tickets |  |  |
+| `tickets/` | `tickets/delete-ticket` | event-tickets |  |  |
+| `tickets/` | `tickets/get-attendee-summary` | event-tickets |  |  |
+| `tickets/` | `tickets/get-capacity-report` | event-tickets |  |  |
+| `tickets/` | `tickets/get-order` | event-tickets |  |  |
+| `tickets/` | `tickets/get-sales-summary` | event-tickets |  |  |
+| `tickets/` | `tickets/get-ticket` | event-tickets |  |  |
+| `tickets/` | `tickets/get-ticket-settings` | event-tickets |  |  |
+| `tickets/` | `tickets/list-attendees` | event-tickets |  |  |
+| `tickets/` | `tickets/list-orders` | event-tickets |  |  |
+| `tickets/` | `tickets/list-ticket-providers` | event-tickets |  |  |
+| `tickets/` | `tickets/list-tickets` | event-tickets |  |  |
+| `tickets/` | `tickets/set-ticket-capacity` | event-tickets |  |  |
+| `tickets/` | `tickets/undo-check-in` | event-tickets |  |  |
+| `tickets/` | `tickets/update-ticket` | event-tickets |  |  |
 | `toolset/` | `toolset/appearance` |  |  |  |
 | `toolset/` | `toolset/blocks` |  |  |  |
 | `toolset/` | `toolset/cache` |  |  |  |

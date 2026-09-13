@@ -116,6 +116,7 @@ class AcrossAI_Category_Slug_Migration {
 		'yoast-seo',
 		'classic-editor',
 		'events-calendar',
+		'event-tickets',
 	);
 
 	/**
