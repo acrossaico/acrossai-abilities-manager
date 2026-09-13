@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-13. **Total abilities:** 669 across 33 topic namespaces.
+Snapshot taken 2026-09-13. **Total abilities:** 678 across 33 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -18,8 +18,8 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 
 | Group | Abilities |
 |---|---:|
+| `appearance` — Appearance | 73 |
 | `content` — Content | 72 |
-| `appearance` — Appearance | 64 |
 | `yoast-seo` — Yoast Seo | 64 |
 | `elementor` — Elementor | 62 |
 | `litespeed-cache` — Litespeed Cache | 61 |
@@ -76,7 +76,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `tickets/` | 16 | `acrossai-event-tickets` |
 | `toolset/` | 13 | `acrossai-toolset` |
 | `users/` | 16 | `acrossai-users` |
-| `widgets/` | 2 | `acrossai-widgets` |
+| `widgets/` | 11 | `acrossai-widgets` |
 
 ## Every ability
 
@@ -749,5 +749,14 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `users/` | `users/reset-role` | users | roles | Reset Role |
 | `users/` | `users/reset-user-password` | users | users | Reset User Password |
 | `users/` | `users/update-user` | users | users | Update User |
+| `widgets/` | `widgets/add-widget` | appearance | widgets | Add Widget |
+| `widgets/` | `widgets/deactivate-widget` | appearance | widgets | Deactivate Widget |
+| `widgets/` | `widgets/get-widget` | appearance | widgets | Get Widget |
+| `widgets/` | `widgets/get-widget-management-status` | appearance | widgets | Get Widget Management Status |
 | `widgets/` | `widgets/list-sidebars` | appearance | introspection | List Sidebars |
+| `widgets/` | `widgets/list-widget-types` | appearance | widgets | List Widget Types |
 | `widgets/` | `widgets/list-widgets` | appearance | introspection | List Widgets |
+| `widgets/` | `widgets/move-widget` | appearance | widgets | Move Widget |
+| `widgets/` | `widgets/remove-widget` | appearance | widgets | Remove Widget |
+| `widgets/` | `widgets/reorder-sidebar` | appearance | widgets | Reorder Sidebar |
+| `widgets/` | `widgets/update-widget` | appearance | widgets | Update Widget |
