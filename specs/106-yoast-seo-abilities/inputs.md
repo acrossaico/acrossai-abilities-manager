@@ -4,7 +4,7 @@ This file is the natural-language brief that `/speckit-specify` should turn into
 
 ## One-sentence goal
 
-Add 62 Yoast SEO abilities under a new `yoast-seo` toolset — site-wide settings, term and taxonomy SEO, indexables, sitemaps, indexation and tools — and adopt Yoast's own five abilities into that toolset, which nothing currently claims.
+Add 64 Yoast SEO abilities under a new `yoast-seo` toolset — site-wide settings, term and taxonomy SEO, indexables, sitemaps, indexation and tools — and adopt Yoast's own abilities into that toolset, which nothing currently claims.
 
 ## Why now
 
@@ -36,7 +36,7 @@ should_index_indexables():   false      indexables table: 0 rows
 Two consequences the implementation must honour:
 
 1. The toolset declaration is still needed and still correct, but its visible effect is conditional: Yoast's five appear on production sites and not on staging ones. Both counts are verification targets.
-2. **This suite must NOT inherit that gate.** Settings, terms, sitemaps and tools have nothing to do with indexables and must work on any environment. Only the `yoast-indexables` group genuinely depends on the table, and it should report cleanly when the table is empty rather than disappearing. Copying Yoast's conditional by reflex would make all 62 invisible on every staging site — an easy mistake, and the exact state measured above.
+2. **This suite must NOT inherit that gate.** Settings, terms, sitemaps and tools have nothing to do with indexables and must work on any environment. Only the `yoast-indexables` group genuinely depends on the table, and it should report cleanly when the table is empty rather than disappearing. Copying Yoast's conditional by reflex would make all 64 invisible on every staging site — an easy mistake, and the exact state measured above.
 
 ### Gap 2 — Yoast's coverage stops at the individual post
 
@@ -49,7 +49,7 @@ Nothing in its five abilities addresses:
 - **Indexation** — the actions under `src/actions/indexing/`.
 - **Tools** — the AIOSEO importer, conflicting-plugin detection.
 
-## Scope — 62 abilities
+## Scope — 64 abilities
 
 Category `acrossai-yoast-seo`, `meta.acrossai.tab_group = 'yoast-seo'`, eight `sub_group` cards shaped like the Rank Math suite's.
 
@@ -107,7 +107,7 @@ No ability or repository may reference `is_production_mode`, `should_index_index
 
 ## Files
 
-New: `includes/Abilities/Yoast/Base_Yoast_Ability.php`, `Base_Settings_{Read,Write}_Ability.php`, 62 ability classes, `Category_Registrar.php`; `includes/Abilities/Utilities/Yoast/{Yoast_Guard,Settings_Repository,Term_Repository,Indexable_Repository,Sitemap_Repository,Tools_Repository}.php`; `includes/Abilities/Integrations/Yoast_Seo.php`; three test files.
+New: `includes/Abilities/Yoast/Base_Yoast_Ability.php`, `Base_Settings_{Read,Write}_Ability.php`, 64 ability classes, `Category_Registrar.php`; `includes/Abilities/Utilities/Yoast/{Yoast_Guard,Settings_Repository,Term_Repository,Indexable_Repository,Sitemap_Repository,Tools_Repository}.php`; `includes/Abilities/Integrations/Yoast_Seo.php`; three test files.
 
 Modified: the bootstrap (three edits), `AcrossAI_Toolset_Integrations::built_in()`, the category migration, `Test_Ability_Group_Map.php`, `phpunit.xml.dist`, `README.txt`, `docs/abilities-inventory.md` (regenerated).
 
@@ -117,9 +117,9 @@ Modified: the bootstrap (three edits), `AcrossAI_Toolset_Integrations::built_in(
 
 Yoast is active; the baseline is captured above.
 
-1. **Our 62 register on this `local` site.** The single most important assertion: if the suite inherits Yoast's production gate it is invisible on every staging install.
-2. **Adoption of Yoast's five**, using `add_filter( 'Yoast\WP\SEO\should_index_indexables', '__return_true' )` in the harness — confirmed to flip the conditional without touching `WP_ENVIRONMENT_TYPE`. With the filter on the tab reads **67**; with it off, **62**.
-3. Execute all 62 in process via a temporary mu-plugin REST route calling `wp_get_ability( $name )->execute( $input )`, deleted before committing.
+1. **Our 64 register on this `local` site.** The single most important assertion: if the suite inherits Yoast's production gate it is invisible on every staging install.
+2. **Adoption of Yoast's own abilities**, using `add_filter( 'Yoast\WP\SEO\should_index_indexables', '__return_true' )` — confirmed to flip the conditional without touching `WP_ENVIRONMENT_TYPE`. Only **two** of Yoast's five ever appear, so the tab reads **66** with the filter on and **64** with it off. Yoast gates its inclusive-language ability on an analysis feature that is off here, and `register_get_post_seo_data_ability()` / `register_update_post_seo_data_ability()` are defined in `abilities-integration.php` but never called from `register_abilities()` — dead methods in Yoast 28.4.
+3. Execute all 64 in process via a temporary mu-plugin REST route calling `wp_get_ability( $name )->execute( $input )`, deleted before committing.
 4. Round-trip a setting in each of the four option groups: read, write, read back, restore.
 5. Term SEO round-trip on a real category, read back through `WPSEO_Taxonomy_Meta`.
 6. Indexables: home page, a post-type archive, an author archive, a system page — and confirm they degrade cleanly with an empty indexables table rather than erroring.
@@ -127,7 +127,27 @@ Yoast is active; the baseline is captured above.
 8. Negative paths: Yoast-absent via the guard suite; unknown option key; unknown term; unknown indexable type.
 9. `sum(counts) === total`; dispatch through `toolset/yoast-seo`, including **one of Yoast's own abilities** through our dispatcher — the end-to-end proof of adoption.
 10. `vendor/bin/phpunit`, `npx wp-scripts test-unit-js`, PHPCS on the new files. **No PHPStan claim from `composer phpstan`** — it analyses nothing (issue #190); run it with a working config and report that.
-11. Regenerate `docs/abilities-inventory.md` and confirm the 62 are actually counted — the generator was fixed in Feature 105 to handle classes that supply a full slug, which is the shape this suite uses.
+11. Regenerate `docs/abilities-inventory.md` and confirm the 64 are actually counted — the generator was fixed in Feature 105 to handle classes that supply a full slug, which is the shape this suite uses.
+
+## What live verification found (all fixed in this branch)
+
+Every item here was invisible to the test suite and surfaced only by executing the abilities against a real site. Each now has a mutation-verified guard.
+
+1. **Two stored OAuth credentials were readable.** `semrush_tokens` and `wincher_tokens` hold live access and refresh tokens (`Yoast\WP\SEO\Values\OAuth\OAuth_Token`). The settings reader returned every key in an area, so `seo/get-seo-settings` handed them to any caller — over MCP, off-site. Yoast excludes both from its own telemetry and from its settings screen via `Settings_Integration::DISALLOWED_SETTINGS`. The repository now subtracts that constant at runtime (18 keys, 5 of which were in our map), and a test asserts our frozen fallback still covers Yoast's live list.
+2. **The per-post-type key map was a frozen snapshot.** Yoast mints `title-{pt}`, `noindex-tax-{tax}`, `title-ptarchive-{pt}` and eleven other families per registered type. Deriving them once captured only `post`, `page`, `attachment`, `category`, `post_tag` — every custom type was refused by name. Worse, no post type on the generating install had `has_archive`, so **not one `*-ptarchive-*` key existed** and `seo/update-post-type-archive-seo` could not write anything on any site. Now read from the live `wpseo_titles` option per request, with longest-prefix family matching. Found by registering a `guide` CPT as a fixture.
+3. **Rejected writes reported success.** Yoast validates per option group and silently keeps the old value; the enum keys `schema-article-type-*` and `llms_txt_selection_mode` do exactly this. `write()` reported the key as updated regardless. It now reads each key back after `save()` and returns `setting_rejected` naming the requested value, the value Yoast kept, and the keys in the same call that did apply.
+4. **Two settings areas had no writer, and nine advertised abilities did not exist.** `List_Settings_Areas` built its slugs by concatenating `seo/update-` onto the area name, which resolved for 5 of 14 areas. `integrations` and `advanced` had no writer at all and were silently read-only. The map is now declared (`Settings_Repository::writer_for()`), two writers were added — `seo/update-advanced-settings` and `seo/update-integration-settings` — and the contract test resolves every entry. This is what took the suite from 62 to 64.
+5. **The permission filter could lower the floor.** `can()` returned `apply_filters( ..., $allowed, $floor )` directly, so a filter returning true granted a subscriber an SEO write — the opposite of the raise-only behaviour its own docblock claimed. It now returns false before consulting the filter. **The same shape is in `Acf_Guard` and `LiteSpeed_Guard`, both already shipped** — left alone here rather than changed silently; worth a follow-up decision.
+6. **Yoast aliases a column in its link query.** `get_incoming_link_counts_for_post_ids()` selects `target_post_id` **as** `post_id`, so rows have no `target_post_id` key. Reading the obvious name yields zero incoming links for every post, and an empty link table returns nothing either way — only visible against real link data.
+
+### Verification performed
+
+* All **64** executed in process against the live site via a temporary mu-plugin route; **64/64** pass, re-run after every fix.
+* All **14** settings areas round-tripped: read, write, read back, restore.
+* Both enum-validated areas confirmed to accept a valid value and to report `setting_rejected` for an invalid one, including a mixed call where one key applied and one was refused.
+* Confirmation gates verified to fire unconfirmed and pass confirmed, for all three gated abilities plus the robots writer's one-directional gate.
+* PHPUnit 2619 tests / 12271 assertions green; Jest 174 green; PHPCS clean on the suite.
+* Eight new architecture guards each mutation-verified by reintroducing the defect.
 
 ## Suggested next steps (for the human)
 
