@@ -221,19 +221,32 @@ final class Rank_Math_Guard {
 	 */
 	public static function can( string $rm_cap, string $floor = 'manage_options' ): callable {
 		return static function () use ( $rm_cap, $floor ): bool {
-			$allowed = current_user_can( $floor ) && self::has_cap( $rm_cap );
+			$floor_ok = current_user_can( $floor );
+			$cap_ok   = self::has_cap( $rm_cap );
+			$allowed  = $floor_ok && $cap_ok;
 
 			/**
 			 * Filter whether the current user may execute a Rank Math ability.
 			 *
-			 * Return true to allow Rank Math's own looser model — e.g. an editor
-			 * holding rank_math_titles but not manage_options.
+			 * Unlike the other suites' permission filters, this one may WIDEN as well as narrow:
+			 * returning true admits Rank Math's own looser model — an editor holding
+			 * rank_math_titles but not manage_options. That is the documented purpose and is
+			 * preserved.
+			 *
+			 * What it may not do is admit a user holding neither. The result is bounded below by
+			 * "clears the floor, or holds the granular Rank Math capability this ability names", so
+			 * a filter can substitute one model for the other but cannot grant access to a
+			 * subscriber. The bound is deliberately keyed on `'' !== $rm_cap`: has_cap() returns
+			 * true when no granular capability applies, so without that check the bound would be
+			 * vacuous for exactly the abilities that have nothing but the floor protecting them.
 			 *
 			 * @param bool   $allowed Result of floor AND granular capability.
 			 * @param string $rm_cap  Rank Math capability suffix, '' when none applies.
 			 * @param string $floor   WordPress capability floor.
 			 */
-			return (bool) apply_filters( self::PERMISSION_FILTER, $allowed, $rm_cap, $floor );
+			$filtered = (bool) apply_filters( self::PERMISSION_FILTER, $allowed, $rm_cap, $floor );
+
+			return $filtered && ( $floor_ok || ( '' !== $rm_cap && $cap_ok ) );
 		};
 	}
 

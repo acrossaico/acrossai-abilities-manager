@@ -117,16 +117,22 @@ final class LiteSpeed_Guard {
 	 */
 	public static function can( string $floor = 'manage_options' ): callable {
 		return static function () use ( $floor ): bool {
-			$allowed = current_user_can( $floor );
+			if ( ! current_user_can( $floor ) ) {
+				return false;
+			}
 
 			/**
 			 * Filters whether the current user may use a LiteSpeed Cache ability.
 			 *
+			 * Consulted only for a user who already clears the floor, so it can deny but never
+			 * grant (PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY). Returning the filter's value
+			 * directly would let any plugin on the site hand an ability to a subscriber.
+			 *
 			 * @since 0.0.36
-			 * @param bool   $allowed Whether access is granted.
+			 * @param bool   $allowed Whether access is granted. Always true at this point.
 			 * @param string $floor   WordPress capability floor.
 			 */
-			return (bool) apply_filters( self::PERMISSION_FILTER, $allowed, $floor );
+			return (bool) apply_filters( self::PERMISSION_FILTER, true, $floor );
 		};
 	}
 

@@ -157,9 +157,33 @@ class Test_Rank_Math_Guard extends WP_UnitTestCase {
 	 * model alone, and is what keeps Rank Math's Role Manager grants meaningful.
 	 */
 	public function test_can_composes_floor_and_granular_capability(): void {
-		$this->assertStringContainsString(
-			'current_user_can( $floor ) && self::has_cap( $rm_cap )',
+		$this->assertMatchesRegularExpression(
+			'/\$allowed\s*=\s*\$floor_ok\s*&&\s*\$cap_ok;/',
 			$this->src
+		);
+		$this->assertStringContainsString( '$floor_ok = current_user_can( $floor );', $this->src );
+		$this->assertStringContainsString( '$cap_ok   = self::has_cap( $rm_cap );', $this->src );
+	}
+
+	/**
+	 * The widening filter is bounded below.
+	 *
+	 * This suite's filter is deliberately allowed to widen — that is how an editor holding
+	 * rank_math_titles but not manage_options gets in, which is the documented purpose. Returning
+	 * the filter's value unbounded, the shape this shipped with, also let it grant access to a user
+	 * holding neither capability: any other plugin on the site could hand a subscriber an SEO
+	 * write. The result is now floored at "clears the floor, or holds the granular capability this
+	 * ability names".
+	 *
+	 * The `'' !== $rm_cap` term is load-bearing. has_cap() returns true when no granular capability
+	 * applies, so without it the bound collapses to `true` for exactly the abilities that have
+	 * nothing but the floor protecting them.
+	 */
+	public function test_widening_filter_cannot_admit_a_user_holding_neither_capability(): void {
+		$this->assertMatchesRegularExpression(
+			"/return \\\$filtered && \\( \\\$floor_ok \\|\\| \\( '' !== \\\$rm_cap && \\\$cap_ok \\) \\);/",
+			$this->src,
+			'can() must bound the filtered result below, and the empty-capability term must be present.'
 		);
 	}
 
