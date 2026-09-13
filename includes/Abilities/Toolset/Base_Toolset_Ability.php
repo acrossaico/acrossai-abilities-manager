@@ -432,6 +432,16 @@ abstract class Base_Toolset_Ability {
 							'input_schema'  => array( 'type' => 'object' ),
 							'output_schema' => array( 'type' => 'object' ),
 							'annotations'   => array( 'type' => 'object' ),
+							/*
+							 * info only, and only when the ability declares any. Rows of
+							 * { slug, reason, saves? } — a list, never a name-keyed map, or it
+							 * encodes as a JSON object and fails this very schema
+							 * (BUG-ARRAY-TYPED-OUTPUT-IS-A-JSON-OBJECT).
+							 */
+							'suggested_abilities' => array(
+								'type'  => 'array',
+								'items' => array( 'type' => 'object' ),
+							),
 						),
 						'required'             => array( 'name' ),
 						'additionalProperties' => false,
@@ -1002,7 +1012,51 @@ abstract class Base_Toolset_Ability {
 			'annotations'   => is_array( $annotations ) ? $annotations : array(),
 		);
 
+		$suggested = $this->suggested_abilities_of( $ability );
+
+		if ( array() !== $suggested ) {
+			$row['suggested_abilities'] = $suggested;
+		}
+
 		return $this->trim_to( $row, $fields );
+	}
+
+	/**
+	 * An ability's declared suggestions, or none.
+	 *
+	 * Feature 108. `describe()` built its row from scratch and read only `annotations` out of meta,
+	 * so `meta.acrossai.suggested_abilities` — the whole Feature 095 framework — never reached a
+	 * client on the toolset path. Since the toolsets exist specifically to replace the flat
+	 * catalogue as the way an assistant finds abilities, that meant the suggestions were invisible
+	 * on the only surface most callers use.
+	 *
+	 * They stay out of `summarise()` deliberately: `DEC-ABILITY-SUGGESTED-ABILITIES-CONTRACT` keeps
+	 * them out of discovery so listing payloads stay small, and `action=info` is the per-ability
+	 * call that already carries both schemas. This adds them where the contract always intended
+	 * them and nowhere else.
+	 *
+	 * Honours `acrossai_disable_ability_suggestions`, the same kill-switch
+	 * `AcrossAI_Ability_Library_Registry::apply_suggested_abilities_decoration()` applies on the
+	 * Library path. Without this check the admin toggle would silently stop working for MCP.
+	 *
+	 * @since  0.0.39
+	 * @param  WP_Ability $ability Member.
+	 * @return array<int, mixed>
+	 */
+	private function suggested_abilities_of( WP_Ability $ability ): array {
+		if ( (bool) get_option( 'acrossai_disable_ability_suggestions', 0 ) ) {
+			return array();
+		}
+
+		$acrossai = $ability->get_meta_item( 'acrossai' );
+
+		if ( ! is_array( $acrossai ) || empty( $acrossai['suggested_abilities'] ) ) {
+			return array();
+		}
+
+		$suggested = $acrossai['suggested_abilities'];
+
+		return is_array( $suggested ) ? array_values( $suggested ) : array();
 	}
 
 	/**
