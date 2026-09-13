@@ -113,6 +113,7 @@ class AcrossAI_Category_Slug_Migration {
 		'toolset',
 		'users',
 		'widgets',
+		'yoast-seo',
 	);
 
 	/**

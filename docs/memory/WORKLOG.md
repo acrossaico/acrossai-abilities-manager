@@ -591,3 +591,39 @@ Spec-kit-driven end-to-end: docs/planning/088-*.md → /speckit-specify → /spe
 - **Why durable**: The first suite built for a host plugin with **zero** abilities of its own (verified across all 111 PHP files of v6.1.7), which makes it the reference for the "we supply everything" shape: the integration declaration owns the group key, label and MCP description and generates the dispatcher, so there is no `includes/Abilities/Toolset/` file, and `ability_prefixes()` is deliberately empty (`DEC-TOOLSET-PREFIX-CLAIM-ONLY-WHAT-EXISTS`). It is also the first suite where every ability was executed against a live site before merge rather than only asserted about in unit tests.
 - **Future mistake prevented**: Executing the suite found a bug that PHPCS, PHPStan level 8 and 2497 unit tests all passed over — an output property typed `array` fed an associative map, failing the ability's own schema *after* the write had persisted (`BUG-ARRAY-TYPED-OUTPUT-IS-A-JSON-OBJECT`). It also cost most of a session to discover that the obvious HTTP harness cannot work (`BUG-GET-RUN-ROUTE-CANNOT-EXPRESS-TYPED-INPUT`): a temporary mu-plugin REST route calling `wp_get_ability()->execute()` in process is the harness that does. **Rule**: a suite is not verified until each ability has been executed, including its negative paths — 46 checks here covered `confirmation_required` on four different gates, `setting_not_writable`, `unknown_message`, `unknown_field_type`, `field_exists`, `field_not_found` and `form_not_found`.
 - **Also shipped**: The capability floor is `final protected` at `manage_options` because CF7 maps its own capabilities onto `publish_pages`/`edit_posts` — the same shape that opened a real authorisation hole in the Rank Math suite. `wpcf7_kses()` runs unconditionally on form markup and mail bodies, including for administrators, whom CF7 exempts via `unfiltered_html`. `additional_settings` is a four-key whitelist rather than a passthrough: it is the one property CF7 does not sanitise at all, and `skip_mail: on` stops a form emailing anything while it keeps reporting success. Toolset counts reconcile exactly (450 total, groups sum to 450, `contact-form-7` = 25).
+
+### 2026-09-13 — Feature 106: Yoast SEO ability suite — 64 abilities, and a permission-filter hole in four already-shipped suites
+
+- **Why durable**: The first suite built for a host that ships abilities of its own AND has them
+  disabled on the environment we develop on. Yoast unregisters its five whenever
+  `wp_get_environment_type()` is not `production`, because indexables record permalinks and building
+  them on a staging copy bakes in the wrong ones. Right for indexables, wrong for settings, terms,
+  sitemaps and tools — so this suite deliberately does not inherit the gate, and an architecture test
+  forbids the symbols so it cannot be copied back in by reflex. That also makes the counts a proof:
+  with the indexables conditional forced on the tab reads 66, with it off 64. Only **two** of Yoast's
+  five ever register — the inclusive-language one is feature-gated, and
+  `register_get_post_seo_data_ability()` / `register_update_post_seo_data_ability()` are defined in
+  `abilities-integration.php` and never called. Dead methods in Yoast 28.4.
+- **Future mistake prevented**: Live execution found six defects that PHPCS, 2619 unit tests and the
+  suite's own architecture tests all passed over, four of them durable enough to capture separately —
+  `BUG-BOOLEAN-PERMISSION-FILTER-WIDENS`, `BUG-WRITE-REPORTED-WITHOUT-READ-BACK`,
+  `BUG-GENERATED-KEY-MAP-FREEZES-A-DYNAMIC-SURFACE` and
+  `BUG-SETTINGS-READER-RETURNS-HOST-CREDENTIALS`. Two only appeared because of *fixtures*: the frozen
+  key map was exposed by registering a CPT with an archive, and the aliased-column bug in Yoast's
+  incoming-link query (it selects `target_post_id` **as** `post_id`) needed posts that actually link
+  to each other — an empty link table returns nothing either way. **Rule**: build fixtures that make
+  the host's dynamic behaviour observable, not just fixtures that let the code run.
+- **The cross-suite finding**: writing this suite's guard surfaced that `Acf_Guard`,
+  `LiteSpeed_Guard`, `Contact_Form_7_Guard` and `Rank_Math_Guard` all returned their permission
+  filter's boolean directly, so any plugin on the site could grant a subscriber an ability. All four
+  cited `PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY` in their docblocks; that pattern describes a
+  capability-*string* filter and does not apply to a boolean one. Fixed in the same branch and
+  verified live with all five suites active — 243 abilities, all still permitted for an
+  administrator, none denied. **A pattern ID cited in a comment is not evidence the pattern is
+  implemented.**
+- **Also shipped**: `Integrations/Yoast_Seo.php` is the first declaration to claim a prefix
+  (`array( 'yoast-seo' )`) so the host's own abilities are adopted, which forces our slugs into
+  `seo/` and `taxonomies/` and makes a collision test necessary. Fourteen settings areas, each with a
+  declared writer resolved by the contract test — the previous concatenated form resolved for five of
+  fourteen and advertised nine abilities that did not exist. Eight new architecture guards, each
+  mutation-verified. Inventory 566 → 630.

@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-12. **Total abilities:** 566 across 29 topic namespaces.
+Snapshot taken 2026-09-13. **Total abilities:** 630 across 30 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -20,6 +20,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 |---|---:|
 | `content` — Content | 71 |
 | `appearance` — Appearance | 64 |
+| `yoast-seo` — Yoast Seo | 64 |
 | `elementor` — Elementor | 62 |
 | `litespeed-cache` — Litespeed Cache | 61 |
 | `rank-math` — Rank Math | 61 |
@@ -62,9 +63,10 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `plugins/` | 10 | `acrossai-plugins` |
 | `rank-math/` | 61 | `acrossai-rank-math` |
 | `recovery/` | 7 | `acrossai-recovery` |
+| `seo/` | 58 | `acrossai-yoast-seo` |
 | `settings/` | 11 | `acrossai-settings` |
 | `site-health/` | 6 | `acrossai-site-health` |
-| `taxonomies/` | 10 | `acrossai-taxonomies` |
+| `taxonomies/` | 16 | `acrossai-taxonomies`, `acrossai-yoast-seo` |
 | `themes/` | 7 | `acrossai-themes` |
 | `toolset/` | 13 | `acrossai-toolset` |
 | `users/` | 16 | `acrossai-users` |
@@ -575,6 +577,64 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `recovery/` | `recovery/list-recent-fatal-errors` | diagnostics | recovery | List Recent Fatal Errors |
 | `recovery/` | `recovery/unpause-plugin` | diagnostics | recovery | Unpause Plugin |
 | `recovery/` | `recovery/unpause-theme` | diagnostics | recovery | Unpause Theme |
+| `seo/` | `seo/cleanup-indexables` | yoast-seo |  |  |
+| `seo/` | `seo/export-settings` | yoast-seo |  |  |
+| `seo/` | `seo/get-author-archive-seo` | yoast-seo |  |  |
+| `seo/` | `seo/get-content-seo-issues` | yoast-seo |  |  |
+| `seo/` | `seo/get-first-time-config` | yoast-seo |  |  |
+| `seo/` | `seo/get-homepage-seo` | yoast-seo |  |  |
+| `seo/` | `seo/get-import-status` | yoast-seo |  |  |
+| `seo/` | `seo/get-indexable` | yoast-seo |  |  |
+| `seo/` | `seo/get-indexation-counts` | yoast-seo |  |  |
+| `seo/` | `seo/get-indexing-status` | yoast-seo |  |  |
+| `seo/` | `seo/get-internal-links` | yoast-seo |  |  |
+| `seo/` | `seo/get-keyphrase-usage` | yoast-seo |  |  |
+| `seo/` | `seo/get-post-type-archive-seo` | yoast-seo |  |  |
+| `seo/` | `seo/get-post-type-seo` | yoast-seo |  |  |
+| `seo/` | `seo/get-robots-settings` | yoast-seo |  |  |
+| `seo/` | `seo/get-seo-score-summary` | yoast-seo |  |  |
+| `seo/` | `seo/get-seo-settings` | yoast-seo |  |  |
+| `seo/` | `seo/get-seo-status` | yoast-seo |  |  |
+| `seo/` | `seo/get-sitemap-settings` | yoast-seo |  |  |
+| `seo/` | `seo/get-sitemap-status` | yoast-seo |  |  |
+| `seo/` | `seo/get-system-page-seo` | yoast-seo |  |  |
+| `seo/` | `seo/get-taxonomy-seo` | yoast-seo |  |  |
+| `seo/` | `seo/import-settings` | yoast-seo |  |  |
+| `seo/` | `seo/invalidate-sitemap` | yoast-seo |  |  |
+| `seo/` | `seo/invalidate-sitemap-for-post` | yoast-seo |  |  |
+| `seo/` | `seo/list-conflicting-plugins` | yoast-seo |  |  |
+| `seo/` | `seo/list-content-type-settings` | yoast-seo |  |  |
+| `seo/` | `seo/list-cornerstone-content` | yoast-seo |  |  |
+| `seo/` | `seo/list-indexables` | yoast-seo |  |  |
+| `seo/` | `seo/list-low-score-content` | yoast-seo |  |  |
+| `seo/` | `seo/list-orphaned-content` | yoast-seo |  |  |
+| `seo/` | `seo/list-settings-areas` | yoast-seo |  |  |
+| `seo/` | `seo/list-sitemap-index` | yoast-seo |  |  |
+| `seo/` | `seo/reset-indexing` | yoast-seo |  |  |
+| `seo/` | `seo/run-indexing` | yoast-seo |  |  |
+| `seo/` | `seo/set-cornerstone` | yoast-seo |  |  |
+| `seo/` | `seo/update-advanced-settings` | yoast-seo |  |  |
+| `seo/` | `seo/update-archive-seo` | yoast-seo |  |  |
+| `seo/` | `seo/update-archive-settings` | yoast-seo |  |  |
+| `seo/` | `seo/update-breadcrumb-settings` | yoast-seo |  |  |
+| `seo/` | `seo/update-crawl-settings` | yoast-seo |  |  |
+| `seo/` | `seo/update-general-settings` | yoast-seo |  |  |
+| `seo/` | `seo/update-homepage-seo` | yoast-seo |  |  |
+| `seo/` | `seo/update-integration-settings` | yoast-seo |  |  |
+| `seo/` | `seo/update-knowledge-graph` | yoast-seo |  |  |
+| `seo/` | `seo/update-llms-settings` | yoast-seo |  |  |
+| `seo/` | `seo/update-post-type-archive-seo` | yoast-seo |  |  |
+| `seo/` | `seo/update-post-type-seo` | yoast-seo |  |  |
+| `seo/` | `seo/update-robots-settings` | yoast-seo |  |  |
+| `seo/` | `seo/update-rss-settings` | yoast-seo |  |  |
+| `seo/` | `seo/update-schema-settings` | yoast-seo |  |  |
+| `seo/` | `seo/update-sitemap-settings` | yoast-seo |  |  |
+| `seo/` | `seo/update-social-defaults` | yoast-seo |  |  |
+| `seo/` | `seo/update-social-profiles` | yoast-seo |  |  |
+| `seo/` | `seo/update-system-page-seo` | yoast-seo |  |  |
+| `seo/` | `seo/update-taxonomy-seo` | yoast-seo |  |  |
+| `seo/` | `seo/update-title-templates` | yoast-seo |  |  |
+| `seo/` | `seo/update-webmaster-verification` | yoast-seo |  |  |
 | `settings/` | `settings/flush-permalink-structure` | configuration | permalinks | Reset / Flush Permalinks |
 | `settings/` | `settings/get-permalink-structure` | configuration | permalinks | Get Permalink Structure |
 | `settings/` | `settings/get-site-icon` | appearance | site-identity | Get Site Icon |
@@ -593,15 +653,21 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `site-health/` | `site-health/set-site-maintenance-mode` | diagnostics | maintenance | Set Site Maintenance Mode |
 | `site-health/` | `site-health/unset-site-maintenance-mode` | diagnostics | maintenance | Unset Site Maintenance Mode |
 | `taxonomies/` | `taxonomies/assign-cpt-terms` | content | terms | Assign Terms |
+| `taxonomies/` | `taxonomies/clear-term-seo` | yoast-seo |  |  |
 | `taxonomies/` | `taxonomies/create-term` | content | terms | Create Term |
 | `taxonomies/` | `taxonomies/delete-term` | content | terms | Delete Term |
+| `taxonomies/` | `taxonomies/get-primary-term` | yoast-seo |  |  |
 | `taxonomies/` | `taxonomies/get-taxonomy` | content | taxonomies | Get Taxonomy |
 | `taxonomies/` | `taxonomies/get-term` | content | terms | Get Term |
+| `taxonomies/` | `taxonomies/get-term-seo` | yoast-seo |  |  |
 | `taxonomies/` | `taxonomies/list-cpt-taxonomies` | content | taxonomies | Get CPT Taxonomies |
 | `taxonomies/` | `taxonomies/list-taxonomies` | content | taxonomies | List Taxonomies |
+| `taxonomies/` | `taxonomies/list-term-seo` | yoast-seo |  |  |
 | `taxonomies/` | `taxonomies/list-terms` | content | terms | List Terms |
+| `taxonomies/` | `taxonomies/set-primary-term` | yoast-seo |  |  |
 | `taxonomies/` | `taxonomies/set-term-image` | content | terms | Set Term Image |
 | `taxonomies/` | `taxonomies/update-term` | content | terms | Update Term |
+| `taxonomies/` | `taxonomies/update-term-seo` | yoast-seo |  |  |
 | `themes/` | `themes/activate-theme` | updates | lifecycle | Activate Theme |
 | `themes/` | `themes/delete-theme` | updates | lifecycle | Delete Theme |
 | `themes/` | `themes/get-theme-lifecycle-context` | updates | lifecycle | Get Theme Lifecycle Context |

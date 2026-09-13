@@ -212,6 +212,9 @@
 			<file>tests/phpunit/abilities/Test_Acf_Architecture.php</file>
 			<file>tests/phpunit/abilities/Test_Acf_Guard.php</file>
 			<file>tests/phpunit/abilities/Test_Acf_Suite_Contract.php</file>
+			<file>tests/phpunit/abilities/Test_Yoast_Architecture.php</file>
+			<file>tests/phpunit/abilities/Test_Yoast_Guard.php</file>
+			<file>tests/phpunit/abilities/Test_Yoast_Suite_Contract.php</file>
 			<file>tests/phpunit/abilities/Test_LiteSpeed_Architecture.php</file>
 			<file>tests/phpunit/abilities/Test_LiteSpeed_Suite_Contract.php</file>
 			<file>tests/phpunit/abilities/Test_Contact_Form_7_Architecture.php</file>

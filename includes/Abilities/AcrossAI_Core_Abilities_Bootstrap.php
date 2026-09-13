@@ -82,6 +82,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 
 		// Feature 105 — ACF category (self-guards on the host probe inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', Acf\Category_Registrar::instance(), 'register' );
+
+		// Feature 106 — Yoast SEO category (self-guards on the host probe inside register()).
+		$loader->add_action( 'wp_abilities_api_categories_init', Yoast\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Settings\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Fonts\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Content\Category_Registrar::instance(), 'register' );
@@ -577,6 +580,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_acf_abilities();
 		}
 
+		// Feature 106 — Yoast SEO suite. Gated only on Yoast being loaded, deliberately NOT on the
+		// environment. Yoast unregisters its OWN abilities whenever is_production_mode() is false,
+		// because indexables store permalinks and building them on staging bakes in the wrong ones.
+		// That reasoning covers indexables and nothing else: settings, terms, sitemaps and tools are
+		// just as valid on staging, and inheriting the gate would make all 62 invisible there.
+		if ( defined( 'WPSEO_VERSION' ) && class_exists( '\\WPSEO_Options' ) ) {
+			$this->register_yoast_abilities();
+		}
+
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
 		// so every group it may cover already exists. Each declines to register
 		// itself when its group has no registered abilities, which is why the two
@@ -1018,6 +1030,93 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Acf\List_Acf_Blocks();
 		new Acf\Register_Acf_Block();
 		new Acf\Update_Acf_Block_Data();
+	}
+
+	/**
+	 * Feature 106 — instantiate the Yoast SEO ability classes.
+	 *
+	 * @return void
+	 */
+	private function register_yoast_abilities(): void {
+		// yoast-settings (16).
+		new Yoast\Export_Settings();
+		new Yoast\Get_Seo_Settings();
+		new Yoast\Import_Settings();
+		new Yoast\List_Settings_Areas();
+		new Yoast\Update_Archive_Settings();
+		new Yoast\Update_Breadcrumb_Settings();
+		new Yoast\Update_Crawl_Settings();
+		new Yoast\Update_General_Settings();
+		new Yoast\Update_Knowledge_Graph();
+		new Yoast\Update_Llms_Settings();
+		new Yoast\Update_Rss_Settings();
+		new Yoast\Update_Advanced_Settings();
+		new Yoast\Update_Integration_Settings();
+		new Yoast\Update_Schema_Settings();
+		new Yoast\Update_Social_Defaults();
+		new Yoast\Update_Social_Profiles();
+		new Yoast\Update_Title_Templates();
+		new Yoast\Update_Webmaster_Verification();
+
+		// yoast-content-types (6).
+		new Yoast\Get_Post_Type_Seo();
+		new Yoast\Get_Taxonomy_Seo();
+		new Yoast\List_Content_Type_Settings();
+		new Yoast\Update_Archive_Seo();
+		new Yoast\Update_Post_Type_Seo();
+		new Yoast\Update_Taxonomy_Seo();
+
+		// yoast-terms (6).
+		new Yoast\Clear_Term_Seo();
+		new Yoast\Get_Primary_Term();
+		new Yoast\Get_Term_Seo();
+		new Yoast\List_Term_Seo();
+		new Yoast\Set_Primary_Term();
+		new Yoast\Update_Term_Seo();
+
+		// yoast-indexables (9).
+		new Yoast\Get_Author_Archive_Seo();
+		new Yoast\Get_Homepage_Seo();
+		new Yoast\Get_Indexable();
+		new Yoast\Get_Post_Type_Archive_Seo();
+		new Yoast\Get_System_Page_Seo();
+		new Yoast\List_Indexables();
+		new Yoast\Update_Homepage_Seo();
+		new Yoast\Update_Post_Type_Archive_Seo();
+		new Yoast\Update_System_Page_Seo();
+
+		// yoast-sitemap (6).
+		new Yoast\Get_Sitemap_Settings();
+		new Yoast\Get_Sitemap_Status();
+		new Yoast\Invalidate_Sitemap();
+		new Yoast\Invalidate_Sitemap_For_Post();
+		new Yoast\List_Sitemap_Index();
+		new Yoast\Update_Sitemap_Settings();
+
+		// yoast-indexing (5).
+		new Yoast\Cleanup_Indexables();
+		new Yoast\Get_Indexation_Counts();
+		new Yoast\Get_Indexing_Status();
+		new Yoast\Reset_Indexing();
+		new Yoast\Run_Indexing();
+
+		// yoast-content (8).
+		new Yoast\Get_Content_Seo_Issues();
+		new Yoast\Get_Internal_Links();
+		new Yoast\Get_Keyphrase_Usage();
+		new Yoast\Get_Seo_Score_Summary();
+		new Yoast\List_Cornerstone_Content();
+		new Yoast\List_Low_Score_Content();
+		new Yoast\List_Orphaned_Content();
+		new Yoast\Set_Cornerstone();
+
+		// yoast-tools (6).
+		new Yoast\Get_First_Time_Config();
+		new Yoast\Get_Import_Status();
+		new Yoast\Get_Robots_Settings();
+		new Yoast\Get_Seo_Status();
+		new Yoast\List_Conflicting_Plugins();
+		new Yoast\Update_Robots_Settings();
 	}
 
 	/**

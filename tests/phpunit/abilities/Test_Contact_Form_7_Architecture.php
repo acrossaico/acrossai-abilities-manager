@@ -12,6 +12,7 @@
 
 namespace AcrossAI_Abilities_Manager\Tests\PHPUnit\Abilities;
 
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\ContactForm7\Contact_Form_7_Guard;
 use WP_UnitTestCase;
 
 class Test_Contact_Form_7_Architecture extends WP_UnitTestCase {
@@ -441,5 +442,48 @@ class Test_Contact_Form_7_Architecture extends WP_UnitTestCase {
 				(array) glob( self::utilities_dir() . '*.php' )
 			)
 		);
+	}
+
+	/**
+	 * The permission filter may tighten, never widen.
+	 *
+	 * PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY. can() returned the filter's value directly, so a
+	 * filter returning true handed a subscriber a form write. That is the exact opposite of this
+	 * suite's stated design: it guards harder than Contact Form 7 guards itself, because an Editor
+	 * who can manage forms in wp-admin deliberately cannot manage them through an ability. An
+	 * unbounded filter handed that decision to any other plugin on the site.
+	 */
+	public function test_the_permission_filter_cannot_widen_access(): void {
+		$callback = Contact_Form_7_Guard::can( 'edit', 'manage_options' );
+		$original = $GLOBALS['acrossai_test_capabilities'] ?? array();
+
+		$GLOBALS['acrossai_test_capabilities'] = array( 'read' );
+
+		$GLOBALS['acrossai_test_filter_callbacks'][ Contact_Form_7_Guard::PERMISSION_FILTER ] = static fn(): bool => true;
+		$allowed = $callback();
+		unset( $GLOBALS['acrossai_test_filter_callbacks'][ Contact_Form_7_Guard::PERMISSION_FILTER ] );
+
+		$GLOBALS['acrossai_test_capabilities'] = $original;
+
+		$this->assertFalse( $allowed, 'A filter returning true must not admit a user below the floor.' );
+	}
+
+	/**
+	 * The filter must still be able to deny a fully capable user.
+	 */
+	public function test_the_permission_filter_can_still_deny(): void {
+		$callback = Contact_Form_7_Guard::can( '', 'manage_options' );
+		$original = $GLOBALS['acrossai_test_capabilities'] ?? array();
+
+		$GLOBALS['acrossai_test_capabilities'] = array( 'manage_options' );
+		$this->assertTrue( $callback(), 'manage_options must pass with no filter.' );
+
+		$GLOBALS['acrossai_test_filter_callbacks'][ Contact_Form_7_Guard::PERMISSION_FILTER ] = static fn(): bool => false;
+		$denied = $callback();
+		unset( $GLOBALS['acrossai_test_filter_callbacks'][ Contact_Form_7_Guard::PERMISSION_FILTER ] );
+
+		$GLOBALS['acrossai_test_capabilities'] = $original;
+
+		$this->assertFalse( $denied, 'The filter must be able to deny a capable user.' );
 	}
 }

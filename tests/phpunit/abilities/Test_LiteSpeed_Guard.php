@@ -158,4 +158,27 @@ class Test_LiteSpeed_Guard extends WP_UnitTestCase {
 			'The LiteSpeed category must not register when LiteSpeed is absent.'
 		);
 	}
+
+	/**
+	 * The filter may tighten, never widen.
+	 *
+	 * PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY. Every guard in the plugin documented this and none
+	 * enforced it: can() returned the filter's value directly, so a filter returning true handed
+	 * a subscriber a a LiteSpeed write. Only the denying direction was ever tested, which is why it
+	 * survived. Both directions are asserted here.
+	 */
+	public function test_the_permission_filter_cannot_widen_access(): void {
+		$callback = LiteSpeed_Guard::can( 'manage_options' );
+		$original = $GLOBALS['acrossai_test_capabilities'] ?? array();
+
+		$GLOBALS['acrossai_test_capabilities'] = array( 'read' );
+
+		$GLOBALS['acrossai_test_filter_callbacks'][ LiteSpeed_Guard::PERMISSION_FILTER ] = static fn(): bool => true;
+		$allowed = $callback();
+		unset( $GLOBALS['acrossai_test_filter_callbacks'][ LiteSpeed_Guard::PERMISSION_FILTER ] );
+
+		$GLOBALS['acrossai_test_capabilities'] = $original;
+
+		$this->assertFalse( $allowed, 'A filter returning true must not admit a user below the floor.' );
+	}
 }

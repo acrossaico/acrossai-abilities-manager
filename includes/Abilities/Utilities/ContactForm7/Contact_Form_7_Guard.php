@@ -106,17 +106,26 @@ final class Contact_Form_7_Guard {
 	 */
 	public static function can( string $cf7_cap, string $floor = 'manage_options' ): callable {
 		return static function () use ( $cf7_cap, $floor ): bool {
-			$allowed = current_user_can( $floor ) && self::has_cap( $cf7_cap );
+			if ( ! current_user_can( $floor ) || ! self::has_cap( $cf7_cap ) ) {
+				return false;
+			}
 
 			/**
 			 * Filters whether the current user may use a Contact Form 7 ability.
 			 *
+			 * Consulted only for a user who already clears both the floor and the granular CF7
+			 * capability, so it can deny but never grant (PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY).
+			 * This suite deliberately guards harder than Contact Form 7 guards itself — an Editor
+			 * who can manage forms in wp-admin cannot manage them through an ability, because an
+			 * ability is reachable by an AI client and wp-admin is not. A filter that could widen
+			 * would hand that decision to any other plugin on the site.
+			 *
 			 * @since 0.0.35
-			 * @param bool   $allowed Whether access is granted.
+			 * @param bool   $allowed Whether access is granted. Always true at this point.
 			 * @param string $cf7_cap CF7 capability suffix.
 			 * @param string $floor   WordPress capability floor.
 			 */
-			return (bool) apply_filters( self::PERMISSION_FILTER, $allowed, $cf7_cap, $floor );
+			return (bool) apply_filters( self::PERMISSION_FILTER, true, $cf7_cap, $floor );
 		};
 	}
 
