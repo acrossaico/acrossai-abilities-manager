@@ -1638,10 +1638,46 @@ if ( current_user_can( $filtered_cap ) || current_user_can( $default_cap ) ) {
 ```
 The OR breaks the raise-only property: a site returning `read` as the filter value would grant access to any logged-in user (because the second clause still holds for admins). Always use the single check.
 
-**Reference**
-Feature 060 `AcrossAI_Ability_Library_Config_Controller::save_config()` implements this for the `acrossai_integration_toggle_capability` filter (FR-016). Manual verification via quickstart Step 6 — a mu-plugin raises the required cap to `manage_network_options` and a `manage_options`-only user gets HTTP 403.
+**The other shape: a filter that returns a BOOLEAN** (added 2026-09-13)
 
-**Tags**: capability, filter, extension-point, authorization, raise-only, current_user_can, feature-060
+Everything above is about a filter returning a *capability string*. That shape is inherently
+raise-only. A filter returning a *boolean* is not — the boolean IS the answer, so returning it
+directly hands the decision to any plugin on the site:
+
+```php
+// WRONG — the floor is computed, then discarded.
+$allowed = current_user_can( $floor );
+return (bool) apply_filters( self::PERMISSION_FILTER, $allowed, $floor );
+```
+
+Consult a boolean filter only after the floor is cleared, so it can deny and never grant:
+
+```php
+if ( ! current_user_can( $floor ) ) {
+    return false;
+}
+
+return (bool) apply_filters( self::PERMISSION_FILTER, true, $floor );
+```
+
+Where widening is the documented purpose of the filter, do not remove it — bound the result below,
+so the filter can substitute one capability model for another but cannot admit a user holding
+neither. `Rank_Math_Guard` does this to keep admitting an editor with `rank_math_titles` and no
+`manage_options`.
+
+Test BOTH directions. A test that only sets the filter to `false` and asserts refusal passes
+identically whether or not the floor is honoured — which is exactly how four shipped guards used this
+pattern's NAME while implementing its opposite. See
+BUG-BOOLEAN-PERMISSION-FILTER-WIDENS in BUGS.md.
+
+**Reference**
+Feature 060 `AcrossAI_Ability_Library_Config_Controller::save_config()` implements the
+capability-string shape for the `acrossai_integration_toggle_capability` filter (FR-016). Manual
+verification via quickstart Step 6 — a mu-plugin raises the required cap to `manage_network_options`
+and a `manage_options`-only user gets HTTP 403. The boolean shape is implemented by the five ability
+guards under `includes/Abilities/Utilities/*/`, corrected in Feature 106.
+
+**Tags**: capability, filter, extension-point, authorization, raise-only, current_user_can, boolean-filter, feature-060, feature-106
 
 ---
 

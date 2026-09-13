@@ -2290,3 +2290,200 @@ and the permission callback. Delete it before committing.
 **Where to look next**
 `wp-content/plugins/woocommerce/vendor/wordpress/abilities-api/includes/rest-api/endpoints/class-wp-rest-abilities-v1-run-controller.php`
 (`get_input_from_request()`, `get_run_args()`).
+
+### 2026-09-13 — A permission filter that returns a boolean can widen access; the pattern that cannot is a different shape (BUG-BOOLEAN-PERMISSION-FILTER-WIDENS)
+
+**Status**
+Active
+
+**Why this is durable**
+Four shipped ability guards had this, each written by copying the last. Every one cited
+PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY by name in its docblock, and none of them implemented it.
+A pattern name in a comment is not evidence the pattern is present, and this is the shape that
+proves it.
+
+**Finding**
+`Acf_Guard`, `LiteSpeed_Guard`, `Contact_Form_7_Guard` and `Rank_Math_Guard` all ended `can()` with
+
+```php
+$allowed = current_user_can( $floor );
+return (bool) apply_filters( self::PERMISSION_FILTER, $allowed, $floor );
+```
+
+Any plugin on the site could hook that filter, return `true`, and hand a subscriber an ACF write, a
+cache purge or a form edit. The floor was computed and then discarded.
+
+The documented raise-only pattern (ARCHITECTURE.md, 2026-07-27) governs a filter that returns a
+**capability string**, evaluated as `current_user_can( $filtered_cap )`. That shape is inherently
+one-way: whatever comes back, the user must actually hold it, and garbage fails closed. A filter
+returning a **boolean** has no such property — the boolean IS the answer. The two shapes share a name
+and nothing else.
+
+It survived four suites because every test asserted only the denying direction: set the filter to
+return false, assert access is refused. That passes identically whether or not the floor is honoured.
+`Test_LiteSpeed_Guard` even carried the comment "the filter may tighten, never widen" directly above
+an assertion that tested only tightening.
+
+**Prevention**
+- A boolean-returning permission filter must be consulted only after the floor is cleared:
+  `if ( ! current_user_can( $floor ) ) { return false; }`, then `apply_filters( $filter, true, ... )`.
+  It can then deny and never grant.
+- Test both directions. A filter test that only sets `false` is not a test of raise-only behaviour.
+  Assert that a filter returning `true` still fails for a user below the floor.
+- Where widening is genuinely the documented feature — `Rank_Math_Guard` admits Rank Math's own
+  looser model, an editor holding `rank_math_titles` but not `manage_options` — bound the result
+  below instead of removing the filter:
+  `return $filtered && ( $floor_ok || ( '' !== $rm_cap && $cap_ok ) );`
+  The `'' !== $rm_cap` term is load-bearing: `has_cap()` returns true when no granular capability
+  applies, so without it the bound is vacuous for exactly the abilities that have nothing but the
+  floor protecting them.
+- Do not treat a cited pattern ID as verified. Read the pattern and check the shape matches.
+
+**Reference**
+Fixed across all four guards on branch `106-yoast-seo-abilities`; each fix mutation-verified,
+including the vacuous-bound variant for Rank Math. Verified live with all five suites active: 243
+abilities, every one still permitted for an administrator, none denied. See
+`PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY` in ARCHITECTURE.md for the capability-string shape and its
+new boolean-filter section.
+
+**Tags**: capability, filter, authorization, raise-only, permission-callback, guard, cited-pattern, feature-106
+
+---
+
+### 2026-09-13 — A write delegated to the host's validating save path can be silently discarded, and the ability reports success (BUG-WRITE-REPORTED-WITHOUT-READ-BACK)
+
+**Status**
+Active
+
+**Why this is durable**
+Every integration suite writes through the host plugin's own save path rather than `update_option()`,
+deliberately, so the host validates and its side effects fire. The corollary is that the host may
+sanitise, coerce or discard the value — and its setter usually returns nothing. Assuming the write
+landed because the call did not error is wrong in a way that is invisible until someone reads the
+value back.
+
+**Finding**
+`Settings_Repository::write()` for the Yoast suite did:
+
+```php
+self::save( $key, $cast, $group );
+$changed[] = $key;
+```
+
+Yoast validates per option group and keeps the previous value when the new one fails. Its enum keys
+— `schema-article-type-*`, `llms_txt_selection_mode` — do exactly this. The ability answered
+`Updated: schema-article-type-attachment` while the stored value never moved. That is worse than an
+error: the caller is told it succeeded, so it stops checking, and the setting quietly stays wrong.
+
+Neither the unit suite nor PHPCS could see it. It surfaced on a round-trip — write, then read back and
+compare — which is the only thing that distinguishes "saved" from "accepted the call".
+
+**Prevention**
+- After calling the host's setter, re-read the key and compare against what was requested. Report
+  only keys whose stored value now matches.
+- Surface the rejection with the values in it: what was requested, what the host kept, and which keys
+  in the same call did apply. A partial write must not be reported as a whole one.
+- Round-trip every writable area in live verification: read, write, read back, restore. A write test
+  that only asserts "no error" tests nothing about persistence.
+- Pin it structurally so the read-back cannot be refactored away —
+  `Test_Yoast_Architecture::test_write_path_reads_back_before_reporting_success()`.
+
+**Reference**
+`includes/Abilities/Utilities/Yoast/Settings_Repository.php` (`write()`, the `setting_rejected`
+error). Applies to LiteSpeed (writes via LiteSpeed's save path) and ACF (writes via `update_field()`),
+both of which have hosts that can sanitise; neither has been audited for this.
+
+**Tags**: settings, write-verification, read-back, host-validation, false-success, feature-106
+
+---
+
+### 2026-09-13 — A generated key map freezes one install's content and calls it the host's scheme (BUG-GENERATED-KEY-MAP-FREEZES-A-DYNAMIC-SURFACE)
+
+**Status**
+Active
+
+**Why this is durable**
+Deriving a settings map by dumping a host's option defaults on a dev install and committing the
+result is the obvious way to cover a 200-key surface, and it is how these suites were built. It is
+correct only if the host's key set is static. When keys are minted per registered post type,
+taxonomy, role or block, the commit captures that install's *content* and presents it as the host's
+*scheme* — and the gap is invisible on the machine it was generated on, by construction.
+
+**Finding**
+Yoast's `WPSEO_Option_Titles::enrich_defaults()` mints fourteen key families per accessible post type
+and public taxonomy: `title-{pt}`, `noindex-tax-{tax}`, `schema-page-type-{pt}`,
+`title-ptarchive-{pt}` and so on. The committed map held only `post`, `page`, `attachment`,
+`category`, `post_tag` — every custom post type and taxonomy was refused by name with
+`setting_not_writable`.
+
+Worse: no post type on the generating install had `has_archive`, so Yoast emitted no archive keys at
+all, so **the map contained not one `*-ptarchive-*` key**. `seo/update-post-type-archive-seo` could
+not write anything on any site, and its reader returned an indexable with no settings behind it. The
+ability existed, registered, passed every test, and was inert.
+
+Found only because a `guide` CPT with an archive was registered as a test fixture. Nothing else in
+the run would have revealed it.
+
+**Prevention**
+- Ask whether the host's key set depends on runtime registrations before snapshotting it. Post types,
+  taxonomies, roles, block types and user-defined field groups all mint keys.
+- Use the generated dump to *review* the scheme, then derive the dynamic families at runtime from the
+  host's live option — here `WPSEO_Options::get_option( 'wpseo_titles' )`, read per request and
+  matched longest-prefix-first so `title-ptarchive-x` is not read as a post type named
+  `ptarchive-x`. Keep the literal map only for genuinely static keys, and let it win on overlap.
+- Memoise per request, and expose a flush for anything registering types late.
+- Test it by registering a post type inside the test and asserting its keys appear —
+  `Test_Yoast_Architecture::test_dynamic_option_keys_are_derived_from_the_live_install()`.
+
+**Reference**
+`includes/Abilities/Utilities/Yoast/Settings_Repository.php` (`dynamic_keys()`, `declared_areas()`,
+`flush()`). The LiteSpeed suite's 150-key / 23-area map was generated the same way and has not been
+checked for per-post-type keys.
+
+**Tags**: settings, key-map, code-generation, dynamic-registration, custom-post-type, snapshot, feature-106
+
+---
+
+### 2026-09-13 — "Return every key in this area" returns the stored credentials too; the host usually already lists what to hide (BUG-SETTINGS-READER-RETURNS-HOST-CREDENTIALS)
+
+**Status**
+Active
+
+**Why this is durable**
+Host plugins keep third-party OAuth tokens in the same option array as ordinary settings. A settings
+reader built to enumerate an area will return them, and an ability's output goes to an MCP client —
+which means off the site. The reader looks completely reasonable in review; the leak is in the data,
+not the code.
+
+**Finding**
+Yoast's `wpseo` option holds `semrush_tokens` and `wincher_tokens`, each an `OAuth_Token` with
+`access_token` and `refresh_token`. `Settings_Repository::describe_area()` returned `value` for every
+key it knew, so `seo/get-seo-settings` handed both to any caller clearing the capability floor.
+
+Yoast already treats them as secret in two places: `Settings_Integration::DISALLOWED_SETTINGS`, the
+keys its own settings screen refuses to render or save, and its telemetry exclusion list. Our map had
+been derived from `get_defaults()`, which has no such notion, so it picked them up along with three
+other keys Yoast's UI hides.
+
+Empty on the test install, as such keys usually are — the values only exist once someone connects the
+service, so no amount of local testing would have shown a token in the output.
+
+**Prevention**
+- Before shipping a settings reader, look for the host's own denylist. Most plugins have one, for
+  their settings screen or their telemetry, and it is authoritative in a way a hand-curated list is
+  not.
+- Subtract it at runtime from the live class constant rather than copying it, so an upstream addition
+  is honoured automatically. Keep a frozen fallback for when the class is absent, and assert in a
+  test that the fallback still covers everything the live constant names — otherwise the next key the
+  host marks secret quietly becomes readable.
+- Treat "this key is empty on my machine" as no evidence at all about what it holds in production.
+- Pin it: `Test_Yoast_Architecture::test_disallowed_keys_are_absent_from_every_area()`.
+
+**Reference**
+`includes/Abilities/Utilities/Yoast/Settings_Repository.php` (`disallowed()`, and the subtraction in
+`areas()`). Related: BUG-GENERATED-KEY-MAP-FREEZES-A-DYNAMIC-SURFACE — the same generated map was
+wrong about what to include and what to exclude.
+
+**Tags**: security, credentials, oauth, settings-reader, data-exposure, mcp, host-denylist, feature-106
+
+---
