@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-13. **Total abilities:** 630 across 30 topic namespaces.
+Snapshot taken 2026-09-13. **Total abilities:** 634 across 31 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -36,6 +36,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `users` — Users | 16 |
 | `` —  | 13 |
 | `cache` — Cache | 7 |
+| `classic-editor` — Classic Editor | 4 |
 
 ## Namespaces
 
@@ -53,6 +54,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `cron/` | 16 | `acrossai-cron` |
 | `custom-fields/` | 11 | `acrossai-acf` |
 | `database/` | 18 | `acrossai-database` |
+| `editor/` | 4 | `acrossai-classic-editor` |
 | `elementor/` | 62 | `acrossai-elementor` |
 | `file-manager/` | 23 | `acrossai-file-manager` |
 | `fonts/` | 8 | `acrossai-fonts` |
@@ -315,6 +317,10 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `database/` | `database/search-replace` | database | queries | Search Replace |
 | `database/` | `database/set-option-autoload` | database | safe-writes | Set Option Autoload |
 | `database/` | `database/update-db-rows` | database | queries | Update Rows |
+| `editor/` | `editor/get-editor-settings` | classic-editor |  |  |
+| `editor/` | `editor/get-post-editor` | classic-editor |  |  |
+| `editor/` | `editor/get-post-type-editor-support` | classic-editor |  |  |
+| `editor/` | `editor/update-editor-settings` | classic-editor |  |  |
 | `elementor/` | `elementor/add-button` | elementor | elementor-elements | Add Elementor Button |
 | `elementor/` | `elementor/add-container` | elementor | elementor-elements | Add Elementor Container |
 | `elementor/` | `elementor/add-heading` | elementor | elementor-elements | Add Elementor Heading |

@@ -76,6 +76,8 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 
 		// Feature 103 — Contact Form 7 category (self-guards on class_exists inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', ContactForm7\Category_Registrar::instance(), 'register' );
+		// Feature 107 — Classic Editor category (self-guards on the plugin inside register()).
+		$loader->add_action( 'wp_abilities_api_categories_init', ClassicEditor\Category_Registrar::instance(), 'register' );
 
 		// Feature 104 — LiteSpeed Cache category (self-guards on the host probe inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', LiteSpeed\Category_Registrar::instance(), 'register' );
@@ -587,6 +589,12 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// just as valid on staging, and inheriting the gate would make all 62 invisible there.
 		if ( defined( 'WPSEO_VERSION' ) && class_exists( '\\WPSEO_Options' ) ) {
 			$this->register_yoast_abilities();
+		}
+
+		// Feature 107 — Classic Editor ability suite (4 abilities under editor/*). Gated on the
+		// plugin, so the group and its MCP tool exist only where they mean something.
+		if ( defined( 'CLASSIC_EDITOR_VERSION' ) && class_exists( 'Classic_Editor' ) ) {
+			$this->register_classic_editor_abilities();
 		}
 
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
@@ -1149,4 +1157,17 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		}
 	}
 
+
+	/**
+	 * Feature 107 — instantiate the Classic Editor ability classes.
+	 *
+	 * @since  0.0.39
+	 * @return void
+	 */
+	private function register_classic_editor_abilities(): void {
+		new ClassicEditor\Get_Editor_Settings();
+		new ClassicEditor\Update_Editor_Settings();
+		new ClassicEditor\Get_Post_Editor();
+		new ClassicEditor\Get_Post_Type_Editor_Support();
+	}
 }
