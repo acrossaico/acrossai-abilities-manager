@@ -28,7 +28,7 @@ import {
 	Fragment,
 } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { applyFilters, doAction } from '@wordpress/hooks';
 import { STORE_NAME } from '../store/index';
@@ -1543,6 +1543,24 @@ export default function AbilityForm({ mode, slug, initialAbility }) {
 										'Save this ability first to configure user access.',
 										'acrossai-abilities-manager'
 									)}
+								</p>
+							)}
+
+							{!isCreate && (
+								<p className="description">
+									{abilitiesConfig.default_ability_capability
+										? sprintf(
+												/* translators: %s is a WordPress capability such as manage_options. */
+												__(
+													'With no rule set, this ability requires the %s capability — it is not unrestricted. A rule below replaces that requirement rather than adding to it.',
+													'acrossai-abilities-manager'
+												),
+												abilitiesConfig.default_ability_capability
+										  )
+										: __(
+												'With no rule set, this ability requires the site default capability — it is not unrestricted.',
+												'acrossai-abilities-manager'
+										  )}
 								</p>
 							)}
 

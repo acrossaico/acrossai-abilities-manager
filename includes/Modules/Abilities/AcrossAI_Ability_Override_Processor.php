@@ -91,6 +91,30 @@ final class AcrossAI_Ability_Override_Processor {
 	}
 
 	/**
+	 * Capability required by an ability with no rule of its own.
+	 *
+	 * @since 0.0.46
+	 * @var   string
+	 */
+	public const DEFAULT_CAPABILITY = 'manage_options';
+
+	/**
+	 * Option that can move the default floor site-wide.
+	 *
+	 * @since 0.0.46
+	 * @var   string
+	 */
+	public const DEFAULT_CAPABILITY_OPTION = 'acrossai_default_ability_capability';
+
+	/**
+	 * Slug prefixes whose permission callback must never be replaced.
+	 *
+	 * @since 0.0.46
+	 * @var   string[]
+	 */
+	private const ROUTER_PREFIXES = array( 'toolset/', 'mcp-adapter/' );
+
+	/**
 	 * Private constructor — instantiation via instance() only.
 	 *
 	 * @since 0.1.0
@@ -340,10 +364,18 @@ final class AcrossAI_Ability_Override_Processor {
 			}
 		}
 
-		// permission_callback: inject runtime AC enforcement when a rule exists for this slug (FR-009).
-		$callback = self::build_permission_callback( $slug );
-		if ( null !== $callback ) {
-			$args['permission_callback'] = $callback;
+		/*
+		 * permission_callback: this plugin owns the lock on every ability, whoever registered it.
+		 *
+		 * Measured across the third-party abilities on one install: three registered with
+		 * `__return_true` and no check at all, two at `read`, and a content WRITER at `edit_posts`.
+		 * The author's callback is replaced rather than composed with, so the answer comes from one
+		 * place an operator can see and change.
+		 *
+		 * Routers are the exception, for the reason on ROUTER_PREFIXES.
+		 */
+		if ( ! self::is_router( $slug ) ) {
+			$args['permission_callback'] = self::build_permission_callback( $slug );
 		}
 
 		return $args;
@@ -363,20 +395,75 @@ final class AcrossAI_Ability_Override_Processor {
 	 * @param  string $slug Ability slug.
 	 * @return callable|null Closure returning bool, or null if no rule is configured.
 	 */
-	private static function build_permission_callback( string $slug ): ?callable {
-		$manager = AcrossAI_Abilities_Access_Control::instance()->get_manager();
-		if ( null === $manager ) {
-			return null;
-		}
-
-		$rule = $manager->get_query()->get_rule( 'acrossai-abilities', $slug );
-		if ( '' === $rule['key'] ) {
-			return null; // No rule configured — no callback needed.
-		}
-
+	private static function build_permission_callback( string $slug ): callable {
 		return static function () use ( $slug ): bool {
 			return AcrossAI_Ability_Override_Processor::user_has_ability_access( $slug, \get_current_user_id() );
 		};
+	}
+
+	/**
+	 * Whether the current user clears the default floor.
+	 *
+	 * Its own method so the decision is testable without the access-control manager. The manager
+	 * sits on BerlinDB and therefore on a database, which the unit harness does not have — so a test
+	 * calling through `user_has_ability_access()` cannot reach either fallback branch without a full
+	 * WordPress. The wiring is asserted at source level instead, and the whole path is exercised
+	 * live.
+	 *
+	 * @since  0.0.46
+	 * @return bool
+	 */
+	public static function floor_allows(): bool {
+		return \current_user_can( self::default_capability() );
+	}
+
+	/**
+	 * The capability an ability requires when no rule names something else.
+	 *
+	 * `manage_options`, matching every first-party suite. Filterable and option-backed so a site that
+	 * genuinely needs a lower floor can move it once rather than writing a rule per ability.
+	 *
+	 * @since  0.0.46
+	 * @return string
+	 */
+	public static function default_capability(): string {
+		$stored = (string) get_option( self::DEFAULT_CAPABILITY_OPTION, '' );
+		$floor  = '' !== $stored ? $stored : self::DEFAULT_CAPABILITY;
+
+		/**
+		 * Filters the capability required by an ability with no access rule of its own.
+		 *
+		 * @since 0.0.46
+		 * @param string $floor Default capability.
+		 */
+		$filtered = (string) apply_filters( 'acrossai_default_ability_capability', $floor );
+
+		return '' !== $filtered ? $filtered : self::DEFAULT_CAPABILITY;
+	}
+
+	/**
+	 * Whether this slug is a router rather than a door.
+	 *
+	 * Routers do structural work in their permission callback — the
+	 * `acrossai_toolset_ability_not_exposed` 403 for an ability hidden from this server, and a
+	 * pre-check of the target — none of which a capability test can express. Replacing it would make
+	 * hidden abilities reachable again, collapsing the per-server EXPOSURE layer into the permission
+	 * layer. They answer two different questions and must stay two.
+	 *
+	 * Nothing is lost by exempting them: every ability they route to is gated here.
+	 *
+	 * @since  0.0.46
+	 * @param  string $slug Ability slug.
+	 * @return bool
+	 */
+	private static function is_router( string $slug ): bool {
+		foreach ( self::ROUTER_PREFIXES as $prefix ) {
+			if ( 0 === strpos( $slug, $prefix ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -414,15 +501,25 @@ final class AcrossAI_Ability_Override_Processor {
 	 * @param  int    $user_id WordPress user ID.
 	 * @return bool True when access is granted or no rule applies.
 	 */
-	private static function user_has_ability_access( string $slug, int $user_id ): bool {
+	public static function user_has_ability_access( string $slug, int $user_id ): bool {
 		$manager = AcrossAI_Abilities_Access_Control::instance()->get_manager();
+
+		/*
+		 * Fail CLOSED, in both branches. This returned true in each case, which was defensible while
+		 * the ability's own callback was still the real gate — it no longer is. Once this is the only
+		 * lock on the door, "we could not work out the answer" has to mean denied, or an absent
+		 * library silently opens every ability on the site.
+		 */
 		if ( null === $manager ) {
-			return true; // Fail-open: no AC library.
+			return self::floor_allows();
 		}
+
 		$rule = $manager->get_query()->get_rule( 'acrossai-abilities', $slug );
+
 		if ( '' === $rule['key'] ) {
-			return true; // No rule configured — allow.
+			return self::floor_allows();
 		}
+
 		return $manager->user_has_access( $user_id, 'acrossai-abilities', $slug );
 	}
 
