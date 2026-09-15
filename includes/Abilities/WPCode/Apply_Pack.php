@@ -44,7 +44,7 @@ final class Apply_Pack extends Base_WPCode_Ability {
 	 * @return string
 	 */
 	protected function ability_description(): string {
-		return __( 'Install every snippet in a WPCode pack onto this site. All of them are installed INACTIVE whatever the pack says, so a human decides which third-party code runs here. Requires confirm: true because a pack installs several snippets at once. Snippets already present are skipped rather than duplicated.', 'acrossai-abilities-manager' );
+		return __( 'Install every snippet in a WPCode pack onto this site. All of them are installed INACTIVE whatever the pack says, so a human decides which third-party code runs here. Requires confirm: true because a pack installs several snippets at once, and requires the site to be signed in to the WPCode library. Snippets already present are skipped rather than duplicated.', 'acrossai-abilities-manager' );
 	}
 
 	/**

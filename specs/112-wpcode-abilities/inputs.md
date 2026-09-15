@@ -89,6 +89,13 @@ Signing in stores `wpcode_library_api_auth` — an auth key, a webhook secret an
 ability reaches any of them**, which is the Feature 106 lesson about Yoast's stored OAuth tokens
 applied before it could bite.
 
+**What the connection actually gates, measured by disconnecting the account and re-running
+everything.** Searching and listing keep working — they read a cached public catalogue — but
+`install-library-snippet` and `apply-pack` fail, because fetching a snippet BODY goes through the API
+and an unauthenticated request is refused. Before this was measured those two returned "it may not
+exist, or the library request failed", which sends a caller hunting for a wrong library id instead of
+connecting. Every install path now checks the connection before reporting a generic failure.
+
 **Connecting is a human step, and the abilities say so precisely.** It authorises an external WPCode
 account, so nothing here can perform it. `not_connected_error()` returns the exact admin URL
 (`admin.php?page=wpcode-library`), names the Connect button, and explicitly asks the caller to report

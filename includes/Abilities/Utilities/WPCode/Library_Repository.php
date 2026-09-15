@@ -285,6 +285,18 @@ final class Library_Repository {
 		$snippet = self::library()->create_new_snippet( $library_id );
 
 		if ( ! $snippet instanceof WPCode_Snippet ) {
+			/*
+			 * Measured: fetching a snippet body needs the connection even though searching does not.
+			 * Search reads a cached public catalogue; the install fetches through the API, which
+			 * refuses an unauthenticated request. Reporting "it may not exist" to a disconnected
+			 * site sends the caller hunting for a wrong library id instead of connecting.
+			 */
+			$connection = self::connection();
+
+			if ( empty( $connection['connected'] ) ) {
+				return self::not_connected_error( __( 'installing a snippet from the library', 'acrossai-abilities-manager' ) );
+			}
+
 			return new WP_Error(
 				'install_failed',
 				sprintf(
@@ -336,9 +348,15 @@ final class Library_Repository {
 		$created = array_map( 'intval', (array) ( $result['created_ids'] ?? array() ) );
 
 		if ( empty( $created ) && empty( $result['success'] ) ) {
+			$connection = self::connection();
+
+			if ( empty( $connection['connected'] ) ) {
+				return self::not_connected_error( __( 'installing a snippet pack', 'acrossai-abilities-manager' ) );
+			}
+
 			return new WP_Error(
 				'pack_install_failed',
-				__( 'WPCode installed nothing from this pack. The library may not be connected, or every snippet in it is already installed.', 'acrossai-abilities-manager' )
+				__( 'WPCode installed nothing from this pack, even though this site is signed in. Every snippet in it may already be installed, or the library request failed.', 'acrossai-abilities-manager' )
 			);
 		}
 

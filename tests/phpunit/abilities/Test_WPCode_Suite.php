@@ -808,6 +808,38 @@ class Test_WPCode_Suite extends WP_UnitTestCase {
 		}
 	}
 
+	/**
+	 * Every library failure that could be the missing connection says so.
+	 *
+	 * Measured with the account disconnected: searching and listing still work, because they read a
+	 * cached public catalogue, but fetching a snippet body goes through the API and is refused. The
+	 * generic "it may not exist" that produced sends the caller hunting for a wrong library id
+	 * instead of connecting, so every install path checks the connection before guessing.
+	 */
+	public function test_install_failures_name_the_connection(): void {
+		$lib = self::code_only( self::read( self::util() . 'Library_Repository.php' ) );
+
+		// install(), apply_pack(), install_shared() and the empty-library read.
+		$this->assertGreaterThanOrEqual(
+			4,
+			substr_count( $lib, 'self::not_connected_error(' ),
+			'Each library failure that may be caused by the missing connection must report it.'
+		);
+
+		foreach ( array( 'function install(', 'function apply_pack(' ) as $method ) {
+			$start = strpos( $lib, $method );
+			$this->assertNotFalse( $start, $method . ' is missing.' );
+
+			$body = substr( $lib, $start, 1600 );
+
+			$this->assertStringContainsString(
+				'not_connected_error(',
+				$body,
+				$method . ' must check the connection before reporting a generic failure.'
+			);
+		}
+	}
+
 	public function test_repositories_are_final_and_static_only(): void {
 		foreach ( array( 'Snippet_Repository', 'Library_Repository', 'WPCode_Guard' ) as $class ) {
 			$src = self::read( self::util() . $class . '.php' );

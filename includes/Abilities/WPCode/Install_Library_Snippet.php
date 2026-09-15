@@ -44,7 +44,7 @@ final class Install_Library_Snippet extends Base_WPCode_Ability {
 	 * @return string
 	 */
 	protected function ability_description(): string {
-		return __( 'Install a snippet from WPCode hosted library onto this site. It is always installed INACTIVE, whatever the library says, so that a human decides whether third-party code runs here. Requires confirm: true. Read it first with get-library-snippet, then activate it with activate-snippet once you are satisfied.', 'acrossai-abilities-manager' );
+		return __( 'Install a snippet from WPCode hosted library onto this site. It is always installed INACTIVE, whatever the library says, so that a human decides whether third-party code runs here. Requires confirm: true, and requires the site to be signed in to the WPCode library: searching works without that, but fetching a snippet body does not. Read it first with get-library-snippet, then activate it with activate-snippet once you are satisfied.', 'acrossai-abilities-manager' );
 	}
 
 	/**
