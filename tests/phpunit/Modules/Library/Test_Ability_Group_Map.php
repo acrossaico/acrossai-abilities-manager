@@ -104,7 +104,7 @@ class Test_Ability_Group_Map extends TestCase {
 		'blocks'        => 52,
 		'files'         => 23,
 		'updates'       => 23,
-		'diagnostics'   => 20,
+		'diagnostics'   => 21,
 		'configuration' => 19,
 		'database'      => 17,
 		'cron'          => 16,

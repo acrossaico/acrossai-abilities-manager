@@ -222,6 +222,8 @@
 			<file>tests/phpunit/abilities/Test_Classic_Editor_Suite_Contract.php</file>
 			<file>tests/phpunit/abilities/Test_Widget_Management.php</file>
 			<file>tests/phpunit/abilities/Test_WPCode_Suite.php</file>
+			<file>tests/phpunit/abilities/Test_Integration_Row_Accuracy.php</file>
+			<file>tests/phpunit/abilities/Test_Ability_Collision_Recorder.php</file>
 			<file>tests/phpunit/abilities/Test_LiteSpeed_Architecture.php</file>
 			<file>tests/phpunit/abilities/Test_LiteSpeed_Suite_Contract.php</file>
 			<file>tests/phpunit/abilities/Test_Contact_Form_7_Architecture.php</file>
