@@ -1,4 +1,4 @@
-# Feature 112 — WPCode toolset: 21 abilities, and a home for the 5 WPCode already ships
+# Feature 112 — WPCode toolset: 25 abilities, and a home for the 5 WPCode already ships
 
 Prepared for `/speckit-specify`. Every claim below was read from WPCode Lite 2.3.9 source on this
 install, with file and line cited.
@@ -79,8 +79,23 @@ the tab and the MCP tool without being re-registered.
 - **Placement (3)** — `set-location`, `set-conditional-logic`, `list-locations`.
 - **Global scripts (2)** — `get-global-scripts`, `update-global-scripts`.
 - **Diagnostics (3)** — `get-snippet-status`, `list-snippet-errors`, `clear-snippet-errors`.
-- **Library and packs (5)** — `search-library`, `get-library-snippet`, `install-library-snippet`,
-  `list-packs`, `apply-pack`.
+- **Library and packs (9)** — `search-library`, `get-library-snippet`, `install-library-snippet`,
+  `list-packs`, `apply-pack`, plus four that only mean anything once the site is signed in to the
+  WPCode library: `get-library-connection`, `list-snippet-updates`, `update-snippet-from-library`,
+  `install-shared-snippet`.
+
+## The connected library
+
+Signing in stores `wpcode_library_api_auth` — an auth key, a webhook secret and a client id. **No
+ability returns any of them**; only the connection state and the public username leave, which is the
+Feature 106 lesson about Yoast's stored OAuth tokens applied before it could bite.
+
+Connecting unlocks a real gap: an installed library snippet is copied in once and then never changes,
+so a fix published upstream never arrives. `list-snippet-updates` surfaces the stale ones —
+measured on this install, it immediately found a pre-existing sample snippet with no recorded
+version. `update-snippet-from-library` pulls the new copy, and **restores the local active state
+afterwards**, because WPCode's own updater saves the library payload wholesale and would otherwise
+switch a deliberately disabled snippet back on as a side effect of an update.
 
 ## Constraints — traps, not preferences
 

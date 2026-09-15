@@ -403,6 +403,217 @@ final class Library_Repository {
 	}
 
 	/**
+	 * Whether the site is signed in to the WPCode library, and as whom.
+	 *
+	 * Deliberately never returns the key. `wpcode_library_api_auth` holds an auth key, a webhook
+	 * secret and a client id; handing those to a caller means handing them off-site, which is the
+	 * hazard Feature 106 found in Yoast's stored OAuth tokens. Only the connection state and the
+	 * public username leave this method.
+	 *
+	 * @since  0.0.43
+	 * @return array<string, mixed>
+	 */
+	public static function connection(): array {
+		$auth = self::load_component( 'library_auth', 'WPCode_Library_Auth', 'includes/class-wpcode-library-auth.php' );
+
+		if ( null === $auth ) {
+			return array(
+				'connected' => false,
+				'username'  => '',
+				'reason'    => __( 'WPCode\'s library authentication component could not be loaded.', 'acrossai-abilities-manager' ),
+			);
+		}
+
+		$connected = (bool) $auth->has_auth();
+
+		return array(
+			'connected' => $connected,
+			'username'  => $connected ? (string) $auth->get_auth_username() : '',
+			'reason'    => $connected
+				? ''
+				: __( 'Not connected. Connect the library from WPCode > Library in wp-admin; nothing here can complete that sign-in.', 'acrossai-abilities-manager' ),
+		);
+	}
+
+	/**
+	 * Installed library snippets that have a newer version upstream.
+	 *
+	 * @since  0.0.43
+	 * @return array<int, array<string, mixed>>|WP_Error
+	 */
+	public static function updates() {
+		$library = self::library();
+
+		if ( null === $library ) {
+			return new WP_Error(
+				'library_unavailable',
+				__( 'WPCode\'s snippet library could not be loaded on this site.', 'acrossai-abilities-manager' )
+			);
+		}
+
+		$used = (array) $library->get_used_library_snippets();
+		$rows = array();
+
+		foreach ( $used as $library_id => $snippet_id ) {
+			if ( ! $library->check_snippet_update( (int) $snippet_id, (int) $library_id ) ) {
+				continue;
+			}
+
+			$snippet = Snippet_Repository::find( (int) $snippet_id );
+
+			if ( is_wp_error( $snippet ) ) {
+				continue;
+			}
+
+			$rows[] = array(
+				'id'              => (int) $snippet_id,
+				'library_id'      => (int) $library_id,
+				'title'           => (string) $snippet->get_title(),
+				'code_type'       => (string) $snippet->get_code_type(),
+				'active'          => (bool) $snippet->is_active(),
+				'current_version' => (string) get_post_meta( (int) $snippet_id, '_wpcode_snippet_version', true ),
+			);
+		}
+
+		return $rows;
+	}
+
+	/**
+	 * Pull the newer library version of an installed snippet.
+	 *
+	 * Two guards, both because WPCode's own updater is written for its admin screen:
+	 *
+	 * 1. It saves the library payload wholesale, so `active` comes from the LIBRARY, not from this
+	 *    site. A snippet deliberately switched off here could be switched back on as a side effect
+	 *    of an update. The local state is captured first and restored after.
+	 * 2. It replaces the code outright, so any local edit is lost. That is the documented behaviour
+	 *    of an update and is fine — but it must be said out loud, which is why the ability is
+	 *    confirm-gated.
+	 *
+	 * @since  0.0.43
+	 * @param  int $snippet_id Local snippet id.
+	 * @return array<string, mixed>|WP_Error
+	 */
+	public static function pull_update( int $snippet_id ) {
+		$library = self::library();
+
+		if ( null === $library ) {
+			return new WP_Error(
+				'library_unavailable',
+				__( 'WPCode\'s snippet library could not be loaded on this site.', 'acrossai-abilities-manager' )
+			);
+		}
+
+		$snippet = Snippet_Repository::find( $snippet_id );
+
+		if ( is_wp_error( $snippet ) ) {
+			return $snippet;
+		}
+
+		$library_id = (int) $library->get_snippet_library_id( $snippet_id );
+
+		if ( $library_id <= 0 ) {
+			return new WP_Error(
+				'not_a_library_snippet',
+				sprintf(
+					/* translators: %d: snippet id. */
+					__( 'Snippet %d did not come from the WPCode library, so there is nothing to update it from.', 'acrossai-abilities-manager' ),
+					$snippet_id
+				)
+			);
+		}
+
+		$was_active = (bool) $snippet->is_active();
+
+		if ( ! $library->update_snippet_from_library( $snippet_id, $library_id ) ) {
+			return new WP_Error(
+				'update_failed',
+				sprintf(
+					/* translators: %d: snippet id. */
+					__( 'WPCode could not fetch a newer version for snippet %d. The library request may have failed.', 'acrossai-abilities-manager' ),
+					$snippet_id
+				)
+			);
+		}
+
+		$updated = Snippet_Repository::find( $snippet_id );
+
+		if ( is_wp_error( $updated ) ) {
+			return $updated;
+		}
+
+		// Restore the local active state if the library payload changed it.
+		if ( (bool) $updated->is_active() !== $was_active ) {
+			$updated->active = $was_active;
+
+			$restored = Snippet_Repository::persist( $updated, $was_active );
+
+			if ( is_wp_error( $restored ) ) {
+				return $restored;
+			}
+
+			return $restored;
+		}
+
+		Snippet_Repository::rebuild_cache();
+
+		return Snippet_Repository::shape( $updated );
+	}
+
+	/**
+	 * Install a snippet shared by link.
+	 *
+	 * @since  0.0.43
+	 * @param  string $hash Share hash from the library URL.
+	 * @return array<string, mixed>|WP_Error
+	 */
+	public static function install_shared( string $hash ) {
+		$library = self::library();
+
+		if ( null === $library ) {
+			return new WP_Error(
+				'library_unavailable',
+				__( 'WPCode\'s snippet library could not be loaded on this site.', 'acrossai-abilities-manager' )
+			);
+		}
+
+		$auth      = self::load_component( 'library_auth', 'WPCode_Library_Auth', 'includes/class-wpcode-library-auth.php' );
+		$auth_hash = ( null !== $auth && $auth->has_auth() ) ? (string) $auth->get_auth_key() : '';
+
+		if ( '' === $auth_hash ) {
+			return new WP_Error(
+				'library_not_connected',
+				__( 'A shared snippet can only be fetched by a site signed in to the WPCode library. Connect it from WPCode > Library in wp-admin first.', 'acrossai-abilities-manager' )
+			);
+		}
+
+		$data = $library->get_public_snippet( $hash, $auth_hash );
+
+		if ( empty( $data ) || ! is_array( $data ) || ( isset( $data['status'] ) && 'error' === $data['status'] ) ) {
+			return new WP_Error(
+				'unknown_shared_snippet',
+				sprintf(
+					/* translators: %s: share hash. */
+					__( 'The WPCode library returned no snippet for share code "%s". It may have expired or never existed.', 'acrossai-abilities-manager' ),
+					$hash
+				)
+			);
+		}
+
+		$payload = isset( $data['snippet'] ) && is_array( $data['snippet'] ) ? $data['snippet'] : $data;
+		$created = $library->create_snippet_from_data( $payload );
+
+		if ( ! $created instanceof WPCode_Snippet ) {
+			return new WP_Error(
+				'install_failed',
+				__( 'WPCode returned the shared snippet but could not save it.', 'acrossai-abilities-manager' )
+			);
+		}
+
+		return self::force_inactive( $created );
+	}
+
+	/**
 	 * Guarantee a freshly installed snippet is not running.
 	 *
 	 * @since  0.0.43

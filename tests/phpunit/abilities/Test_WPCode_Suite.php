@@ -43,6 +43,10 @@ class Test_WPCode_Suite extends WP_UnitTestCase {
 			'Install_Library_Snippet' => 'snippets/install-library-snippet',
 			'List_Packs'              => 'snippets/list-packs',
 			'Apply_Pack'              => 'snippets/apply-pack',
+			'Get_Library_Connection'  => 'snippets/get-library-connection',
+			'List_Snippet_Updates'    => 'snippets/list-snippet-updates',
+			'Update_Snippet_From_Library' => 'snippets/update-snippet-from-library',
+			'Install_Shared_Snippet'  => 'snippets/install-shared-snippet',
 		);
 	}
 
@@ -101,7 +105,7 @@ class Test_WPCode_Suite extends WP_UnitTestCase {
 		sort( $expected );
 
 		$this->assertSame( $expected, $found );
-		$this->assertCount( 21, $found );
+		$this->assertCount( 25, $found );
 	}
 
 	public function test_every_slug_is_declared_and_unique(): void {
@@ -611,6 +615,79 @@ class Test_WPCode_Suite extends WP_UnitTestCase {
 
 		$this->assertStringContainsString( "\$pack['name']", $lib );
 		$this->assertStringNotContainsString( "\$pack['title']", $lib );
+	}
+
+	/**
+	 * The library credentials are never returned.
+	 *
+	 * `wpcode_library_api_auth` holds an auth key, a webhook secret and a client id. An ability that
+	 * returned them would be handing live credentials off-site over MCP — the same exposure Feature
+	 * 106 found in Yoast's stored OAuth tokens. Only the connection state and the public username
+	 * may leave.
+	 */
+	public function test_library_credentials_are_never_returned(): void {
+		$lib = self::code_only( self::read( self::util() . 'Library_Repository.php' ) );
+
+		$start = strpos( $lib, 'function connection(' );
+		$this->assertNotFalse( $start );
+
+		$end  = strpos( $lib, 'function updates(', $start );
+		$body = substr( $lib, $start, $end - $start );
+
+		foreach ( array( 'get_auth_key', 'get_webhook_secret', 'get_client_id', 'get_auth_data' ) as $getter ) {
+			$this->assertStringNotContainsString(
+				$getter,
+				$body,
+				"connection() must not read {$getter}; those are credentials."
+			);
+		}
+
+		foreach ( self::ability_files() as $file ) {
+			$code = self::code_only( self::read( $file ) );
+
+			foreach ( array( 'get_auth_key', 'get_webhook_secret', 'get_client_id', 'wpcode_library_api_auth' ) as $secret ) {
+				$this->assertStringNotContainsString(
+					$secret,
+					$code,
+					basename( $file ) . " reads {$secret}; credentials must not reach an ability."
+				);
+			}
+		}
+	}
+
+	/**
+	 * A library update must not switch a snippet on.
+	 *
+	 * WPCode's updater saves the library payload wholesale, so `active` comes from the LIBRARY, not
+	 * from this site. Without capturing and restoring the local state, updating a deliberately
+	 * disabled snippet would silently start executing it.
+	 */
+	public function test_library_update_preserves_local_active_state(): void {
+		$lib = self::code_only( self::read( self::util() . 'Library_Repository.php' ) );
+
+		$this->assertStringContainsString( '$was_active', $lib );
+		$this->assertMatchesRegularExpression(
+			'/\$was_active\s*=\s*\(bool\)\s*\$snippet->is_active\(\)/',
+			$lib,
+			'pull_update() must capture the local active state before the library write.'
+		);
+		$this->assertStringContainsString( '$updated->active = $was_active;', $lib );
+	}
+
+	/**
+	 * A shared install lands inactive like every other library install.
+	 */
+	public function test_shared_installs_land_inactive(): void {
+		$lib = self::code_only( self::read( self::util() . 'Library_Repository.php' ) );
+
+		$start = strpos( $lib, 'function install_shared(' );
+		$this->assertNotFalse( $start );
+
+		$this->assertStringContainsString(
+			'self::force_inactive(',
+			substr( $lib, $start ),
+			'install_shared() must force the snippet inactive.'
+		);
 	}
 
 	public function test_repositories_are_final_and_static_only(): void {
