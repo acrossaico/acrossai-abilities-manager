@@ -136,6 +136,14 @@ final class List_Snippet_Updates extends Base_WPCode_Ability {
 			'count'             => count( $updates ),
 			'library_connected' => (bool) $connection['connected'],
 			'connect_url'       => (string) $connection['connect_url'],
+			'message'           => Library_Repository::reader_message(
+				$connection,
+				sprintf(
+					/* translators: %d: number of snippets with updates. */
+					_n( '%d installed snippet has a newer version.', '%d installed snippets have newer versions.', count( $updates ), 'acrossai-abilities-manager' ),
+					count( $updates )
+				)
+			),
 		);
 	}
 }

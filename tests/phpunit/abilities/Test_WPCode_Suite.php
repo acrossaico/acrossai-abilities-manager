@@ -840,6 +840,37 @@ class Test_WPCode_Suite extends WP_UnitTestCase {
 		}
 	}
 
+	/**
+	 * A library read that succeeds while disconnected still says so, in the message.
+	 *
+	 * The state is on the response as `library_connected` either way, but a bare "Done." hides the
+	 * one fact that decides what the caller can do next, and a field an assistant did not think to
+	 * look at is a field it will not mention to the user. The notice has to be where it gets read.
+	 */
+	public function test_reader_messages_carry_the_connection_notice(): void {
+		$lib = self::read( self::util() . 'Library_Repository.php' );
+
+		$this->assertStringContainsString( 'function reader_message', $lib );
+		$this->assertStringContainsString( 'NOT install', $lib, 'The notice must state the actual limit, not just "not connected".' );
+		$this->assertStringContainsString( 'tell you once it is done', $lib );
+
+		// Connected sites must not be told to connect.
+		$start = strpos( $lib, 'function reader_message' );
+		$this->assertMatchesRegularExpression(
+			'/if \( ! empty\( \$connection\[.connected.\] \) \) \{\s*return \$done;/',
+			substr( $lib, $start, 600 ),
+			'reader_message() must return the plain message unchanged when the site is connected.'
+		);
+
+		foreach ( array( 'Search_Library', 'List_Packs', 'List_Snippet_Updates' ) as $class ) {
+			$this->assertStringContainsString(
+				'Library_Repository::reader_message(',
+				self::read( self::dir() . $class . '.php' ),
+				"{$class} must route its message through reader_message()."
+			);
+		}
+	}
+
 	public function test_repositories_are_final_and_static_only(): void {
 		foreach ( array( 'Snippet_Repository', 'Library_Repository', 'WPCode_Guard' ) as $class ) {
 			$src = self::read( self::util() . $class . '.php' );

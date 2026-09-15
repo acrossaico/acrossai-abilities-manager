@@ -119,6 +119,14 @@ final class List_Packs extends Base_WPCode_Ability {
 			'count'             => count( $packs ),
 			'library_connected' => (bool) $connection['connected'],
 			'connect_url'       => (string) $connection['connect_url'],
+			'message'           => Library_Repository::reader_message(
+				$connection,
+				sprintf(
+					/* translators: %d: number of packs. */
+					_n( '%d snippet pack available.', '%d snippet packs available.', count( $packs ), 'acrossai-abilities-manager' ),
+					count( $packs )
+				)
+			),
 		);
 	}
 }

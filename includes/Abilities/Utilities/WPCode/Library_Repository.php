@@ -476,6 +476,32 @@ final class Library_Repository {
 	}
 
 	/**
+	 * The human-readable message for a library READ, which says when the account is missing.
+	 *
+	 * A read succeeds while disconnected, so it cannot use not_connected_error() — but returning a
+	 * bare "Done." hides the one fact that decides what the caller can do next. The state is on the
+	 * response as `library_connected` either way; this puts it somewhere an assistant will actually
+	 * read, because a field it did not think to look at is a field it will not mention.
+	 *
+	 * @since  0.0.43
+	 * @param  array<string, mixed> $connection Result of self::connection().
+	 * @param  string               $done       Message to use when connected.
+	 * @return string
+	 */
+	public static function reader_message( array $connection, string $done ): string {
+		if ( ! empty( $connection['connected'] ) ) {
+			return $done;
+		}
+
+		return sprintf(
+			/* translators: 1: the normal success message, 2: admin URL of the WPCode Library page. */
+			__( '%1$s Note: this site is not signed in to the WPCode library, so you can search and browse but NOT install - fetching a snippet\'s code needs the account. To install anything from here, ask the user to open %2$s, use the Connect button to sign in, and tell you once it is done.', 'acrossai-abilities-manager' ),
+			$done,
+			self::connect_url()
+		);
+	}
+
+	/**
 	 * The error to return when a call genuinely needs the library connection.
 	 *
 	 * Connecting involves signing in to an external account, so no ability can do it and none should

@@ -151,6 +151,14 @@ final class Search_Library extends Base_WPCode_Ability {
 			'count'             => count( $results ),
 			'library_connected' => (bool) $connection['connected'],
 			'connect_url'       => (string) $connection['connect_url'],
+			'message'           => Library_Repository::reader_message(
+				$connection,
+				sprintf(
+					/* translators: %d: number of results. */
+					_n( '%d library snippet matched.', '%d library snippets matched.', count( $results ), 'acrossai-abilities-manager' ),
+					count( $results )
+				)
+			),
 		);
 	}
 }
