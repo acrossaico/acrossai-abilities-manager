@@ -196,21 +196,25 @@ class Main {
 			}
 
 			$data = array(
-				'nonce'                    => wp_create_nonce( 'wp_rest' ),
-				'rest_url'                 => untrailingslashit( rest_url() ),
-				'rest_namespace'           => 'acrossai/v1',
-				'current_user_id'          => get_current_user_id(),
-				'perPage'                  => (int) get_option( 'acrossai_abilities_per_page', 20 ),
+				'nonce'                      => wp_create_nonce( 'wp_rest' ),
+				'rest_url'                   => untrailingslashit( rest_url() ),
+				'rest_namespace'             => 'acrossai/v1',
+				'current_user_id'            => get_current_user_id(),
+				'perPage'                    => (int) get_option( 'acrossai_abilities_per_page', 20 ),
 				// Client rendering gate only — server authorization enforced by wpb-ac/v1 REST endpoints (SEC-018-02).
-				'access_control_available' => \AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Abilities_Access_Control::instance()->is_available(),
+				'access_control_available'   => \AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Abilities_Access_Control::instance()->is_available(),
+				// Issue #200: an ability with no rule is not unrestricted — it requires this capability.
+				// The picker's own empty state reads "No user access added by admin", which would now be
+				// actively misleading on its own, so the form states the floor above it.
+				'default_ability_capability' => \AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Ability_Override_Processor::default_capability(),
 				// Per-consumer AC slug (wpb-access-control v2+) — the React <AccessControl> component
 				// needs this to construct REST URLs like /wpb-ac/v1/{slug}/providers and /wpb-ac/v1/{slug}/rules/...
 				// Source of truth: AcrossAI_Abilities_Access_Control::TABLE_SLUG.
-				'access_control_slug'      => \AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Abilities_Access_Control::TABLE_SLUG,
-				'protected_slugs'          => \AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Protected_Abilities::get_protected_slugs(),
-				'mcp_manager_active'       => is_plugin_active( 'acrossai-mcp-manager/acrossai-mcp-manager.php' ),
-				'mcp_manager_addons_url'   => admin_url( 'admin.php?page=acrossai-addons' ),
-				'mcp_manager_info_url'     => 'https://acrossai.co/mcp-manager/',
+				'access_control_slug'        => \AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Abilities_Access_Control::TABLE_SLUG,
+				'protected_slugs'            => \AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Protected_Abilities::get_protected_slugs(),
+				'mcp_manager_active'         => is_plugin_active( 'acrossai-mcp-manager/acrossai-mcp-manager.php' ),
+				'mcp_manager_addons_url'     => admin_url( 'admin.php?page=acrossai-addons' ),
+				'mcp_manager_info_url'       => 'https://acrossai.co/mcp-manager/',
 			);
 
 			/**
