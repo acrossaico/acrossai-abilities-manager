@@ -67,7 +67,7 @@ screen, recoverable only through safe mode.
 | Global scripts | `options/get-option`, `options/update-option` | Reachable, but the `headers_footers_mode` setting and the legacy `ihaf_*` key names are undiscoverable |
 | Settings blob | `options/get-option` | WPCode's own reader already ships |
 
-## Scope — 21 new, 26 in the tab
+## Scope — 25 new, 30 in the tab
 
 New category `acrossai-wpcode`, `tab_group => 'wpcode'`, namespace **`snippets/`** — the `wpcode/`
 namespace stays theirs. Own toolset gated on WPCode being active, the Classic Editor / LiteSpeed /
