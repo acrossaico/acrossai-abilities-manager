@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-13. **Total abilities:** 662 across 32 topic namespaces.
+Snapshot taken 2026-09-15. **Total abilities:** 687 across 34 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -26,9 +26,10 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `rank-math` — Rank Math | 61 |
 | `blocks` — Blocks | 52 |
 | `contact-form-7` — Contact Form 7 | 25 |
+| `wpcode` — Wpcode | 24 |
 | `updates` — Updates | 23 |
 | `files` — Files | 23 |
-| `diagnostics` — Diagnostics | 20 |
+| `diagnostics` — Diagnostics | 21 |
 | `configuration` — Configuration | 19 |
 | `events-calendar` — Events Calendar | 18 |
 | `database` — Database | 17 |
@@ -55,6 +56,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `cron/` | 16 | `acrossai-cron` |
 | `custom-fields/` | 11 | `acrossai-acf` |
 | `database/` | 18 | `acrossai-database` |
+| `diagnostics/` | 1 | `acrossai-recovery` |
 | `editor/` | 4 | `acrossai-classic-editor` |
 | `elementor/` | 62 | `acrossai-elementor` |
 | `events/` | 18 | `acrossai-events-calendar` |
@@ -70,6 +72,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `seo/` | 58 | `acrossai-yoast-seo` |
 | `settings/` | 11 | `acrossai-settings` |
 | `site-health/` | 6 | `acrossai-site-health` |
+| `snippets/` | 24 | `acrossai-wpcode` |
 | `taxonomies/` | 16 | `acrossai-taxonomies`, `acrossai-yoast-seo` |
 | `themes/` | 7 | `acrossai-themes` |
 | `toolset/` | 13 | `acrossai-toolset` |
@@ -320,6 +323,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `database/` | `database/search-replace` | database | queries | Search Replace |
 | `database/` | `database/set-option-autoload` | database | safe-writes | Set Option Autoload |
 | `database/` | `database/update-db-rows` | database | queries | Update Rows |
+| `diagnostics/` | `diagnostics/list-ability-collisions` | diagnostics | recovery | List Ability Name Collisions |
 | `editor/` | `editor/get-editor-settings` | classic-editor |  |  |
 | `editor/` | `editor/get-post-editor` | classic-editor |  |  |
 | `editor/` | `editor/get-post-type-editor-support` | classic-editor |  |  |
@@ -679,6 +683,30 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `site-health/` | `site-health/get-site-maintenance-report` | diagnostics | site-health | Site Maintenance Report |
 | `site-health/` | `site-health/set-site-maintenance-mode` | diagnostics | maintenance | Set Site Maintenance Mode |
 | `site-health/` | `site-health/unset-site-maintenance-mode` | diagnostics | maintenance | Unset Site Maintenance Mode |
+| `snippets/` | `snippets/activate-snippet` | wpcode |  |  |
+| `snippets/` | `snippets/apply-pack` | wpcode |  |  |
+| `snippets/` | `snippets/clear-snippet-errors` | wpcode |  |  |
+| `snippets/` | `snippets/create-snippet` | wpcode |  |  |
+| `snippets/` | `snippets/deactivate-snippet` | wpcode |  |  |
+| `snippets/` | `snippets/delete-snippet` | wpcode |  |  |
+| `snippets/` | `snippets/duplicate-snippet` | wpcode |  |  |
+| `snippets/` | `snippets/get-global-scripts` | wpcode |  |  |
+| `snippets/` | `snippets/get-library-snippet` | wpcode |  |  |
+| `snippets/` | `snippets/get-snippet` | wpcode |  |  |
+| `snippets/` | `snippets/get-snippet-status` | wpcode |  |  |
+| `snippets/` | `snippets/install-library-snippet` | wpcode |  |  |
+| `snippets/` | `snippets/install-shared-snippet` | wpcode |  |  |
+| `snippets/` | `snippets/list-locations` | wpcode |  |  |
+| `snippets/` | `snippets/list-packs` | wpcode |  |  |
+| `snippets/` | `snippets/list-snippet-errors` | wpcode |  |  |
+| `snippets/` | `snippets/list-snippet-updates` | wpcode |  |  |
+| `snippets/` | `snippets/list-snippets` | wpcode |  |  |
+| `snippets/` | `snippets/search-library` | wpcode |  |  |
+| `snippets/` | `snippets/set-conditional-logic` | wpcode |  |  |
+| `snippets/` | `snippets/set-location` | wpcode |  |  |
+| `snippets/` | `snippets/update-global-scripts` | wpcode |  |  |
+| `snippets/` | `snippets/update-snippet` | wpcode |  |  |
+| `snippets/` | `snippets/update-snippet-from-library` | wpcode |  |  |
 | `taxonomies/` | `taxonomies/assign-cpt-terms` | content | terms | Assign Terms |
 | `taxonomies/` | `taxonomies/clear-term-seo` | yoast-seo |  |  |
 | `taxonomies/` | `taxonomies/create-term` | content | terms | Create Term |

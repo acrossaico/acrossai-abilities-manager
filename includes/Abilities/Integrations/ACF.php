@@ -188,9 +188,15 @@ class ACF extends AcrossAI_Integration_Ability_Base implements AcrossAI_Toolset_
 	/**
 	 * Ability names ACF registers.
 	 *
-	 * ACF namespaces its own abilities `acf/*`. This plugin registers none of them — the three rows in
+	 * ACF namespaces its own abilities `acf/*`. This plugin registers none of them — the rows in
 	 * {@see self::abilities()} are display-only and never reach `wp_get_abilities()` — so every
 	 * ability in this group arrives through the tagger.
+	 *
+	 * Because they are display-only, nothing at runtime forces them to match what ACF registers, and
+	 * they drifted: two named abilities that do not exist (`acf/post-types`, `acf/taxonomies` rather
+	 * than `acf/custom-post-types` and `acf/custom-taxonomies`) while the three `register-*` writers
+	 * were missing entirely. Test_Integration_Row_Accuracy now asserts every declared slug resolves
+	 * whenever the host plugin is active.
 	 *
 	 * @since  0.0.35
 	 * @return string[]
@@ -271,25 +277,49 @@ class ACF extends AcrossAI_Integration_Ability_Base implements AcrossAI_Toolset_
 		return array(
 			array(
 				'slug'        => 'acf/field-groups',
-				'label'       => __( 'Field Groups', 'acrossai-abilities-manager' ),
+				'label'       => __( 'List Field Groups', 'acrossai-abilities-manager' ),
 				'description' => __(
-					'Create and manage ACF field groups (list, get, create, update, delete) so AI clients can extend post/user/taxonomy edit screens.',
+					'List the ACF field groups that allow AI access. A field group only appears once its post type or taxonomy has "Allow AI access" enabled in ACF.',
 					'acrossai-abilities-manager'
 				),
 			),
 			array(
-				'slug'        => 'acf/post-types',
-				'label'       => __( 'Post Types', 'acrossai-abilities-manager' ),
+				'slug'        => 'acf/register-field-group',
+				'label'       => __( 'Register Field Group', 'acrossai-abilities-manager' ),
 				'description' => __(
-					'Create and manage custom post types via ACF (list, get, create, update, delete).',
+					'Create a new ACF field group with its field definitions. This builds the field structure that appears on an edit screen, not the values; use the ACF value abilities for those.',
 					'acrossai-abilities-manager'
 				),
 			),
 			array(
-				'slug'        => 'acf/taxonomies',
-				'label'       => __( 'Taxonomies', 'acrossai-abilities-manager' ),
+				'slug'        => 'acf/custom-post-types',
+				'label'       => __( 'List Custom Post Types', 'acrossai-abilities-manager' ),
 				'description' => __(
-					'Create and manage custom taxonomies via ACF (list, get, create, update, delete).',
+					'List the custom post types registered through ACF.',
+					'acrossai-abilities-manager'
+				),
+			),
+			array(
+				'slug'        => 'acf/register-custom-post-type',
+				'label'       => __( 'Register Custom Post Type', 'acrossai-abilities-manager' ),
+				'description' => __(
+					'Register a new post type definition through ACF. This creates the post type itself, not posts within it.',
+					'acrossai-abilities-manager'
+				),
+			),
+			array(
+				'slug'        => 'acf/custom-taxonomies',
+				'label'       => __( 'List Custom Taxonomies', 'acrossai-abilities-manager' ),
+				'description' => __(
+					'List the taxonomies registered through ACF.',
+					'acrossai-abilities-manager'
+				),
+			),
+			array(
+				'slug'        => 'acf/register-custom-taxonomy',
+				'label'       => __( 'Register Custom Taxonomy', 'acrossai-abilities-manager' ),
+				'description' => __(
+					'Register a new taxonomy definition through ACF. This creates the taxonomy itself, not terms within it.',
 					'acrossai-abilities-manager'
 				),
 			),
