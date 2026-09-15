@@ -170,14 +170,22 @@ class Test_Library_Processor_No_Gate extends TestCase {
 	}
 
 	/**
-	 * The registration loop contains no conditional skip.
+	 * The registration loop skips nothing that could be an ability.
 	 *
 	 * Behavioural cover above catches a gate keyed on the legacy config. This catches one keyed on
-	 * anything else — a `continue`, or a guard wrapped around wp_register_ability().
+	 * anything else — a guard wrapped around wp_register_ability() that could stop a first-party
+	 * ability existing, which is what made an ability searched for on the abilities screen report as
+	 * missing (Feature 102).
+	 *
+	 * One skip IS legitimate and is asserted for rather than against: display-only integration rows
+	 * (`card_variant === 'integration'`) describe abilities a HOST plugin owns. Registering those
+	 * occupies the real name, and the registry refuses duplicates — so our placeholder could and did
+	 * prevent the real ability existing (#204). Skipping them cannot hide a first-party ability,
+	 * because they are not ours to register.
 	 *
 	 * @return void
 	 */
-	public function test_registration_loop_has_no_early_continue(): void {
+	public function test_registration_loop_skips_only_display_only_rows(): void {
 		$source = file_get_contents(
 			dirname( __DIR__, 4 ) . '/includes/Modules/Library/AcrossAI_Ability_Library_Processor.php'
 		);
@@ -203,10 +211,28 @@ class Test_Library_Processor_No_Gate extends TestCase {
 		$loop = strstr( $code, 'foreach ( $definitions as $definition )' );
 
 		$this->assertIsString( $loop, 'The registration loop must still exist.' );
-		$this->assertStringNotContainsString(
-			'continue',
-			(string) $loop,
-			'A skip in the registration loop is a reintroduced gate.'
+
+		$loop = (string) $loop;
+
+		// Exactly one skip, and it must be the display-only one.
+		$this->assertSame(
+			1,
+			substr_count( $loop, 'continue' ),
+			'The only skip permitted in the registration loop is the display-only integration row.'
 		);
+		$this->assertMatchesRegularExpression(
+			"/'integration' === \\\$definition\\['card_variant'\\][^;]*\\)[^;]*\\{\\s*continue;/",
+			$loop,
+			'The skip must be keyed on card_variant, not on a category, capability or config gate.'
+		);
+
+		// The gates Feature 102 removed must not come back under any name.
+		foreach ( array( 'is_permitted', 'current_user_can', 'get_option', 'category' ) as $gate ) {
+			$this->assertStringNotContainsString(
+				$gate,
+				$loop,
+				"A skip keyed on {$gate} is a reintroduced gate: it can stop a first-party ability existing."
+			);
+		}
 	}
 }

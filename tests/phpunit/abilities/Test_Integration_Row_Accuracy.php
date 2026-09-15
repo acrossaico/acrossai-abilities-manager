@@ -38,7 +38,10 @@ class Test_Integration_Row_Accuracy extends WP_UnitTestCase {
 	 * @return array<string,string>
 	 */
 	private static function row_declaring_integrations(): array {
-		return array( 'ACF.php' => 'acf/' );
+		return array(
+			'ACF.php'              => 'acf/',
+			'Yoast_Seo_Opt_In.php' => 'yoast-seo/',
+		);
 	}
 
 	/**
@@ -157,7 +160,7 @@ class Test_Integration_Row_Accuracy extends WP_UnitTestCase {
 		);
 		$main     = (string) file_get_contents( dirname( __DIR__, 3 ) . '/includes/Main.php' );
 
-		foreach ( array( 'ACF' ) as $class ) {
+		foreach ( array( 'ACF', 'Yoast_Seo_Opt_In' ) as $class ) {
 			$this->assertStringNotContainsString(
 				'new ' . $class . '()',
 				$registry,
@@ -169,6 +172,42 @@ class Test_Integration_Row_Accuracy extends WP_UnitTestCase {
 				"{$class} must be constructed exactly once, from Main::define_public_hooks()."
 			);
 		}
+	}
+
+	/**
+	 * Display-only rows must never be registered as abilities.
+	 *
+	 * This is the whole of #204. Registering them occupies the real name, and the registry refuses
+	 * duplicates — so our placeholder decided, by hook order alone, whether an operator got the real
+	 * ability. Measured before the fix: six ACF names contested on every request, and a Yoast opt-in
+	 * that registered five dead placeholders and PREVENTED Yoast's real abilities existing, because
+	 * Yoast registers on init, later than the Processor's P5.
+	 */
+	public function test_integration_rows_are_never_registered(): void {
+		$src = (string) file_get_contents(
+			dirname( __DIR__, 3 ) . '/includes/Modules/Library/AcrossAI_Ability_Library_Processor.php'
+		);
+
+		$this->assertMatchesRegularExpression(
+			"/'integration' === \\\$definition\\['card_variant'\\][^;]*\\)[^;]*\\{\\s*continue;/",
+			$src,
+			'The Processor must skip display-only integration rows before registering.'
+		);
+	}
+
+	/**
+	 * Yoast's opt-in flips the conditional its abilities are actually gated on.
+	 *
+	 * Not an invented switch: Yoast registers behind Should_Index_Indexables_Conditional, which
+	 * resolves to is_production_mode(). Measured on a WP_ENVIRONMENT_TYPE=local install — zero
+	 * abilities under `yoast-seo/` until the filter is applied, then its own appear and execute.
+	 */
+	public function test_the_yoast_opt_in_targets_the_real_gate(): void {
+		$src = self::read( 'Yoast_Seo_Opt_In.php' );
+
+		$this->assertStringContainsString( "Yoast\\WP\\SEO\\should_index_indexables", $src );
+		$this->assertStringContainsString( 'WPSEO_VERSION', $src );
+		$this->assertStringContainsString( '\WPSEO_Options', $src, 'Two symbols, not one (SEC-002).' );
 	}
 
 	/**
