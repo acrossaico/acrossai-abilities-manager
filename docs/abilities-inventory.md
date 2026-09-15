@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-15. **Total abilities:** 669 across 32 topic namespaces.
+Snapshot taken 2026-09-15. **Total abilities:** 668 across 32 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -26,7 +26,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `rank-math` — Rank Math | 61 |
 | `blocks` — Blocks | 52 |
 | `contact-form-7` — Contact Form 7 | 25 |
-| `wpcode` — Wpcode | 25 |
+| `wpcode` — Wpcode | 24 |
 | `updates` — Updates | 23 |
 | `files` — Files | 23 |
 | `diagnostics` — Diagnostics | 20 |
@@ -69,7 +69,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `seo/` | 58 | `acrossai-yoast-seo` |
 | `settings/` | 11 | `acrossai-settings` |
 | `site-health/` | 6 | `acrossai-site-health` |
-| `snippets/` | 25 | `acrossai-wpcode` |
+| `snippets/` | 24 | `acrossai-wpcode` |
 | `taxonomies/` | 16 | `acrossai-taxonomies`, `acrossai-yoast-seo` |
 | `themes/` | 7 | `acrossai-themes` |
 | `toolset/` | 13 | `acrossai-toolset` |
@@ -669,7 +669,6 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `snippets/` | `snippets/delete-snippet` | wpcode |  |  |
 | `snippets/` | `snippets/duplicate-snippet` | wpcode |  |  |
 | `snippets/` | `snippets/get-global-scripts` | wpcode |  |  |
-| `snippets/` | `snippets/get-library-connection` | wpcode |  |  |
 | `snippets/` | `snippets/get-library-snippet` | wpcode |  |  |
 | `snippets/` | `snippets/get-snippet` | wpcode |  |  |
 | `snippets/` | `snippets/get-snippet-status` | wpcode |  |  |

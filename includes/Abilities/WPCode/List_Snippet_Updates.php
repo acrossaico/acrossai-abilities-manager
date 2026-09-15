@@ -94,6 +94,23 @@ final class List_Snippet_Updates extends Base_WPCode_Ability {
 
 	/**
 	 * @since  0.0.43
+	 * @return array<int, array<string, string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'snippets/update-snippet-from-library',
+				'reason' => __( 'Pull the newer version for one of these. It replaces the code entirely, so a local edit is lost; the snippet keeps whatever active state it has here.', 'acrossai-abilities-manager' ),
+			),
+			array(
+				'slug'   => 'snippets/get-snippet',
+				'reason' => __( 'Read the current code first, so you can see what an update would replace.', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
+	 * @since  0.0.43
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */

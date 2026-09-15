@@ -405,10 +405,14 @@ final class Library_Repository {
 	/**
 	 * Whether the site is signed in to the WPCode library, and as whom.
 	 *
-	 * Deliberately never returns the key. `wpcode_library_api_auth` holds an auth key, a webhook
-	 * secret and a client id; handing those to a caller means handing them off-site, which is the
-	 * hazard Feature 106 found in Yoast's stored OAuth tokens. Only the connection state and the
-	 * public username leave this method.
+	 * Internal, and there is deliberately no ability wrapping it. The connection state is only ever
+	 * interesting when something else has just failed for want of it, so a dedicated ability would
+	 * be a tool call spent learning a fact that the failing call can simply state. It is reported
+	 * inside the errors that need it instead.
+	 *
+	 * Never returns the key. `wpcode_library_api_auth` holds an auth key, a webhook secret and a
+	 * client id; handing those to a caller means handing them off-site, which is the hazard Feature
+	 * 106 found in Yoast's stored OAuth tokens. Only the state and the public username leave.
 	 *
 	 * @since  0.0.43
 	 * @return array<string, mixed>
@@ -583,7 +587,7 @@ final class Library_Repository {
 		if ( '' === $auth_hash ) {
 			return new WP_Error(
 				'library_not_connected',
-				__( 'A shared snippet can only be fetched by a site signed in to the WPCode library. Connect it from WPCode > Library in wp-admin first.', 'acrossai-abilities-manager' )
+				__( 'A shared snippet can only be fetched by a site signed in to the WPCode library, and this site is not. Sign in from WPCode > Library in wp-admin; that cannot be done through an ability.', 'acrossai-abilities-manager' )
 			);
 		}
 

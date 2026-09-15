@@ -1,4 +1,4 @@
-# Feature 112 — WPCode toolset: 25 abilities, and a home for the 5 WPCode already ships
+# Feature 112 — WPCode toolset: 24 abilities, and a home for the 5 WPCode already ships
 
 Prepared for `/speckit-specify`. Every claim below was read from WPCode Lite 2.3.9 source on this
 install, with file and line cited.
@@ -67,7 +67,7 @@ screen, recoverable only through safe mode.
 | Global scripts | `options/get-option`, `options/update-option` | Reachable, but the `headers_footers_mode` setting and the legacy `ihaf_*` key names are undiscoverable |
 | Settings blob | `options/get-option` | WPCode's own reader already ships |
 
-## Scope — 25 new, 30 in the tab
+## Scope — 24 new, 29 in the tab
 
 New category `acrossai-wpcode`, `tab_group => 'wpcode'`, namespace **`snippets/`** — the `wpcode/`
 namespace stays theirs. Own toolset gated on WPCode being active, the Classic Editor / LiteSpeed /
@@ -79,16 +79,21 @@ the tab and the MCP tool without being re-registered.
 - **Placement (3)** — `set-location`, `set-conditional-logic`, `list-locations`.
 - **Global scripts (2)** — `get-global-scripts`, `update-global-scripts`.
 - **Diagnostics (3)** — `get-snippet-status`, `list-snippet-errors`, `clear-snippet-errors`.
-- **Library and packs (9)** — `search-library`, `get-library-snippet`, `install-library-snippet`,
-  `list-packs`, `apply-pack`, plus four that only mean anything once the site is signed in to the
-  WPCode library: `get-library-connection`, `list-snippet-updates`, `update-snippet-from-library`,
-  `install-shared-snippet`.
+- **Library and packs (8)** — `search-library`, `get-library-snippet`, `install-library-snippet`,
+  `list-packs`, `apply-pack`, plus three that only mean anything once the site is signed in to the
+  WPCode library: `list-snippet-updates`, `update-snippet-from-library`, `install-shared-snippet`.
 
 ## The connected library
 
 Signing in stores `wpcode_library_api_auth` — an auth key, a webhook secret and a client id. **No
-ability returns any of them**; only the connection state and the public username leave, which is the
-Feature 106 lesson about Yoast's stored OAuth tokens applied before it could bite.
+ability reaches any of them**, which is the Feature 106 lesson about Yoast's stored OAuth tokens
+applied before it could bite.
+
+**There is no `get-library-connection` ability, deliberately.** "Is the library connected" is only
+ever interesting when something else has just failed for want of it, so a dedicated ability would
+spend a tool call learning a fact the failing call can state directly — and would add a tool to the
+group for an answer nobody asks on its own. The state is reported inside `library_not_connected`
+instead, and the multi-step library flows carry `suggested_abilities` naming their own next step.
 
 Connecting unlocks a real gap: an installed library snippet is copied in once and then never changes,
 so a fix published upstream never arrives. `list-snippet-updates` surfaces the stale ones —

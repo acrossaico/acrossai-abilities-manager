@@ -610,7 +610,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_classic_editor_abilities();
 		}
 
-		// Feature 112 — WPCode ability suite (25 abilities under snippets/*). Gated on the snippet
+		// Feature 112 — WPCode ability suite (24 abilities under snippets/*). Gated on the snippet
 		// class rather than a version constant: it is what the suite actually calls, so its absence
 		// is what would break. WPCode's own five under wpcode/* are adopted by the toolset, not
 		// re-registered here.
@@ -1223,7 +1223,6 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new WPCode\Install_Library_Snippet();
 		new WPCode\List_Packs();
 		new WPCode\Apply_Pack();
-		new WPCode\Get_Library_Connection();
 		new WPCode\List_Snippet_Updates();
 		new WPCode\Update_Snippet_From_Library();
 		new WPCode\Install_Shared_Snippet();

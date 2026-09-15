@@ -115,6 +115,23 @@ final class Install_Shared_Snippet extends Base_WPCode_Ability {
 
 	/**
 	 * @since  0.0.43
+	 * @return array<int, array<string, string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'snippets/get-snippet',
+				'reason' => __( 'Read the installed code before activating it. A shared snippet is someone else\'s code and arrives switched off on purpose.', 'acrossai-abilities-manager' ),
+			),
+			array(
+				'slug'   => 'snippets/activate-snippet',
+				'reason' => __( 'Switch it on once you have read it. For php this test-runs the code first and refuses if it errors.', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
+	 * @since  0.0.43
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */

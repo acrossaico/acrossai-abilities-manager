@@ -114,6 +114,23 @@ final class Update_Snippet_From_Library extends Base_WPCode_Ability {
 
 	/**
 	 * @since  0.0.43
+	 * @return array<int, array<string, string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'snippets/list-snippet-updates',
+				'reason' => __( 'Lists which installed snippets actually have a newer version, so you update only what is stale.', 'acrossai-abilities-manager' ),
+			),
+			array(
+				'slug'   => 'snippets/deactivate-snippet',
+				'reason' => __( 'If an update breaks something, switching the snippet off stops it running without deleting it.', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
+	 * @since  0.0.43
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */

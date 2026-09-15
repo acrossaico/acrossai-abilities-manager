@@ -106,6 +106,23 @@ final class Search_Library extends Base_WPCode_Ability {
 
 	/**
 	 * @since  0.0.43
+	 * @return array<int, array<string, string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'snippets/get-library-snippet',
+				'reason' => __( 'Read one result in full before installing it.', 'acrossai-abilities-manager' ),
+			),
+			array(
+				'slug'   => 'snippets/install-library-snippet',
+				'reason' => __( 'Install a result. It always lands inactive, whatever the library says.', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
+	 * @since  0.0.43
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */

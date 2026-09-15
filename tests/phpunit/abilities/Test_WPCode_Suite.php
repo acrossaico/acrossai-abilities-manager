@@ -43,7 +43,6 @@ class Test_WPCode_Suite extends WP_UnitTestCase {
 			'Install_Library_Snippet' => 'snippets/install-library-snippet',
 			'List_Packs'              => 'snippets/list-packs',
 			'Apply_Pack'              => 'snippets/apply-pack',
-			'Get_Library_Connection'  => 'snippets/get-library-connection',
 			'List_Snippet_Updates'    => 'snippets/list-snippet-updates',
 			'Update_Snippet_From_Library' => 'snippets/update-snippet-from-library',
 			'Install_Shared_Snippet'  => 'snippets/install-shared-snippet',
@@ -105,7 +104,7 @@ class Test_WPCode_Suite extends WP_UnitTestCase {
 		sort( $expected );
 
 		$this->assertSame( $expected, $found );
-		$this->assertCount( 25, $found );
+		$this->assertCount( 24, $found );
 	}
 
 	public function test_every_slug_is_declared_and_unique(): void {
@@ -632,6 +631,7 @@ class Test_WPCode_Suite extends WP_UnitTestCase {
 		$this->assertNotFalse( $start );
 
 		$end  = strpos( $lib, 'function updates(', $start );
+		$this->assertNotFalse( $end );
 		$body = substr( $lib, $start, $end - $start );
 
 		foreach ( array( 'get_auth_key', 'get_webhook_secret', 'get_client_id', 'get_auth_data' ) as $getter ) {
@@ -688,6 +688,80 @@ class Test_WPCode_Suite extends WP_UnitTestCase {
 			substr( $lib, $start ),
 			'install_shared() must force the snippet inactive.'
 		);
+	}
+
+	/**
+	 * The connection state is reported by the calls that need it, not by an ability of its own.
+	 *
+	 * "Is the library connected" is only ever interesting when something else has just failed for
+	 * want of it. A dedicated ability would spend a tool call learning a fact the failing call can
+	 * state directly, and would add a 25th tool to a group for an answer nobody asks for on its own.
+	 * The state travels in the errors instead.
+	 */
+	public function test_there_is_no_standalone_connection_ability(): void {
+		$this->assertArrayNotHasKey(
+			'Get_Library_Connection',
+			self::inventory(),
+			'The connection state belongs in the errors that need it, not in an ability.'
+		);
+
+		$this->assertFileDoesNotExist( self::dir() . 'Get_Library_Connection.php' );
+
+		$lib = self::read( self::util() . 'Library_Repository.php' );
+
+		$this->assertStringContainsString(
+			'library_not_connected',
+			$lib,
+			'A call that needs the connection must say so by name when it is missing.'
+		);
+	}
+
+	/**
+	 * The library abilities point at their own next step.
+	 *
+	 * These are multi-step by nature - search, read, install, activate; list updates, then pull one -
+	 * and the sequencing is not guessable from a single ability's schema.
+	 */
+	public function test_library_abilities_carry_suggestions(): void {
+		$expected = array(
+			'Search_Library'              => 'snippets/install-library-snippet',
+			'List_Snippet_Updates'        => 'snippets/update-snippet-from-library',
+			'Update_Snippet_From_Library' => 'snippets/list-snippet-updates',
+			'Install_Shared_Snippet'      => 'snippets/activate-snippet',
+		);
+
+		foreach ( $expected as $class => $slug ) {
+			$src = self::read( self::dir() . $class . '.php' );
+
+			$this->assertStringContainsString( 'function suggested_abilities', $src, "{$class} declares no suggestions." );
+			$this->assertStringContainsString( $slug, $src, "{$class} should suggest {$slug}." );
+		}
+	}
+
+	/**
+	 * Every suggested slug is one this suite or the plugin actually registers.
+	 *
+	 * A suggestion naming a slug that does not exist sends an agent to a dead end, and a rename
+	 * elsewhere breaks it silently.
+	 */
+	public function test_suggested_slugs_resolve(): void {
+		$known = array_values( self::inventory() );
+
+		foreach ( self::ability_files() as $file ) {
+			$src = self::read( $file );
+
+			if ( ! preg_match_all( "/'slug'\s*=>\s*'(snippets\/[a-z-]+)'/", $src, $matches ) ) {
+				continue;
+			}
+
+			foreach ( $matches[1] as $slug ) {
+				$this->assertContains(
+					$slug,
+					$known,
+					basename( $file ) . " suggests {$slug}, which this suite does not register."
+				);
+			}
+		}
 	}
 
 	public function test_repositories_are_final_and_static_only(): void {
