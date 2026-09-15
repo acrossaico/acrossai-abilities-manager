@@ -89,6 +89,14 @@ Signing in stores `wpcode_library_api_auth` — an auth key, a webhook secret an
 ability reaches any of them**, which is the Feature 106 lesson about Yoast's stored OAuth tokens
 applied before it could bite.
 
+**Connecting is a human step, and the abilities say so precisely.** It authorises an external WPCode
+account, so nothing here can perform it. `not_connected_error()` returns the exact admin URL
+(`admin.php?page=wpcode-library`), names the Connect button, and explicitly asks the caller to report
+back once it is done — an instruction, not a dead end, because an assistant given a vague failure
+either gives up or silently retries the same call. The URL is also on the error data for machine use.
+The library readers carry `library_connected` and `connect_url` in their responses, so the state is
+known before a call fails rather than after.
+
 **There is no `get-library-connection` ability, deliberately.** "Is the library connected" is only
 ever interesting when something else has just failed for want of it, so a dedicated ability would
 spend a tool call learning a fact the failing call can state directly — and would add a tool to the

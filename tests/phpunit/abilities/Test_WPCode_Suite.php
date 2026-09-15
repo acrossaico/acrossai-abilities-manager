@@ -764,6 +764,50 @@ class Test_WPCode_Suite extends WP_UnitTestCase {
 		}
 	}
 
+	/**
+	 * A call that needs the connection hands back something a person can act on.
+	 *
+	 * Connecting means authorising an external account, so no ability can do it. The failure is only
+	 * useful if it names the exact admin URL, says what to click, and asks to be told when it is
+	 * done - otherwise an assistant either gives up or silently retries the same failing call.
+	 */
+	public function test_not_connected_error_is_actionable(): void {
+		$lib = self::read( self::util() . 'Library_Repository.php' );
+
+		$this->assertStringContainsString( 'function not_connected_error', $lib );
+		$this->assertStringContainsString( "admin.php?page=wpcode-library", $lib, 'The real admin URL, not a description of the menu path.' );
+		$this->assertStringContainsString( 'tell you once it is done', $lib, 'The caller must be asked to report back.' );
+		$this->assertStringContainsString( "array( 'connect_url' => self::connect_url() )", $lib, 'The URL must also be machine-readable on the error data.' );
+	}
+
+	/**
+	 * The library readers report the connection without anyone having to ask.
+	 *
+	 * This is what replaced the standalone connection ability: the fact travels with the calls that
+	 * care about it, so an agent learns it without spending a turn.
+	 */
+	public function test_library_readers_report_connection_state(): void {
+		foreach ( array( 'Search_Library', 'List_Snippet_Updates', 'List_Packs' ) as $class ) {
+			$src = self::read( self::dir() . $class . '.php' );
+
+			$this->assertStringContainsString( 'Library_Repository::connection()', $src );
+
+			/*
+			 * Twice each: once declaring the key in the output schema, once actually returning it.
+			 * Checking for the key alone passes on an ability that declares the field and never
+			 * fills it - which is worse than not declaring it, because the schema then promises
+			 * something the response does not carry.
+			 */
+			foreach ( array( 'library_connected', 'connect_url' ) as $key ) {
+				$this->assertGreaterThanOrEqual(
+					2,
+					substr_count( $src, "'" . $key . "'" ),
+					"{$class} must both declare {$key} and return it."
+				);
+			}
+		}
+	}
+
 	public function test_repositories_are_final_and_static_only(): void {
 		foreach ( array( 'Snippet_Repository', 'Library_Repository', 'WPCode_Guard' ) as $class ) {
 			$src = self::read( self::util() . $class . '.php' );

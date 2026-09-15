@@ -80,6 +80,14 @@ final class List_Snippet_Updates extends Base_WPCode_Ability {
 				'type'  => 'array',
 				'items' => array( 'type' => 'object', 'additionalProperties' => true ),
 			),
+			'library_connected' => array(
+				'type'        => 'boolean',
+				'description' => __( 'Whether this site is signed in to the WPCode library.', 'acrossai-abilities-manager' ),
+			),
+			'connect_url'       => array(
+				'type'        => 'string',
+				'description' => __( 'When not connected, the wp-admin URL a person should open to sign in. No ability can sign in on their behalf.', 'acrossai-abilities-manager' ),
+			),
 			'count'   => array( 'type' => 'integer' ),
 		);
 	}
@@ -121,9 +129,13 @@ final class List_Snippet_Updates extends Base_WPCode_Ability {
 			return $updates;
 		}
 
+		$connection = Library_Repository::connection();
+
 		return array(
-			'updates' => $updates,
-			'count'   => count( $updates ),
+			'updates'           => $updates,
+			'count'             => count( $updates ),
+			'library_connected' => (bool) $connection['connected'],
+			'connect_url'       => (string) $connection['connect_url'],
 		);
 	}
 }

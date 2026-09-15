@@ -177,9 +177,15 @@ final class Library_Repository {
 		$data = $library->get_data();
 
 		if ( empty( $data ) || empty( $data['snippets'] ) ) {
+			$connection = self::connection();
+
+			if ( empty( $connection['connected'] ) ) {
+				return self::not_connected_error( __( 'reading the snippet library', 'acrossai-abilities-manager' ) );
+			}
+
 			return new WP_Error(
 				'library_unavailable',
-				__( 'WPCode returned no library data. The site may be offline, or the library request may have failed and been cached as empty.', 'acrossai-abilities-manager' )
+				__( 'WPCode returned no library data even though this site is signed in. The site may be offline, or the library request may have failed and been cached as empty for a few minutes.', 'acrossai-abilities-manager' )
 			);
 		}
 
@@ -422,20 +428,57 @@ final class Library_Repository {
 
 		if ( null === $auth ) {
 			return array(
-				'connected' => false,
-				'username'  => '',
-				'reason'    => __( 'WPCode\'s library authentication component could not be loaded.', 'acrossai-abilities-manager' ),
+				'connected'   => false,
+				'username'    => '',
+				'connect_url' => self::connect_url(),
 			);
 		}
 
 		$connected = (bool) $auth->has_auth();
 
 		return array(
-			'connected' => $connected,
-			'username'  => $connected ? (string) $auth->get_auth_username() : '',
-			'reason'    => $connected
-				? ''
-				: __( 'Not connected. Connect the library from WPCode > Library in wp-admin; nothing here can complete that sign-in.', 'acrossai-abilities-manager' ),
+			'connected'   => $connected,
+			'username'    => $connected ? (string) $auth->get_auth_username() : '',
+			'connect_url' => $connected ? '' : self::connect_url(),
+		);
+	}
+
+	/**
+	 * Where a human goes to connect the library.
+	 *
+	 * The real admin URL rather than a description of the menu path: an assistant relaying
+	 * "WPCode > Library" makes the person hunt for it, and a link they can click is the difference
+	 * between the step happening and not.
+	 *
+	 * @since  0.0.43
+	 * @return string
+	 */
+	public static function connect_url(): string {
+		return admin_url( 'admin.php?page=wpcode-library' );
+	}
+
+	/**
+	 * The error to return when a call genuinely needs the library connection.
+	 *
+	 * Connecting involves signing in to an external account, so no ability can do it and none should
+	 * try. What the ability CAN do is hand back an instruction precise enough to act on: the exact
+	 * URL, what to click, and an explicit request to be told when it is done — otherwise an
+	 * assistant tends to either give up or silently retry the same failing call.
+	 *
+	 * @since  0.0.43
+	 * @param  string $what What the caller was trying to do.
+	 * @return WP_Error
+	 */
+	public static function not_connected_error( string $what ): WP_Error {
+		return new WP_Error(
+			'library_not_connected',
+			sprintf(
+				/* translators: 1: what the caller attempted, 2: admin URL of the WPCode Library page. */
+				__( 'This site is not signed in to the WPCode library, which %1$s needs. Signing in means authorising a WPCode account, so it cannot be done through an ability - a person has to do it. Ask them to open %2$s, use the Connect button there to sign in, and tell you once it is done; then run this call again. Connecting also unlocks snippets shared with them by link and any snippets saved to their own account.', 'acrossai-abilities-manager' ),
+				$what,
+				self::connect_url()
+			),
+			array( 'connect_url' => self::connect_url() )
 		);
 	}
 
@@ -585,10 +628,7 @@ final class Library_Repository {
 		$auth_hash = ( null !== $auth && $auth->has_auth() ) ? (string) $auth->get_auth_key() : '';
 
 		if ( '' === $auth_hash ) {
-			return new WP_Error(
-				'library_not_connected',
-				__( 'A shared snippet can only be fetched by a site signed in to the WPCode library, and this site is not. Sign in from WPCode > Library in wp-admin; that cannot be done through an ability.', 'acrossai-abilities-manager' )
-			);
+			return self::not_connected_error( __( 'installing a snippet shared by link', 'acrossai-abilities-manager' ) );
 		}
 
 		$data = $library->get_public_snippet( $hash, $auth_hash );
