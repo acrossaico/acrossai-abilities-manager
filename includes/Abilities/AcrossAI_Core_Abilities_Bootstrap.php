@@ -79,6 +79,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// Feature 107 — Classic Editor category (self-guards on the plugin inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', ClassicEditor\Category_Registrar::instance(), 'register' );
 
+		// Feature 112 — WPCode category (self-guards on the plugin inside register()).
+		$loader->add_action( 'wp_abilities_api_categories_init', WPCode\Category_Registrar::instance(), 'register' );
+
 		// Feature 104 — LiteSpeed Cache category (self-guards on the host probe inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', LiteSpeed\Category_Registrar::instance(), 'register' );
 
@@ -605,6 +608,14 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// plugin, so the group and its MCP tool exist only where they mean something.
 		if ( defined( 'CLASSIC_EDITOR_VERSION' ) && class_exists( 'Classic_Editor' ) ) {
 			$this->register_classic_editor_abilities();
+		}
+
+		// Feature 112 — WPCode ability suite (21 abilities under snippets/*). Gated on the snippet
+		// class rather than a version constant: it is what the suite actually calls, so its absence
+		// is what would break. WPCode's own five under wpcode/* are adopted by the toolset, not
+		// re-registered here.
+		if ( class_exists( 'WPCode_Snippet' ) && function_exists( 'wpcode' ) ) {
+			$this->register_wpcode_abilities();
 		}
 
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
@@ -1179,5 +1190,38 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new ClassicEditor\Update_Editor_Settings();
 		new ClassicEditor\Get_Post_Editor();
 		new ClassicEditor\Get_Post_Type_Editor_Support();
+	}
+
+	/**
+	 * Feature 112 — instantiate the WPCode ability classes.
+	 *
+	 * Category_Registrar is deliberately absent: it is a singleton with a private constructor,
+	 * hooked via instance() above. Constructing it here would be a fatal on every page load.
+	 *
+	 * @since  0.0.43
+	 * @return void
+	 */
+	private function register_wpcode_abilities(): void {
+		new WPCode\List_Snippets();
+		new WPCode\Get_Snippet();
+		new WPCode\Create_Snippet();
+		new WPCode\Update_Snippet();
+		new WPCode\Delete_Snippet();
+		new WPCode\Activate_Snippet();
+		new WPCode\Deactivate_Snippet();
+		new WPCode\Duplicate_Snippet();
+		new WPCode\Set_Location();
+		new WPCode\Set_Conditional_Logic();
+		new WPCode\List_Locations();
+		new WPCode\Get_Global_Scripts();
+		new WPCode\Update_Global_Scripts();
+		new WPCode\Get_Snippet_Status();
+		new WPCode\List_Snippet_Errors();
+		new WPCode\Clear_Snippet_Errors();
+		new WPCode\Search_Library();
+		new WPCode\Get_Library_Snippet();
+		new WPCode\Install_Library_Snippet();
+		new WPCode\List_Packs();
+		new WPCode\Apply_Pack();
 	}
 }
