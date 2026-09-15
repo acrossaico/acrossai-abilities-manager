@@ -116,6 +116,7 @@ class AcrossAI_Category_Slug_Migration {
 		'wpcode',
 		'yoast-seo',
 		'classic-editor',
+		'events-calendar',
 	);
 
 	/**

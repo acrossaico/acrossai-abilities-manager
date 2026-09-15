@@ -78,6 +78,8 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		$loader->add_action( 'wp_abilities_api_categories_init', ContactForm7\Category_Registrar::instance(), 'register' );
 		// Feature 107 — Classic Editor category (self-guards on the plugin inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', ClassicEditor\Category_Registrar::instance(), 'register' );
+		// Feature 109 — The Events Calendar category (self-guards on the plugin inside register()).
+		$loader->add_action( 'wp_abilities_api_categories_init', EventsCalendar\Category_Registrar::instance(), 'register' );
 
 		// Feature 112 — WPCode category (self-guards on the plugin inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', WPCode\Category_Registrar::instance(), 'register' );
@@ -609,6 +611,12 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// plugin, so the group and its MCP tool exist only where they mean something.
 		if ( defined( 'CLASSIC_EDITOR_VERSION' ) && class_exists( 'Classic_Editor' ) ) {
 			$this->register_classic_editor_abilities();
+		}
+
+		// Feature 109 — The Events Calendar ability suite (18 abilities under events/*). Gated on
+		// the plugin AND its ORM, because every write in the suite goes through tribe_events().
+		if ( class_exists( 'Tribe__Events__Main' ) && function_exists( 'tribe_events' ) ) {
+			$this->register_events_calendar_abilities();
 		}
 
 		// Feature 112 — WPCode ability suite (24 abilities under snippets/*). Gated on the snippet
@@ -1191,6 +1199,33 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new ClassicEditor\Update_Editor_Settings();
 		new ClassicEditor\Get_Post_Editor();
 		new ClassicEditor\Get_Post_Type_Editor_Support();
+	}
+
+	/**
+	 * Feature 109 — instantiate The Events Calendar ability classes.
+	 *
+	 * @since  0.0.40
+	 * @return void
+	 */
+	private function register_events_calendar_abilities(): void {
+		new EventsCalendar\Create_Event();
+		new EventsCalendar\Create_Organizer();
+		new EventsCalendar\Create_Venue();
+		new EventsCalendar\Get_Calendar_Settings();
+		new EventsCalendar\Get_Event();
+		new EventsCalendar\Get_Organizer();
+		new EventsCalendar\Get_Venue();
+		new EventsCalendar\List_Event_Categories();
+		new EventsCalendar\List_Events();
+		new EventsCalendar\List_Organizers();
+		new EventsCalendar\List_Venues();
+		new EventsCalendar\Set_Event_Categories();
+		new EventsCalendar\Trash_Event();
+		new EventsCalendar\Trash_Organizer();
+		new EventsCalendar\Trash_Venue();
+		new EventsCalendar\Update_Event();
+		new EventsCalendar\Update_Organizer();
+		new EventsCalendar\Update_Venue();
 	}
 
 	/**
