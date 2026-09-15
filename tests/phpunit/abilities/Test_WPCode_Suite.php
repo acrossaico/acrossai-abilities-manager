@@ -186,21 +186,37 @@ class Test_WPCode_Suite extends WP_UnitTestCase {
 			$repo,
 			'apply() must slash the free-text fields; snippet code is the payload that loses backslashes.'
 		);
-		$this->assertGreaterThanOrEqual(
-			2,
+		/*
+		 * Exactly one call site, and it is apply(). The global-scripts writer deliberately does NOT
+		 * slash: wp_insert_post()/update_post_meta() unslash internally so their input must be
+		 * slashed, while update_option() does not, so slashing an option ADDS a backslash level.
+		 * Measured both ways on a live site. A second call site here would mean an option write has
+		 * picked up the post-write rule.
+		 */
+		$this->assertSame(
+			1,
 			substr_count( $repo, 'Slash_Input::slash(' ),
-			'Both the snippet writer and the global-scripts writer must slash.'
+			'Slashing belongs to the post-write path only; update_option() must not be slashed.'
 		);
 		$this->assertStringContainsString( "self::FREE_TEXT", $repo );
 		$this->assertStringContainsString( "'code'", $repo );
 
-		foreach ( array( 'Create_Snippet', 'Update_Snippet', 'Update_Global_Scripts' ) as $class ) {
+		// Snippet writers only. Update_Global_Scripts is deliberately absent: it writes options,
+		// which must not be slashed, so advertising an apply_wp_slash flag there would offer a
+		// control that does nothing (the Feature 105 lesson).
+		foreach ( array( 'Create_Snippet', 'Update_Snippet' ) as $class ) {
 			$this->assertStringContainsString(
 				'Slash_Input::schema_fragment()',
 				self::read( self::dir() . $class . '.php' ),
-				"{$class} accepts free text and must expose the apply_wp_slash flag."
+				"{$class} writes snippet code and must expose the apply_wp_slash flag."
 			);
 		}
+
+		$this->assertStringNotContainsString(
+			'apply_wp_slash',
+			self::read( self::dir() . 'Update_Global_Scripts.php' ),
+			'Update_Global_Scripts writes options, which are not slashed; the flag would be inert.'
+		);
 	}
 
 	/**
@@ -452,6 +468,149 @@ class Test_WPCode_Suite extends WP_UnitTestCase {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Every file that names a global WPCode class imports it.
+	 *
+	 * The suite lives in a namespace ending in \WPCode, so an unqualified `new WPCode_Snippet()`
+	 * resolves to AcrossAI_Abilities_Manager\Includes\Abilities\WPCode\WPCode_Snippet and fatals
+	 * at call time, not at load time. Nothing in a source-reading test catches it and the file lints
+	 * clean; it surfaces only when the ability actually runs. Caught exactly this way in
+	 * get-snippet-status.
+	 */
+	public function test_global_wpcode_classes_are_imported(): void {
+		$files = array_merge(
+			self::ability_files(),
+			array( self::util() . 'Snippet_Repository.php', self::util() . 'Library_Repository.php' )
+		);
+
+		foreach ( $files as $file ) {
+			$code = self::code_only( self::read( $file ) );
+
+			if ( ! preg_match( '/(?<!\\\\)\\bWPCode_Snippet\\b/', $code ) ) {
+				continue;
+			}
+
+			$this->assertStringContainsString(
+				'use WPCode_Snippet;',
+				$code,
+				basename( $file ) . ' names WPCode_Snippet without importing it, so it resolves inside this plugin\'s namespace and fatals at runtime.'
+			);
+		}
+	}
+
+	/**
+	 * Private WPCode properties are written through load_from_array(), never assigned.
+	 *
+	 * note, priority, use_rules and rules are PRIVATE on WPCode_Snippet, so `$snippet->note = ...`
+	 * is a fatal at call time. Lints clean, passes every source check, dies the moment the ability
+	 * runs.
+	 */
+	public function test_private_properties_are_not_assigned_directly(): void {
+		$files = array_merge( self::ability_files(), array( self::util() . 'Snippet_Repository.php' ) );
+
+		foreach ( $files as $file ) {
+			$code = self::code_only( self::read( $file ) );
+
+			foreach ( array( 'note', 'priority', 'use_rules', 'rules' ) as $property ) {
+				$this->assertDoesNotMatchRegularExpression(
+					'/->' . $property . '\s*=[^=]/',
+					$code,
+					basename( $file ) . " assigns \$snippet->{$property} directly, but that property is private on WPCode_Snippet."
+				);
+			}
+		}
+
+		$this->assertStringContainsString(
+			'load_from_array(',
+			self::code_only( self::read( self::util() . 'Snippet_Repository.php' ) ),
+			'Private fields must go through WPCode\'s own loader.'
+		);
+	}
+
+	/**
+	 * auto_insert is written as an integer.
+	 *
+	 * WPCode compares it with `1 === $this->auto_insert`. A boolean fails that strict check, so
+	 * save() takes the else branch and CLEARS the location terms instead of setting them: the write
+	 * reports success and the snippet ends up placed nowhere.
+	 */
+	public function test_auto_insert_is_an_integer(): void {
+		$repo = self::code_only( self::read( self::util() . 'Snippet_Repository.php' ) );
+
+		$this->assertStringContainsString( 'function auto_insert_flag', $repo );
+		$this->assertDoesNotMatchRegularExpression(
+			'/auto_insert\s*=\s*\(bool\)/',
+			$repo,
+			'auto_insert must not be cast to bool; WPCode strict-compares it against integer 1.'
+		);
+	}
+
+	/**
+	 * The loader cache is keyed by location, so id extraction has to descend.
+	 *
+	 * Reading only the top level finds location buckets and no ids, which reports every active
+	 * snippet as absent from the cache.
+	 */
+	public function test_cache_ids_are_collected_recursively(): void {
+		$repo = self::code_only( self::read( self::util() . 'Snippet_Repository.php' ) );
+
+		$this->assertStringContainsString( 'function collect_ids', $repo );
+		$this->assertStringContainsString( 'self::collect_ids( $child )', $repo );
+	}
+
+	/**
+	 * Option writes are NOT slashed, even though post writes are.
+	 *
+	 * wp_insert_post()/update_post_meta() unslash internally so their input must be slashed;
+	 * update_option() does not, so slashing there ADDS a level. Measured: sending \d+ stored \\d+.
+	 */
+	public function test_option_writes_are_not_slashed(): void {
+		$repo = self::code_only( self::read( self::util() . 'Snippet_Repository.php' ) );
+
+		$start = strpos( $repo, 'function update_global_scripts' );
+		$this->assertNotFalse( $start );
+
+		$end = strpos( $repo, 'function global_scripts', $start );
+		$this->assertNotFalse( $end );
+
+		$this->assertStringNotContainsString(
+			'Slash_Input::slash(',
+			substr( $repo, $start, $end - $start ),
+			'update_option() does not unslash, so slashing here double-escapes the value.'
+		);
+	}
+
+	/**
+	 * The library and packs are loaded on demand.
+	 *
+	 * WPCode only builds library, library_auth, file_cache and the packs helper inside
+	 * `if ( is_admin() || DOING_CRON )`. A REST/MCP request is neither, so without on-demand loading
+	 * all five library abilities fatal or report the library missing on a working site.
+	 */
+	public function test_admin_only_components_are_loaded_on_demand(): void {
+		$lib = self::code_only( self::read( self::util() . 'Library_Repository.php' ) );
+
+		$this->assertStringContainsString( 'function load_component', $lib );
+
+		foreach ( array( 'file_cache', 'library_auth', 'WPCode_Packs' ) as $needle ) {
+			$this->assertStringContainsString( $needle, $lib, "Library_Repository must handle {$needle}." );
+		}
+
+		// Packs is a singleton, not a property on wpcode().
+		$this->assertStringContainsString( 'WPCode_Packs::get_instance()', $lib );
+		$this->assertStringNotContainsString( 'wpcode()->packs', $lib );
+	}
+
+	/**
+	 * Pack rows read the key WPCode actually builds.
+	 */
+	public function test_pack_rows_use_the_name_key(): void {
+		$lib = self::read( self::util() . 'Library_Repository.php' );
+
+		$this->assertStringContainsString( "\$pack['name']", $lib );
+		$this->assertStringNotContainsString( "\$pack['title']", $lib );
 	}
 
 	public function test_repositories_are_final_and_static_only(): void {

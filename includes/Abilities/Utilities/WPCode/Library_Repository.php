@@ -34,20 +34,147 @@ final class Library_Repository {
 	private function __construct() {}
 
 	/**
+	 * WPCode's library object, loading it if this request is not an admin one.
+	 *
+	 * WPCode only builds `$this->library` inside `if ( is_admin() || DOING_CRON )` (ihaf.php:435),
+	 * and only requires the class file under the same condition. A REST or MCP request is neither,
+	 * so without this every library ability would report the library as unavailable on a site where
+	 * it works perfectly well in wp-admin. The constructor only adds hooks, so building it here is
+	 * cheap and has no side effect beyond what wp-admin already does.
+	 *
+	 * @since  0.0.43
+	 * @return object|null
+	 */
+	private static function library() {
+		if ( ! function_exists( 'wpcode' ) ) {
+			return null;
+		}
+
+		if ( isset( wpcode()->library ) && is_object( wpcode()->library ) ) {
+			return wpcode()->library;
+		}
+
+		/*
+		 * The library leans on two more components that sit behind the same admin gate, and each
+		 * fatals on null rather than degrading: file_cache backs get_data(), and library_auth is
+		 * reached through get_authenticated_headers() on every API call, so installing without it
+		 * dies on has_auth(). Loaded in dependency order before the library itself.
+		 */
+		foreach (
+			array(
+				'file_cache'   => array( 'WPCode_File_Cache', 'includes/class-wpcode-file-cache.php' ),
+				'library_auth' => array( 'WPCode_Library_Auth', 'includes/class-wpcode-library-auth.php' ),
+			) as $property => $component
+		) {
+			if ( null === self::load_component( $property, $component[0], $component[1] ) ) {
+				return null;
+			}
+		}
+
+		return self::load_component( 'library', 'WPCode_Library', 'includes/class-wpcode-library.php' );
+	}
+
+	/**
+	 * Build one of WPCode's admin-only components and hang it back on the main object.
+	 *
+	 * Assigning it back matters: WPCode's own code reads these through `wpcode()->…`, so a local
+	 * instance would leave the next internal call still facing null.
+	 *
+	 * @since  0.0.43
+	 * @param  string $property Property on the wpcode() object.
+	 * @param  string $class    Global class name.
+	 * @param  string $relative Path under WPCODE_PLUGIN_PATH.
+	 * @return object|null
+	 */
+	private static function load_component( string $property, string $class, string $relative ) {
+		if ( ! function_exists( 'wpcode' ) ) {
+			return null;
+		}
+
+		if ( isset( wpcode()->{$property} ) && is_object( wpcode()->{$property} ) ) {
+			return wpcode()->{$property};
+		}
+
+		if ( ! class_exists( $class ) ) {
+			if ( ! defined( 'WPCODE_PLUGIN_PATH' ) ) {
+				return null;
+			}
+
+			$file = WPCODE_PLUGIN_PATH . $relative;
+
+			if ( ! is_readable( $file ) ) {
+				return null;
+			}
+
+			require_once $file;
+		}
+
+		if ( ! class_exists( $class ) ) {
+			return null;
+		}
+
+		wpcode()->{$property} = new $class();
+
+		return wpcode()->{$property};
+	}
+
+	/**
+	 * WPCode's packs helper.
+	 *
+	 * A singleton reached through `WPCode_Packs::get_instance()`, NOT a property on `wpcode()` —
+	 * there is no `wpcode()->packs` at all. Its class file is required only in the admin branch, so
+	 * the same on-demand load applies.
+	 *
+	 * @since  0.0.43
+	 * @return object|null
+	 */
+	private static function packs_helper() {
+		/*
+		 * get_packs() reads wpcode()->library->get_data() internally, so the packs helper is useless
+		 * without the library loaded first - it fatals on null rather than returning no packs.
+		 */
+		if ( null === self::library() ) {
+			return null;
+		}
+
+		if ( ! class_exists( 'WPCode_Packs' ) ) {
+			if ( ! defined( 'WPCODE_PLUGIN_PATH' ) ) {
+				return null;
+			}
+
+			$file = WPCODE_PLUGIN_PATH . 'includes/class-wpcode-packs.php';
+
+			if ( ! is_readable( $file ) ) {
+				return null;
+			}
+
+			require_once $file;
+		}
+
+		if ( ! class_exists( 'WPCode_Packs' ) || ! method_exists( 'WPCode_Packs', 'get_instance' ) ) {
+			return null;
+		}
+
+		return \WPCode_Packs::get_instance();
+	}
+
+	/**
 	 * Whether the library is reachable and has data.
 	 *
 	 * @since  0.0.43
 	 * @return true|WP_Error
 	 */
 	public static function assert_reachable() {
-		if ( ! function_exists( 'wpcode' ) || ! isset( wpcode()->library ) ) {
+		$library = self::library();
+
+		if ( null === $library ) {
 			return new WP_Error(
 				'library_unavailable',
-				__( 'WPCode\'s snippet library is not available on this site.', 'acrossai-abilities-manager' )
+				__( 'WPCode\'s snippet library could not be loaded on this site.', 'acrossai-abilities-manager' )
 			);
 		}
 
-		$data = wpcode()->library->get_data();
+		$data = $library->get_data();
 
 		if ( empty( $data ) || empty( $data['snippets'] ) ) {
 			return new WP_Error(
@@ -74,7 +201,7 @@ final class Library_Repository {
 			return $reachable;
 		}
 
-		$data     = wpcode()->library->get_data();
+		$data     = self::library()->get_data();
 		$needle   = strtolower( trim( $search ) );
 		$results  = array();
 
@@ -117,7 +244,7 @@ final class Library_Repository {
 			return $reachable;
 		}
 
-		$data = wpcode()->library->get_data();
+		$data = self::library()->get_data();
 
 		foreach ( (array) $data['snippets'] as $snippet ) {
 			if ( is_array( $snippet ) && (int) ( $snippet['library_id'] ?? 0 ) === $library_id ) {
@@ -149,7 +276,7 @@ final class Library_Repository {
 			return $reachable;
 		}
 
-		$snippet = wpcode()->library->create_new_snippet( $library_id );
+		$snippet = self::library()->create_new_snippet( $library_id );
 
 		if ( ! $snippet instanceof WPCode_Snippet ) {
 			return new WP_Error(
@@ -173,14 +300,16 @@ final class Library_Repository {
 	 * @return array<string, mixed>|WP_Error
 	 */
 	public static function apply_pack( string $slug ) {
-		if ( ! function_exists( 'wpcode' ) || ! isset( wpcode()->packs ) ) {
+		$packs = self::packs_helper();
+
+		if ( null === $packs ) {
 			return new WP_Error(
 				'library_unavailable',
-				__( 'WPCode snippet packs are not available on this site.', 'acrossai-abilities-manager' )
+				__( 'WPCode snippet packs could not be loaded on this site.', 'acrossai-abilities-manager' )
 			);
 		}
 
-		if ( empty( wpcode()->packs->find_pack( $slug ) ) ) {
+		if ( empty( $packs->find_pack( $slug ) ) ) {
 			return new WP_Error(
 				'unknown_pack',
 				sprintf(
@@ -191,7 +320,7 @@ final class Library_Repository {
 			);
 		}
 
-		$result = (array) wpcode()->packs->install_pack( $slug );
+		$result = (array) $packs->install_pack( $slug );
 
 		/*
 		 * install_pack() returns its own envelope and reports success => false for every refusal,
@@ -239,17 +368,19 @@ final class Library_Repository {
 	 * @return array<int, array<string, mixed>>|WP_Error
 	 */
 	public static function packs() {
-		if ( ! function_exists( 'wpcode' ) || ! isset( wpcode()->packs ) ) {
+		$packs = self::packs_helper();
+
+		if ( null === $packs ) {
 			return new WP_Error(
 				'library_unavailable',
-				__( 'WPCode snippet packs are not available on this site.', 'acrossai-abilities-manager' )
+				__( 'WPCode snippet packs could not be loaded on this site.', 'acrossai-abilities-manager' )
 			);
 		}
 
-		$installed = (array) wpcode()->packs->get_installed_state();
+		$installed = (array) $packs->get_installed_state();
 		$rows      = array();
 
-		foreach ( (array) wpcode()->packs->get_packs() as $slug => $pack ) {
+		foreach ( (array) $packs->get_packs() as $slug => $pack ) {
 			if ( ! is_array( $pack ) ) {
 				continue;
 			}
@@ -257,11 +388,14 @@ final class Library_Repository {
 			$key = is_string( $slug ) ? $slug : (string) ( $pack['slug'] ?? '' );
 
 			$rows[] = array(
+				// 'name', not 'title' - that is the key get_packs() builds and the key WPCode's own
+				// pack view reads. Asking for 'title' returns an empty string for every pack.
+				'title'         => (string) ( $pack['name'] ?? '' ),
 				'slug'          => $key,
-				'title'         => (string) ( $pack['title'] ?? '' ),
 				'description'   => (string) ( $pack['description'] ?? '' ),
+				'group'         => (string) ( $pack['group'] ?? '' ),
 				'snippet_count' => count( (array) ( $pack['snippets'] ?? array() ) ),
-				'installed'     => ! empty( $installed[ $key ] ),
+				'installed'     => ! empty( $pack['installed'] ) || ! empty( $installed[ $key ] ),
 			);
 		}
 

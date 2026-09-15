@@ -129,17 +129,37 @@ final class Snippet_Repository {
 	 * @return array<int, int> Snippet ids present in the cache.
 	 */
 	public static function cached_ids(): array {
-		$cached = get_option( self::CACHE_OPTION, array() );
-		$ids    = array();
+		return self::collect_ids( get_option( self::CACHE_OPTION, array() ) );
+	}
 
-		foreach ( (array) $cached as $entry ) {
-			if ( is_array( $entry ) && isset( $entry['id'] ) ) {
-				$ids[] = (int) $entry['id'];
-				continue;
-			}
+	/**
+	 * Walk the cache and pull out every snippet id.
+	 *
+	 * The option is keyed by LOCATION, not by snippet: `[ 'site_wide_header' => [ 0 => [ 'id' =>
+	 * 143, ... ] ] ]`. Reading only the top level finds location buckets and no ids at all, which
+	 * reports every active snippet as missing from the cache — measured on a live install. The walk
+	 * is recursive and shape-tolerant rather than assuming exactly two levels, because the depth is
+	 * WPCode's business and an empty cache, a flat cache and a nested one all have to answer
+	 * correctly.
+	 *
+	 * @since  0.0.43
+	 * @param  mixed $node Cache fragment.
+	 * @return array<int, int>
+	 */
+	private static function collect_ids( $node ): array {
+		if ( ! is_array( $node ) ) {
+			return array();
+		}
 
-			if ( is_object( $entry ) && isset( $entry->id ) ) {
-				$ids[] = (int) $entry->id;
+		if ( isset( $node['id'] ) && is_scalar( $node['id'] ) ) {
+			return array( (int) $node['id'] );
+		}
+
+		$ids = array();
+
+		foreach ( $node as $child ) {
+			foreach ( self::collect_ids( $child ) as $id ) {
+				$ids[] = $id;
 			}
 		}
 
@@ -277,12 +297,43 @@ final class Snippet_Repository {
 					/* translators: 1: snippet id, 2: the error WPCode recorded. */
 					__( 'WPCode test-ran snippet %1$d before activating it, the code errored, and WPCode left it switched off. The snippet was saved but is NOT running. Error: %2$s', 'acrossai-abilities-manager' ),
 					(int) $id,
-					self::last_error( $saved ) ?: __( '(none recorded)', 'acrossai-abilities-manager' )
+					self::activation_error( $saved )
 				)
 			);
 		}
 
 		return self::shape( $saved );
+	}
+
+	/**
+	 * The reason an activation was refused, from whichever place WPCode left it.
+	 *
+	 * The stored `_wpcode_last_error` meta is the obvious source but is often empty here: a syntax
+	 * error caught by `run_activation_checks()` lives only in WPCode's in-memory error handler for
+	 * the rest of the request, and is never persisted. Measured on a deliberately broken snippet,
+	 * the meta was empty and the handler held the message. Reporting "(none recorded)" when WPCode
+	 * knows the reason leaves the caller unable to fix the code.
+	 *
+	 * @since  0.0.43
+	 * @param  WPCode_Snippet $snippet Snippet.
+	 * @return string
+	 */
+	private static function activation_error( WPCode_Snippet $snippet ): string {
+		$stored = self::last_error( $snippet );
+
+		if ( '' !== $stored ) {
+			return $stored;
+		}
+
+		if ( function_exists( 'wpcode' ) && isset( wpcode()->error ) ) {
+			$live = (string) wpcode()->error->get_last_error_message();
+
+			if ( '' !== $live ) {
+				return $live;
+			}
+		}
+
+		return __( '(WPCode recorded no message; the code most likely has a syntax error)', 'acrossai-abilities-manager' );
 	}
 
 	/**
@@ -317,6 +368,8 @@ final class Snippet_Repository {
 			'custom_shortcode' => 'custom_shortcode',
 		);
 
+		$data = array();
+
 		foreach ( $map as $key => $property ) {
 			if ( ! array_key_exists( $key, $input ) ) {
 				continue;
@@ -327,19 +380,60 @@ final class Snippet_Repository {
 			if ( 'priority' === $key ) {
 				$value = (int) $value;
 			} elseif ( 'auto_insert' === $key ) {
-				$value = (bool) $value;
+				$value = self::auto_insert_flag( $value );
 			} elseif ( in_array( $key, self::FREE_TEXT, true ) ) {
 				$value = Slash_Input::slash( (string) $value, $input );
 			} else {
 				$value = (string) $value;
 			}
 
-			$snippet->$property = $value;
+			$data[ $property ] = $value;
 		}
 
 		if ( array_key_exists( 'tags', $input ) && is_array( $input['tags'] ) ) {
-			$snippet->tags = array_values( array_map( 'strval', $input['tags'] ) );
+			$data['tags'] = array_values( array_map( 'strval', $input['tags'] ) );
 		}
+
+		if ( ! empty( $data ) ) {
+			self::assign( $snippet, $data );
+		}
+	}
+
+	/**
+	 * WPCode compares auto_insert with `1 === $this->auto_insert`, so it must be an integer.
+	 *
+	 * Measured: passing boolean true fails that strict comparison, `save()` takes the else branch
+	 * and calls wp_set_post_terms( $id, array(), 'wpcode_location' ) — which CLEARS the location
+	 * instead of setting it. The write reports success, auto_insert reads back as true, and the
+	 * location comes back empty, so the snippet is placed nowhere and nothing says why.
+	 *
+	 * @since  0.0.43
+	 * @param  mixed $value Caller-supplied flag.
+	 * @return int 1 or 0, never a boolean.
+	 */
+	private static function auto_insert_flag( $value ): int {
+		return $value ? 1 : 0;
+	}
+
+	/**
+	 * Hand a whitelisted field set to WPCode's own loader.
+	 *
+	 * Direct property assignment is not an option: `note`, `priority`, `use_rules` and `rules` are
+	 * PRIVATE on WPCode_Snippet, so `$snippet->note = ...` is a fatal at call time. `load_from_array()`
+	 * reaches them because it runs inside the class and reads `get_object_vars( $this )`.
+	 *
+	 * The whitelist matters just as much: that same method assigns ANY property it recognises, so
+	 * handing it raw caller input would expose internals such as `post_data`, `compiled_code` and
+	 * `id`. Building the array here keeps WPCode's supported route without widening what a caller
+	 * can reach.
+	 *
+	 * @since  0.0.43
+	 * @param  WPCode_Snippet       $snippet Snippet to mutate.
+	 * @param  array<string, mixed> $data    Whitelisted property => value.
+	 * @return void
+	 */
+	private static function assign( WPCode_Snippet $snippet, array $data ): void {
+		$snippet->load_from_array( $data );
 	}
 
 	/**
@@ -365,7 +459,7 @@ final class Snippet_Repository {
 		}
 
 		$snippet->location    = $location;
-		$snippet->auto_insert = $auto_insert;
+		$snippet->auto_insert = self::auto_insert_flag( $auto_insert );
 
 		return self::persist( $snippet, (bool) $snippet->is_active() );
 	}
@@ -481,8 +575,14 @@ final class Snippet_Repository {
 			}
 		}
 
-		$snippet->use_rules = $enabled;
-		$snippet->rules     = $groups;
+		// use_rules and rules are both private; go through WPCode's own loader.
+		self::assign(
+			$snippet,
+			array(
+				'use_rules' => $enabled,
+				'rules'     => $groups,
+			)
+		);
 
 		return self::persist( $snippet, (bool) $snippet->is_active() );
 	}
@@ -490,15 +590,19 @@ final class Snippet_Repository {
 	/**
 	 * Write the global header/body/footer scripts.
 	 *
-	 * Slashed for the same reason snippet code is: these hold raw script markup, and a tracking tag
-	 * with an escape sequence in it would lose a backslash on every save.
+	 * Deliberately NOT slashed, which is the opposite of the snippet-code path a few lines up, and
+	 * the difference is a WordPress one rather than a WPCode one. `wp_insert_post()`,
+	 * `wp_update_post()` and `update_post_meta()` all expect SLASHED input and unslash it
+	 * internally, so snippet code must be slashed or it loses a level. `update_option()` does no
+	 * such unslashing, so slashing here ADDS a level instead: measured, sending `\d+` stored
+	 * `\\d+` (hex 5C5C). Applying one rule to both paths corrupts one of them whichever rule you
+	 * pick.
 	 *
 	 * @since  0.0.43
 	 * @param  array<string, mixed> $values Slot => markup, any subset of self::GLOBAL_KEYS.
-	 * @param  array<string, mixed> $input  Ability input, for the slash opt-out.
 	 * @return array<string, string>|WP_Error
 	 */
-	public static function update_global_scripts( array $values, array $input ) {
+	public static function update_global_scripts( array $values ) {
 		$touched = array();
 
 		foreach ( self::GLOBAL_KEYS as $slot => $option ) {
@@ -506,20 +610,27 @@ final class Snippet_Repository {
 				continue;
 			}
 
-			$new = Slash_Input::slash( (string) $values[ $slot ], $input );
+			$new = (string) $values[ $slot ];
 
 			update_option( $option, $new );
 
-			// Read back: update_option() returns false for an unchanged value as well as a failure.
+			/*
+			 * Strict equality against what the caller actually sent. update_option() returns false
+			 * for an unchanged value as readily as for a failure, so its return tells us nothing;
+			 * and a looser comparison here would have accepted the double-slashed value that made
+			 * this method wrong in the first place.
+			 */
 			$stored = (string) get_option( $option, '' );
 
-			if ( wp_unslash( $new ) !== $stored && $new !== $stored ) {
+			if ( $new !== $stored ) {
 				return new WP_Error(
 					'global_script_rejected',
 					sprintf(
-						/* translators: %s: slot name. */
-						__( 'The %s script did not store as sent. Something on this site is filtering the option.', 'acrossai-abilities-manager' ),
-						$slot
+						/* translators: 1: slot name, 2: what was sent, 3: what was stored. */
+						__( 'The %1$s script did not store as sent. Sent: %2$s. Stored: %3$s. Something on this site is filtering the option.', 'acrossai-abilities-manager' ),
+						$slot,
+						$new,
+						$stored
 					)
 				);
 			}

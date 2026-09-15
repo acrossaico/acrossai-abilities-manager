@@ -10,7 +10,6 @@
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\WPCode;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\WPCode\Snippet_Repository;
 use WP_Error;
 
@@ -73,7 +72,6 @@ final class Update_Global_Scripts extends Base_WPCode_Ability {
 				'type'        => 'string',
 				'description' => __( 'Markup for the site footer. Replaces the current value entirely.', 'acrossai-abilities-manager' ),
 			),
-			'apply_wp_slash' => Slash_Input::schema_fragment()['apply_wp_slash'],
 		);
 	}
 
@@ -141,7 +139,7 @@ final class Update_Global_Scripts extends Base_WPCode_Ability {
 			);
 		}
 
-		$result = Snippet_Repository::update_global_scripts( $slots, $input );
+		$result = Snippet_Repository::update_global_scripts( $slots );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
