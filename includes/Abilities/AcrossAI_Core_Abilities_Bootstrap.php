@@ -80,6 +80,8 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		$loader->add_action( 'wp_abilities_api_categories_init', ClassicEditor\Category_Registrar::instance(), 'register' );
 		// Feature 109 — The Events Calendar category (self-guards on the plugin inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', EventsCalendar\Category_Registrar::instance(), 'register' );
+		// Feature 110 — Event Tickets category (self-guards on the plugin inside register()).
+		$loader->add_action( 'wp_abilities_api_categories_init', EventTickets\Category_Registrar::instance(), 'register' );
 
 		// Feature 112 — WPCode category (self-guards on the plugin inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', WPCode\Category_Registrar::instance(), 'register' );
@@ -619,6 +621,11 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_events_calendar_abilities();
 		}
 
+		// Feature 110 — Event Tickets ability suite (16 abilities under tickets/*). Gated on Event
+		// Tickets alone: it does NOT require The Events Calendar, and tickets attach to pages too.
+		if ( class_exists( 'Tribe__Tickets__Main' ) && class_exists( 'Tribe__Tickets__Tickets' ) ) {
+			$this->register_event_tickets_abilities();
+		}
 		// Feature 112 — WPCode ability suite (24 abilities under snippets/*). Gated on the snippet
 		// class rather than a version constant: it is what the suite actually calls, so its absence
 		// is what would break. WPCode's own five under wpcode/* are adopted by the toolset, not
@@ -1226,6 +1233,31 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new EventsCalendar\Update_Event();
 		new EventsCalendar\Update_Organizer();
 		new EventsCalendar\Update_Venue();
+	}
+
+	/**
+	 * Feature 110 — instantiate the Event Tickets ability classes.
+	 *
+	 * @since  0.0.41
+	 * @return void
+	 */
+	private function register_event_tickets_abilities(): void {
+		new EventTickets\Check_In_Attendee();
+		new EventTickets\Create_Ticket();
+		new EventTickets\Delete_Ticket();
+		new EventTickets\Get_Attendee_Summary();
+		new EventTickets\Get_Capacity_Report();
+		new EventTickets\Get_Order();
+		new EventTickets\Get_Sales_Summary();
+		new EventTickets\Get_Ticket();
+		new EventTickets\Get_Ticket_Settings();
+		new EventTickets\List_Attendees();
+		new EventTickets\List_Orders();
+		new EventTickets\List_Ticket_Providers();
+		new EventTickets\List_Tickets();
+		new EventTickets\Set_Ticket_Capacity();
+		new EventTickets\Undo_Check_In();
+		new EventTickets\Update_Ticket();
 	}
 
 	/**
