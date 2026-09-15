@@ -83,6 +83,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// Feature 110 — Event Tickets category (self-guards on the plugin inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', EventTickets\Category_Registrar::instance(), 'register' );
 
+		// Feature 112 — WPCode category (self-guards on the plugin inside register()).
+		$loader->add_action( 'wp_abilities_api_categories_init', WPCode\Category_Registrar::instance(), 'register' );
+
 		// Feature 104 — LiteSpeed Cache category (self-guards on the host probe inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', LiteSpeed\Category_Registrar::instance(), 'register' );
 
@@ -508,6 +511,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Recovery\Get_Recovery_Mode_Status();
 		new Recovery\List_Paused_Plugins();
 		new Recovery\List_Paused_Themes();
+		new Recovery\List_Ability_Collisions();
 		new Recovery\Get_Recovery_Exit_Url();
 		new Recovery\Unpause_Plugin();
 		new Recovery\Unpause_Theme();
@@ -621,6 +625,14 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// Tickets alone: it does NOT require The Events Calendar, and tickets attach to pages too.
 		if ( class_exists( 'Tribe__Tickets__Main' ) && class_exists( 'Tribe__Tickets__Tickets' ) ) {
 			$this->register_event_tickets_abilities();
+		}
+
+		// Feature 112 — WPCode ability suite (24 abilities under snippets/*). Gated on the snippet
+		// class rather than a version constant: it is what the suite actually calls, so its absence
+		// is what would break. WPCode's own five under wpcode/* are adopted by the toolset, not
+		// re-registered here.
+		if ( class_exists( 'WPCode_Snippet' ) && function_exists( 'wpcode' ) ) {
+			$this->register_wpcode_abilities();
 		}
 
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
@@ -1247,5 +1259,41 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new EventTickets\Set_Ticket_Capacity();
 		new EventTickets\Undo_Check_In();
 		new EventTickets\Update_Ticket();
+	}
+
+	/**
+	 * Feature 112 — instantiate the WPCode ability classes.
+	 *
+	 * Category_Registrar is deliberately absent: it is a singleton with a private constructor,
+	 * hooked via instance() above. Constructing it here would be a fatal on every page load.
+	 *
+	 * @since  0.0.43
+	 * @return void
+	 */
+	private function register_wpcode_abilities(): void {
+		new WPCode\List_Snippets();
+		new WPCode\Get_Snippet();
+		new WPCode\Create_Snippet();
+		new WPCode\Update_Snippet();
+		new WPCode\Delete_Snippet();
+		new WPCode\Activate_Snippet();
+		new WPCode\Deactivate_Snippet();
+		new WPCode\Duplicate_Snippet();
+		new WPCode\Set_Location();
+		new WPCode\Set_Conditional_Logic();
+		new WPCode\List_Locations();
+		new WPCode\Get_Global_Scripts();
+		new WPCode\Update_Global_Scripts();
+		new WPCode\Get_Snippet_Status();
+		new WPCode\List_Snippet_Errors();
+		new WPCode\Clear_Snippet_Errors();
+		new WPCode\Search_Library();
+		new WPCode\Get_Library_Snippet();
+		new WPCode\Install_Library_Snippet();
+		new WPCode\List_Packs();
+		new WPCode\Apply_Pack();
+		new WPCode\List_Snippet_Updates();
+		new WPCode\Update_Snippet_From_Library();
+		new WPCode\Install_Shared_Snippet();
 	}
 }

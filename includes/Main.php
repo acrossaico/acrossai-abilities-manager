@@ -524,6 +524,11 @@ final class Main {
 		// so the constructor's plugins_loaded P20 add_action registers before
 		// P20 fires. Adding another integration is a one-line change here.
 		new \AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\ACF();
+
+		// Issue #202 — start recording ability-name clashes before anything registers. Abilities
+		// register on wp_abilities_api_init (fired from init), so attaching here at plugins_loaded P0
+		// is early enough to see every attempt, including plugins that register before we do.
+		\AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Ability_Collision_Recorder::listen();
 	}
 
 	/**

@@ -178,6 +178,7 @@ class AcrossAI_Toolset_Integrations {
 			new Classic_Editor(),
 			new Events_Calendar(),
 			new Event_Tickets(),
+			new WPCode(),
 			// Last: it claims no prefixes and only ever receives what nothing else wanted, so its
 			// position is immaterial — but reading it last matches how resolution actually works.
 			new AcrossAI_Catch_All_Integration(),
