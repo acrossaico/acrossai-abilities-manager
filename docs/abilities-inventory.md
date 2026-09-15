@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-15. **Total abilities:** 668 across 32 topic namespaces.
+Snapshot taken 2026-09-15. **Total abilities:** 669 across 33 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -29,7 +29,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `wpcode` — Wpcode | 24 |
 | `updates` — Updates | 23 |
 | `files` — Files | 23 |
-| `diagnostics` — Diagnostics | 20 |
+| `diagnostics` — Diagnostics | 21 |
 | `configuration` — Configuration | 19 |
 | `database` — Database | 17 |
 | `acf` — Acf | 16 |
@@ -55,6 +55,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `cron/` | 16 | `acrossai-cron` |
 | `custom-fields/` | 11 | `acrossai-acf` |
 | `database/` | 18 | `acrossai-database` |
+| `diagnostics/` | 1 | `acrossai-recovery` |
 | `editor/` | 4 | `acrossai-classic-editor` |
 | `elementor/` | 62 | `acrossai-elementor` |
 | `file-manager/` | 23 | `acrossai-file-manager` |
@@ -320,6 +321,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `database/` | `database/search-replace` | database | queries | Search Replace |
 | `database/` | `database/set-option-autoload` | database | safe-writes | Set Option Autoload |
 | `database/` | `database/update-db-rows` | database | queries | Update Rows |
+| `diagnostics/` | `diagnostics/list-ability-collisions` | diagnostics | recovery | List Ability Name Collisions |
 | `editor/` | `editor/get-editor-settings` | classic-editor |  |  |
 | `editor/` | `editor/get-post-editor` | classic-editor |  |  |
 | `editor/` | `editor/get-post-type-editor-support` | classic-editor |  |  |

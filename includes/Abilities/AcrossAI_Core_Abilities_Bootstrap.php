@@ -507,6 +507,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Recovery\Get_Recovery_Mode_Status();
 		new Recovery\List_Paused_Plugins();
 		new Recovery\List_Paused_Themes();
+		new Recovery\List_Ability_Collisions();
 		new Recovery\Get_Recovery_Exit_Url();
 		new Recovery\Unpause_Plugin();
 		new Recovery\Unpause_Theme();
