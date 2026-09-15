@@ -91,11 +91,6 @@ final class AcrossAI_Ability_Override_Processor {
 	}
 
 	/**
-	 * Private constructor — instantiation via instance() only.
-	 *
-	 * @since 0.1.0
-	 */
-	/**
 	 * Capability required by an ability with no rule of its own.
 	 *
 	 * @since 0.0.46
@@ -119,6 +114,11 @@ final class AcrossAI_Ability_Override_Processor {
 	 */
 	private const ROUTER_PREFIXES = array( 'toolset/', 'mcp-adapter/' );
 
+	/**
+	 * Private constructor — instantiation via instance() only.
+	 *
+	 * @since 0.1.0
+	 */
 	private function __construct() {}
 
 	// -------------------------------------------------------------------------
