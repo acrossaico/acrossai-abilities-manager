@@ -626,7 +626,6 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		if ( class_exists( 'Tribe__Tickets__Main' ) && class_exists( 'Tribe__Tickets__Tickets' ) ) {
 			$this->register_event_tickets_abilities();
 		}
-
 		// Feature 112 — WPCode ability suite (24 abilities under snippets/*). Gated on the snippet
 		// class rather than a version constant: it is what the suite actually calls, so its absence
 		// is what would break. WPCode's own five under wpcode/* are adopted by the toolset, not
