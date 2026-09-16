@@ -111,6 +111,7 @@ abstract class Base_Toolset_Ability {
 		add_action( 'wp_abilities_api_init', array( $this, 'register' ), 20 );
 		add_filter( 'acrossai_mcp_manager_tool_abilities', array( $this, 'declare_tool_level_ability' ) );
 		add_filter( 'acrossai_abilities_manager_protected_slugs', array( $this, 'protect_own_slug' ) );
+		add_filter( 'acrossai_mcp_server_types', array( $this, 'declare_server_type_tool' ) );
 	}
 
 	/**
@@ -146,6 +147,77 @@ abstract class Base_Toolset_Ability {
 	 */
 	public function declare_tool_level_ability( $slugs ): array {
 		return $this->contribute_own_slug( $slugs );
+	}
+
+	/**
+	 * Contribute this Toolset to the transport's `acrossai` server type.
+	 *
+	 * The transport ships that type as a PLACEHOLDER — a label and a `requires`
+	 * pointing at this plugin, with an empty tool list — precisely so it never
+	 * hardcodes our vocabulary. Without this callback the type resolves to the
+	 * transport's own fallback, and "Reset to Type Defaults" on an AcrossAI
+	 * server restores the three mcp-adapter protocol tools instead of the
+	 * Toolsets. Correct, but not what the label promises.
+	 *
+	 * Same shape and same reason as the two declarations either side of it: a
+	 * Toolset is the only thing that knows its own slug, so it says so itself
+	 * rather than having the list repeated somewhere that can drift.
+	 *
+	 * Contributed UNCONDITIONALLY, like its siblings. An earlier attempt gated
+	 * this on whether the Toolset had actually registered an ability, to keep
+	 * groups with no members out of the list. That made the answer depend on
+	 * whether the transport resolved its type registry before or after
+	 * `wp_abilities_api_init` — on a REST request it resolved first and every
+	 * Toolset silently dropped out. Filtering a declared slug that never became
+	 * an ability is the transport's job: it is the side that knows when
+	 * abilities are registered.
+	 *
+	 * The FIRST Toolset to run also supplies the entry's label and description,
+	 * because the transport's dedup is slug-keyed LAST-WINS — our entry replaces
+	 * the placeholder wholesale, so it must carry everything the placeholder
+	 * did. `requires` is deliberately dropped: the requirement is THIS plugin,
+	 * and by the time this callback runs it is satisfied by definition.
+	 *
+	 * @since  0.0.36
+	 * @param  mixed $types Types collected so far, keyed by slug.
+	 * @return mixed The list with this Toolset's slug appended to `acrossai`.
+	 */
+	public function declare_server_type_tool( $types ) {
+		if ( ! is_array( $types ) ) {
+			return $types;
+		}
+
+		if ( $this->slug_taken_by_other ) {
+			return $types;
+		}
+
+		if ( ! isset( $types['acrossai'] ) || ! is_array( $types['acrossai'] ) ) {
+			$types['acrossai'] = array();
+		}
+
+		if ( empty( $types['acrossai']['label'] ) ) {
+			$types['acrossai']['label'] = __( 'AcrossAI', 'acrossai-abilities-manager' );
+		}
+
+		if ( empty( $types['acrossai']['description'] ) ) {
+			$types['acrossai']['description'] = __(
+				'Abilities grouped into Toolsets — one dispatcher per area, each routing to the abilities behind it.',
+				'acrossai-abilities-manager'
+			);
+		}
+
+		$types['acrossai']['is_default'] = true;
+		// The requirement is this plugin. If this code is running, it is met.
+		$types['acrossai']['requires']   = null;
+
+		$tools   = isset( $types['acrossai']['tools'] ) && is_array( $types['acrossai']['tools'] )
+			? $types['acrossai']['tools']
+			: array();
+		$tools[] = $this->slug();
+
+		$types['acrossai']['tools'] = array_values( array_unique( $tools ) );
+
+		return $types;
 	}
 
 	/**
