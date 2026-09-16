@@ -69,7 +69,7 @@ final class WPCode implements AcrossAI_Toolset_Integration {
 	 * @return string[]
 	 */
 	public function ability_prefixes(): array {
-		return array( 'wpcode/' );
+		return array( 'wpcode' );
 	}
 
 	/**
