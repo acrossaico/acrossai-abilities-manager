@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-15. **Total abilities:** 703 across 35 topic namespaces.
+Snapshot taken 2026-09-16. **Total abilities:** 717 across 36 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -37,6 +37,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `cron` — Cron | 16 |
 | `event-tickets` — Event Tickets | 16 |
 | `users` — Users | 16 |
+| `translations` — Translations | 14 |
 | `` —  | 13 |
 | `cache` — Cache | 7 |
 | `classic-editor` — Classic Editor | 4 |
@@ -78,6 +79,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `themes/` | 7 | `acrossai-themes` |
 | `tickets/` | 16 | `acrossai-event-tickets` |
 | `toolset/` | 13 | `acrossai-toolset` |
+| `translations/` | 14 | `acrossai-loco-translate` |
 | `users/` | 16 | `acrossai-users` |
 | `widgets/` | 11 | `acrossai-widgets` |
 
@@ -761,6 +763,20 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `toolset/` | `toolset/rank-math` |  |  |  |
 | `toolset/` | `toolset/updates` |  |  |  |
 | `toolset/` | `toolset/users` |  |  |  |
+| `translations/` | `translations/compile-translations` | translations |  |  |
+| `translations/` | `translations/create-translation-file` | translations |  |  |
+| `translations/` | `translations/delete-translation-file` | translations |  |  |
+| `translations/` | `translations/extract-strings` | translations |  |  |
+| `translations/` | `translations/fetch-translations` | translations |  |  |
+| `translations/` | `translations/get-bundle` | translations |  |  |
+| `translations/` | `translations/get-string` | translations |  |  |
+| `translations/` | `translations/get-translation-status` | translations |  |  |
+| `translations/` | `translations/list-available-languages` | translations |  |  |
+| `translations/` | `translations/list-bundles` | translations |  |  |
+| `translations/` | `translations/list-locales` | translations |  |  |
+| `translations/` | `translations/list-strings` | translations |  |  |
+| `translations/` | `translations/sync-translations` | translations |  |  |
+| `translations/` | `translations/update-strings` | translations |  |  |
 | `users/` | `users/add-role-capability` | users | roles | Add Role Capability |
 | `users/` | `users/add-user-capability` | users | users | Add User Capability |
 | `users/` | `users/create-role` | users | roles | Create Role |
