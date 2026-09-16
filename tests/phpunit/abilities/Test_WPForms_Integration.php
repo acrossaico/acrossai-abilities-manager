@@ -100,12 +100,13 @@ class Test_WPForms_Integration extends WP_UnitTestCase {
 	/**
 	 * No integration declares a prefix that cannot match.
 	 *
-	 * The guard that would have caught #209 before it shipped. WPCode is excluded because it IS
-	 * #209 and is being fixed separately — remove it from the exclusion list with that fix, do not
-	 * relax the assertion.
+	 * The guard that would have caught #209 before it shipped, and now covering every integration:
+	 * the exclusion WPCode carried was removed with that fix. Do not reintroduce one — a prefix
+	 * containing a slash is always dead, so an exception here means an integration whose abilities
+	 * sit in the catch-all while its tab claims them.
 	 */
 	public function test_no_integration_declares_an_unmatchable_prefix(): void {
-		$known_broken = array( 'WPCode.php' );
+		$known_broken = array();
 		$files        = glob( dirname( __DIR__, 3 ) . '/includes/Abilities/Integrations/*.php' );
 		$offenders    = array();
 
