@@ -100,6 +100,7 @@ class AcrossAI_Category_Slug_Migration {
 		'file-manager',
 		'fonts',
 		'litespeed-cache',
+		'loco-translate',
 		'media',
 		'menus',
 		'options',

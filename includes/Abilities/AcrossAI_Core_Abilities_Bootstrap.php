@@ -86,6 +86,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// Feature 112 — WPCode category (self-guards on the plugin inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', WPCode\Category_Registrar::instance(), 'register' );
 
+		// Feature 116 — Loco Translate category (self-guards on the plugin inside register()).
+		$loader->add_action( 'wp_abilities_api_categories_init', LocoTranslate\Category_Registrar::instance(), 'register' );
+
 		// Feature 104 — LiteSpeed Cache category (self-guards on the host probe inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', LiteSpeed\Category_Registrar::instance(), 'register' );
 
@@ -632,6 +635,13 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// re-registered here.
 		if ( class_exists( 'WPCode_Snippet' ) && function_exists( 'wpcode' ) ) {
 			$this->register_wpcode_abilities();
+		}
+
+		// Feature 116 — Loco Translate ability suite (14 abilities under translations/*). Gated on
+		// the two classes the suite actually calls: the discovery root and the only sanctioned write
+		// path. Loco registers no abilities of its own, so nothing here is adopted.
+		if ( class_exists( 'Loco_package_Bundle' ) && class_exists( 'Loco_gettext_Compiler' ) ) {
+			$this->register_loco_translate_abilities();
 		}
 
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
@@ -1294,5 +1304,31 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new WPCode\List_Snippet_Updates();
 		new WPCode\Update_Snippet_From_Library();
 		new WPCode\Install_Shared_Snippet();
+	}
+
+	/**
+	 * Feature 116 — instantiate the Loco Translate ability classes.
+	 *
+	 * Category_Registrar is deliberately absent: it is a singleton with a private constructor, hooked
+	 * via instance() above. Constructing it here would be a fatal on every page load.
+	 *
+	 * @since  0.0.47
+	 * @return void
+	 */
+	private function register_loco_translate_abilities(): void {
+		new LocoTranslate\List_Bundles();
+		new LocoTranslate\Get_Bundle();
+		new LocoTranslate\Get_Translation_Status();
+		new LocoTranslate\List_Locales();
+		new LocoTranslate\List_Strings();
+		new LocoTranslate\Get_String();
+		new LocoTranslate\Update_Strings();
+		new LocoTranslate\Create_Translation_File();
+		new LocoTranslate\Delete_Translation_File();
+		new LocoTranslate\Compile_Translations();
+		new LocoTranslate\Sync_Translations();
+		new LocoTranslate\Extract_Strings();
+		new LocoTranslate\List_Available_Languages();
+		new LocoTranslate\Fetch_Translations();
 	}
 }
