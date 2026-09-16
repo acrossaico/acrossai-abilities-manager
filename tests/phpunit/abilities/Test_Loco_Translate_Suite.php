@@ -388,6 +388,24 @@ class Test_Loco_Translate_Suite extends WP_UnitTestCase {
 		}
 	}
 
+	/**
+	 * The reported Loco version comes from the function, not from a constant.
+	 *
+	 * `loco_plugin_version` is lower-case and looks exactly like a constant, so `defined()` reads as
+	 * correct and is always false — the field was advertised in the output schema and came back empty
+	 * on every site. Caught by running the ability and reading the answer, not by the suite.
+	 */
+	public function test_the_loco_version_is_read_from_the_function(): void {
+		$src = self::code_only( self::read( self::dir() . 'Get_Translation_Status.php' ) );
+
+		$this->assertStringContainsString( "function_exists( 'loco_plugin_version' )", $src );
+		$this->assertStringNotContainsString(
+			"defined( 'loco_plugin_version' )",
+			$src,
+			'loco_plugin_version() is a function; defined() never returns true for it.'
+		);
+	}
+
 	public function test_the_integration_claims_no_prefix(): void {
 		$src = self::read( dirname( __DIR__, 3 ) . '/includes/Abilities/Integrations/Loco_Translate.php' );
 

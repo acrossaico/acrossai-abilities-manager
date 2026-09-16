@@ -117,7 +117,9 @@ final class Get_Translation_Status extends Base_Loco_Ability {
 			'languages_dir_writable' => $exists ? is_writable( $dir ) : ( '' !== $dir && is_writable( dirname( $dir ) ) ),
 			'uses_php_cache'         => Loco_Guard::uses_php_cache(),
 			'bundle_count'           => is_wp_error( $bundles ) ? 0 : count( $bundles ),
-			'loco_version'           => defined( 'loco_plugin_version' ) ? (string) constant( 'loco_plugin_version' ) : '',
+			// A FUNCTION, not a constant, despite the lower-case name. `defined()` is always false for
+			// it, so this field reported an empty version on every site until it was measured.
+			'loco_version'           => function_exists( 'loco_plugin_version' ) ? (string) loco_plugin_version() : '',
 		);
 	}
 }
