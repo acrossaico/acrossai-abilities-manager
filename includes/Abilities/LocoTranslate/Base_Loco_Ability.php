@@ -45,7 +45,7 @@ abstract class Base_Loco_Ability extends Ability_Definition {
 	 * @since 0.0.47
 	 * @var   string
 	 */
-	protected const TAB_GROUP = 'translations';
+	protected const TAB_GROUP = 'loco-translate';
 
 	/**
 	 * @since  0.0.47

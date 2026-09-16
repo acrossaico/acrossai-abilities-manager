@@ -1,16 +1,16 @@
 <?php
 /**
- * Feature 118 — the sole ability assembler for the consent suite.
+ * Feature 119 — the sole ability assembler for the email delivery suite.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
- * @subpackage Includes\Abilities\Consent
- * @since      0.0.48
+ * @subpackage Includes\Abilities\Email
+ * @since      0.0.49
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Consent;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\Email;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Consent\Consent_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Email\Email_Guard;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 
 defined( 'ABSPATH' ) || exit;
@@ -19,85 +19,83 @@ defined( 'ABSPATH' ) || exit;
  * Every ability in this suite runs through here.
  *
  * The base owns what must not vary: the category, the tab group, the capability floor, the guard
- * order and the envelope — plus one thing specific to this suite, the account gate.
+ * order and the envelope.
  *
- * **The account gate.** Some of what the consent plugin offers is produced by the vendor's service
- * rather than by the plugin, and is empty until the site is linked to an account. An ability that
- * needs it declares {@see self::requires_account()} and the base refuses BEFORE `run()`, with a
- * message naming the screen, the button and the request to report back. Nothing here performs the
- * linking: it authorises an external account, which is a person's decision to make. There is no
- * "is it connected" ability either — that question is only ever asked after something has already
- * failed for want of it, so the failing call answers it directly (the Feature 112 decision).
+ * Deliberately small. This suite is four abilities over one option and one test sender, so there is
+ * little to hold in common beyond the shape.
  *
- * `Slash_Input` is deliberately ABSENT. The consent plugin's own setters sanitise every field on the
- * way in — `sanitize_text_field()` for names, `wp_filter_post_kses()` for the multilingual fields,
- * `absint()` for the numeric ones — and none of them unslash. Adding a level here would add one
- * nothing removes, the mistake Feature 116 measured twice.
+ * `Slash_Input` is deliberately ABSENT. Every field written here is sanitised on the way in with
+ * `sanitize_email()` or `sanitize_text_field()`, and `update_option()` does not unslash — so slashing
+ * would add a level nothing removes, the mistake Feature 116 measured twice.
+ *
+ * No credential is ever read through the mail plugin's own accessor. `Options::get()` ends in
+ * `Crypto::decrypt()` (`src/Options.php:439`), so asking it for the SMTP password returns the SMTP
+ * password; presence is judged from the raw stored value instead, in {@see Email_Repository}.
  */
-abstract class Base_Consent_Ability extends Ability_Definition {
+abstract class Base_Email_Ability extends Ability_Definition {
 
 	/**
-	 * @since 0.0.48
+	 * @since 0.0.49
 	 * @var   string
 	 */
-	protected const CATEGORY = 'acrossai-consent';
+	protected const CATEGORY = 'acrossai-email';
 
 	/**
-	 * @since 0.0.48
+	 * @since 0.0.49
 	 * @var   string
 	 */
-	protected const TAB_GROUP = 'cookieyes';
+	protected const TAB_GROUP = 'wp-mail-smtp';
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return string
 	 */
 	abstract protected function slug(): string;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return string
 	 */
 	abstract protected function ability_label(): string;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return string
 	 */
 	abstract protected function ability_description(): string;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return string
 	 */
 	abstract protected function sub_group(): string;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return array<string, mixed>
 	 */
 	abstract protected function input_properties(): array;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return array<string, mixed>
 	 */
 	abstract protected function output_properties(): array;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return array<int, string>
 	 */
 	abstract protected function required_input(): array;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return array<string, bool>
 	 */
 	abstract protected function annotations(): array;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|\WP_Error
 	 */
@@ -106,7 +104,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	/**
 	 * Administrator, and not overridable by a subclass.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return string
 	 */
 	final protected function permission_floor(): string {
@@ -114,27 +112,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * Whether this ability needs the site linked to a consent account.
-	 *
-	 * @since  0.0.48
-	 * @return bool
-	 */
-	protected function requires_account(): bool {
-		return false;
-	}
-
-	/**
-	 * What to name in the refusal when the account is missing.
-	 *
-	 * @since  0.0.48
-	 * @return string
-	 */
-	protected function account_subject(): string {
-		return $this->ability_label();
-	}
-
-	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -142,7 +120,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @param  array<string, mixed> $input Input.
 	 * @return bool
 	 */
@@ -151,7 +129,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -159,21 +137,18 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return array<string, string>
 	 */
 	protected function sub_group_labels(): array {
 		return array(
-			'cookies'    => __( 'Cookie list', 'acrossai-abilities-manager' ),
-			'categories' => __( 'Consent categories', 'acrossai-abilities-manager' ),
-			'banner'     => __( 'Banner', 'acrossai-abilities-manager' ),
-			'settings'   => __( 'Settings', 'acrossai-abilities-manager' ),
-			'reporting'  => __( 'Reporting', 'acrossai-abilities-manager' ),
+			'delivery'    => __( 'Delivery', 'acrossai-abilities-manager' ),
+			'diagnostics' => __( 'Diagnostics', 'acrossai-abilities-manager' ),
 		);
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return string
 	 */
 	protected function success_message(): string {
@@ -183,7 +158,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	/**
 	 * Assemble the ability definition.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @return array<string, mixed>
 	 */
 	protected function ability(): array {
@@ -221,7 +196,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 				'description'         => $this->ability_description(),
 				'category'            => self::CATEGORY,
 				'execute_callback'    => array( $this, 'execute' ),
-				'permission_callback' => Consent_Guard::can( $this->permission_floor() ),
+				'permission_callback' => Email_Guard::can( $this->permission_floor() ),
 				'input_schema'        => array(
 					'type'                 => 'object',
 					'properties'           => $properties,
@@ -234,10 +209,8 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 						array( 'success' => array( 'type' => 'boolean' ) ),
 						$this->output_properties(),
 						array(
-							'message'     => array( 'type' => 'string' ),
-							'error_code'  => array( 'type' => 'string' ),
-							'connect_url' => array( 'type' => 'string' ),
-							'connected'   => array( 'type' => 'boolean' ),
+							'message'    => array( 'type' => 'string' ),
+							'error_code' => array( 'type' => 'string' ),
 						)
 					),
 					'required'             => array( 'success' ),
@@ -263,42 +236,34 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	 * operation that cannot run either way wastes a round trip and reads as though confirming would
 	 * help.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.49
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>
 	 */
 	public function execute( array $input = array() ): array {
-		$available = Consent_Guard::assert_available();
+		$available = Email_Guard::assert_available();
 
 		if ( is_wp_error( $available ) ) {
-			return Consent_Guard::fail( $available );
-		}
-
-		if ( $this->requires_account() ) {
-			$connected = Consent_Guard::assert_connected( $this->account_subject() );
-
-			if ( is_wp_error( $connected ) ) {
-				return Consent_Guard::fail( $connected );
-			}
+			return Email_Guard::fail( $available );
 		}
 
 		if ( $this->needs_confirmation_for( $input ) ) {
-			$confirmed = Consent_Guard::assert_confirmed( $input, $this->confirmation_message() );
+			$confirmed = Email_Guard::assert_confirmed( $input, $this->confirmation_message() );
 
 			if ( is_wp_error( $confirmed ) ) {
-				return Consent_Guard::fail( $confirmed );
+				return Email_Guard::fail( $confirmed );
 			}
 		}
 
 		$result = $this->run( $input );
 
 		if ( is_wp_error( $result ) ) {
-			return Consent_Guard::fail( $result );
+			return Email_Guard::fail( $result );
 		}
 
 		$message = isset( $result['message'] ) ? (string) $result['message'] : $this->success_message();
 		unset( $result['message'] );
 
-		return Consent_Guard::ok( $result, $message );
+		return Email_Guard::ok( $result, $message );
 	}
 }

@@ -230,6 +230,7 @@
 			<file>tests/phpunit/abilities/Test_WPCode_Suite.php</file>
 			<file>tests/phpunit/abilities/Test_WPForms_Integration.php</file>
 			<file>tests/phpunit/abilities/Test_Consent_Suite.php</file>
+			<file>tests/phpunit/abilities/Test_Email_Delivery_Suite.php</file>
 			<file>tests/phpunit/abilities/Test_Loco_Translate_Suite.php</file>
 			<file>tests/phpunit/abilities/Test_Integration_Row_Accuracy.php</file>
 			<file>tests/phpunit/abilities/Test_Ability_Collision_Recorder.php</file>

@@ -92,6 +92,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// Feature 118 — cookie consent category (self-guards on the plugin inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', Consent\Category_Registrar::instance(), 'register' );
 
+		// Feature 119 — email delivery category (self-guards on the plugin inside register()).
+		$loader->add_action( 'wp_abilities_api_categories_init', Email\Category_Registrar::instance(), 'register' );
+
 		// Feature 104 — LiteSpeed Cache category (self-guards on the host probe inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', LiteSpeed\Category_Registrar::instance(), 'register' );
 
@@ -652,6 +655,12 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// consent plugin registers no abilities of its own, so nothing here is adopted.
 		if ( Utilities\Consent\Consent_Guard::is_available() ) {
 			$this->register_consent_abilities();
+		}
+
+		// Feature 119 — email delivery suite (4 abilities under email/*). The mail plugin's own
+		// abilities are adopted by prefix, not registered here.
+		if ( Utilities\Email\Email_Guard::is_available() ) {
+			$this->register_email_abilities();
 		}
 
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
@@ -1374,5 +1383,21 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Consent\Get_Pageview_Statistics();
 		new Consent\Get_Scan_Status();
 		new Consent\Get_Google_Consent_Mode_Status();
+	}
+
+	/**
+	 * Feature 119 — instantiate the email delivery ability classes.
+	 *
+	 * Category_Registrar is deliberately absent: it is a singleton with a private constructor, hooked
+	 * via instance() above. Constructing it here would be a fatal on every page load.
+	 *
+	 * @since  0.0.49
+	 * @return void
+	 */
+	private function register_email_abilities(): void {
+		new Email\Get_Delivery_Settings();
+		new Email\Get_Delivery_Status();
+		new Email\Send_Test_Email();
+		new Email\Update_Delivery_Settings();
 	}
 }

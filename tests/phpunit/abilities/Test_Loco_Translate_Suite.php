@@ -409,7 +409,7 @@ class Test_Loco_Translate_Suite extends WP_UnitTestCase {
 	public function test_the_integration_claims_no_prefix(): void {
 		$src = self::read( dirname( __DIR__, 3 ) . '/includes/Abilities/Integrations/Loco_Translate.php' );
 
-		$this->assertStringContainsString( "TAB_GROUP = 'translations'", $src );
+		$this->assertStringContainsString( "TAB_GROUP = 'loco-translate'", $src );
 		$this->assertMatchesRegularExpression(
 			'/function ability_prefixes\(\): array \{\s*return array\(\);/',
 			$src,

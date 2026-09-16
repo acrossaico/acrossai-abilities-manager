@@ -29,7 +29,7 @@ final class Consent_Banner implements AcrossAI_Toolset_Integration {
 	 * @since 0.0.48
 	 * @var   string
 	 */
-	public const TAB_GROUP = 'consent';
+	public const TAB_GROUP = 'cookieyes';
 
 	/**
 	 * @since  0.0.48
@@ -44,7 +44,7 @@ final class Consent_Banner implements AcrossAI_Toolset_Integration {
 	 * @return string
 	 */
 	public function toolset_label(): string {
-		return __( 'Cookie Consent', 'acrossai-abilities-manager' );
+		return __( 'CookieYes', 'acrossai-abilities-manager' );
 	}
 
 	/**
