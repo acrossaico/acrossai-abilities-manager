@@ -502,6 +502,42 @@ final class AcrossAI_Ability_Override_Processor {
 	 * @return bool True when access is granted or no rule applies.
 	 */
 	public static function user_has_ability_access( string $slug, int $user_id ): bool {
+		if ( ! self::resolve_access( $slug, $user_id ) ) {
+			return false;
+		}
+
+		/**
+		 * Filters whether an otherwise-permitted ability is refused by an integration.
+		 *
+		 * DENY-ONLY, and deliberately so: it runs only after access has already been granted, and a
+		 * callback can turn an allow into a deny but never a deny into an allow. Same direction as
+		 * PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY, and for the same reason — a filter that could
+		 * widen access would hand any plugin on the site the power to unlock every ability.
+		 *
+		 * It exists because this method is now the ONLY gate. Replacing each ability's own
+		 * permission callback (Feature 115) also discarded the conditions those callbacks carried
+		 * beyond a capability test — a plugin's kill-switch, a per-object check, a beta guard. An
+		 * integration that knows about such a condition has nowhere else to enforce it, so its
+		 * switch would appear to work while doing nothing. See issue #210 for the general question
+		 * of wrapping rather than replacing.
+		 *
+		 * @since 0.0.47
+		 * @param bool   $refused Whether to refuse. Always false at this point.
+		 * @param string $slug    Ability slug.
+		 * @param int    $user_id WordPress user ID.
+		 */
+		return ! (bool) apply_filters( 'acrossai_ability_access_refused', false, $slug, $user_id );
+	}
+
+	/**
+	 * The access decision itself, before any integration refusal.
+	 *
+	 * @since  0.0.47
+	 * @param  string $slug    Ability slug.
+	 * @param  int    $user_id WordPress user ID.
+	 * @return bool
+	 */
+	private static function resolve_access( string $slug, int $user_id ): bool {
 		$manager = AcrossAI_Abilities_Access_Control::instance()->get_manager();
 
 		/*

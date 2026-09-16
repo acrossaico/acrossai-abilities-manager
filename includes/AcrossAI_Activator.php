@@ -15,6 +15,7 @@ use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Secret_Redactor;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Settings;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Category_Slug_Migration;
+use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Integration_Default_Opt_Ins;
 use AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Library_Gate_Migration;
 use WPBoilerplate\AccessControl\Database\Rule\RuleTable;
 
@@ -53,6 +54,9 @@ class AcrossAI_Activator {
 		// network pick it up on their own first request (plugins_loaded P1); the flag makes both
 		// paths idempotent.
 		AcrossAI_Library_Gate_Migration::instance()->maybe_migrate();
+		// Feature 117 — integrations whose default is ON. Idempotent and guarded by its own option,
+		// so the plugins_loaded path and this one cannot seed twice.
+		AcrossAI_Integration_Default_Opt_Ins::maybe_seed();
 		self::seed_file_manager_settings();
 		self::flag_quick_connect_redirect();
 	}
