@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-16. **Total abilities:** 739 across 37 topic namespaces.
+Snapshot taken 2026-09-16. **Total abilities:** 743 across 38 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -42,6 +42,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `` —  | 13 |
 | `cache` — Cache | 7 |
 | `classic-editor` — Classic Editor | 4 |
+| `email` — Email | 4 |
 
 ## Namespaces
 
@@ -63,6 +64,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `diagnostics/` | 1 | `acrossai-recovery` |
 | `editor/` | 4 | `acrossai-classic-editor` |
 | `elementor/` | 62 | `acrossai-elementor` |
+| `email/` | 4 | `acrossai-email` |
 | `events/` | 18 | `acrossai-events-calendar` |
 | `file-manager/` | 23 | `acrossai-file-manager` |
 | `fonts/` | 8 | `acrossai-fonts` |
@@ -418,6 +420,10 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `elementor/` | `elementor/update-page-settings` | elementor | elementor-documents | Update Elementor Page Settings |
 | `elementor/` | `elementor/update-template` | elementor | elementor-templates | Update Elementor Template |
 | `elementor/` | `elementor/update-theme-builder-conditions` | elementor | elementor-templates | Update Theme Builder Conditions |
+| `email/` | `email/get-delivery-settings` | email |  |  |
+| `email/` | `email/get-delivery-status` | email |  |  |
+| `email/` | `email/send-test-email` | email |  |  |
+| `email/` | `email/update-delivery-settings` | email |  |  |
 | `events/` | `events/create-event` | events-calendar |  |  |
 | `events/` | `events/create-organizer` | events-calendar |  |  |
 | `events/` | `events/create-venue` | events-calendar |  |  |
