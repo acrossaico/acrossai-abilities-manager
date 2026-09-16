@@ -657,10 +657,33 @@ final class Consent_Repository {
 			'consent_log_status' => (bool) $settings->get_consent_log_status(),
 			'default_language'   => (string) $settings->get_default_language(),
 			'selected_languages' => array_values( (array) $settings->get_selected_languages() ),
-			'plan'               => is_array( $settings->get_plan() ) ? $settings->get_plan() : array(),
+			'plan'               => self::shape_plan( $settings->get_plan() ),
 			'redacted'           => $redacted['redacted'],
 			'onboarding_step'    => isset( $redacted['settings']['onboarding']['step'] ) ? (int) $redacted['settings']['onboarding']['step'] : 0,
 		);
+	}
+
+	/**
+	 * Normalise the stored plan.
+	 *
+	 * `account.plan` holds a bare STRING on a free account — measured, it is "free" — and an array on
+	 * others. Coercing a non-array to `array()` threw the value away: the field was advertised in the
+	 * output schema and came back empty on exactly the accounts it was most likely to be asked about.
+	 * The richer plan object, with the scan and log limits, comes from the service and is returned by
+	 * consent/get-scan-status.
+	 *
+	 * @since  0.0.48
+	 * @param  mixed $plan Stored plan value.
+	 * @return array<string, mixed>
+	 */
+	private static function shape_plan( $plan ): array {
+		if ( is_array( $plan ) ) {
+			return $plan;
+		}
+
+		$slug = (string) $plan;
+
+		return '' === $slug ? array() : array( 'slug' => $slug );
 	}
 
 	/**

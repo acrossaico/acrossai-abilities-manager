@@ -449,6 +449,25 @@ class Test_Consent_Suite extends WP_UnitTestCase {
 		);
 	}
 
+	/**
+	 * A string plan is kept, not discarded.
+	 *
+	 * `account.plan` is a bare string on a free account and an array on others. Coercing a non-array
+	 * to `array()` advertised the field and returned nothing on exactly the accounts most likely to
+	 * ask about it. Caught by connecting a real account and reading the answer.
+	 */
+	public function test_a_string_plan_is_not_thrown_away(): void {
+		$repo = self::code_only( self::read( self::util() . 'Consent_Repository.php' ) );
+
+		$this->assertStringContainsString( 'function shape_plan', $repo );
+		$this->assertDoesNotMatchRegularExpression(
+			'/is_array\( \$settings->get_plan\(\) \) \? \$settings->get_plan\(\) : array\(\)/',
+			$repo,
+			'A non-array plan must be kept, not flattened to an empty array.'
+		);
+		$this->assertStringContainsString( "array( 'slug' => \$slug )", $repo );
+	}
+
 	public function test_the_bootstrap_instantiates_every_ability(): void {
 		$bootstrap = self::read( dirname( __DIR__, 3 ) . '/includes/Abilities/AcrossAI_Core_Abilities_Bootstrap.php' );
 
