@@ -375,30 +375,94 @@ final class AcrossAI_Ability_Override_Processor {
 		 * Routers are the exception, for the reason on ROUTER_PREFIXES.
 		 */
 		if ( ! self::is_router( $slug ) ) {
-			$args['permission_callback'] = self::build_permission_callback( $slug );
+			$args['permission_callback'] = self::build_permission_callback( $slug, $args['permission_callback'] ?? null );
 		}
 
 		return $args;
 	}
 
 	/**
-	 * Build a permission_callback closure for the given ability slug when an AC rule exists.
+	 * Build the permission_callback that replaces an ability's own.
 	 *
-	 * Returns null when no rule is configured — the ability keeps its registration-time callback.
-	 * Returns a typed bool closure when a rule is found.
+	 * WRAPS rather than discards. Our floor runs first and can only tighten; if it allows, the
+	 * ability's registration-time callback is then consulted and can still refuse. Both must agree,
+	 * so the floor stays absolute while the plugin's own rule survives.
 	 *
-	 * SECURITY: The closure is fail-open — returns true when the AC library is unavailable at
-	 * call time. This is intentional (FR-009): if the library is absent the site has no AC
-	 * configuration to enforce. Changing to fail-closed requires an explicit product decision.
+	 * Replacing outright raised every weak lock, which was the point of Feature 115 — but it also
+	 * threw away everything else a callback carried beyond a capability test. Measured across the
+	 * abilities on one site: 26 third-party callbacks were being discarded, 9 of them per-object
+	 * rules whose answer depends on the call's input. WPForms was the clearest case — its write
+	 * kill-switch lives in its permission callback and its execute callback does not re-check, so
+	 * the switch did nothing and its per-form capability checks collapsed into one site-wide
+	 * `manage_options` (issue #210).
+	 *
+	 * Their WP_Error is passed through rather than flattened to false: `check_permissions()` accepts
+	 * one and it carries a named reason, so a caller learns `wpforms_writes_disabled` instead of a
+	 * bare refusal.
+	 *
+	 * On WordPress 7.1+ core offers `wp_ability_permission_result` for exactly this layering. The
+	 * plugin supports 6.9, where that filter does not exist, so the wrapping is done here.
 	 *
 	 * @since  0.1.0
-	 * @param  string $slug Ability slug.
-	 * @return callable|null Closure returning bool, or null if no rule is configured.
+	 * @since  0.0.47 Wraps the original callback instead of discarding it.
+	 * @param  string $slug     Ability slug.
+	 * @param  mixed  $original The callback the ability registered with, if any.
+	 * @return callable Closure returning bool|WP_Error.
 	 */
-	private static function build_permission_callback( string $slug ): callable {
-		return static function () use ( $slug ): bool {
-			return AcrossAI_Ability_Override_Processor::user_has_ability_access( $slug, \get_current_user_id() );
+	private static function build_permission_callback( string $slug, $original = null ): callable {
+		return static function ( $input = null ) use ( $slug, $original ) {
+			if ( ! AcrossAI_Ability_Override_Processor::user_has_ability_access( $slug, \get_current_user_id() ) ) {
+				return false;
+			}
+
+			return AcrossAI_Ability_Override_Processor::defer_to_original( $slug, $original, $input );
 		};
+	}
+
+	/**
+	 * Consult the ability's own permission callback, after our floor has already allowed.
+	 *
+	 * Fails CLOSED when the callback throws. Before Feature 115 a throw here was the registering
+	 * plugin's own problem on its own callback; now we are the caller, and "we could not work out
+	 * the answer" has to mean denied — the same reasoning that made the branches above fail closed.
+	 * Catching also stops one third-party bug from fataling every ability call on the site
+	 * (Constitution §V Integration Resilience, SEC-001).
+	 *
+	 * @internal public by necessity — called from the closure above.
+	 *
+	 * @since  0.0.47
+	 * @param  string $slug     Ability slug.
+	 * @param  mixed  $original The callback the ability registered with, if any.
+	 * @param  mixed  $input    Input passed to the permission check.
+	 * @return bool|\WP_Error
+	 */
+	public static function defer_to_original( string $slug, $original, $input = null ) {
+		if ( ! is_callable( $original ) ) {
+			return true;
+		}
+
+		try {
+			$theirs = $original( $input );
+		} catch ( \Throwable $e ) {
+			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+				error_log(
+					sprintf(
+						'AcrossAI: permission callback for [%s] threw, refusing: %s',
+						$slug,
+						$e->getMessage()
+					)
+				);
+			}
+
+			return false;
+		}
+
+		if ( \is_wp_error( $theirs ) ) {
+			return $theirs;
+		}
+
+		return (bool) $theirs;
 	}
 
 	/**
@@ -489,8 +553,10 @@ final class AcrossAI_Ability_Override_Processor {
 	/**
 	 * Check whether the given user has access to an ability per AC rules.
 	 *
-	 * Fail-open: returns true when the AC library is absent or no rule is configured —
-	 * mirrors build_permission_callback() semantics (FR-009, FR-011).
+	 * Fail-CLOSED: when the AC library is absent or no rule is configured the answer falls back to
+	 * the default capability floor, not to true. The summary here said "fail-open" until 0.0.47,
+	 * describing the behaviour Feature 115 replaced — directly above a body comment saying the
+	 * opposite.
 	 *
 	 * Any caller relying on this helper alone must pair it with WP_Ability::check_permissions()
 	 * as the authoritative gate — AC rules are fail-open in absence
