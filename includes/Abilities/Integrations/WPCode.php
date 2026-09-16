@@ -4,7 +4,7 @@
  *
  * The "adopt what they already registered" shape. WPCode ships five read-only abilities of its own
  * under `wpcode/` (class-wpcode-abilities-api.php:541) and they land in no tab and no MCP tool,
- * because they carry no `tab_group` and nothing claimed their prefix. Claiming `wpcode/` here files
+ * because they carry no `tab_group` and nothing claimed their prefix. Claiming `wpcode` here files
  * them alongside ours without re-registering them, so they keep their own permission callbacks.
  *
  * @package    AcrossAI_Abilities_Manager

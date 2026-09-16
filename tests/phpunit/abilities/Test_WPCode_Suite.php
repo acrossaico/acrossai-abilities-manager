@@ -138,11 +138,21 @@ class Test_WPCode_Suite extends WP_UnitTestCase {
 
 	/**
 	 * Their five are adopted, not re-declared.
+	 *
+	 * The prefix is BARE. This assertion used to demand `'wpcode/'` — the literal that shipped —
+	 * and so certified the bug as correct: the tagger looks up the segment BEFORE the first slash,
+	 * so the trailing form never matched and all five sat in the catch-all while this test stayed
+	 * green (#209). Asserting the invariant rather than the literal is the point.
 	 */
 	public function test_the_integration_adopts_wpcodes_own_prefix(): void {
 		$src = self::read( dirname( __DIR__, 3 ) . '/includes/Abilities/Integrations/WPCode.php' );
 
-		$this->assertStringContainsString( "array( 'wpcode/' )", $src );
+		$this->assertStringContainsString( "array( 'wpcode' )", $src );
+		$this->assertStringNotContainsString(
+			"array( 'wpcode/' )",
+			$src,
+			'A prefix containing "/" can never match; the tagger reads the segment before the slash.'
+		);
 		$this->assertStringContainsString( "TAB_GROUP = 'wpcode'", $src );
 	}
 
