@@ -29,7 +29,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `wpcode` — Wpcode | 24 |
 | `updates` — Updates | 23 |
 | `files` — Files | 23 |
-| `consent` — Consent | 22 |
+| `cookieyes` — Cookieyes | 22 |
 | `diagnostics` — Diagnostics | 21 |
 | `configuration` — Configuration | 19 |
 | `events-calendar` — Events Calendar | 18 |
@@ -38,11 +38,11 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `cron` — Cron | 16 |
 | `event-tickets` — Event Tickets | 16 |
 | `users` — Users | 16 |
-| `translations` — Translations | 14 |
+| `loco-translate` — Loco Translate | 14 |
 | `` —  | 13 |
 | `cache` — Cache | 7 |
 | `classic-editor` — Classic Editor | 4 |
-| `email` — Email | 4 |
+| `wp-mail-smtp` — Wp Mail Smtp | 4 |
 
 ## Namespaces
 
@@ -214,28 +214,28 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `comments/` | `comments/unapprove-comment` | content | moderation | Unapprove Comment |
 | `comments/` | `comments/update-comment` | content | manage | Update Comment |
 | `comments/` | `comments/update-comment-meta` | content | meta | Update Comment Meta |
-| `consent/` | `consent/add-cookie` | consent |  |  |
-| `consent/` | `consent/delete-cookie` | consent |  |  |
-| `consent/` | `consent/get-banner` | consent |  |  |
-| `consent/` | `consent/get-banner-status` | consent |  |  |
-| `consent/` | `consent/get-category` | consent |  |  |
-| `consent/` | `consent/get-consent-log-statistics` | consent |  |  |
-| `consent/` | `consent/get-consent-settings` | consent |  |  |
-| `consent/` | `consent/get-cookie` | consent |  |  |
-| `consent/` | `consent/get-google-consent-mode` | consent |  |  |
-| `consent/` | `consent/get-google-consent-mode-status` | consent |  |  |
-| `consent/` | `consent/get-pageview-statistics` | consent |  |  |
-| `consent/` | `consent/get-scan-status` | consent |  |  |
-| `consent/` | `consent/list-banners` | consent |  |  |
-| `consent/` | `consent/list-categories` | consent |  |  |
-| `consent/` | `consent/list-cookies` | consent |  |  |
-| `consent/` | `consent/list-languages` | consent |  |  |
-| `consent/` | `consent/rebuild-banner` | consent |  |  |
-| `consent/` | `consent/set-languages` | consent |  |  |
-| `consent/` | `consent/update-category` | consent |  |  |
-| `consent/` | `consent/update-consent-settings` | consent |  |  |
-| `consent/` | `consent/update-cookie` | consent |  |  |
-| `consent/` | `consent/update-google-consent-mode` | consent |  |  |
+| `consent/` | `consent/add-cookie` | cookieyes |  |  |
+| `consent/` | `consent/delete-cookie` | cookieyes |  |  |
+| `consent/` | `consent/get-banner` | cookieyes |  |  |
+| `consent/` | `consent/get-banner-status` | cookieyes |  |  |
+| `consent/` | `consent/get-category` | cookieyes |  |  |
+| `consent/` | `consent/get-consent-log-statistics` | cookieyes |  |  |
+| `consent/` | `consent/get-consent-settings` | cookieyes |  |  |
+| `consent/` | `consent/get-cookie` | cookieyes |  |  |
+| `consent/` | `consent/get-google-consent-mode` | cookieyes |  |  |
+| `consent/` | `consent/get-google-consent-mode-status` | cookieyes |  |  |
+| `consent/` | `consent/get-pageview-statistics` | cookieyes |  |  |
+| `consent/` | `consent/get-scan-status` | cookieyes |  |  |
+| `consent/` | `consent/list-banners` | cookieyes |  |  |
+| `consent/` | `consent/list-categories` | cookieyes |  |  |
+| `consent/` | `consent/list-cookies` | cookieyes |  |  |
+| `consent/` | `consent/list-languages` | cookieyes |  |  |
+| `consent/` | `consent/rebuild-banner` | cookieyes |  |  |
+| `consent/` | `consent/set-languages` | cookieyes |  |  |
+| `consent/` | `consent/update-category` | cookieyes |  |  |
+| `consent/` | `consent/update-consent-settings` | cookieyes |  |  |
+| `consent/` | `consent/update-cookie` | cookieyes |  |  |
+| `consent/` | `consent/update-google-consent-mode` | cookieyes |  |  |
 | `contact-form-7/` | `contact-form-7/add-form-field` | contact-form-7 |  |  |
 | `contact-form-7/` | `contact-form-7/create-form` | contact-form-7 |  |  |
 | `contact-form-7/` | `contact-form-7/delete-form` | contact-form-7 |  |  |
@@ -420,10 +420,10 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `elementor/` | `elementor/update-page-settings` | elementor | elementor-documents | Update Elementor Page Settings |
 | `elementor/` | `elementor/update-template` | elementor | elementor-templates | Update Elementor Template |
 | `elementor/` | `elementor/update-theme-builder-conditions` | elementor | elementor-templates | Update Theme Builder Conditions |
-| `email/` | `email/get-delivery-settings` | email |  |  |
-| `email/` | `email/get-delivery-status` | email |  |  |
-| `email/` | `email/send-test-email` | email |  |  |
-| `email/` | `email/update-delivery-settings` | email |  |  |
+| `email/` | `email/get-delivery-settings` | wp-mail-smtp |  |  |
+| `email/` | `email/get-delivery-status` | wp-mail-smtp |  |  |
+| `email/` | `email/send-test-email` | wp-mail-smtp |  |  |
+| `email/` | `email/update-delivery-settings` | wp-mail-smtp |  |  |
 | `events/` | `events/create-event` | events-calendar |  |  |
 | `events/` | `events/create-organizer` | events-calendar |  |  |
 | `events/` | `events/create-venue` | events-calendar |  |  |
@@ -793,20 +793,20 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `toolset/` | `toolset/rank-math` |  |  |  |
 | `toolset/` | `toolset/updates` |  |  |  |
 | `toolset/` | `toolset/users` |  |  |  |
-| `translations/` | `translations/compile-translations` | translations |  |  |
-| `translations/` | `translations/create-translation-file` | translations |  |  |
-| `translations/` | `translations/delete-translation-file` | translations |  |  |
-| `translations/` | `translations/extract-strings` | translations |  |  |
-| `translations/` | `translations/fetch-translations` | translations |  |  |
-| `translations/` | `translations/get-bundle` | translations |  |  |
-| `translations/` | `translations/get-string` | translations |  |  |
-| `translations/` | `translations/get-translation-status` | translations |  |  |
-| `translations/` | `translations/list-available-languages` | translations |  |  |
-| `translations/` | `translations/list-bundles` | translations |  |  |
-| `translations/` | `translations/list-locales` | translations |  |  |
-| `translations/` | `translations/list-strings` | translations |  |  |
-| `translations/` | `translations/sync-translations` | translations |  |  |
-| `translations/` | `translations/update-strings` | translations |  |  |
+| `translations/` | `translations/compile-translations` | loco-translate |  |  |
+| `translations/` | `translations/create-translation-file` | loco-translate |  |  |
+| `translations/` | `translations/delete-translation-file` | loco-translate |  |  |
+| `translations/` | `translations/extract-strings` | loco-translate |  |  |
+| `translations/` | `translations/fetch-translations` | loco-translate |  |  |
+| `translations/` | `translations/get-bundle` | loco-translate |  |  |
+| `translations/` | `translations/get-string` | loco-translate |  |  |
+| `translations/` | `translations/get-translation-status` | loco-translate |  |  |
+| `translations/` | `translations/list-available-languages` | loco-translate |  |  |
+| `translations/` | `translations/list-bundles` | loco-translate |  |  |
+| `translations/` | `translations/list-locales` | loco-translate |  |  |
+| `translations/` | `translations/list-strings` | loco-translate |  |  |
+| `translations/` | `translations/sync-translations` | loco-translate |  |  |
+| `translations/` | `translations/update-strings` | loco-translate |  |  |
 | `users/` | `users/add-role-capability` | users | roles | Add Role Capability |
 | `users/` | `users/add-user-capability` | users | users | Add User Capability |
 | `users/` | `users/create-role` | users | roles | Create Role |

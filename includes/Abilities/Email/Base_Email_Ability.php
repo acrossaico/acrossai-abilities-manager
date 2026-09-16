@@ -44,7 +44,7 @@ abstract class Base_Email_Ability extends Ability_Definition {
 	 * @since 0.0.49
 	 * @var   string
 	 */
-	protected const TAB_GROUP = 'email';
+	protected const TAB_GROUP = 'wp-mail-smtp';
 
 	/**
 	 * @since  0.0.49

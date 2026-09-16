@@ -146,6 +146,64 @@ class Test_Toolset_Group_Coverage extends TestCase {
 	 *
 	 * @return void
 	 */
+	/**
+	 * An integration's group is named after the plugin it drives.
+	 *
+	 * The group becomes the MCP tool name — `toolset-wpcode`, `toolset-akismet` — and that name is
+	 * often all an assistant has when choosing between tools. A group named for the concept instead
+	 * of the plugin (`email`, `consent`, `anti-spam`, `translations` all shipped that way) tells the
+	 * caller what the area is but not whose plugin answers for it, and reads as a first-party feature
+	 * when it is an integration that vanishes with its plugin.
+	 *
+	 * Asserted against a maintained list rather than a rule, because no rule can derive "Akismet"
+	 * from "spam". A new integration fails here until it is listed, which is the point: the naming is
+	 * a decision, and this makes someone make it.
+	 */
+	public function test_integration_groups_are_named_after_their_plugin(): void {
+		$expected = array(
+			'ACF.php'                => 'acf',
+			'Anti_Spam.php'          => 'akismet',
+			'Classic_Editor.php'     => 'classic-editor',
+			'Consent_Banner.php'     => 'cookieyes',
+			'Contact_Form_7.php'     => 'contact-form-7',
+			'Email_Delivery.php'     => 'wp-mail-smtp',
+			'Event_Tickets.php'      => 'event-tickets',
+			'Events_Calendar.php'    => 'events-calendar',
+			'LiteSpeed_Cache.php'    => 'litespeed-cache',
+			'Loco_Translate.php'     => 'loco-translate',
+			'Rank_Math.php'          => 'rank-math',
+			'WPCode.php'             => 'wpcode',
+			'WPForms.php'            => 'wpforms',
+			'Yoast_Seo.php'          => 'yoast-seo',
+		);
+
+		$dir   = dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations';
+		$found = array();
+
+		foreach ( (array) glob( $dir . '/*.php' ) as $file ) {
+			$base = basename( (string) $file );
+
+			if ( in_array( $base, array( 'AcrossAI_Toolset_Integration.php', 'AcrossAI_Toolset_Integrations.php', 'AcrossAI_Catch_All_Integration.php', 'Yoast_Seo_Opt_In.php' ), true ) ) {
+				continue;
+			}
+
+			$source = (string) file_get_contents( (string) $file );
+
+			if ( 1 === preg_match( "/TAB_GROUP = '([^']+)'/", $source, $m ) ) {
+				$found[ $base ] = $m[1];
+			}
+		}
+
+		ksort( $expected );
+		ksort( $found );
+
+		$this->assertSame(
+			$expected,
+			$found,
+			'Every integration group must name its plugin. Add a new integration to the list above, choosing a name a caller would recognise as the plugin.'
+		);
+	}
+
 	public function test_the_bootstrap_still_generates_integration_dispatchers(): void {
 		$this->assertTrue(
 			$this->bootstrap_generates_dispatchers(),

@@ -29,7 +29,7 @@ final class Loco_Translate implements AcrossAI_Toolset_Integration {
 	 * @since 0.0.47
 	 * @var   string
 	 */
-	public const TAB_GROUP = 'translations';
+	public const TAB_GROUP = 'loco-translate';
 
 	/**
 	 * @since  0.0.47
@@ -44,7 +44,7 @@ final class Loco_Translate implements AcrossAI_Toolset_Integration {
 	 * @return string
 	 */
 	public function toolset_label(): string {
-		return __( 'Translations', 'acrossai-abilities-manager' );
+		return __( 'Loco Translate', 'acrossai-abilities-manager' );
 	}
 
 	/**

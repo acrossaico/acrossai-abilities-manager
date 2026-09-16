@@ -514,7 +514,7 @@ class Test_Consent_Suite extends WP_UnitTestCase {
 	public function test_the_integration_claims_no_prefix(): void {
 		$src = self::read( dirname( __DIR__, 3 ) . '/includes/Abilities/Integrations/Consent_Banner.php' );
 
-		$this->assertStringContainsString( "TAB_GROUP = 'consent'", $src );
+		$this->assertStringContainsString( "TAB_GROUP = 'cookieyes'", $src );
 		$this->assertMatchesRegularExpression(
 			'/function ability_prefixes\(\): array \{\s*return array\(\);/',
 			$src,

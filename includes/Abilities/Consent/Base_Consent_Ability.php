@@ -46,7 +46,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	 * @since 0.0.48
 	 * @var   string
 	 */
-	protected const TAB_GROUP = 'consent';
+	protected const TAB_GROUP = 'cookieyes';
 
 	/**
 	 * @since  0.0.48

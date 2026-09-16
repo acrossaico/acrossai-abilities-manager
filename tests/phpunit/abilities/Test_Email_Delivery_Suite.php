@@ -254,13 +254,29 @@ class Test_Email_Delivery_Suite extends WP_UnitTestCase {
 
 		$this->assertStringContainsString( "return array( 'wp-mail-smtp' );", $email );
 		$this->assertStringContainsString( "return array( 'akismet' );", $spam );
-		$this->assertStringContainsString( "TAB_GROUP = 'email'", $email );
-		$this->assertStringContainsString( "TAB_GROUP = 'anti-spam'", $spam );
+		$this->assertStringContainsString( "TAB_GROUP = 'wp-mail-smtp'", $email );
+		$this->assertStringContainsString( "TAB_GROUP = 'akismet'", $spam );
 	}
 
 	/**
 	 * The anti-spam group is adopt-only.
 	 */
+	/**
+	 * The toolset description ends cleanly.
+	 *
+	 * It is the first thing an assistant reads before choosing a tool, and it reaches the client
+	 * verbatim — a stray character at the end is visible to every caller. One survived a hand repair
+	 * of the description string and only showed up when the tool list was read back over MCP.
+	 */
+	public function test_toolset_descriptions_are_well_formed(): void {
+		foreach ( array( 'Email_Delivery', 'Anti_Spam' ) as $class ) {
+			$src = self::read( dirname( __DIR__, 3 ) . '/includes/Abilities/Integrations/' . $class . '.php' );
+
+			$this->assertStringContainsString( "runs one ability.',", $src, "{$class} description is malformed." );
+			$this->assertStringNotContainsString( "ability.,", $src, "{$class} description has a stray comma." );
+		}
+	}
+
 	public function test_the_anti_spam_group_registers_nothing(): void {
 		$bootstrap = self::read( dirname( __DIR__, 3 ) . '/includes/Abilities/AcrossAI_Core_Abilities_Bootstrap.php' );
 

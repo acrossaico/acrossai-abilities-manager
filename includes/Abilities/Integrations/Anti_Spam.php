@@ -31,7 +31,7 @@ final class Anti_Spam implements AcrossAI_Toolset_Integration {
 	 * @since 0.0.49
 	 * @var   string
 	 */
-	public const TAB_GROUP = 'anti-spam';
+	public const TAB_GROUP = 'akismet';
 
 	/**
 	 * @since  0.0.49
@@ -46,7 +46,7 @@ final class Anti_Spam implements AcrossAI_Toolset_Integration {
 	 * @return string
 	 */
 	public function toolset_label(): string {
-		return __( 'Anti-Spam', 'acrossai-abilities-manager' );
+		return __( 'Akismet', 'acrossai-abilities-manager' );
 	}
 
 	/**
@@ -55,7 +55,7 @@ final class Anti_Spam implements AcrossAI_Toolset_Integration {
 	 */
 	public function toolset_description(): string {
 		return __(
-			'Spam protection for comments and form submissions. These abilities come from the anti-spam plugin itself, not from this plugin: read the spam figures it has recorded, and check a specific comment against its service. Nothing here manages the account or its key. Requires administrator rights. action=discover lists this group; action=info returns schemas; action=execute runs one ability.,',
+			'Spam protection for comments and form submissions. These abilities come from the anti-spam plugin itself, not from this plugin: read the spam figures it has recorded, and check a specific comment against its service. Nothing here manages the account or its key. Requires administrator rights. action=discover lists this group; action=info returns schemas; action=execute runs one ability.',
 			'acrossai-abilities-manager'
 		);
 	}
