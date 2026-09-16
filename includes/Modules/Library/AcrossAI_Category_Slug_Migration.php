@@ -101,6 +101,7 @@ class AcrossAI_Category_Slug_Migration {
 		'fonts',
 		'litespeed-cache',
 		'loco-translate',
+		'consent',
 		'media',
 		'menus',
 		'options',

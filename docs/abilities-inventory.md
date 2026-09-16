@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-16. **Total abilities:** 717 across 36 topic namespaces.
+Snapshot taken 2026-09-16. **Total abilities:** 739 across 37 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -29,6 +29,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `wpcode` — Wpcode | 24 |
 | `updates` — Updates | 23 |
 | `files` — Files | 23 |
+| `consent` — Consent | 22 |
 | `diagnostics` — Diagnostics | 21 |
 | `configuration` — Configuration | 19 |
 | `events-calendar` — Events Calendar | 18 |
@@ -51,6 +52,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `blocks/` | 92 | `acrossai-block`, `acrossai-acf` |
 | `cache/` | 7 | `acrossai-cache` |
 | `comments/` | 12 | `acrossai-comments` |
+| `consent/` | 22 | `acrossai-consent` |
 | `contact-form-7/` | 25 | `acrossai-contact-form-7` |
 | `content-search/` | 11 | `acrossai-content-search` |
 | `content/` | 30 | `acrossai-content` |
@@ -210,6 +212,28 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `comments/` | `comments/unapprove-comment` | content | moderation | Unapprove Comment |
 | `comments/` | `comments/update-comment` | content | manage | Update Comment |
 | `comments/` | `comments/update-comment-meta` | content | meta | Update Comment Meta |
+| `consent/` | `consent/add-cookie` | consent |  |  |
+| `consent/` | `consent/delete-cookie` | consent |  |  |
+| `consent/` | `consent/get-banner` | consent |  |  |
+| `consent/` | `consent/get-banner-status` | consent |  |  |
+| `consent/` | `consent/get-category` | consent |  |  |
+| `consent/` | `consent/get-consent-log-statistics` | consent |  |  |
+| `consent/` | `consent/get-consent-settings` | consent |  |  |
+| `consent/` | `consent/get-cookie` | consent |  |  |
+| `consent/` | `consent/get-google-consent-mode` | consent |  |  |
+| `consent/` | `consent/get-google-consent-mode-status` | consent |  |  |
+| `consent/` | `consent/get-pageview-statistics` | consent |  |  |
+| `consent/` | `consent/get-scan-status` | consent |  |  |
+| `consent/` | `consent/list-banners` | consent |  |  |
+| `consent/` | `consent/list-categories` | consent |  |  |
+| `consent/` | `consent/list-cookies` | consent |  |  |
+| `consent/` | `consent/list-languages` | consent |  |  |
+| `consent/` | `consent/rebuild-banner` | consent |  |  |
+| `consent/` | `consent/set-languages` | consent |  |  |
+| `consent/` | `consent/update-category` | consent |  |  |
+| `consent/` | `consent/update-consent-settings` | consent |  |  |
+| `consent/` | `consent/update-cookie` | consent |  |  |
+| `consent/` | `consent/update-google-consent-mode` | consent |  |  |
 | `contact-form-7/` | `contact-form-7/add-form-field` | contact-form-7 |  |  |
 | `contact-form-7/` | `contact-form-7/create-form` | contact-form-7 |  |  |
 | `contact-form-7/` | `contact-form-7/delete-form` | contact-form-7 |  |  |

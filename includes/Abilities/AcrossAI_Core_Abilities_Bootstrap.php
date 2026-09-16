@@ -89,6 +89,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// Feature 116 — Loco Translate category (self-guards on the plugin inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', LocoTranslate\Category_Registrar::instance(), 'register' );
 
+		// Feature 118 — cookie consent category (self-guards on the plugin inside register()).
+		$loader->add_action( 'wp_abilities_api_categories_init', Consent\Category_Registrar::instance(), 'register' );
+
 		// Feature 104 — LiteSpeed Cache category (self-guards on the host probe inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', LiteSpeed\Category_Registrar::instance(), 'register' );
 
@@ -642,6 +645,13 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// path. Loco registers no abilities of its own, so nothing here is adopted.
 		if ( class_exists( 'Loco_package_Bundle' ) && class_exists( 'Loco_gettext_Compiler' ) ) {
 			$this->register_loco_translate_abilities();
+		}
+
+		// Feature 118 — cookie consent suite (22 abilities under consent/*). Gated through the guard
+		// rather than on a class name here, so the two-symbol presence test lives in one place. The
+		// consent plugin registers no abilities of its own, so nothing here is adopted.
+		if ( Utilities\Consent\Consent_Guard::is_available() ) {
+			$this->register_consent_abilities();
 		}
 
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
@@ -1330,5 +1340,39 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new LocoTranslate\Extract_Strings();
 		new LocoTranslate\List_Available_Languages();
 		new LocoTranslate\Fetch_Translations();
+	}
+
+	/**
+	 * Feature 118 — instantiate the cookie consent ability classes.
+	 *
+	 * Category_Registrar is deliberately absent: it is a singleton with a private constructor, hooked
+	 * via instance() above. Constructing it here would be a fatal on every page load.
+	 *
+	 * @since  0.0.48
+	 * @return void
+	 */
+	private function register_consent_abilities(): void {
+		new Consent\List_Cookies();
+		new Consent\Get_Cookie();
+		new Consent\Add_Cookie();
+		new Consent\Update_Cookie();
+		new Consent\Delete_Cookie();
+		new Consent\List_Categories();
+		new Consent\Get_Category();
+		new Consent\Update_Category();
+		new Consent\List_Banners();
+		new Consent\Get_Banner();
+		new Consent\Get_Banner_Status();
+		new Consent\Rebuild_Banner();
+		new Consent\Get_Consent_Settings();
+		new Consent\Update_Consent_Settings();
+		new Consent\Get_Google_Consent_Mode();
+		new Consent\Update_Google_Consent_Mode();
+		new Consent\List_Languages();
+		new Consent\Set_Languages();
+		new Consent\Get_Consent_Log_Statistics();
+		new Consent\Get_Pageview_Statistics();
+		new Consent\Get_Scan_Status();
+		new Consent\Get_Google_Consent_Mode_Status();
 	}
 }
