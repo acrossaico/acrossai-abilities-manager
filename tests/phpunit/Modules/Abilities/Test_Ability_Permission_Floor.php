@@ -159,9 +159,9 @@ class Test_Ability_Permission_Floor extends TestCase {
 
 		$this->assertStringContainsString( "ROUTER_PREFIXES = array( 'toolset/', 'mcp-adapter/' )", $code );
 		$this->assertMatchesRegularExpression(
-			'/if \( ! self::is_router\( \$slug \) \) \{\s*\$args\[.permission_callback.\] = self::build_permission_callback\( \$slug \);/',
+			'/if \( ! self::is_router\( \$slug \) \) \{\s*\$args\[.permission_callback.\] = self::build_permission_callback\( \$slug, \$args\[.permission_callback.\] \?\? null \);/',
 			$code,
-			'The replacement must be skipped for routers.'
+			'The wrapping must be skipped for routers.'
 		);
 	}
 
@@ -175,7 +175,7 @@ class Test_Ability_Permission_Floor extends TestCase {
 		$code = self::code_only( self::source() );
 
 		$this->assertStringContainsString(
-			'private static function build_permission_callback( string $slug ): callable',
+			'private static function build_permission_callback( string $slug, $original = null ): callable',
 			$code,
 			'It must return a callable, never null.'
 		);
@@ -206,6 +206,93 @@ class Test_Ability_Permission_Floor extends TestCase {
 			2,
 			substr_count( $body, 'self::floor_allows()' ),
 			'Both unresolvable branches must fall back to the floor.'
+		);
+	}
+
+	/**
+	 * The floor runs FIRST, and a denial never reaches the ability's own callback.
+	 *
+	 * Order is the whole safety property: our answer can only tighten. If the original were
+	 * consulted first, or consulted at all after a denial, a permissive third-party callback could
+	 * undo the floor.
+	 */
+	public function test_the_floor_is_consulted_before_the_original(): void {
+		$code = self::code_only( self::source() );
+
+		$this->assertMatchesRegularExpression(
+			'/if \( ! AcrossAI_Ability_Override_Processor::user_has_ability_access\( \$slug, \\\\get_current_user_id\(\) \) \) \{\s*return false;\s*\}\s*return AcrossAI_Ability_Override_Processor::defer_to_original\(/',
+			$code,
+			'The floor must deny before the original callback is reached.'
+		);
+	}
+
+	/**
+	 * An ability that registered no callback is governed by the floor alone.
+	 */
+	public function test_an_absent_original_defers_to_the_floor(): void {
+		$this->assertTrue( Processor::defer_to_original( 'x/y', null ) );
+		$this->assertTrue( Processor::defer_to_original( 'x/y', 'not_a_function_name' ) );
+	}
+
+	/**
+	 * The original can still refuse after the floor allows.
+	 *
+	 * This is the point of wrapping: a plugin's kill-switch or per-object rule survives.
+	 */
+	public function test_the_original_can_still_refuse(): void {
+		$this->assertFalse( Processor::defer_to_original( 'x/y', static fn() => false ) );
+		$this->assertTrue( Processor::defer_to_original( 'x/y', static fn() => true ) );
+	}
+
+	/**
+	 * Input reaches the original, or per-object rules cannot work.
+	 *
+	 * Nine of the callbacks measured on one site decide per object — per form, per server. A wrapper
+	 * that swallowed the input would turn every one of them into a site-wide answer.
+	 */
+	public function test_input_is_passed_through(): void {
+		$seen = null;
+
+		Processor::defer_to_original(
+			'x/y',
+			static function ( $input ) use ( &$seen ) {
+				$seen = $input;
+				return true;
+			},
+			array( 'form_id' => 42 )
+		);
+
+		$this->assertSame( array( 'form_id' => 42 ), $seen );
+	}
+
+	/**
+	 * A WP_Error from the original is passed through, not flattened.
+	 *
+	 * check_permissions() accepts one, and it carries the reason — a caller learns
+	 * `wpforms_writes_disabled` rather than meeting a bare refusal with nothing to act on.
+	 */
+	public function test_a_wp_error_from_the_original_survives(): void {
+		$error  = new \WP_Error( 'wpforms_writes_disabled', 'Form write abilities are disabled.' );
+		$result = Processor::defer_to_original( 'x/y', static fn() => $error );
+
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'wpforms_writes_disabled', $result->get_error_code() );
+	}
+
+	/**
+	 * A throwing callback fails CLOSED.
+	 *
+	 * We are the caller now, so a third-party bug must not fatal every ability call — and "we could
+	 * not work out the answer" has to mean denied, the same rule the branches above follow.
+	 */
+	public function test_a_throwing_original_is_refused(): void {
+		$this->assertFalse(
+			Processor::defer_to_original(
+				'x/y',
+				static function () {
+					throw new \RuntimeException( 'boom' );
+				}
+			)
 		);
 	}
 }
