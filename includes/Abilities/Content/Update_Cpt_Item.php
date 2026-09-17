@@ -151,11 +151,7 @@ class Update_Cpt_Item extends Ability_Definition {
 			return Protected_Post_Types::refusal( $assessment['verdict'] );
 		}
 
-		$warnings = array();
-
-		if ( Protected_Post_Types::WRITES_APPLY !== $assessment['verdict']['writes'] ) {
-			$warnings[] = (string) $assessment['verdict']['guidance'];
-		}
+		$warnings = Protected_Post_Types::warnings_for( $assessment['verdict'] );
 
 		$post = $id > 0 ? get_post( $id ) : null;
 		if ( ! $post || $post->post_type !== $post_type ) {

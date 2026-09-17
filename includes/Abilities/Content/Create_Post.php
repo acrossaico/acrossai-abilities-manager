@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Protected_Post_Types;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -50,6 +51,11 @@ class Create_Post extends Ability_Definition {
 							'type'    => 'string',
 							'default' => 'post',
 						),
+						'allow_protected_post_type' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Write anyway when the post type belongs to a plugin that keeps derived data elsewhere. The response states what was bypassed.', 'acrossai-abilities-manager' ),
+						),
 						'author'    => array( 'type' => 'integer' ),
 						'slug'      => array( 'type' => 'string' ),
 						'date'      => array( 'type' => 'string' ),
@@ -68,6 +74,11 @@ class Create_Post extends Ability_Definition {
 					'type'                 => 'object',
 					'properties'           => array(
 						'success'       => array( 'type' => 'boolean' ),
+						'blocked_reason' => array( 'type' => 'string' ),
+						'post_type'      => array( 'type' => 'string' ),
+						'writes'         => array( 'type' => 'string' ),
+						'use_instead'    => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+						'warnings'       => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
 						'id'            => array( 'type' => 'integer' ),
 						'post'          => array( 'type' => 'object' ),
 						'content_bytes' => array( 'type' => 'integer' ),
@@ -106,6 +117,19 @@ class Create_Post extends Ability_Definition {
 	 */
 	public function execute( array $input = array() ): array {
 		$post_type = sanitize_key( (string) ( $input['post_type'] ?? 'post' ) );
+
+		/*
+		 * Feature 120 — the same guard the cpt-item writers apply. Without it this ability is a
+		 * bypass for them: `content/create-cpt-item` refuses `product` + `_regular_price`, and an
+		 * identical payload here performed the identical corrupting write one call away.
+		 */
+		$assessment = Protected_Post_Types::assess( $post_type, isset( $input['meta'] ) && array() !== (array) $input['meta'] );
+
+		if ( $assessment['blocked'] && empty( $input['allow_protected_post_type'] ) ) {
+			return Protected_Post_Types::refusal( $assessment['verdict'] );
+		}
+
+		$warnings = Protected_Post_Types::warnings_for( $assessment['verdict'] );
 
 		if ( ! post_type_exists( $post_type ) ) {
 			return array(
@@ -157,6 +181,8 @@ class Create_Post extends Ability_Definition {
 
 		return array(
 			'success'       => true,
+
+			'warnings' => $warnings,
 			'id'            => (int) $id,
 			'post'          => $fetched,
 			'content_bytes' => $content_bytes,

@@ -107,7 +107,23 @@ class Inspect_Post_Type extends Ability_Definition {
 		$post_id   = (int) ( $input['post_id'] ?? 0 );
 
 		if ( '' === $post_type && $post_id > 0 ) {
-			$post_type = (string) get_post_type( $post_id );
+			$resolved = get_post_type( $post_id );
+
+			// Distinguished deliberately: get_post_type() returns false for a post that does not
+			// exist, and reporting "Supply either post_type or post_id" to a caller who supplied
+			// post_id sends them looking for a mistake they did not make.
+			if ( false === $resolved ) {
+				return array(
+					'success' => false,
+					'message' => sprintf(
+						/* translators: %d: post ID. */
+						__( 'No post with ID %d.', 'acrossai-abilities-manager' ),
+						$post_id
+					),
+				);
+			}
+
+			$post_type = (string) $resolved;
 		}
 
 		if ( '' === $post_type ) {

@@ -158,6 +158,11 @@ final class Protected_Post_Types {
 		 * storage far better than this file can.
 		 *
 		 * @since 0.0.50
+		 * Each entry takes `owner`, `writes` (one of the WRITES_* constants), `authority`, `stale` and
+		 * `instead`. `active_if` is OPTIONAL — supply `array( 'class' => ... )`, `'function'` or
+		 * `'constant'` to have the verdict downgrade when the owning plugin is deactivated; omit it and
+		 * the owner is treated as always present.
+		 *
 		 * @param array<string, array<string, mixed>> $descriptors Keyed by post type.
 		 */
 		$filtered = apply_filters( 'acrossai_protected_post_types', self::descriptors() );
@@ -185,7 +190,13 @@ final class Protected_Post_Types {
 			return defined( (string) $test['constant'] );
 		}
 
-		return false;
+		/*
+		 * No probe supplied. Treat the owner as PRESENT rather than absent: a third party registering
+		 * a descriptor through the filter is telling us its post type is special, and answering
+		 * "ordinary" would be the exact opposite of what it asked for — silently, which is worse than
+		 * either answer. The probe is an optional refinement, not a requirement.
+		 */
+		return array() === $test;
 	}
 
 	/**
@@ -244,9 +255,18 @@ final class Protected_Post_Types {
 			return $result;
 		}
 
-		// A type whose verdict depends on where the plugin is currently storing the records.
+		/*
+		 * A type whose verdict depends on where the plugin is currently storing the records.
+		 *
+		 * The whole descriptor has to change, not just the verdict. An earlier version moved only
+		 * $writes and left `authority` and `stale` describing the order tables — so on a store with
+		 * HPOS switched OFF, where orders really are in the posts table, the one ability whose job is
+		 * to answer this correctly reported the exact inverse of the truth.
+		 */
 		if ( ! empty( $d['hpos_only'] ) && ! self::orders_are_elsewhere() ) {
-			$writes = self::WRITES_INCOMPLETE;
+			$writes        = self::WRITES_INCOMPLETE;
+			$d['authority'] = __( 'the posts table — this store keeps orders there rather than in the dedicated order tables', 'acrossai-abilities-manager' );
+			$d['stale']     = array( 'order totals and counts', 'order status transitions', 'analytics tables' );
 		}
 
 		return array(
@@ -256,9 +276,38 @@ final class Protected_Post_Types {
 			'writes'         => $writes,
 			'authority'      => (string) ( $d['authority'] ?? '' ),
 			'goes_stale'     => array_values( (array) ( $d['stale'] ?? array() ) ),
-			'use_instead'    => array_values( (array) ( $d['instead'] ?? array() ) ),
+			'use_instead'    => self::resolvable( (array) ( $d['instead'] ?? array() ) ),
 			'guidance'       => self::guidance( $post_type, $writes, $d ),
 		);
+	}
+
+	/**
+	 * Keep only the abilities that exist on this site right now.
+	 *
+	 * `use_instead` is machine-readable and is interpolated into the refusal sentence, so naming an
+	 * ability that does not resolve is worse than naming none: the caller tries each, gets "ability
+	 * not found", and the only path left is the override — which performs the corrupting write this
+	 * guard exists to prevent. Filtering at call time also means abilities added later appear here
+	 * without anyone remembering to update the table.
+	 *
+	 * @since  0.0.50
+	 * @param  string[] $slugs Candidate ability names.
+	 * @return string[]
+	 */
+	private static function resolvable( array $slugs ): array {
+		if ( ! function_exists( 'wp_get_ability' ) ) {
+			return array();
+		}
+
+		$out = array();
+
+		foreach ( $slugs as $slug ) {
+			if ( null !== wp_get_ability( (string) $slug ) ) {
+				$out[] = (string) $slug;
+			}
+		}
+
+		return array_values( $out );
 	}
 
 	/**
@@ -287,7 +336,10 @@ final class Protected_Post_Types {
 	 * @return string
 	 */
 	private static function guidance( string $post_type, string $writes, array $d ): string {
-		$instead = implode( ', ', (array) ( $d['instead'] ?? array() ) );
+		$resolved = self::resolvable( (array) ( $d['instead'] ?? array() ) );
+		$instead  = array() === $resolved
+			? __( 'the plugin\'s own tools', 'acrossai-abilities-manager' )
+			: implode( ', ', $resolved );
 		$owner   = (string) ( $d['owner'] ?? '' );
 
 		if ( self::WRITES_DISCARDED === $writes ) {
@@ -311,6 +363,38 @@ final class Protected_Post_Types {
 		}
 
 		return __( 'An ordinary post type. The content abilities write it correctly.', 'acrossai-abilities-manager' );
+	}
+
+	/**
+	 * What the caller should be told when the write is allowed to proceed.
+	 *
+	 * Centralised because the writers kept getting it subtly wrong. Two cases, and the second was
+	 * unreachable before this existed:
+	 *
+	 *   - A non-ordinary verdict carries the guidance, so a title-only product edit says what it did
+	 *     and did not touch.
+	 *   - An ABSENT owner carries `note`, and that branch always has the ordinary verdict. Writers
+	 *     that emitted warnings only when the verdict was non-ordinary therefore never surfaced it —
+	 *     so on a site with WooCommerce temporarily deactivated, writing a product price succeeded
+	 *     with no hint that it becomes wrong the moment WooCommerce is switched back on. That is
+	 *     precisely the caveat the note was written to deliver.
+	 *
+	 * @since  0.0.50
+	 * @param  array<string, mixed> $verdict From inspect().
+	 * @return string[]
+	 */
+	public static function warnings_for( array $verdict ): array {
+		$warnings = array();
+
+		if ( isset( $verdict['writes'] ) && self::WRITES_APPLY !== $verdict['writes'] ) {
+			$warnings[] = (string) ( $verdict['guidance'] ?? '' );
+		}
+
+		if ( ! empty( $verdict['note'] ) ) {
+			$warnings[] = (string) $verdict['note'];
+		}
+
+		return array_values( array_filter( $warnings ) );
 	}
 
 	/**

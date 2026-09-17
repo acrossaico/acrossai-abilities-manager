@@ -26,6 +26,9 @@ class Test_Protected_Post_Types extends WP_UnitTestCase {
 			'Content/Add_Post_Meta.php',
 			'Content/Update_Post_Meta.php',
 			'Content/Delete_Post_Meta.php',
+			'Content/Create_Post.php',
+			'Content/Update_Post.php',
+			'Content/Delete_Post.php',
 		);
 	}
 
@@ -122,7 +125,36 @@ class Test_Protected_Post_Types extends WP_UnitTestCase {
 		$this->assertTrue( $verdict['owner_active'] );
 		$this->assertTrue( Protected_Post_Types::assess( 'zz_derived', true )['blocked'], 'A meta write must be refused.' );
 		$this->assertFalse( Protected_Post_Types::assess( 'zz_derived', false )['blocked'], 'A title-only write must be allowed.' );
-		$this->assertContains( 'ghost/update-thing', $verdict['use_instead'] );
+		$this->assertSame(
+			array(),
+			$verdict['use_instead'],
+			'An ability that does not resolve must not be offered: the caller would try it, be told it does not exist, and be left with only the override — which performs the corrupting write.'
+		);
+	}
+
+	/**
+	 * Only abilities that actually resolve are offered as alternatives.
+	 *
+	 * Naming a non-existent ability is worse than naming none. Filtering at call time also means
+	 * abilities added in a later release appear here without anyone updating the table.
+	 */
+	public function test_only_resolvable_abilities_are_offered(): void {
+		$GLOBALS['acrossai_test_abilities']['zz/real-one'] = true;
+
+		$GLOBALS['acrossai_test_filter_values']['acrossai_protected_post_types'] = array(
+			'zz_mixed' => array(
+				'owner'   => 'Ghost Commerce',
+				'writes'  => Protected_Post_Types::WRITES_INCOMPLETE,
+				'instead' => array( 'zz/real-one', 'zz/does-not-exist' ),
+			),
+		);
+
+		$verdict = Protected_Post_Types::inspect( 'zz_mixed' );
+
+		$this->assertNotContains( 'zz/does-not-exist', $verdict['use_instead'] );
+		$this->assertStringNotContainsString( 'zz/does-not-exist', $verdict['guidance'] );
+
+		unset( $GLOBALS['acrossai_test_abilities']['zz/real-one'] );
 	}
 
 	/**
@@ -181,6 +213,96 @@ class Test_Protected_Post_Types extends WP_UnitTestCase {
 				'Protected_Post_Types::refusal(',
 				$code,
 				"{$relative} must refuse in the shared envelope shape."
+			);
+		}
+	}
+
+	/**
+	 * No writer reaches a protected post type without the guard.
+	 *
+	 * The list above is a list, and a list goes stale. This walks the directory instead, because the
+	 * first version of this feature guarded six writers and left `content/create-post` — which takes
+	 * an arbitrary post_type and passes meta straight to `meta_input` — completely open. An agent
+	 * refused by `create-cpt-item` had an identical corrupting write one call away, so the guard did
+	 * not actually hold.
+	 *
+	 * `Create_Page` and `Update_Page` are excluded by name: both are pinned to `page` and cannot
+	 * address a product or an order at all.
+	 */
+	public function test_no_unguarded_writer_can_reach_a_protected_type(): void {
+		$pinned_to_pages = array( 'Create_Page.php', 'Update_Page.php' );
+		$unguarded       = array();
+
+		foreach ( (array) glob( dirname( __DIR__, 3 ) . '/includes/Abilities/Content/*.php' ) as $file ) {
+			$base = basename( (string) $file );
+
+			if ( in_array( $base, $pinned_to_pages, true ) ) {
+				continue;
+			}
+
+			$code = self::code_only( (string) file_get_contents( (string) $file ) );
+
+			$writes = preg_match( '/\b(?:wp_insert_post|wp_update_post|wp_delete_post|update_post_meta|add_post_meta|delete_post_meta)\s*\(/', $code );
+
+			if ( ! $writes ) {
+				continue;
+			}
+
+			if ( false === strpos( $code, 'Protected_Post_Types::assess(' ) ) {
+				$unguarded[] = $base;
+			}
+		}
+
+		$this->assertSame(
+			array(),
+			$unguarded,
+			'These write posts or meta but never consult the guard, so they bypass it: ' . implode( ', ', $unguarded )
+		);
+	}
+
+	/**
+	 * A page-pinned writer really is pinned.
+	 *
+	 * The exclusion above is only safe while that stays true.
+	 */
+	public function test_the_excluded_writers_cannot_address_another_post_type(): void {
+		$create = self::code_only( self::read( 'Content/Create_Page.php' ) );
+		$update = self::code_only( self::read( 'Content/Update_Page.php' ) );
+
+		$this->assertStringContainsString( "'post_type'    => 'page'", $create, 'Create_Page must hardcode its post type.' );
+		// Single-quoted: a double-quoted needle interpolates \$post->post_type away to nothing, which
+		// is how this assertion silently passed against an empty string on its first run.
+		$this->assertStringContainsString( '\'page\' !== $post->post_type', $update, 'Update_Page must refuse any other post type.' );
+	}
+
+	/**
+	 * An allowed write on a protected type always says something.
+	 *
+	 * The input schema promises "The response states what was bypassed". The meta writers computed
+	 * the assessment, used it only for the block decision, and returned a bare success — so passing
+	 * the override wrote `_regular_price` on a product and reported "Wrote meta ... on post #N",
+	 * which is a silent success over a corrupting write: exactly the failure this feature exists to
+	 * remove.
+	 */
+	public function test_every_writer_reports_what_it_bypassed(): void {
+		foreach ( self::writers() as $relative ) {
+			$code = self::code_only( self::read( $relative ) );
+
+			$this->assertStringContainsString(
+				'Protected_Post_Types::warnings_for(',
+				$code,
+				"{$relative} allows the write but never tells the caller what was bypassed."
+			);
+			/*
+			 * Must appear in a RETURN, not merely in the output schema. The first version asserted
+			 * the bare string and passed against three writers that declared `warnings` and never
+			 * populated it — the same silent-success this feature exists to remove, reintroduced by
+			 * the test that was supposed to prevent it.
+			 */
+			$this->assertMatchesRegularExpression(
+				"/'warnings'\s*=> \\\$warnings,/",
+				$code,
+				"{$relative} computes warnings but never returns them."
 			);
 		}
 	}
