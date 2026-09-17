@@ -1422,5 +1422,18 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 	 */
 	private function register_store_abilities(): void {
 		new Store\Get_Store_Status();
+		new Store\Get_Product();
+		new Store\Update_Product_Details();
+		new Store\Set_Product_Taxonomy();
+		new Store\Set_Product_Images();
+		new Store\Set_Product_Attributes();
+		new Store\Create_Variable_Product();
+		new Store\Generate_Variations();
+		new Store\Update_Variation();
+		new Store\Schedule_Sale();
+		new Store\Bulk_Update_Prices();
+		new Store\Get_Stock();
+		new Store\Adjust_Stock();
+		new Store\List_Low_Stock();
 	}
 }

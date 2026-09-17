@@ -238,6 +238,213 @@ class Test_Store_Suite extends WP_UnitTestCase {
 		$this->assertMatchesRegularExpression( '/thirty days/i', $src );
 	}
 
+	/**
+	 * All fourteen, and their slugs.
+	 *
+	 * @return string[]
+	 */
+	private static function inventory(): array {
+		return array(
+			'Get_Store_Status'        => 'store/get-store-status',
+			'Get_Product'             => 'store/get-product',
+			'Update_Product_Details'  => 'store/update-product-details',
+			'Set_Product_Taxonomy'    => 'store/set-product-taxonomy',
+			'Set_Product_Images'      => 'store/set-product-images',
+			'Set_Product_Attributes'  => 'store/set-product-attributes',
+			'Create_Variable_Product' => 'store/create-variable-product',
+			'Generate_Variations'     => 'store/generate-variations',
+			'Update_Variation'        => 'store/update-variation',
+			'Schedule_Sale'           => 'store/schedule-sale',
+			'Bulk_Update_Prices'      => 'store/bulk-update-prices',
+			'Get_Stock'               => 'store/get-stock',
+			'Adjust_Stock'            => 'store/adjust-stock',
+			'List_Low_Stock'          => 'store/list-low-stock',
+		);
+	}
+
+	public function test_every_ability_is_declared_and_wired(): void {
+		$bootstrap = self::read( dirname( __DIR__, 3 ) . '/includes/Abilities/AcrossAI_Core_Abilities_Bootstrap.php' );
+
+		foreach ( self::inventory() as $class => $slug ) {
+			$src = self::read( self::dir() . $class . '.php' );
+
+			$this->assertNotSame( '', $src, "{$class} is missing." );
+			$this->assertStringContainsString( "return '" . $slug . "';", $src );
+			$this->assertStringContainsString( 'new Store\\' . $class . '();', $bootstrap, "{$class} is never instantiated." );
+		}
+	}
+
+	/**
+	 * Nothing writes the catalogue outside WooCommerce's CRUD.
+	 *
+	 * The whole reason this repository exists. Measured on 11.1: writing `_regular_price` directly
+	 * leaves the displayed price and the lookup table on the OLD value, and saving the product
+	 * correctly afterwards does not repair it, because WooCommerce sees the field already changed
+	 * and concludes nothing happened.
+	 */
+	public function test_the_repository_never_writes_directly(): void {
+		$repo = self::code_only( self::read( self::util() . 'Product_Repository.php' ) );
+
+		foreach ( array( 'update_post_meta(', 'add_post_meta(', 'wp_insert_post(', 'wp_update_post(', 'wp_set_object_terms(' ) as $forbidden ) {
+			$this->assertStringNotContainsString(
+				$forbidden,
+				$repo,
+				"The repository must not use {$forbidden}; every write goes through WooCommerce's own CRUD."
+			);
+		}
+
+		// The one permitted direct read, and it is a SELECT.
+		$this->assertStringNotContainsString( '$wpdb->update(', $repo );
+		$this->assertStringNotContainsString( '$wpdb->insert(', $repo );
+		$this->assertStringNotContainsString( '$wpdb->delete(', $repo );
+	}
+
+	/**
+	 * Every write proves itself by re-reading from the database.
+	 */
+	public function test_writes_are_read_back(): void {
+		$repo = self::code_only( self::read( self::util() . 'Product_Repository.php' ) );
+
+		$this->assertStringContainsString( 'function save_and_reread', $repo );
+
+		/*
+		 * The re-read itself, not just the call. Asserting that the writers call save_and_reread()
+		 * proves nothing about whether that method reads anything back — a version that returned the
+		 * in-memory object survived this test until the assertion was tightened.
+		 */
+		$this->assertMatchesRegularExpression(
+			'/\$id = \$product->save\(\);.*\$fresh = self::load\( \(int\) \$id \);/s',
+			self::method_body( $repo, 'save_and_reread' ),
+			'save_and_reread() must load the product again from the database after saving.'
+		);
+
+		foreach ( array( 'update_details', 'set_taxonomy', 'set_images', 'set_attributes', 'schedule_sale', 'update_variation' ) as $writer ) {
+			$body = self::method_body( $repo, $writer );
+
+			$this->assertStringContainsString(
+				'save_and_reread(',
+				$body,
+				"{$writer}() must read the product back rather than trusting the in-memory object."
+			);
+		}
+	}
+
+	/**
+	 * One method's body, bounded by the next.
+	 */
+	private static function method_body( string $src, string $method ): string {
+		$start = strpos( $src, 'function ' . $method . '(' );
+
+		if ( false === $start ) {
+			return '';
+		}
+
+		$next = preg_match( '/\n\t(?:public|private|protected) static function /', $src, $m, PREG_OFFSET_CAPTURE, $start + 1 )
+			? (int) $m[0][1]
+			: strlen( $src );
+
+		return substr( $src, $start, $next - $start );
+	}
+
+	/**
+	 * Stock goes through WooCommerce's own stock function.
+	 *
+	 * It resolves the record that actually holds the number, updates atomically, recalculates the
+	 * stock status, refreshes the visibility term the catalogue filters on and fires the hooks every
+	 * inventory integration listens for. A meta write does none of it.
+	 */
+	public function test_stock_uses_the_proper_function(): void {
+		$repo = self::code_only( self::read( self::util() . 'Product_Repository.php' ) );
+
+		$this->assertStringContainsString( 'wc_update_product_stock(', $repo );
+		$this->assertStringContainsString( 'get_stock_managed_by_id()', $repo );
+	}
+
+	/**
+	 * The reported stock is the authority's, not the object's own field.
+	 *
+	 * Measured: after decreasing a parent-managed variation by 2, the parent held 5 and a fresh
+	 * request agreed — while the variation's own field still read 7 in the request that made the
+	 * change. Reporting that as "after" would be a stale read-back dressed up as a confirmation.
+	 */
+	public function test_effective_stock_is_reported_not_the_raw_field(): void {
+		$repo = self::code_only( self::read( self::util() . 'Product_Repository.php' ) );
+
+		$this->assertMatchesRegularExpression(
+			"/'stock_quantity'\s*=> \\\$effective,/",
+			$repo,
+			'The reported quantity must be the authoritative one.'
+		);
+		$this->assertStringContainsString( "'own_row_quantity'", $repo, 'The raw field stays visible for comparison.' );
+		// Single-quoted: a double-quoted needle interpolates \$cached away, the trap from #119.
+		$this->assertStringContainsString( 'wp_cache_delete( $cached, \'post_meta\' )', $repo );
+	}
+
+	/**
+	 * The two dangerous abilities preview by default and ask only when applying.
+	 *
+	 * A dry run changes nothing, so demanding confirmation for it is friction that teaches a caller
+	 * to pass confirm reflexively — the habit the gate exists to prevent. Measured: the first
+	 * version asked for confirmation on a preview.
+	 */
+	public function test_dry_run_is_the_default_and_only_the_real_run_asks(): void {
+		foreach ( array( 'Bulk_Update_Prices', 'Generate_Variations' ) as $class ) {
+			$src = self::code_only( self::read( self::dir() . $class . '.php' ) );
+
+			$this->assertMatchesRegularExpression(
+				"/function needs_confirmation_for\( array \\\$input \): bool \{\s*return ! empty\( \\\$input\['apply'\] \);/",
+				$src,
+				"{$class} must ask only when apply is set."
+			);
+			$this->assertStringContainsString( "'default' => false", $src, "{$class} must default to a preview." );
+		}
+	}
+
+	/**
+	 * Both bulk operations are capped, and neither can address the whole store.
+	 */
+	public function test_bulk_operations_are_bounded(): void {
+		$repo = self::code_only( self::read( self::util() . 'Product_Repository.php' ) );
+
+		$this->assertStringContainsString( 'const MAX_BULK', $repo );
+		$this->assertStringContainsString( 'const MAX_VARIATIONS', $repo );
+
+		$body = self::method_body( $repo, 'bulk_update_prices' );
+
+		$this->assertStringContainsString( 'too_many', $body, 'A set larger than the cap must be refused, not truncated.' );
+
+		// The COMPARISON, not the error code. Changing the condition to `false` leaves the code
+		// string sitting there untouched, so a presence check passes with the cap gone.
+		$this->assertMatchesRegularExpression(
+			'/if \( count\( \$ids \) > self::MAX_BULK \)/',
+			$body,
+			'The bulk cap must actually be compared.'
+		);
+		$this->assertMatchesRegularExpression(
+			'/if \( count\( \$wanted \) > self::MAX_VARIATIONS \)/',
+			self::method_body( self::code_only( self::read( self::util() . 'Product_Repository.php' ) ), 'generate_variations' ),
+			'The variation cap must actually be compared.'
+		);
+		$this->assertMatchesRegularExpression(
+			'/if \( array\(\) === \$ids && \$category <= 0 \)/',
+			$body,
+			'An explicit filter is required; there is deliberately no way to reprice the whole store.'
+		);
+	}
+
+	/**
+	 * A sale price that WooCommerce would discard is refused rather than silently ignored.
+	 */
+	public function test_a_useless_sale_price_is_refused(): void {
+		$body = self::method_body( self::code_only( self::read( self::util() . 'Product_Repository.php' ) ), 'schedule_sale' );
+
+		$this->assertMatchesRegularExpression(
+			'/\$sale >= \$regular/',
+			$body,
+			'WooCommerce discards a sale price that is not below the regular price, so accepting one would report success having done nothing.'
+		);
+	}
+
 	public function test_repositories_are_final_and_static_only(): void {
 		foreach ( array( 'Store_Guard', 'Store_Repository' ) as $class ) {
 			$src = self::read( self::util() . $class . '.php' );
