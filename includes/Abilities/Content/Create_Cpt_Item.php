@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Protected_Post_Types;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -42,6 +43,11 @@ class Create_Cpt_Item extends Ability_Definition {
 					'type'                 => 'object',
 					'properties'           => array(
 						'post_type' => array( 'type' => 'string' ),
+						'allow_protected_post_type' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Write anyway when the post type belongs to a plugin that keeps derived data elsewhere. The response states what was bypassed.', 'acrossai-abilities-manager' ),
+						),
 						'title'     => array( 'type' => 'string' ),
 						'content'   => array( 'type' => 'string' ),
 						'excerpt'   => array( 'type' => 'string' ),
@@ -65,6 +71,11 @@ class Create_Cpt_Item extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
+						'blocked_reason' => array( 'type' => 'string' ),
+						'post_type'      => array( 'type' => 'string' ),
+						'use_instead'    => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+						'writes'         => array( 'type' => 'string' ),
+						'warnings'       => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
 						'success'       => array( 'type' => 'boolean' ),
 						'id'            => array( 'type' => 'integer' ),
 						'item'          => array( 'type' => 'object' ),
@@ -104,6 +115,23 @@ class Create_Cpt_Item extends Ability_Definition {
 	 */
 	public function execute( array $input = array() ): array {
 		$post_type = sanitize_key( (string) ( $input['post_type'] ?? '' ) );
+
+		/*
+		 * Feature 120 — refuse before the post lookup, deliberately. For an HPOS order `get_post()`
+		 * misses and the caller is told "Item not found for the given post_type", which is both
+		 * wrong and unhelpful: the order exists, just not here.
+		 */
+		$assessment = Protected_Post_Types::assess( $post_type, isset( $input['meta'] ) && array() !== (array) $input['meta'] );
+
+		if ( $assessment['blocked'] && empty( $input['allow_protected_post_type'] ) ) {
+			return Protected_Post_Types::refusal( $assessment['verdict'] );
+		}
+
+		$warnings = array();
+
+		if ( Protected_Post_Types::WRITES_APPLY !== $assessment['verdict']['writes'] ) {
+			$warnings[] = (string) $assessment['verdict']['guidance'];
+		}
 		if ( '' === $post_type || ! post_type_exists( $post_type ) ) {
 			return array(
 				'success' => false,
@@ -158,6 +186,7 @@ class Create_Cpt_Item extends Ability_Definition {
 
 		return array(
 			'success'       => true,
+			'warnings'      => $warnings,
 			'id'            => (int) $id,
 			'item'          => $fetched,
 			'content_bytes' => $content_bytes,

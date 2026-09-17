@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Protected_Post_Types;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -39,6 +40,11 @@ class Delete_Cpt_Item extends Ability_Definition {
 					'type'                 => 'object',
 					'properties'           => array(
 						'post_type' => array( 'type' => 'string' ),
+						'allow_protected_post_type' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Write anyway when the post type belongs to a plugin that keeps derived data elsewhere. The response states what was bypassed.', 'acrossai-abilities-manager' ),
+						),
 						'id'        => array(
 							'type'    => 'integer',
 							'minimum' => 1,
@@ -54,6 +60,11 @@ class Delete_Cpt_Item extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
+						'blocked_reason' => array( 'type' => 'string' ),
+						'post_type'      => array( 'type' => 'string' ),
+						'use_instead'    => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+						'writes'         => array( 'type' => 'string' ),
+						'warnings'       => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
 						'success' => array( 'type' => 'boolean' ),
 						'id'      => array( 'type' => 'integer' ),
 						'force'   => array( 'type' => 'boolean' ),
@@ -91,6 +102,23 @@ class Delete_Cpt_Item extends Ability_Definition {
 	 */
 	public function execute( array $input = array() ): array {
 		$post_type = sanitize_key( (string) ( $input['post_type'] ?? '' ) );
+
+		/*
+		 * Feature 120 — refuse before the post lookup, deliberately. For an HPOS order `get_post()`
+		 * misses and the caller is told "Item not found for the given post_type", which is both
+		 * wrong and unhelpful: the order exists, just not here.
+		 */
+		$assessment = Protected_Post_Types::assess( $post_type, false );
+
+		if ( $assessment['blocked'] && empty( $input['allow_protected_post_type'] ) ) {
+			return Protected_Post_Types::refusal( $assessment['verdict'] );
+		}
+
+		$warnings = array();
+
+		if ( Protected_Post_Types::WRITES_APPLY !== $assessment['verdict']['writes'] ) {
+			$warnings[] = (string) $assessment['verdict']['guidance'];
+		}
 		$id        = (int) ( $input['id'] ?? 0 );
 		$force     = ! empty( $input['force'] );
 
@@ -118,6 +146,7 @@ class Delete_Cpt_Item extends Ability_Definition {
 
 		return array(
 			'success' => true,
+			'warnings' => $warnings,
 			'id'      => $id,
 			'force'   => $force,
 			/* translators: 1: post type, 2: ID */

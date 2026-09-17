@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Protected_Post_Types;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -44,6 +45,11 @@ class Delete_Post_Meta extends Ability_Definition {
 							'type'    => 'integer',
 							'minimum' => 1,
 						),
+						'allow_protected_post_type' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Write anyway when the post type belongs to a plugin that keeps derived data elsewhere. The response states what was bypassed.', 'acrossai-abilities-manager' ),
+						),
 						'key'        => array( 'type' => 'string' ),
 						'meta_key'   => array(
 							'type'        => 'string',
@@ -73,6 +79,10 @@ class Delete_Post_Meta extends Ability_Definition {
 					'type'                 => 'object',
 					'properties'           => array(
 						'success' => array( 'type' => 'boolean' ),
+						'blocked_reason' => array( 'type' => 'string' ),
+						'post_type'      => array( 'type' => 'string' ),
+						'writes'         => array( 'type' => 'string' ),
+						'use_instead'    => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
 						'deleted' => array( 'type' => 'boolean' ),
 						'message' => array( 'type' => 'string' ),
 					),
@@ -116,6 +126,19 @@ class Delete_Post_Meta extends Ability_Definition {
 				'success' => false,
 				'message' => __( 'Post not found.', 'acrossai-abilities-manager' ),
 			);
+		}
+
+		/*
+		 * Feature 120 — a meta write is exactly the case that costs money: it is where a plugin like
+		 * WooCommerce keeps the values it derives others from. Measured: writing `_regular_price`
+		 * here leaves `_price` and the product lookup table on the OLD price, and saving the product
+		 * correctly afterwards does not repair it, because WooCommerce sees the meta already changed
+		 * and registers no change at all.
+		 */
+		$assessment = Protected_Post_Types::assess( (string) get_post_type( $post_id ), true );
+
+		if ( $assessment['blocked'] && empty( $input['allow_protected_post_type'] ) ) {
+			return Protected_Post_Types::refusal( $assessment['verdict'] );
 		}
 		if ( '' === $key ) {
 			return array(

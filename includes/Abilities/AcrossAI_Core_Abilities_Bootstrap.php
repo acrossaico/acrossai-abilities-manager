@@ -299,6 +299,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Content\Create_Post();
 		new Content\Get_Post();
 		new Content\Inspect_Post_Builder();
+		new Content\Inspect_Post_Type();
 		new Content\List_Post_Revisions();
 		new Content\List_Posts();
 		new Content\Update_Post();

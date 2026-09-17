@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-16. **Total abilities:** 743 across 38 topic namespaces.
+Snapshot taken 2026-09-17. **Total abilities:** 744 across 38 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -19,7 +19,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | Group | Abilities |
 |---|---:|
 | `appearance` — Appearance | 73 |
-| `content` — Content | 72 |
+| `content` — Content | 73 |
 | `yoast-seo` — Yoast Seo | 64 |
 | `elementor` — Elementor | 62 |
 | `litespeed-cache` — Litespeed Cache | 61 |
@@ -56,7 +56,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `consent/` | 22 | `acrossai-consent` |
 | `contact-form-7/` | 25 | `acrossai-contact-form-7` |
 | `content-search/` | 11 | `acrossai-content-search` |
-| `content/` | 30 | `acrossai-content` |
+| `content/` | 31 | `acrossai-content` |
 | `core/` | 6 | `acrossai-core` |
 | `cron/` | 16 | `acrossai-cron` |
 | `custom-fields/` | 11 | `acrossai-acf` |
@@ -286,6 +286,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `content/` | `content/get-post-meta` | content | posts | Get Post Meta |
 | `content/` | `content/inspect-post-autosaves` | content | posts | Inspect Autosaves |
 | `content/` | `content/inspect-post-builder` | content | posts | Inspect Post Builder |
+| `content/` | `content/inspect-post-type` | content | posts | Inspect Post Type |
 | `content/` | `content/link-post-translation` | content | multilanguage | Link Post Translations |
 | `content/` | `content/list-cpt-item-revisions` | content | cpt | Get CPT Item Revisions |
 | `content/` | `content/list-cpt-items` | content | cpt | Get CPT Items |
