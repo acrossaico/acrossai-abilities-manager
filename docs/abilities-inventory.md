@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-17. **Total abilities:** 768 across 39 topic namespaces.
+Snapshot taken 2026-09-17. **Total abilities:** 778 across 39 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -25,9 +25,9 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `litespeed-cache` — Litespeed Cache | 61 |
 | `rank-math` — Rank Math | 61 |
 | `blocks` — Blocks | 52 |
+| `woocommerce` — Woocommerce | 34 |
 | `contact-form-7` — Contact Form 7 | 25 |
 | `wpcode` — Wpcode | 24 |
-| `woocommerce` — Woocommerce | 24 |
 | `updates` — Updates | 23 |
 | `files` — Files | 23 |
 | `cookieyes` — Cookieyes | 22 |
@@ -80,7 +80,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `settings/` | 11 | `acrossai-settings` |
 | `site-health/` | 6 | `acrossai-site-health` |
 | `snippets/` | 24 | `acrossai-wpcode` |
-| `store/` | 24 | `acrossai-store` |
+| `store/` | 34 | `acrossai-store` |
 | `taxonomies/` | 16 | `acrossai-taxonomies`, `acrossai-yoast-seo` |
 | `themes/` | 7 | `acrossai-themes` |
 | `tickets/` | 16 | `acrossai-event-tickets` |
@@ -744,29 +744,39 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `snippets/` | `snippets/update-global-scripts` | wpcode |  |  |
 | `snippets/` | `snippets/update-snippet` | wpcode |  |  |
 | `snippets/` | `snippets/update-snippet-from-library` | wpcode |  |  |
+| `store/` | `store/add-tax-rate` | woocommerce |  |  |
 | `store/` | `store/adjust-stock` | woocommerce |  |  |
 | `store/` | `store/bulk-update-prices` | woocommerce |  |  |
+| `store/` | `store/create-coupon` | woocommerce |  |  |
 | `store/` | `store/create-customer` | woocommerce |  |  |
 | `store/` | `store/create-variable-product` | woocommerce |  |  |
 | `store/` | `store/export-customers` | woocommerce |  |  |
 | `store/` | `store/generate-variations` | woocommerce |  |  |
+| `store/` | `store/get-coupon` | woocommerce |  |  |
 | `store/` | `store/get-customer` | woocommerce |  |  |
 | `store/` | `store/get-order` | woocommerce |  |  |
 | `store/` | `store/get-product` | woocommerce |  |  |
 | `store/` | `store/get-sales-summary` | woocommerce |  |  |
 | `store/` | `store/get-stock` | woocommerce |  |  |
+| `store/` | `store/get-store-settings` | woocommerce |  |  |
 | `store/` | `store/get-store-status` | woocommerce |  |  |
+| `store/` | `store/get-tax-rates` | woocommerce |  |  |
+| `store/` | `store/list-coupons` | woocommerce |  |  |
 | `store/` | `store/list-customers` | woocommerce |  |  |
 | `store/` | `store/list-low-stock` | woocommerce |  |  |
 | `store/` | `store/list-order-notes` | woocommerce |  |  |
+| `store/` | `store/list-shipping-classes` | woocommerce |  |  |
+| `store/` | `store/list-shipping-zones` | woocommerce |  |  |
 | `store/` | `store/list-top-products` | woocommerce |  |  |
 | `store/` | `store/refund-order` | woocommerce |  |  |
 | `store/` | `store/schedule-sale` | woocommerce |  |  |
 | `store/` | `store/set-product-attributes` | woocommerce |  |  |
 | `store/` | `store/set-product-images` | woocommerce |  |  |
 | `store/` | `store/set-product-taxonomy` | woocommerce |  |  |
+| `store/` | `store/update-coupon` | woocommerce |  |  |
 | `store/` | `store/update-customer` | woocommerce |  |  |
 | `store/` | `store/update-product-details` | woocommerce |  |  |
+| `store/` | `store/update-store-settings` | woocommerce |  |  |
 | `store/` | `store/update-variation` | woocommerce |  |  |
 | `taxonomies/` | `taxonomies/assign-cpt-terms` | content | terms | Assign Terms |
 | `taxonomies/` | `taxonomies/clear-term-seo` | yoast-seo |  |  |
