@@ -127,11 +127,7 @@ class Create_Cpt_Item extends Ability_Definition {
 			return Protected_Post_Types::refusal( $assessment['verdict'] );
 		}
 
-		$warnings = array();
-
-		if ( Protected_Post_Types::WRITES_APPLY !== $assessment['verdict']['writes'] ) {
-			$warnings[] = (string) $assessment['verdict']['guidance'];
-		}
+		$warnings = Protected_Post_Types::warnings_for( $assessment['verdict'] );
 		if ( '' === $post_type || ! post_type_exists( $post_type ) ) {
 			return array(
 				'success' => false,

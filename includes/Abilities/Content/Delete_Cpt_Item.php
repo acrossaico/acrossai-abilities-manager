@@ -114,11 +114,7 @@ class Delete_Cpt_Item extends Ability_Definition {
 			return Protected_Post_Types::refusal( $assessment['verdict'] );
 		}
 
-		$warnings = array();
-
-		if ( Protected_Post_Types::WRITES_APPLY !== $assessment['verdict']['writes'] ) {
-			$warnings[] = (string) $assessment['verdict']['guidance'];
-		}
+		$warnings = Protected_Post_Types::warnings_for( $assessment['verdict'] );
 		$id        = (int) ( $input['id'] ?? 0 );
 		$force     = ! empty( $input['force'] );
 

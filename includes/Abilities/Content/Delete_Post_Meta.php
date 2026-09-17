@@ -83,6 +83,7 @@ class Delete_Post_Meta extends Ability_Definition {
 						'post_type'      => array( 'type' => 'string' ),
 						'writes'         => array( 'type' => 'string' ),
 						'use_instead'    => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
+						'warnings'       => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
 						'deleted' => array( 'type' => 'boolean' ),
 						'message' => array( 'type' => 'string' ),
 					),
@@ -140,6 +141,8 @@ class Delete_Post_Meta extends Ability_Definition {
 		if ( $assessment['blocked'] && empty( $input['allow_protected_post_type'] ) ) {
 			return Protected_Post_Types::refusal( $assessment['verdict'] );
 		}
+
+		$warnings = Protected_Post_Types::warnings_for( $assessment['verdict'] );
 		if ( '' === $key ) {
 			return array(
 				'success' => false,
@@ -156,6 +159,7 @@ class Delete_Post_Meta extends Ability_Definition {
 
 		return array(
 			'success' => true,
+			'warnings' => $warnings,
 			'deleted' => (bool) $deleted,
 			/* translators: 1: meta key, 2: post ID */
 			'message' => sprintf( __( 'Deleted meta "%1$s" on post #%2$d.', 'acrossai-abilities-manager' ), $key, $post_id ),
