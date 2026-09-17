@@ -152,6 +152,8 @@ abstract class Base_Store_Ability extends Ability_Definition {
 			'orders'      => __( 'Orders', 'acrossai-abilities-manager' ),
 			'customers'   => __( 'Customers', 'acrossai-abilities-manager' ),
 			'insight'     => __( 'Insight', 'acrossai-abilities-manager' ),
+			'marketing'   => __( 'Coupons', 'acrossai-abilities-manager' ),
+			'configuration' => __( 'Store configuration', 'acrossai-abilities-manager' ),
 		);
 	}
 

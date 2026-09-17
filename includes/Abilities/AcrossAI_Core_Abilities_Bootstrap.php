@@ -1445,5 +1445,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Store\Export_Customers();
 		new Store\Get_Sales_Summary();
 		new Store\List_Top_Products();
+		new Store\List_Coupons();
+		new Store\Get_Coupon();
+		new Store\Create_Coupon();
+		new Store\Update_Coupon();
+		new Store\Get_Tax_Rates();
+		new Store\Add_Tax_Rate();
+		new Store\List_Shipping_Zones();
+		new Store\List_Shipping_Classes();
+		new Store\Get_Store_Settings();
+		new Store\Update_Store_Settings();
 	}
 }

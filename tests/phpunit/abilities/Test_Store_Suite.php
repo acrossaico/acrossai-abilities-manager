@@ -269,6 +269,16 @@ class Test_Store_Suite extends WP_UnitTestCase {
 			'Export_Customers'        => 'store/export-customers',
 			'Get_Sales_Summary'       => 'store/get-sales-summary',
 			'List_Top_Products'       => 'store/list-top-products',
+			'List_Coupons'            => 'store/list-coupons',
+			'Get_Coupon'              => 'store/get-coupon',
+			'Create_Coupon'           => 'store/create-coupon',
+			'Update_Coupon'           => 'store/update-coupon',
+			'Get_Tax_Rates'           => 'store/get-tax-rates',
+			'Add_Tax_Rate'            => 'store/add-tax-rate',
+			'List_Shipping_Zones'     => 'store/list-shipping-zones',
+			'List_Shipping_Classes'   => 'store/list-shipping-classes',
+			'Get_Store_Settings'      => 'store/get-store-settings',
+			'Update_Store_Settings'   => 'store/update-store-settings',
 		);
 	}
 
@@ -609,6 +619,96 @@ class Test_Store_Suite extends WP_UnitTestCase {
 			$repo,
 			'Pending and failed orders are not revenue.'
 		);
+	}
+
+	/**
+	 * Settings are an allow-list, and everything else is refused BY NAME.
+	 *
+	 * WooCommerce keeps hundreds of options under the same prefix, payment gateway configuration —
+	 * keys and webhook secrets — among them. A general-purpose writer would reach all of it. Refusing
+	 * by name rather than ignoring matters too: a silently dropped setting looks like it worked.
+	 */
+	public function test_settings_are_an_allow_list(): void {
+		$repo = self::code_only( self::read( self::util() . 'Config_Repository.php' ) );
+
+		$this->assertStringContainsString( 'const WRITABLE_SETTINGS', $repo );
+		$this->assertMatchesRegularExpression(
+			'/if \( ! array_key_exists\( \$key, self::WRITABLE_SETTINGS \) \) \{\s*\$refused\[\] = \$key;/',
+			$repo,
+			'A setting outside the list must be collected and refused, not skipped.'
+		);
+		$this->assertStringContainsString( 'setting_not_writable', $repo );
+
+		foreach ( array( 'stripe', 'paypal', 'gateway', 'api_key', 'secret' ) as $forbidden ) {
+			$this->assertStringNotContainsString(
+				"'woocommerce_" . $forbidden,
+				$repo,
+				"No gateway option may appear in the writable list ({$forbidden})."
+			);
+		}
+	}
+
+	/**
+	 * Tax and shipping report, and never advise.
+	 *
+	 * What a rate ought to be is a question about a business, not a configuration. A wrong answer
+	 * does not error — it under-charges tax for a year.
+	 */
+	public function test_tax_reports_rather_than_advises(): void {
+		$repo = self::code_only( self::read( self::util() . 'Config_Repository.php' ) );
+		$src  = self::read( self::dir() . 'Get_Tax_Rates.php' );
+
+		$this->assertStringContainsString( "'taxes_enabled'", $repo );
+		$this->assertMatchesRegularExpression( '/question about the business/i', $repo );
+		$this->assertMatchesRegularExpression( '/rather than the software|question about the business/i', $src );
+	}
+
+	/**
+	 * A tax rate added while tax calculation is off says so.
+	 *
+	 * Otherwise the rate is stored, never applied, and everything reports success.
+	 */
+	public function test_an_inert_tax_rate_is_flagged(): void {
+		$body = self::method_body( self::code_only( self::read( self::util() . 'Config_Repository.php' ) ), 'add_tax_rate' );
+
+		$this->assertMatchesRegularExpression(
+			"/'yes' === get_option\( 'woocommerce_calc_taxes' \)/",
+			$body,
+			'The response must state when the rate will not be applied.'
+		);
+	}
+
+	/**
+	 * A coupon code collision is refused in both directions.
+	 */
+	public function test_coupon_existence_is_checked_both_ways(): void {
+		$body = self::method_body( self::code_only( self::read( self::util() . 'Config_Repository.php' ) ), 'save_coupon' );
+
+		$this->assertMatchesRegularExpression(
+			'/if \( \$create && \$existing \) \{/',
+			$body,
+			'Creating over an existing code must be refused rather than making a second coupon.'
+		);
+		$this->assertMatchesRegularExpression(
+			'/if \( ! \$create && ! \$existing \) \{/',
+			$body,
+			'Updating a code that does not exist must be refused rather than creating one.'
+		);
+		$this->assertMatchesRegularExpression(
+			'/if \\( ! array_key_exists\\( \\$type, wc_get_coupon_types\\(\\) \\) \\) \\{/',
+			$body,
+			'A discount type the store does not offer must be refused, not stored as a coupon that discounts nothing.'
+		);
+	}
+
+	/**
+	 * The shipping read names the failure people actually hit.
+	 */
+	public function test_shipping_explains_the_rest_of_the_world_zone(): void {
+		$repo = self::code_only( self::read( self::util() . 'Config_Repository.php' ) );
+
+		$this->assertStringContainsString( "'rest_of_world'", $repo );
+		$this->assertMatchesRegularExpression( '/unable to check out|cannot check out/i', self::read( self::util() . 'Config_Repository.php' ) );
 	}
 
 	public function test_repositories_are_final_and_static_only(): void {
