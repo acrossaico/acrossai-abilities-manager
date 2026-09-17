@@ -97,6 +97,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 
 		// Feature 121 — store category (self-guards on WooCommerce inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', Store\Category_Registrar::instance(), 'register' );
+		$loader->add_action( 'wp_abilities_api_categories_init', Backups\Category_Registrar::instance(), 'register' );
 
 		// Feature 104 — LiteSpeed Cache category (self-guards on the host probe inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', LiteSpeed\Category_Registrar::instance(), 'register' );
@@ -673,6 +674,12 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_store_abilities();
 		}
 
+		// Feature 126 — backup suite. Registered unconditionally and deliberately: the abilities
+		// speak to whichever backup plugin is present through a provider layer, and on a site with
+		// none they are the thing that says so. Gating them on a backup plugin being installed would
+		// hide the answer exactly when "is this site backed up?" is answered no.
+		$this->register_backup_abilities();
+
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
 		// so every group it may cover already exists. Each declines to register
 		// itself when its group has no registered abilities, which is why the two
@@ -932,6 +939,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Toolset\Updates();
 		new Toolset\Cron();
 		new Toolset\Cache();
+		new Toolset\Backups();
 		new Toolset\Database();
 		new Toolset\Files();
 		new Toolset\Diagnostics();
@@ -947,6 +955,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			'updates',
 			'cron',
 			'cache',
+			'backups',
 			'database',
 			'files',
 			'diagnostics',
@@ -1420,6 +1429,28 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 	 * @since  0.0.51
 	 * @return void
 	 */
+	/**
+	 * Feature 126 — the backup suite.
+	 *
+	 * Registered unconditionally like every other suite. The guard decides at call time whether any
+	 * backup plugin is present, so the abilities are discoverable — and can say what is missing —
+	 * on a site that has none.
+	 *
+	 * @since  0.0.52
+	 * @return void
+	 */
+	private function register_backup_abilities(): void {
+		new Backups\Get_Status();
+		new Backups\List_Backups();
+		new Backups\Get_Backup();
+		new Backups\Check_Exposure();
+		new Backups\Get_Backup_Progress();
+		new Backups\Start_Backup();
+		new Backups\Set_Backup_Label();
+		new Backups\Delete_Backup();
+		new Backups\Restore_Backup();
+	}
+
 	private function register_store_abilities(): void {
 		new Store\Get_Store_Status();
 		new Store\Get_Product();

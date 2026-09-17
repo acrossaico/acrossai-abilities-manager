@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-17. **Total abilities:** 778 across 39 topic namespaces.
+Snapshot taken 2026-09-17. **Total abilities:** 788 across 40 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -39,8 +39,9 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `cron` — Cron | 16 |
 | `event-tickets` — Event Tickets | 16 |
 | `users` — Users | 16 |
+| `` —  | 14 |
 | `loco-translate` — Loco Translate | 14 |
-| `` —  | 13 |
+| `backups` — Backups | 9 |
 | `cache` — Cache | 7 |
 | `classic-editor` — Classic Editor | 4 |
 | `wp-mail-smtp` — Wp Mail Smtp | 4 |
@@ -51,6 +52,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 |---|---:|---|
 | `acrossai/` | 7 | `acrossai-debugging` |
 | `admin-menu/` | 5 | `acrossai-admin-menu` |
+| `backups/` | 9 | `acrossai-backups` |
 | `blocks/` | 92 | `acrossai-block`, `acrossai-acf` |
 | `cache/` | 7 | `acrossai-cache` |
 | `comments/` | 12 | `acrossai-comments` |
@@ -84,7 +86,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `taxonomies/` | 16 | `acrossai-taxonomies`, `acrossai-yoast-seo` |
 | `themes/` | 7 | `acrossai-themes` |
 | `tickets/` | 16 | `acrossai-event-tickets` |
-| `toolset/` | 13 | `acrossai-toolset` |
+| `toolset/` | 14 | `acrossai-toolset` |
 | `translations/` | 14 | `acrossai-loco-translate` |
 | `users/` | 16 | `acrossai-users` |
 | `widgets/` | 11 | `acrossai-widgets` |
@@ -105,6 +107,15 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `admin-menu/` | `admin-menu/list-admin-menu-pages` | configuration | admin-menu | List Admin Menu Pages |
 | `admin-menu/` | `admin-menu/list-admin-settings` | configuration | admin-menu | List Admin Settings |
 | `admin-menu/` | `admin-menu/refresh-admin-menu-context` | configuration | admin-menu | Refresh Admin Menu Context |
+| `backups/` | `backups/check-exposure` | backups |  |  |
+| `backups/` | `backups/delete-backup` | backups |  |  |
+| `backups/` | `backups/get-backup` | backups |  |  |
+| `backups/` | `backups/get-backup-progress` | backups |  |  |
+| `backups/` | `backups/get-status` | backups |  |  |
+| `backups/` | `backups/list-backups` | backups |  |  |
+| `backups/` | `backups/restore-backup` | backups |  |  |
+| `backups/` | `backups/set-backup-label` | backups |  |  |
+| `backups/` | `backups/start-backup` | backups |  |  |
 | `blocks/` | `blocks/add-block` | blocks | post-blocks | Add Block |
 | `blocks/` | `blocks/analyze-content` | blocks | analysis | Analyze Content |
 | `blocks/` | `blocks/audit-content` | blocks | analysis | Audit Content |
@@ -818,6 +829,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `tickets/` | `tickets/undo-check-in` | event-tickets |  |  |
 | `tickets/` | `tickets/update-ticket` | event-tickets |  |  |
 | `toolset/` | `toolset/appearance` |  |  |  |
+| `toolset/` | `toolset/backups` |  |  |  |
 | `toolset/` | `toolset/blocks` |  |  |  |
 | `toolset/` | `toolset/cache` |  |  |  |
 | `toolset/` | `toolset/configuration` |  |  |  |
