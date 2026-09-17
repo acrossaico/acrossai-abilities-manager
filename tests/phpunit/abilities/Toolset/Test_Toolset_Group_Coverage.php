@@ -174,6 +174,7 @@ class Test_Toolset_Group_Coverage extends TestCase {
 			'Rank_Math.php'          => 'rank-math',
 			'WPCode.php'             => 'wpcode',
 			'WPForms.php'            => 'wpforms',
+			'WooCommerce.php'        => 'woocommerce',
 			'Yoast_Seo.php'          => 'yoast-seo',
 		);
 
