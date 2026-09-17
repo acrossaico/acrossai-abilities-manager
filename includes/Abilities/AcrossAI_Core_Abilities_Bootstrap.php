@@ -95,6 +95,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// Feature 119 — email delivery category (self-guards on the plugin inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', Email\Category_Registrar::instance(), 'register' );
 
+		// Feature 121 — store category (self-guards on WooCommerce inside register()).
+		$loader->add_action( 'wp_abilities_api_categories_init', Store\Category_Registrar::instance(), 'register' );
+
 		// Feature 104 — LiteSpeed Cache category (self-guards on the host probe inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', LiteSpeed\Category_Registrar::instance(), 'register' );
 
@@ -662,6 +665,12 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// abilities are adopted by prefix, not registered here.
 		if ( Utilities\Email\Email_Guard::is_available() ) {
 			$this->register_email_abilities();
+		}
+
+		// Feature 121 — store suite. WooCommerce's own seven are adopted by prefix, not registered
+		// here: it reserves the whole `woocommerce/` namespace and takes back any name we shadow.
+		if ( Utilities\Store\Store_Guard::is_available() ) {
+			$this->register_store_abilities();
 		}
 
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
@@ -1400,5 +1409,18 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Email\Get_Delivery_Status();
 		new Email\Send_Test_Email();
 		new Email\Update_Delivery_Settings();
+	}
+
+	/**
+	 * Feature 121 — instantiate the store ability classes.
+	 *
+	 * Category_Registrar is deliberately absent: it is a singleton with a private constructor, hooked
+	 * via instance() above. Constructing it here would be a fatal on every page load.
+	 *
+	 * @since  0.0.51
+	 * @return void
+	 */
+	private function register_store_abilities(): void {
+		new Store\Get_Store_Status();
 	}
 }

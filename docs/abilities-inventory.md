@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-17. **Total abilities:** 744 across 38 topic namespaces.
+Snapshot taken 2026-09-17. **Total abilities:** 745 across 39 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -43,6 +43,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `cache` — Cache | 7 |
 | `classic-editor` — Classic Editor | 4 |
 | `wp-mail-smtp` — Wp Mail Smtp | 4 |
+| `woocommerce` — Woocommerce | 1 |
 
 ## Namespaces
 
@@ -79,6 +80,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `settings/` | 11 | `acrossai-settings` |
 | `site-health/` | 6 | `acrossai-site-health` |
 | `snippets/` | 24 | `acrossai-wpcode` |
+| `store/` | 1 | `acrossai-store` |
 | `taxonomies/` | 16 | `acrossai-taxonomies`, `acrossai-yoast-seo` |
 | `themes/` | 7 | `acrossai-themes` |
 | `tickets/` | 16 | `acrossai-event-tickets` |
@@ -742,6 +744,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `snippets/` | `snippets/update-global-scripts` | wpcode |  |  |
 | `snippets/` | `snippets/update-snippet` | wpcode |  |  |
 | `snippets/` | `snippets/update-snippet-from-library` | wpcode |  |  |
+| `store/` | `store/get-store-status` | woocommerce |  |  |
 | `taxonomies/` | `taxonomies/assign-cpt-terms` | content | terms | Assign Terms |
 | `taxonomies/` | `taxonomies/clear-term-seo` | yoast-seo |  |  |
 | `taxonomies/` | `taxonomies/create-term` | content | terms | Create Term |
