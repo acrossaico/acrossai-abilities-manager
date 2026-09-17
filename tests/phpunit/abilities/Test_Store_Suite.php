@@ -259,6 +259,16 @@ class Test_Store_Suite extends WP_UnitTestCase {
 			'Get_Stock'               => 'store/get-stock',
 			'Adjust_Stock'            => 'store/adjust-stock',
 			'List_Low_Stock'          => 'store/list-low-stock',
+			'Get_Order'               => 'store/get-order',
+			'List_Order_Notes'        => 'store/list-order-notes',
+			'Refund_Order'            => 'store/refund-order',
+			'List_Customers'          => 'store/list-customers',
+			'Get_Customer'            => 'store/get-customer',
+			'Create_Customer'         => 'store/create-customer',
+			'Update_Customer'         => 'store/update-customer',
+			'Export_Customers'        => 'store/export-customers',
+			'Get_Sales_Summary'       => 'store/get-sales-summary',
+			'List_Top_Products'       => 'store/list-top-products',
 		);
 	}
 
@@ -442,6 +452,162 @@ class Test_Store_Suite extends WP_UnitTestCase {
 			'/\$sale >= \$regular/',
 			$body,
 			'WooCommerce discards a sale price that is not below the regular price, so accepting one would report success having done nothing.'
+		);
+	}
+
+	/**
+	 * Personal data is withheld by default, everywhere.
+	 *
+	 * The position Feature 110 settled for attendees, applied to orders and customers. Most questions
+	 * about an order — what was bought, what it cost, has it been refunded — need nobody's name.
+	 */
+	public function test_personal_data_is_opt_in(): void {
+		foreach ( array( 'Order_Repository', 'Customer_Repository' ) as $class ) {
+			$repo = self::code_only( self::read( self::util() . $class . '.php' ) );
+
+			// The BRANCH, not the variable. A version that dropped the early return kept both tokens
+			// and passed — the recurring trap in this suite: assert the condition, not the constant.
+			$this->assertMatchesRegularExpression(
+				'/if \( ! \$with_personal_data \) \{/',
+				$repo,
+				"{$class} must return early without identifying fields when they were not asked for."
+			);
+			$this->assertStringContainsString( "'withheld'", $repo, "{$class} must report what it withheld." );
+		}
+
+		foreach ( array( 'Get_Order', 'Get_Customer' ) as $class ) {
+			$this->assertStringContainsString(
+				"'include_personal_data'",
+				self::read( self::dir() . $class . '.php' ),
+				"{$class} must make personal data explicit."
+			);
+		}
+	}
+
+	/**
+	 * The export has no non-PII mode, and three gates.
+	 *
+	 * An export stripped of customer identity is just the aggregate, and offering a silent half-mode
+	 * is how an accidental disclosure happens.
+	 */
+	public function test_the_export_is_gated_three_ways(): void {
+		$repo = self::code_only( self::read( self::util() . 'Customer_Repository.php' ) );
+		$src  = self::read( self::dir() . 'Export_Customers.php' );
+
+		$this->assertMatchesRegularExpression(
+			"/if \( empty\( \\\$input\['include_personal_data'\] \) \) \{\s*return new WP_Error\(\s*'personal_data_flag_required'/",
+			$repo,
+			'The flag must actually be tested, not merely mentioned.'
+		);
+		$this->assertMatchesRegularExpression(
+			"/if \( '' === \\\$reason \) \{\s*return new WP_Error\(\s*'reason_required'/",
+			$repo,
+			'The reason must actually be required.'
+		);
+		$this->assertStringContainsString( 'requires_confirmation', $src );
+		$this->assertStringContainsString( 'assert_may_disclose', $repo );
+		$this->assertStringContainsString( "const DISCLOSURE_CAPABILITY = 'list_users'", $repo );
+	}
+
+	/**
+	 * The disclosure is capped, paged and recorded.
+	 */
+	public function test_the_export_is_bounded_and_recorded(): void {
+		$repo = self::code_only( self::read( self::util() . 'Customer_Repository.php' ) );
+
+		$this->assertStringContainsString( 'const MAX_EXPORT_ROWS = 500', $repo );
+		$this->assertMatchesRegularExpression(
+			'/min\( self::MAX_EXPORT_ROWS,/',
+			$repo,
+			'The cap must actually bound the requested limit.'
+		);
+		$this->assertStringContainsString( "'disclosed_count'", $repo );
+		$this->assertStringContainsString( "'total_matching'", $repo );
+		$this->assertStringContainsString( "do_action( 'acrossai_store_personal_data_disclosed'", $repo );
+	}
+
+	/**
+	 * Payment provider customer references are excluded by PREFIX.
+	 *
+	 * Enumerating gateways would mean one nobody here has heard of is returned by default. A prefix
+	 * list fails closed instead.
+	 */
+	public function test_gateway_customer_tokens_are_excluded_by_prefix(): void {
+		$repo = self::code_only( self::read( self::util() . 'Customer_Repository.php' ) );
+
+		$this->assertStringContainsString( 'const NEVER_RETURNED', $repo );
+
+		foreach ( array( '_stripe_', '_ppcp_', '_wc_braintree_', 'user_pass', 'session_tokens' ) as $prefix ) {
+			$this->assertStringContainsString( "'" . $prefix . "'", $repo );
+		}
+	}
+
+	/**
+	 * No password is ever set by an assistant.
+	 *
+	 * An account whose password an assistant chose is not the customer's account. Declared in the
+	 * schema purely so the attempt gets an explanation rather than a bare "not a valid property".
+	 */
+	public function test_passwords_are_never_set(): void {
+		$repo = self::code_only( self::read( self::util() . 'Customer_Repository.php' ) );
+
+		$this->assertStringContainsString( 'password_not_writable', $repo );
+		$this->assertStringContainsString( 'wp_generate_password(', $repo, 'A random password is generated instead.' );
+
+		foreach ( array( 'Create_Customer', 'Update_Customer' ) as $class ) {
+			$src = self::read( self::dir() . $class . '.php' );
+
+			$this->assertStringContainsString( "'password'", $src, "{$class} must declare it so the refusal explains itself." );
+			$this->assertStringContainsString( 'password_not_writable', $src . self::read( self::util() . 'Customer_Repository.php' ) );
+		}
+	}
+
+	/**
+	 * A refund never claims the customer has been paid.
+	 *
+	 * `wc_create_refund()` records the refund in WooCommerce; it does not move money through the
+	 * payment provider. Letting a caller assume otherwise is the worst possible misunderstanding in
+	 * this whole suite.
+	 */
+	public function test_a_refund_says_it_did_not_move_money(): void {
+		$repo = self::code_only( self::read( self::util() . 'Order_Repository.php' ) );
+
+		$this->assertStringContainsString( 'wc_create_refund(', $repo );
+		$this->assertMatchesRegularExpression(
+			"/if \( \\\$amount > \\\$remaining \+ 0\.0001 \) \{\s*return new WP_Error\(\s*'refund_exceeds_total'/",
+			$repo,
+			'Refunding more than is left must actually be compared, not just have an error code sitting nearby.'
+		);
+		$this->assertMatchesRegularExpression(
+			'/does NOT return money through the payment provider/',
+			self::read( self::util() . 'Order_Repository.php' ),
+			'The response must say plainly that no money moved.'
+		);
+	}
+
+	/**
+	 * Sales figures always carry their source.
+	 *
+	 * The analytics summary tables can be empty or mid-import, so a figure read from them is
+	 * confidently wrong in a way nothing on the screen suggests. These read the orders and say so.
+	 */
+	public function test_sales_figures_report_their_source(): void {
+		$repo = self::code_only( self::read( self::util() . 'Insight_Repository.php' ) );
+
+		// Both figures, each in its own method body — `'source'` appears twice, so a single
+		// whole-file check passes when one of them loses it.
+		foreach ( array( 'sales_summary', 'top_products' ) as $method ) {
+			$this->assertMatchesRegularExpression(
+				"/'source'\s*=> 'orders',/",
+				self::method_body( $repo, $method ),
+				"{$method}() must say where its numbers came from."
+			);
+		}
+		$this->assertStringContainsString( 'const PAID_STATUSES', $repo );
+		$this->assertMatchesRegularExpression(
+			"/'wc-processing', 'wc-completed'/",
+			$repo,
+			'Pending and failed orders are not revenue.'
 		);
 	}
 
