@@ -104,6 +104,7 @@ class AcrossAI_Category_Slug_Migration {
 		'consent',
 		'email',
 		'store',
+		'backups',
 		'media',
 		'menus',
 		'options',
