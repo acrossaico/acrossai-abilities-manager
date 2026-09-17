@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-17. **Total abilities:** 745 across 39 topic namespaces.
+Snapshot taken 2026-09-17. **Total abilities:** 758 across 39 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -38,12 +38,12 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `cron` — Cron | 16 |
 | `event-tickets` — Event Tickets | 16 |
 | `users` — Users | 16 |
+| `woocommerce` — Woocommerce | 14 |
 | `loco-translate` — Loco Translate | 14 |
 | `` —  | 13 |
 | `cache` — Cache | 7 |
 | `classic-editor` — Classic Editor | 4 |
 | `wp-mail-smtp` — Wp Mail Smtp | 4 |
-| `woocommerce` — Woocommerce | 1 |
 
 ## Namespaces
 
@@ -80,7 +80,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `settings/` | 11 | `acrossai-settings` |
 | `site-health/` | 6 | `acrossai-site-health` |
 | `snippets/` | 24 | `acrossai-wpcode` |
-| `store/` | 1 | `acrossai-store` |
+| `store/` | 14 | `acrossai-store` |
 | `taxonomies/` | 16 | `acrossai-taxonomies`, `acrossai-yoast-seo` |
 | `themes/` | 7 | `acrossai-themes` |
 | `tickets/` | 16 | `acrossai-event-tickets` |
@@ -744,7 +744,20 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `snippets/` | `snippets/update-global-scripts` | wpcode |  |  |
 | `snippets/` | `snippets/update-snippet` | wpcode |  |  |
 | `snippets/` | `snippets/update-snippet-from-library` | wpcode |  |  |
+| `store/` | `store/adjust-stock` | woocommerce |  |  |
+| `store/` | `store/bulk-update-prices` | woocommerce |  |  |
+| `store/` | `store/create-variable-product` | woocommerce |  |  |
+| `store/` | `store/generate-variations` | woocommerce |  |  |
+| `store/` | `store/get-product` | woocommerce |  |  |
+| `store/` | `store/get-stock` | woocommerce |  |  |
 | `store/` | `store/get-store-status` | woocommerce |  |  |
+| `store/` | `store/list-low-stock` | woocommerce |  |  |
+| `store/` | `store/schedule-sale` | woocommerce |  |  |
+| `store/` | `store/set-product-attributes` | woocommerce |  |  |
+| `store/` | `store/set-product-images` | woocommerce |  |  |
+| `store/` | `store/set-product-taxonomy` | woocommerce |  |  |
+| `store/` | `store/update-product-details` | woocommerce |  |  |
+| `store/` | `store/update-variation` | woocommerce |  |  |
 | `taxonomies/` | `taxonomies/assign-cpt-terms` | content | terms | Assign Terms |
 | `taxonomies/` | `taxonomies/clear-term-seo` | yoast-seo |  |  |
 | `taxonomies/` | `taxonomies/create-term` | content | terms | Create Term |
