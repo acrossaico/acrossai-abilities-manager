@@ -1435,5 +1435,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Store\Get_Stock();
 		new Store\Adjust_Stock();
 		new Store\List_Low_Stock();
+		new Store\Get_Order();
+		new Store\List_Order_Notes();
+		new Store\Refund_Order();
+		new Store\List_Customers();
+		new Store\Get_Customer();
+		new Store\Create_Customer();
+		new Store\Update_Customer();
+		new Store\Export_Customers();
+		new Store\Get_Sales_Summary();
+		new Store\List_Top_Products();
 	}
 }
