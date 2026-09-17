@@ -29,6 +29,82 @@ class Test_Store_Suite extends WP_UnitTestCase {
 		);
 	}
 
+	/**
+	 * A quantity that can be absent is declared as nullable.
+	 *
+	 * Measured against WooCommerce 11.1: store/get-stock returned
+	 * ability_invalid_output ("output[stock_quantity] is not of type integer") for every product
+	 * not managing stock, because get_stock_quantity() returns null there. The ability was
+	 * unusable for exactly the question it exists to answer -- and the rejection landed after
+	 * the read had already run.
+	 */
+	public function test_absent_stock_quantities_are_declared_nullable(): void {
+		$src = self::code_only( self::read( self::dir() . 'Get_Stock.php' ) );
+
+		foreach ( array( 'stock_quantity', 'own_row_quantity', 'authoritative_stock' ) as $field ) {
+			$this->assertMatchesRegularExpression(
+				"/'{$field}' => array\( 'type' => array\( 'integer', 'null' \) \)/",
+				$src,
+				"{$field} is null whenever the product does not manage stock, so a bare integer type rejects the ability's own output."
+			);
+		}
+	}
+
+	/**
+	 * A refusal names an ability that can actually do the thing.
+	 *
+	 * Measured: woocommerce/product-update refuses both variations and variable parents with
+	 * woocommerce_product_type_unsupported. Sending a variation there was a dead end -- follow
+	 * the instruction, get refused again, no next move.
+	 */
+	public function test_stock_refusal_names_a_route_that_works(): void {
+		$body = self::method_body( self::code_only( self::read( self::util() . 'Product_Repository.php' ) ), 'adjust_stock' );
+
+		$this->assertMatchesRegularExpression(
+			"/if \( 'variation' === \\\$product->get_type\(\) \) \{/",
+			$body,
+			'A variation must be told about store/update-variation, which can switch stock management on.'
+		);
+		$this->assertMatchesRegularExpression(
+			'/store\/update-variation/',
+			$body,
+			'The refusal must name store/update-variation.'
+		);
+		$this->assertMatchesRegularExpression(
+			"/if \( 'variable' === \\\$product->get_type\(\) \) \{/",
+			$body,
+			'A variable parent must be told plainly that no ability can do it, rather than pointed at one that cannot.'
+		);
+	}
+
+	/**
+	 * The health verdict checks the price against what the price is derived FROM.
+	 *
+	 * The lookup row mirrors _price, so comparing those two catches only half the corruption.
+	 * Measured: after a raw _regular_price write of 9.99 the product reported regular_price 9.99,
+	 * _price 100.00 and min_price 100.0000 -- lookup and _price agreed, and the verdict read
+	 * "matches: true" on a product the shop was charging the old price for.
+	 */
+	public function test_price_drift_is_not_reported_as_healthy(): void {
+		$body = self::method_body( self::code_only( self::read( self::util() . 'Product_Repository.php' ) ), 'lookup_state' );
+
+		$this->assertMatchesRegularExpression(
+			'/\$expected\s*=\s*\$product->is_on_sale\(\)\s*\?\s*\(string\) \$product->get_sale_price\(\)\s*:\s*\(string\) \$product->get_regular_price\(\)/',
+			$body,
+			'_price derives from the sale price while a sale runs and the regular price otherwise; the verdict must compare against that.'
+		);
+		$this->assertMatchesRegularExpression(
+			'/\$matches\s*=\s*\$lookup_agrees && \$price_derived;/',
+			$body,
+			'Both halves must hold for the product to be reported healthy.'
+		);
+		$this->assertMatchesRegularExpression(
+			'/will not repair it/',
+			$body,
+			'The note must say that saving the product afterwards does not fix it, which is the part that surprises people.'
+		);
+	}
+
 	private static function dir(): string {
 		return dirname( __DIR__, 3 ) . '/includes/Abilities/Store/';
 	}

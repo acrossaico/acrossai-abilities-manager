@@ -105,17 +105,47 @@ final class Product_Repository {
 			);
 		}
 
-		$price   = $product->get_price();
-		$matches = (string) $row['sku'] === (string) $product->get_sku()
+		$price = $product->get_price();
+
+		$lookup_agrees = (string) $row['sku'] === (string) $product->get_sku()
 			&& ( '' === (string) $price || abs( (float) $row['min_price'] - (float) $price ) < 0.0001 );
 
+		/*
+		 * The lookup row mirrors _price, so comparing the two catches only half the corruption.
+		 * Measured: after a raw _regular_price write of 9.99 the product reported regular_price
+		 * 9.99, _price 100.00 and min_price 100.0000 -- lookup and _price agreed with each other
+		 * and this verdict read "matches: true" on a product the shop was charging the old price
+		 * for. _price must also be consistent with what it is derived FROM: the sale price while a
+		 * sale is running, the regular price otherwise.
+		 */
+		$expected = $product->is_on_sale() ? (string) $product->get_sale_price() : (string) $product->get_regular_price();
+
+		$price_derived = '' === (string) $price
+			|| '' === $expected
+			|| abs( (float) $price - (float) $expected ) < 0.0001;
+
+		$matches = $lookup_agrees && $price_derived;
+
+		if ( $matches ) {
+			$note = '';
+		} elseif ( ! $price_derived ) {
+			$note = sprintf(
+				/* translators: 1: the price the shop charges, 2: the price the product claims. */
+				__( 'The price the shop charges (%1$s) is not the one this product says it has (%2$s). Something wrote the price field directly instead of saving the product, so WooCommerce never re-derived it - and saving the product now will not repair it, because WooCommerce sees no change to make. Set the price through woocommerce/product-update or store/schedule-sale to rebuild it.', 'acrossai-abilities-manager' ),
+				$price,
+				$expected
+			);
+		} else {
+			$note = __( 'The lookup table disagrees with the product. Something wrote this product outside WooCommerce; search, sorting and the on-sale list are answering with the older values.', 'acrossai-abilities-manager' );
+		}
+
 		return array(
-			'row_present' => true,
-			'matches'     => $matches,
-			'lookup'      => $row,
-			'note'        => $matches
-				? ''
-				: __( 'The lookup table disagrees with the product. Something wrote this product outside WooCommerce; search, sorting and the on-sale list are answering with the older values.', 'acrossai-abilities-manager' ),
+			'row_present'   => true,
+			'matches'       => $matches,
+			'lookup_agrees' => $lookup_agrees,
+			'price_derived' => $price_derived,
+			'lookup'        => $row,
+			'note'          => $note,
 		);
 	}
 
@@ -978,6 +1008,29 @@ final class Product_Repository {
 			$managed_by = (int) $product->get_stock_managed_by_id();
 
 			if ( $managed_by === $product->get_id() ) {
+				/*
+				 * Name an ability that can actually do it. Measured: woocommerce/product-update
+				 * refuses both variations and variable parents with
+				 * woocommerce_product_type_unsupported, so sending a variation there was a dead
+				 * end -- the caller follows the instruction, is refused again, and has no next
+				 * move. store/update-variation handles a variation; nothing can switch stock
+				 * management on for a variable parent, and saying so is better than a pointer
+				 * that fails.
+				 */
+				if ( 'variation' === $product->get_type() ) {
+					return new WP_Error(
+						'stock_not_managed',
+						__( 'This variation does not track stock quantities, so there is no number to change. Turn stock management on with store/update-variation, passing manage_stock: true and a stock_quantity.', 'acrossai-abilities-manager' )
+					);
+				}
+
+				if ( 'variable' === $product->get_type() ) {
+					return new WP_Error(
+						'stock_not_managed',
+						__( 'This variable product does not track stock at the parent level, so there is no number to change here. Stock for a variable product is normally held per variation: turn it on for each one with store/update-variation. Switching it on for the parent itself has to be done in the product editor - neither this plugin nor WooCommerce exposes an ability for it.', 'acrossai-abilities-manager' )
+					);
+				}
+
 				return new WP_Error(
 					'stock_not_managed',
 					__( 'This product does not track stock quantities, so there is no number to change. Turn stock management on through woocommerce/product-update first.', 'acrossai-abilities-manager' )

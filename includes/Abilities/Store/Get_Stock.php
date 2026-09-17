@@ -81,13 +81,13 @@ final class Get_Stock extends Base_Store_Ability {
 			'id' => array( 'type' => 'integer' ),
 			'type' => array( 'type' => 'string' ),
 			'manage_stock' => array( 'type' => 'boolean' ),
-			'stock_quantity' => array( 'type' => 'integer' ),
-			'own_row_quantity' => array( 'type' => 'integer' ),
+			'stock_quantity' => array( 'type' => array( 'integer', 'null' ) ),
+			'own_row_quantity' => array( 'type' => array( 'integer', 'null' ) ),
 			'stock_status' => array( 'type' => 'string' ),
 			'backorders' => array( 'type' => 'string' ),
 			'managed_by_id' => array( 'type' => 'integer' ),
 			'managed_here' => array( 'type' => 'boolean' ),
-			'authoritative_stock' => array( 'type' => 'integer' ),
+			'authoritative_stock' => array( 'type' => array( 'integer', 'null' ) ),
 			'note' => array( 'type' => 'string' ),
 		);
 	}
