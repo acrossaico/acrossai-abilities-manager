@@ -99,7 +99,7 @@ class Test_Ability_Group_Map extends TestCase {
 	 * @var array<string, int>
 	 */
 	private const EXPECTED_COUNTS = array(
-		'content'       => 72,
+		'content'       => 73,
 		'appearance'    => 73,
 		'blocks'        => 52,
 		'files'         => 23,
