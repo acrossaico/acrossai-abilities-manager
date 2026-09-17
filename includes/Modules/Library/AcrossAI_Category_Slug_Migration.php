@@ -103,6 +103,7 @@ class AcrossAI_Category_Slug_Migration {
 		'loco-translate',
 		'consent',
 		'email',
+		'store',
 		'media',
 		'menus',
 		'options',
