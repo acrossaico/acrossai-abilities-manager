@@ -214,6 +214,10 @@ abstract class Base_Toolset_Ability {
 	 * did. `requires` is deliberately dropped: the requirement is THIS plugin,
 	 * and by the time this callback runs it is satisfied by definition.
 	 *
+	 * `is_default` is deliberately NOT carried over. The placeholder's own
+	 * flag, whatever it says, is the transport's to decide — see the inline
+	 * note at the assignment below.
+	 *
 	 * @since  0.0.36
 	 * @param  mixed $types Types collected so far, keyed by slug.
 	 * @return mixed The list with this Toolset's slug appended to `acrossai`.
@@ -242,9 +246,22 @@ abstract class Base_Toolset_Ability {
 			);
 		}
 
-		$types['acrossai']['is_default'] = true;
 		// The requirement is this plugin. If this code is running, it is met.
-		$types['acrossai']['requires']   = null;
+		$types['acrossai']['requires'] = null;
+
+		// NOTE `is_default` is deliberately NOT set here.
+		//
+		// This callback used to force it true, which meant every new server on
+		// a site with this add-on installed was created as an AcrossAI server —
+		// and the transport could not decide otherwise, because this filter
+		// runs after its own registry and won.
+		//
+		// Which type a new server STARTS as is a server question, and servers
+		// are the transport's half of the boundary. This plugin contributes the
+		// type's label, description, tools and requirement — its own vocabulary
+		// — and stops there. The transport declares its preferred type in
+		// `ServerTypes::seed()`, and an operator who wants AcrossAI picks it in
+		// the form or flips that one key.
 
 		$tools = isset( $types['acrossai']['tools'] ) && is_array( $types['acrossai']['tools'] )
 			? $types['acrossai']['tools']
