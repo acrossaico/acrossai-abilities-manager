@@ -649,6 +649,36 @@ abstract class Base_Toolset_Ability {
 						'additionalProperties' => false,
 					),
 				),
+				/*
+				 * `discover` on a Toolset that spans several groups answers with
+				 * the GROUPS rather than their abilities — two hundred rows is
+				 * not a useful reply to "what is here?". Declared on the shared
+				 * schema rather than overridden per subclass because the schema
+				 * is `additionalProperties: false`: an undeclared key is not a
+				 * soft mismatch, it fails the whole response.
+				 *
+				 * Each row carries BOTH routes deliberately. `toolset` is the
+				 * direct call for a client whose tool list has it; `sub_group`
+				 * is the way back in here for one whose cached list predates it.
+				 */
+				'plugins'    => array(
+					'type'  => 'array',
+					'items' => array(
+						'type'                 => 'object',
+						'properties'           => array(
+							'toolset'     => array( 'type' => 'string' ),
+							'sub_group'   => array( 'type' => 'string' ),
+							'label'       => array( 'type' => 'string' ),
+							'description' => array( 'type' => 'string' ),
+							'abilities'   => array( 'type' => 'integer' ),
+						),
+						'required'             => array( 'toolset', 'sub_group' ),
+						'additionalProperties' => false,
+					),
+				),
+				'total_plugins'   => array( 'type' => 'integer' ),
+				'total_abilities' => array( 'type' => 'integer' ),
+				'hint'       => array( 'type' => 'string' ),
 				'total'      => array( 'type' => 'integer' ),
 				'returned'   => array( 'type' => 'integer' ),
 				'offset'     => array( 'type' => 'integer' ),
