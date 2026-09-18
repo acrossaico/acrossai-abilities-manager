@@ -162,6 +162,12 @@ final class Guide {
 				'max_limit'     => Base_Toolset_Ability::MAX_LIMIT,
 				'max_batch'     => Base_Toolset_Ability::MAX_BATCH,
 			),
+			'workflow' => array(
+				__( 'List a toolset\'s abilities: call it with action=discover. Narrow with search, or with sub_group when its description names sub-groups.', 'acrossai-abilities-manager' ),
+				__( 'Read one ability\'s parameters: action=info with ability=<name>, or abilities=[...] for several at once.', 'acrossai-abilities-manager' ),
+				__( 'Run it: action=execute with ability=<name> and parameters={...} exactly as info described them.', 'acrossai-abilities-manager' ),
+				__( 'Every toolset below answers those same three actions. Learn it once.', 'acrossai-abilities-manager' ),
+			),
 			'notes'   => array(
 				__( 'Filters AND together, and all of them are discover-only.', 'acrossai-abilities-manager' ),
 				__( '`sub_group` is a division WITHIN a group and never equals a group name — passing a group there returns an empty list. Use `plugin` on Integrations to narrow to one plugin.', 'acrossai-abilities-manager' ),
@@ -204,6 +210,7 @@ final class Guide {
 			$rows[] = array(
 				'name'      => $name,
 				'label'     => $ability->get_label(),
+				'covers'    => self::summarise( $ability->get_description() ),
 				'abilities' => (int) $count,
 				// Naming a toolset without saying how to reach it is the same
 				// mistake as naming one that does not exist. A non-default
@@ -211,13 +218,63 @@ final class Guide {
 				// tool list happens to carry it, and a list fixed at connect
 				// time usually will not. Say which route to take rather than
 				// letting the caller discover the answer by failing.
+				// Both routes, always, for the ones that have two. A plugin
+				// toolset is a real tool AND reachable through Integrations —
+				// which route works depends on whether this client's tool list
+				// carries it, and only the client knows that. Naming one route
+				// would be a guess; naming both lets it pick.
 				'call'      => isset( $indirect[ (string) $group ] )
-					? 'toolset/integrations with plugin=' . $group
-					: 'directly',
+					? sprintf(
+						/* translators: 1: toolset name, 2: plugin group slug. */
+						__( 'Call %1$s directly if it is in your tool list; if it is not, call toolset/integrations with plugin=%2$s.', 'acrossai-abilities-manager' ),
+						$name,
+						$group
+					)
+					: __( 'Call it directly — it is in the default set, so your tool list has it.', 'acrossai-abilities-manager' ),
 			);
 		}
 
 		return $rows;
+	}
+
+	/**
+	 * One line about what a toolset covers — enough to choose, not the essay.
+	 *
+	 * Derived from the toolset's own description rather than restated here, so a
+	 * new toolset needs no edit in this file and the two can never disagree.
+	 * Full descriptions run to 250 tokens each; fifteen of them would make this
+	 * guide cost more than the tool list it is meant to explain.
+	 *
+	 * Takes the opening sentence, which every toolset description leads with,
+	 * and trims it at a word boundary when it runs long. The caller already has
+	 * the full text for any toolset in its own tool list — this is for choosing
+	 * between them, and for the ones it cannot see.
+	 *
+	 * @since  0.0.37
+	 * @param  string $description The toolset's full description.
+	 * @return string
+	 */
+	private static function summarise( string $description ): string {
+		$limit    = 160;
+		// Split on a FULL STOP only. These descriptions are written as
+		// "Subject: detail, detail, detail." — the colon introduces the content
+		// rather than ending a sentence, and splitting on it yields a useless
+		// stub ("Work with the database:") that tells a model nothing the label
+		// did not already.
+		$sentence = trim( (string) preg_split( '/(?<=\\.)\\s+/', $description, 2 )[0] );
+
+		if ( '' === $sentence ) {
+			return '';
+		}
+
+		if ( mb_strlen( $sentence ) <= $limit ) {
+			return $sentence;
+		}
+
+		$cut  = mb_substr( $sentence, 0, $limit );
+		$last = mb_strrpos( $cut, ' ' );
+
+		return ( false === $last ? $cut : mb_substr( $cut, 0, $last ) ) . '…';
 	}
 
 	/**
