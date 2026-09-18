@@ -12,7 +12,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Acf
- * @since      0.0.37
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Acf;
@@ -35,7 +35,7 @@ final class Block_Repository {
 	/**
 	 * Register a block type.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  array<string,mixed> $block Block settings.
 	 * @return array<string,mixed>|WP_Error The registered block.
 	 */
@@ -59,7 +59,7 @@ final class Block_Repository {
 	 * property declared `array` does not encode as a JSON object
 	 * (BUG-ARRAY-TYPED-OUTPUT-IS-A-JSON-OBJECT).
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<int, array<string,mixed>>
 	 */
 	public static function all(): array {
@@ -85,7 +85,7 @@ final class Block_Repository {
 	/**
 	 * One registered block, or an error naming what is available.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string $name Block name, with or without the `acf/` prefix.
 	 * @return array<string,mixed>|WP_Error
 	 */
@@ -113,7 +113,7 @@ final class Block_Repository {
 	 * ACF matches them through the `block` location rule — the same query its own renderer runs
 	 * (`pro/blocks.php`).
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string $name Block name.
 	 * @return array<int, array<string,mixed>>
 	 */
@@ -124,7 +124,7 @@ final class Block_Repository {
 	/**
 	 * Every field behind a block, flattened to rows with their sub-fields nested.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string $name Block name.
 	 * @return array<int, array<string,mixed>>
 	 */
@@ -143,7 +143,7 @@ final class Block_Repository {
 	/**
 	 * Shape one ACF field definition into a row, recursing into sub-fields.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  array<string,mixed> $field ACF field definition.
 	 * @return array<string,mixed>
 	 */
@@ -196,7 +196,7 @@ final class Block_Repository {
 	 * Goes through Block_Tree so the post's existing blocks are parsed, mutated and re-serialised by
 	 * the same code path every other block ability uses.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  int                 $post_id Post to insert into.
 	 * @param  string              $name    Block name.
 	 * @param  array<string,mixed> $data    Field values for the block's `data` attribute.
@@ -250,7 +250,7 @@ final class Block_Repository {
 	/**
 	 * Patch the `data` attribute of one block instance, leaving its other attributes alone.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  int                 $post_id Post holding the block.
 	 * @param  int[]               $path    Block path, as used by every other block ability.
 	 * @param  array<string,mixed> $data    Field values to merge.
@@ -315,7 +315,7 @@ final class Block_Repository {
 	 *
 	 * Callers reasonably supply either, and ACF only answers to the prefixed one.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string $name Block name.
 	 * @return string
 	 */
@@ -328,7 +328,7 @@ final class Block_Repository {
 	/**
 	 * Total field count across a set of field groups.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  array<int, array<string,mixed>> $groups Field groups.
 	 * @return int
 	 */
@@ -345,7 +345,7 @@ final class Block_Repository {
 	/**
 	 * Save the mutated tree, mirroring Block\Add_Block::persist().
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  int                              $post_id Post ID.
 	 * @param  array<int, array<string, mixed>> $blocks  Block tree.
 	 * @return int|WP_Error

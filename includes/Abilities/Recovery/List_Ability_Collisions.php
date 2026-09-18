@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Recovery
- * @since      0.0.44
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Recovery;
@@ -23,12 +23,12 @@ defined( 'ABSPATH' ) || exit;
  * separate folder would have needed its own category registrar, and an ability whose category is
  * never registered is dropped by WP without a word (BUG-WP-CORE-ABILITY-CATEGORY-PRE-REGISTRATION).
  *
- * @since 0.0.44
+ * @since 0.0.34
  */
 class List_Ability_Collisions extends Ability_Definition {
 
 	/**
-	 * @since  0.0.44
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function ability(): array {
@@ -85,7 +85,7 @@ class List_Ability_Collisions extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.44
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Unused.
 	 * @return array<string, mixed>
 	 */

@@ -22,7 +22,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Toolset
- * @since      0.0.37
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -56,7 +56,7 @@ final class Guide {
 	 * that list — and under `acrossai/` it silently was not, while its opposite
 	 * number already was.
 	 *
-	 * @since 0.0.37
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const SLUG = 'toolset/server-guide';
@@ -70,7 +70,7 @@ final class Guide {
 	 * member INSIDE `toolset/other` — a dispatcher listing the thing that
 	 * describes dispatchers.
 	 *
-	 * @since 0.0.37
+	 * @since 0.0.34
 	 */
 	public function __construct() {
 		add_action( 'wp_abilities_api_init', array( $this, 'register' ), 20 );
@@ -96,7 +96,7 @@ final class Guide {
 	 *
 	 * Appends; the operator's own description is already the first line.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  mixed $instructions Guidance built so far.
 	 * @param  mixed $server_type  The server row's type slug.
 	 * @return mixed
@@ -115,7 +115,7 @@ final class Guide {
 	}
 
 	/**
-	 * @since 0.0.37
+	 * @since 0.0.34
 	 * @return void
 	 */
 	public function register(): void {
@@ -172,7 +172,7 @@ final class Guide {
 	}
 
 	/**
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public function execute(): array {
@@ -187,7 +187,7 @@ final class Guide {
 	/**
 	 * The calling convention, stated once.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	private function how_to_call(): array {
@@ -230,7 +230,7 @@ final class Guide {
 	 * restated here, so the guide and the tool it names cannot drift — the same
 	 * technique `Integrations::discover_overview()` uses.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	private function toolsets(): array {
@@ -295,7 +295,7 @@ final class Guide {
 	 * the full text for any toolset in its own tool list — this is for choosing
 	 * between them, and for the ones it cannot see.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string $description The toolset's full description.
 	 * @return string
 	 */
@@ -325,7 +325,7 @@ final class Guide {
 	/**
 	 * The two toolsets whose contents are not what their name suggests.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	private function special(): array {
@@ -353,7 +353,7 @@ final class Guide {
 	 * code rather than a sentence. `ability_not_in_group` even names the group
 	 * the ability actually belongs to.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<int, array<string, string>>
 	 */
 	private function errors(): array {
@@ -384,7 +384,7 @@ final class Guide {
 	/**
 	 * Advertise this as a tool-level entry.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  mixed $slugs Slugs collected so far.
 	 * @return mixed
 	 */
@@ -399,7 +399,7 @@ final class Guide {
 	 * drops protected slugs, which is what stops the guide being tagged into
 	 * the catch-all and listed inside `toolset/other`.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  mixed $slugs Slugs collected so far.
 	 * @return mixed
 	 */
@@ -408,7 +408,7 @@ final class Guide {
 	}
 
 	/**
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  mixed $slugs Slugs collected so far.
 	 * @return array<int, string>
 	 */
@@ -427,7 +427,7 @@ final class Guide {
 	 * half-built entry would replace the transport's placeholder with something
 	 * worse than it had.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  mixed $types Types collected so far.
 	 * @return mixed
 	 */

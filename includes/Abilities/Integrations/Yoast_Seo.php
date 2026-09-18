@@ -19,7 +19,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Integrations
- * @since      0.0.38
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -38,13 +38,13 @@ final class Yoast_Seo implements AcrossAI_Toolset_Integration {
 	/**
 	 * Toolset key. Must equal Base_Yoast_Ability::TAB_GROUP.
 	 *
-	 * @since 0.0.38
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const TAB_GROUP = 'yoast-seo';
 
 	/**
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function group(): string {
@@ -57,7 +57,7 @@ final class Yoast_Seo implements AcrossAI_Toolset_Integration {
 	 * Declared rather than derived: the label rule would render `yoast-seo` as "Yoast Seo", losing
 	 * the capitalisation of an acronym in a product name.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_label(): string {
@@ -65,7 +65,7 @@ final class Yoast_Seo implements AcrossAI_Toolset_Integration {
 	}
 
 	/**
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_description(): string {
@@ -82,7 +82,7 @@ final class Yoast_Seo implements AcrossAI_Toolset_Integration {
 	 * genuinely publishes `yoast-seo/*` abilities. Tagging only ever fills a gap — an ability that
 	 * already declares a group is never re-tagged — so this adopts Yoast's without touching ours.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public function ability_prefixes(): array {
@@ -92,7 +92,7 @@ final class Yoast_Seo implements AcrossAI_Toolset_Integration {
 	/**
 	 * Whether Yoast SEO is present.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public function is_active(): bool {

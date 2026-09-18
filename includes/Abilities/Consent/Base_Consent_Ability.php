@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Consent
- * @since      0.0.48
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Consent;
@@ -37,67 +37,67 @@ defined( 'ABSPATH' ) || exit;
 abstract class Base_Consent_Ability extends Ability_Definition {
 
 	/**
-	 * @since 0.0.48
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const CATEGORY = 'acrossai-consent';
 
 	/**
-	 * @since 0.0.48
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const TAB_GROUP = 'cookieyes';
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function slug(): string;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_label(): string;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_description(): string;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function sub_group(): string;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function input_properties(): array;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function output_properties(): array;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	abstract protected function required_input(): array;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	abstract protected function annotations(): array;
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|\WP_Error
 	 */
@@ -106,7 +106,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	/**
 	 * Administrator, and not overridable by a subclass.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	final protected function permission_floor(): string {
@@ -116,7 +116,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	/**
 	 * Whether this ability needs the site linked to a consent account.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_account(): bool {
@@ -126,7 +126,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	/**
 	 * What to name in the refusal when the account is missing.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function account_subject(): string {
@@ -134,7 +134,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -142,7 +142,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return bool
 	 */
@@ -151,7 +151,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -159,7 +159,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	protected function sub_group_labels(): array {
@@ -173,7 +173,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function success_message(): string {
@@ -183,7 +183,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	/**
 	 * Assemble the ability definition.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function ability(): array {
@@ -263,7 +263,7 @@ abstract class Base_Consent_Ability extends Ability_Definition {
 	 * operation that cannot run either way wastes a round trip and reads as though confirming would
 	 * help.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>
 	 */

@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Store
- * @since      0.0.51
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Store;
@@ -18,12 +18,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Store health, and the answer to "why did that change not take effect".
  *
- * @since 0.0.51
+ * @since 0.0.34
  */
 final class Get_Store_Status extends Base_Store_Ability {
 
 	/**
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -31,7 +31,7 @@ final class Get_Store_Status extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -39,7 +39,7 @@ final class Get_Store_Status extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -47,7 +47,7 @@ final class Get_Store_Status extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -55,7 +55,7 @@ final class Get_Store_Status extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
@@ -63,7 +63,7 @@ final class Get_Store_Status extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -71,7 +71,7 @@ final class Get_Store_Status extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -95,7 +95,7 @@ final class Get_Store_Status extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -107,7 +107,7 @@ final class Get_Store_Status extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */

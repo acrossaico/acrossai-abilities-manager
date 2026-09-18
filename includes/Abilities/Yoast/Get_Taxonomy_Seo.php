@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Yoast
- * @since      0.0.38
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Yoast;

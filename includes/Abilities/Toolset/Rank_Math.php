@@ -65,7 +65,7 @@ final class Rank_Math extends Base_Toolset_Ability {
 	 * Still a registered tool, still addable by hand, and still listed and
 	 * runnable through `toolset/integrations`.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function is_server_type_default(): bool {

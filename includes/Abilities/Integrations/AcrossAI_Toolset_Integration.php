@@ -33,7 +33,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Integrations
- * @since      0.0.35
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -57,7 +57,7 @@ interface AcrossAI_Toolset_Integration {
 	 * Per `DEC-ABILITY-GROUP-IDENTIFIER-LOAD-BEARING` this value is load-bearing, not cosmetic.
 	 * Changing it on a shipped integration moves its abilities between MCP tools.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function group(): string;
@@ -69,7 +69,7 @@ interface AcrossAI_Toolset_Integration {
 	 * `AcrossAI_Tab_Group_Label`, so the two agree only if this matches that derivation — which is
 	 * the normal case, and a deliberate divergence is allowed where the derived form reads badly.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_label(): string;
@@ -82,7 +82,7 @@ interface AcrossAI_Toolset_Integration {
 	 * existing dispatchers: what the group contains, any notable permission requirement, then the
 	 * three actions.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_description(): string;
@@ -96,7 +96,7 @@ interface AcrossAI_Toolset_Integration {
 	 * Return an empty array for an integration whose abilities this plugin declares in full: there is
 	 * nothing to tag, and claiming a prefix you do not own would capture another plugin's abilities.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public function ability_prefixes(): array;
@@ -108,7 +108,7 @@ interface AcrossAI_Toolset_Integration {
 	 * `Base_Toolset_Ability` declines to register when its group is empty, so an inactive
 	 * integration's tab and MCP tool disappear on their own.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public function is_active(): bool;

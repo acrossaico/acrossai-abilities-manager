@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\EventTickets
- * @since      0.0.41
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\EventTickets;
@@ -35,14 +35,14 @@ defined( 'ABSPATH' ) || exit;
  * represented as capacity `-1` with an empty mode. Flattening that to an integer makes an unlimited
  * ticket and a sold-out one look identical, so the mode is always reported alongside the number.
  *
- * @since 0.0.41
+ * @since 0.0.34
  */
 final class Ticket_Repository {
 
 	/**
 	 * Capacity meaning "no limit".
 	 *
-	 * @since 0.0.41
+	 * @since 0.0.34
 	 * @var   int
 	 */
 	public const UNLIMITED = -1;
@@ -50,7 +50,7 @@ final class Ticket_Repository {
 	/**
 	 * The stock modes Event Tickets understands. Unlimited is stored as an empty string.
 	 *
-	 * @since 0.0.41
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const MODES = array( 'own', 'global', 'capped', 'unlimited' );
@@ -66,7 +66,7 @@ final class Ticket_Repository {
 	 * Defaults to events and pages; a site can add any type. Reading it rather than assuming
 	 * `tribe_events` is what keeps this suite independent of The Events Calendar.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public static function ticketable_post_types(): array {
@@ -82,7 +82,7 @@ final class Ticket_Repository {
 	/**
 	 * The registered ticket providers, as rows.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function providers(): array {
@@ -115,7 +115,7 @@ final class Ticket_Repository {
 	/**
 	 * A readable name for a provider class.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  string $class Provider class name.
 	 * @return string
 	 */
@@ -136,7 +136,7 @@ final class Ticket_Repository {
 	/**
 	 * Confirm a post exists and can carry tickets.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return WP_Post|WP_Error
 	 */
@@ -170,7 +170,7 @@ final class Ticket_Repository {
 	/**
 	 * Load one ticket object, whichever provider owns it.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int $ticket_id Ticket post ID.
 	 * @return object|WP_Error
 	 */
@@ -208,7 +208,7 @@ final class Ticket_Repository {
 	/**
 	 * Which post a ticket belongs to.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int    $ticket_id Ticket ID.
 	 * @param  object $provider  Provider instance.
 	 * @return int
@@ -237,7 +237,7 @@ final class Ticket_Repository {
 	/**
 	 * Every ticket on a post, across providers.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return array<int, array<string, mixed>>
 	 */
@@ -260,7 +260,7 @@ final class Ticket_Repository {
 	/**
 	 * Shape one ticket, capacity model intact.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  object $ticket   Ticket object.
 	 * @param  int    $event_id Owning post ID.
 	 * @return array<string, mixed>
@@ -302,7 +302,7 @@ final class Ticket_Repository {
 	 * `tribe_tickets_get_capacity()` is the documented reader and normalises the stored empty value
 	 * to -1; the object method is only a fallback.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int    $id     Ticket ID.
 	 * @param  object $ticket Ticket object.
 	 * @return int
@@ -332,7 +332,7 @@ final class Ticket_Repository {
 	 * `capped` mode has no meaningful capacity of its own — it draws from the pool, and reading its
 	 * number alone tells a caller nothing about how many seats are really left.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return array<string, mixed>
 	 */
@@ -369,7 +369,7 @@ final class Ticket_Repository {
 	 * tell which one is meant — and because only `ticket_add()` runs `update_capacity()`, which is
 	 * what keeps stock consistent with what has already been sold.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int                  $post_id Owning post.
 	 * @param  array<string, mixed> $data    ticket_add() payload.
 	 * @param  string               $provider_class Provider to use, or '' for the site default.
@@ -397,7 +397,7 @@ final class Ticket_Repository {
 	/**
 	 * Pick the provider to write through.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  string $provider_class Requested provider class, or ''.
 	 * @return object|WP_Error
 	 */
@@ -454,7 +454,7 @@ final class Ticket_Repository {
 	 * keep in sync for them. The pattern match below is a second line of defence for anything
 	 * credential-shaped that ends up in the blob later.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function settings(): array {
@@ -483,7 +483,7 @@ final class Ticket_Repository {
 	/**
 	 * Whether a shared-blob key belongs to ticketing.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  string $key Option key.
 	 * @return bool
 	 */
@@ -500,7 +500,7 @@ final class Ticket_Repository {
 	/**
 	 * Whether a settings key looks like a credential.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  string $key Option key.
 	 * @return bool
 	 */
@@ -516,7 +516,7 @@ final class Ticket_Repository {
 	 *
 	 * No identifying data: totals per ticket and per status only.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID, or 0 for the whole site.
 	 * @return array<string, mixed>
 	 */
@@ -557,7 +557,7 @@ final class Ticket_Repository {
 	 * name onto any attendee who bought one so the record is not orphaned. That is the plugin's own
 	 * behaviour and is why the ability confirm-gates.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int $ticket_id Ticket ID.
 	 * @return true|WP_Error
 	 */

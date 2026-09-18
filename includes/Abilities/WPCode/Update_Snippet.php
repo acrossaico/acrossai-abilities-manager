@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\WPCode
- * @since      0.0.43
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\WPCode;
@@ -20,12 +20,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * changes an existing WPCode snippet.
  *
- * @since 0.0.43
+ * @since 0.0.34
  */
 final class Update_Snippet extends Base_WPCode_Ability {
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -33,7 +33,7 @@ final class Update_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -41,7 +41,7 @@ final class Update_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -49,7 +49,7 @@ final class Update_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -57,7 +57,7 @@ final class Update_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
@@ -101,7 +101,7 @@ final class Update_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -109,7 +109,7 @@ final class Update_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -131,7 +131,7 @@ final class Update_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -139,7 +139,7 @@ final class Update_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -153,7 +153,7 @@ final class Update_Snippet extends Base_WPCode_Ability {
 	 * code that runs, so keying only on the input would let the gate be skipped by leaving a field
 	 * out.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return bool
 	 */
@@ -169,7 +169,7 @@ final class Update_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -177,7 +177,7 @@ final class Update_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */

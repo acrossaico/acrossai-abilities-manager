@@ -13,7 +13,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Integrations
- * @since      0.0.35
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -33,13 +33,13 @@ final class Contact_Form_7 implements AcrossAI_Toolset_Integration {
 	 * Must equal `Base_Contact_Form_7_Ability::TAB_GROUP`, which is what all 25 abilities declare. If
 	 * the two drift, the abilities land in one group and the dispatcher serves another.
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const TAB_GROUP = 'contact-form-7';
 
 	/**
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function group(): string {
@@ -53,7 +53,7 @@ final class Contact_Form_7 implements AcrossAI_Toolset_Integration {
 	 * "Contact Form 7" correctly by luck here, but the trailing digit is exactly the kind of thing
 	 * `ucwords()` gets wrong in other locales, and the name is a product name either way.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_label(): string {
@@ -61,7 +61,7 @@ final class Contact_Form_7 implements AcrossAI_Toolset_Integration {
 	}
 
 	/**
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_description(): string {
@@ -74,7 +74,7 @@ final class Contact_Form_7 implements AcrossAI_Toolset_Integration {
 	/**
 	 * Claims no prefixes — every ability in this group is declared by us.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public function ability_prefixes(): array {
@@ -87,7 +87,7 @@ final class Contact_Form_7 implements AcrossAI_Toolset_Integration {
 	 * `WPCF7_ContactForm` rather than the `WPCF7_VERSION` constant: it is the class every ability
 	 * reaches through, so its presence also proves CF7's autoloading is live.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public function is_active(): bool {

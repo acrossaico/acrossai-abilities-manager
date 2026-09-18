@@ -22,7 +22,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Store
- * @since      0.0.53
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Store;
@@ -34,14 +34,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Customer reads, writes and the gated export.
  *
- * @since 0.0.53
+ * @since 0.0.34
  */
 final class Customer_Repository {
 
 	/**
 	 * Most rows one export may disclose.
 	 *
-	 * @since 0.0.53
+	 * @since 0.0.34
 	 * @var   int
 	 */
 	public const MAX_EXPORT_ROWS = 500;
@@ -49,7 +49,7 @@ final class Customer_Repository {
 	/**
 	 * The capability an export needs on top of the floor.
 	 *
-	 * @since 0.0.53
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const DISCLOSURE_CAPABILITY = 'list_users';
@@ -61,7 +61,7 @@ final class Customer_Repository {
 	 * excluded. These are payment provider customer references — the handle used to charge a stored
 	 * card — and they are not a store operator's to read through an AI client.
 	 *
-	 * @since 0.0.53
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const NEVER_RETURNED = array(
@@ -85,7 +85,7 @@ final class Customer_Repository {
 	/**
 	 * Whether the current user may be handed personal data in bulk.
 	 *
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @return true|WP_Error
 	 */
 	public static function assert_may_disclose() {
@@ -106,7 +106,7 @@ final class Customer_Repository {
 	/**
 	 * Counts and bands. No row identifies anybody.
 	 *
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function summary(): array {
@@ -179,7 +179,7 @@ final class Customer_Repository {
 	/**
 	 * One customer.
 	 *
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  int  $id                 User id.
 	 * @param  bool $with_personal_data Whether to include identifying fields.
 	 * @return array<string, mixed>|WP_Error
@@ -195,7 +195,7 @@ final class Customer_Repository {
 	}
 
 	/**
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  int $id User id.
 	 * @return \WC_Customer|WP_Error
 	 */
@@ -223,7 +223,7 @@ final class Customer_Repository {
 	}
 
 	/**
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  \WC_Customer $customer           Customer.
 	 * @param  bool         $with_personal_data Whether to include identifying fields.
 	 * @return array<string, mixed>
@@ -265,7 +265,7 @@ final class Customer_Repository {
 	 * password an assistant knows is not the customer's account. WordPress emails them to set their
 	 * own.
 	 *
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $fields Supplied fields.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -322,7 +322,7 @@ final class Customer_Repository {
 	/**
 	 * Change a customer's details.
 	 *
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  int                  $id     User id.
 	 * @param  array<string, mixed> $fields Supplied fields.
 	 * @return array<string, mixed>|WP_Error
@@ -378,7 +378,7 @@ final class Customer_Repository {
 	}
 
 	/**
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  \WC_Customer         $customer Customer.
 	 * @param  array<string, mixed> $fields   Supplied fields.
 	 * @return void
@@ -408,7 +408,7 @@ final class Customer_Repository {
 	/**
 	 * The gated export.
 	 *
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Flags and paging.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -468,7 +468,7 @@ final class Customer_Repository {
 		 * Deliberately an action rather than a silent return: a site owner should be able to see that
 		 * a bulk disclosure happened, who asked, and why.
 		 *
-		 * @since 0.0.53
+		 * @since 0.0.34
 		 * @param int    $disclosed Number of records released.
 		 * @param int    $actor     User id that asked.
 		 * @param string $reason    The stated reason.
@@ -491,7 +491,7 @@ final class Customer_Repository {
 	}
 
 	/**
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  array<int, array<string, mixed>> $rows Customers.
 	 * @return string
 	 */

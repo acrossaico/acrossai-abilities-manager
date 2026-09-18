@@ -14,7 +14,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Yoast
- * @since      0.0.38
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Yoast;
@@ -36,7 +36,7 @@ final class Indexable_Repository {
 	/**
 	 * The indexable kinds this suite addresses, as kind => what it means.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	public static function kinds(): array {
@@ -53,7 +53,7 @@ final class Indexable_Repository {
 	/**
 	 * Resolve the computed SEO for one indexable kind.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string     $kind    One of kinds().
 	 * @param  string|int $subject Post type, user ID or term ID, depending on the kind.
 	 * @return array<string,mixed>|WP_Error
@@ -121,7 +121,7 @@ final class Indexable_Repository {
 	/**
 	 * Shape a meta result into the row every indexable ability returns.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string $kind     Indexable kind.
 	 * @param  string $subject  Subject identifier.
 	 * @param  object $resolved Yoast meta object.
@@ -147,7 +147,7 @@ final class Indexable_Repository {
 	/**
 	 * How many indexables exist, by object type, as ROWS.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<int, array<string,mixed>>
 	 */
 	public static function counts(): array {
@@ -179,7 +179,7 @@ final class Indexable_Repository {
 	 * Through `SEO_Links_Repository` rather than the `yoast_seo_links` table, so the suite keeps its
 	 * no-raw-SQL rule and Yoast owns its own storage shape.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return array{outgoing: array<int,array<string,mixed>>, incoming: int}
 	 */
@@ -215,7 +215,7 @@ final class Indexable_Repository {
 	/**
 	 * Incoming link counts for a set of posts, as post id => count.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int[] $post_ids Post IDs.
 	 * @return array<int,int>
 	 */
@@ -250,7 +250,7 @@ final class Indexable_Repository {
 	/**
 	 * Yoast's SEO links repository, or null when unavailable.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return object|null
 	 */
 	private static function links_repository() {
@@ -270,7 +270,7 @@ final class Indexable_Repository {
 	/**
 	 * Yoast's meta surface, or null when Yoast is absent.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return object|null
 	 */
 	private static function surface() {

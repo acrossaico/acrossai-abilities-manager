@@ -21,7 +21,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\LiteSpeed
- * @since      0.0.36
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\LiteSpeed;
@@ -40,7 +40,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Ability category shared by the whole suite.
 	 *
-	 * @since 0.0.36
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const CATEGORY = 'acrossai-litespeed-cache';
@@ -49,7 +49,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	 * Toolset key. The visible label comes from the integration declaration, because the derived
 	 * form of this key reads badly — see Integrations\LiteSpeed_Cache::toolset_label().
 	 *
-	 * @since 0.0.36
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const TAB_GROUP = 'litespeed-cache';
@@ -57,7 +57,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Ability slug suffix, without the `litespeed/` prefix.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function slug(): string;
@@ -65,7 +65,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Human-readable label.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_label(): string;
@@ -73,7 +73,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Description an AI client reads when choosing this ability.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_description(): string;
@@ -81,7 +81,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Sub-group (card) this ability belongs to.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function sub_group(): string;
@@ -89,7 +89,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Input schema properties, excluding `confirm`.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function input_properties(): array;
@@ -97,7 +97,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Output payload properties, excluding success/message/error_code.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function output_properties(): array;
@@ -105,7 +105,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Required input keys.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	abstract protected function required_input(): array;
@@ -113,7 +113,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * The full annotation triple.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	abstract protected function annotations(): array;
@@ -121,7 +121,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Do the work. Return the payload without `success`, or a WP_Error.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Validated input.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -135,7 +135,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	 * still matters: it stops a future subclass quietly lowering the floor, which is the shape that
 	 * opened a real authorisation hole in the Rank Math suite.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string
 	 */
 	final protected function permission_floor(): string {
@@ -145,7 +145,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Whether this ability requires `confirm: true`.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -155,7 +155,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Operation-specific confirmation message. '' uses the generic one.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -168,7 +168,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	 * The derived form would read "Ls Purge" — an abbreviation the label rule cannot know about,
 	 * inside a panel that already says LiteSpeed Cache.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	protected function sub_group_labels(): array {
@@ -187,7 +187,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Default success message.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function success_message(): string {
@@ -197,7 +197,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Assemble the ability definition.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function ability(): array {
@@ -275,7 +275,7 @@ abstract class Base_LiteSpeed_Ability extends Ability_Definition {
 	/**
 	 * Run the guards, then the ability, then wrap the result.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>
 	 */

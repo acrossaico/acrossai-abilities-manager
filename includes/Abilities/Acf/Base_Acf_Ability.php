@@ -20,7 +20,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Acf
- * @since      0.0.37
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Acf;
@@ -39,7 +39,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Ability category shared by the whole suite.
 	 *
-	 * @since 0.0.37
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const CATEGORY = 'acrossai-acf';
@@ -47,7 +47,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Toolset key. Must equal Integrations\ACF::TAB_GROUP — these join that toolset.
 	 *
-	 * @since 0.0.37
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const TAB_GROUP = 'acf';
@@ -60,7 +60,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	 * resource acted on, while the toolset names where an operator finds it
 	 * (DEC-TOOLSET-SLUG-NAMESPACE). So subclasses give the whole slug rather than a suffix.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function slug(): string;
@@ -68,7 +68,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Human-readable label.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_label(): string;
@@ -76,7 +76,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Description an AI client reads when choosing this ability.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_description(): string;
@@ -84,7 +84,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Sub-group (card) this ability belongs to.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function sub_group(): string;
@@ -92,7 +92,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Input schema properties, excluding `confirm` and the shared fragments.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function input_properties(): array;
@@ -100,7 +100,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Output payload properties, excluding success/message/error_code.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function output_properties(): array;
@@ -108,7 +108,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Required input keys.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	abstract protected function required_input(): array;
@@ -116,7 +116,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * The full annotation triple.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	abstract protected function annotations(): array;
@@ -124,7 +124,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Do the work. Return the payload without `success`, or a WP_Error.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Validated input.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -137,7 +137,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	 * future subclass quietly lowering the floor. Per-target capability checks — `edit_post` on the
 	 * post whose field is being written — are a deliberate deferral, noted in the brief.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return string
 	 */
 	final protected function permission_floor(): string {
@@ -147,7 +147,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Whether this ability needs ACF Pro rather than the free edition.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_pro(): bool {
@@ -161,7 +161,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	 * `add_row()` and friends ship in BOTH editions, so a function check passes on free ACF where the
 	 * field type does not exist and no such field can be created.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	protected function required_field_types(): array {
@@ -171,7 +171,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Whether this ability requires `confirm: true`.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -181,7 +181,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Operation-specific confirmation message. '' uses the generic one.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -191,7 +191,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Whether this ability writes and therefore carries the apply_wp_slash opt-out.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function is_writer(): bool {
@@ -201,7 +201,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Whether this ability addresses a target and therefore takes the shared target pair.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function has_target(): bool {
@@ -211,7 +211,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Display label for every sub-group, in one place.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	protected function sub_group_labels(): array {
@@ -225,7 +225,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Default success message.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function success_message(): string {
@@ -235,7 +235,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Assemble the ability definition.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function ability(): array {
@@ -324,7 +324,7 @@ abstract class Base_Acf_Ability extends Ability_Definition {
 	/**
 	 * Run the guards, then the ability, then wrap the result.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>
 	 */

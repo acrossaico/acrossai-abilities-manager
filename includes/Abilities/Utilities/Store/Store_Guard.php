@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Store
- * @since      0.0.51
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Store;
@@ -17,12 +17,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * The one place this suite decides whether it may run, and the one shape it answers in.
  *
- * @since 0.0.51
+ * @since 0.0.34
  */
 final class Store_Guard {
 
 	/**
-	 * @since 0.0.51
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const PERMISSION_FILTER = 'acrossai_abilities_manager_store_permission';
@@ -43,7 +43,7 @@ final class Store_Guard {
 	 * diagnostics offline exactly when they are most wanted; `store/get-store-status` reports the
 	 * version instead and lets the caller judge.
 	 *
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_available(): bool {
@@ -51,7 +51,7 @@ final class Store_Guard {
 	}
 
 	/**
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return true|WP_Error
 	 */
 	public static function assert_available() {
@@ -66,7 +66,7 @@ final class Store_Guard {
 	}
 
 	/**
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input   Ability input.
 	 * @param  string               $message What the caller is confirming.
 	 * @return true|WP_Error
@@ -92,7 +92,7 @@ final class Store_Guard {
 	 * abilities use `wc_rest_check_post_permissions()` and admit a Shop Manager, while everything
 	 * here requires an administrator.
 	 *
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @param  string $floor WordPress capability floor.
 	 * @return callable
 	 */
@@ -105,7 +105,7 @@ final class Store_Guard {
 			/**
 			 * Filters whether the current user may use a store ability.
 			 *
-			 * @since 0.0.51
+			 * @since 0.0.34
 			 * @param bool   $allowed Whether access is granted. Always true at this point.
 			 * @param string $floor   WordPress capability floor.
 			 */
@@ -116,7 +116,7 @@ final class Store_Guard {
 	/**
 	 * Success envelope.
 	 *
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $payload Ability-specific keys.
 	 * @param  string               $message Human-readable summary.
 	 * @return array<string, mixed>
@@ -128,7 +128,7 @@ final class Store_Guard {
 	}
 
 	/**
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @param  WP_Error $error Error.
 	 * @return array<string, mixed>
 	 */
@@ -137,7 +137,7 @@ final class Store_Guard {
 	}
 
 	/**
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @param  string $code    Machine-readable code.
 	 * @param  string $message Human-readable message.
 	 * @return array<string, mixed>

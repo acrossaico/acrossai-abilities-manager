@@ -30,7 +30,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities
- * @since      0.0.50
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities;
@@ -40,14 +40,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Which post types the generic writers must not treat as ordinary.
  *
- * @since 0.0.50
+ * @since 0.0.34
  */
 final class Protected_Post_Types {
 
 	/**
 	 * Ordinary post type; the generic writers are correct.
 	 *
-	 * @since 0.0.50
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const WRITES_APPLY = 'applies';
@@ -55,7 +55,7 @@ final class Protected_Post_Types {
 	/**
 	 * The write lands, but derived state is left stale and the site reads the old value.
 	 *
-	 * @since 0.0.50
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const WRITES_INCOMPLETE = 'incomplete';
@@ -63,7 +63,7 @@ final class Protected_Post_Types {
 	/**
 	 * The row is not what the site reads; the write is a no-op and is eventually deleted.
 	 *
-	 * @since 0.0.50
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const WRITES_DISCARDED = 'discarded';
@@ -71,7 +71,7 @@ final class Protected_Post_Types {
 	/**
 	 * Refusal code, matching the existing envelope key used by Update_Post and Patch_Option_Value.
 	 *
-	 * @since 0.0.50
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const BLOCKED_REASON = 'protected_post_type';
@@ -92,7 +92,7 @@ final class Protected_Post_Types {
 	 * `hpos_only` marks a type whose verdict depends on WooCommerce's order storage setting rather
 	 * than on the plugin merely being present.
 	 *
-	 * @since  0.0.50
+	 * @since  0.0.34
 	 * @return array<string, array<string, mixed>>
 	 */
 	private static function descriptors(): array {
@@ -147,7 +147,7 @@ final class Protected_Post_Types {
 	/**
 	 * Every descriptor, after the extension filter.
 	 *
-	 * @since  0.0.50
+	 * @since  0.0.34
 	 * @return array<string, array<string, mixed>>
 	 */
 	private static function all(): array {
@@ -157,7 +157,7 @@ final class Protected_Post_Types {
 		 * Prefer this over editing the table: an e-commerce, LMS or membership plugin knows its own
 		 * storage far better than this file can.
 		 *
-		 * @since 0.0.50
+		 * @since 0.0.34
 		 * Each entry takes `owner`, `writes` (one of the WRITES_* constants), `authority`, `stale` and
 		 * `instead`. `active_if` is OPTIONAL — supply `array( 'class' => ... )`, `'function'` or
 		 * `'constant'` to have the verdict downgrade when the owning plugin is deactivated; omit it and
@@ -173,7 +173,7 @@ final class Protected_Post_Types {
 	/**
 	 * Whether the owning plugin is still installed.
 	 *
-	 * @since  0.0.50
+	 * @since  0.0.34
 	 * @param  array<string, string> $test Class or function to probe.
 	 * @return bool
 	 */
@@ -205,7 +205,7 @@ final class Protected_Post_Types {
 	 * Read through WooCommerce's own utility rather than the option, so a site that moves the switch
 	 * is answered correctly without this file knowing the option name.
 	 *
-	 * @since  0.0.50
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	private static function orders_are_elsewhere(): bool {
@@ -227,7 +227,7 @@ final class Protected_Post_Types {
 	/**
 	 * The verdict for one post type.
 	 *
-	 * @since  0.0.50
+	 * @since  0.0.34
 	 * @param  string $post_type Post type slug.
 	 * @return array<string, mixed>
 	 */
@@ -290,7 +290,7 @@ final class Protected_Post_Types {
 	 * guard exists to prevent. Filtering at call time also means abilities added later appear here
 	 * without anyone remembering to update the table.
 	 *
-	 * @since  0.0.50
+	 * @since  0.0.34
 	 * @param  string[] $slugs Candidate ability names.
 	 * @return string[]
 	 */
@@ -311,7 +311,7 @@ final class Protected_Post_Types {
 	}
 
 	/**
-	 * @since  0.0.50
+	 * @since  0.0.34
 	 * @param  string $post_type Post type slug.
 	 * @return array<string, mixed>
 	 */
@@ -329,7 +329,7 @@ final class Protected_Post_Types {
 	}
 
 	/**
-	 * @since  0.0.50
+	 * @since  0.0.34
 	 * @param  string               $post_type Post type.
 	 * @param  string               $writes    Verdict.
 	 * @param  array<string, mixed> $d         Descriptor.
@@ -379,7 +379,7 @@ final class Protected_Post_Types {
 	 *     with no hint that it becomes wrong the moment WooCommerce is switched back on. That is
 	 *     precisely the caveat the note was written to deliver.
 	 *
-	 * @since  0.0.50
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $verdict From inspect().
 	 * @return string[]
 	 */
@@ -405,7 +405,7 @@ final class Protected_Post_Types {
 	 * and the block writers edit it legitimately. What must not happen is a meta write, because that
 	 * is where the derived values live — and it is the case that costs money.
 	 *
-	 * @since  0.0.50
+	 * @since  0.0.34
 	 * @param  string $post_type  Post type.
 	 * @param  bool   $touches_meta Whether the call writes meta.
 	 * @return array{blocked: bool, verdict: array<string, mixed>}
@@ -425,7 +425,7 @@ final class Protected_Post_Types {
 	/**
 	 * The refusal payload, in the existing envelope shape.
 	 *
-	 * @since  0.0.50
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $verdict From inspect().
 	 * @return array<string, mixed>
 	 */

@@ -33,7 +33,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Integrations
- * @since      0.0.47
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Integrations;
@@ -46,14 +46,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * WPForms integration: one tab, eight adopted abilities, one switch.
  *
- * @since 0.0.47
+ * @since 0.0.34
  */
 class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Toolset_Integration {
 
 	/**
 	 * The tab_group identifier for the "WPForms" tab on the Ability Library page.
 	 *
-	 * @since 0.0.47
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const TAB_GROUP = 'wpforms';
@@ -61,7 +61,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	/**
 	 * WPForms' own filter for permitting writes through its abilities.
 	 *
-	 * @since 0.0.47
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const WRITE_FILTER = 'wpforms_integrations_abilities_allow_write';
@@ -69,7 +69,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	/**
 	 * The four WPForms abilities that change a form.
 	 *
-	 * @since 0.0.47
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const WRITE_ABILITIES = array(
@@ -82,7 +82,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	/**
 	 * Category / tab_group identifier.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -97,7 +97,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	 * so a second instance would push the display-only Library rows twice. One instance is created
 	 * in `Main::define_public_hooks()`, the same route ACF takes.
 	 *
-	 * @since 0.0.47
+	 * @since 0.0.34
 	 */
 	public function __construct() {
 		parent::__construct();
@@ -131,7 +131,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	 * So the refusal is enforced in the layer that actually decides. Deny-only by construction: it
 	 * returns the incoming value unless it is refusing.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  bool   $refused Whether access is already refused.
 	 * @param  string $slug    Ability slug.
 	 * @return bool
@@ -152,7 +152,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	/**
 	 * Toolset key.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function group(): string {
@@ -165,7 +165,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	 * Drops the qualifier the opt-in label carries: that suffix names what the switch governs, which
 	 * matters beside the switch and reads as a different product in a list of toolsets.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_label(): string {
@@ -178,7 +178,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	 * States the write switch plainly. An assistant that meets `wpforms_writes_disabled` without
 	 * knowing a switch exists either gives up or retries the same call.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_description(): string {
@@ -196,7 +196,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	 * abilities would stay in the catch-all while appearing to be claimed. That is not hypothetical:
 	 * it is issue #209, where `WPCode` declares `'wpcode/'` and its five abilities are in `other`.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public function ability_prefixes(): array {
@@ -206,7 +206,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	/**
 	 * Whether WPForms is present.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public function is_active(): bool {
@@ -216,7 +216,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	/**
 	 * Human-readable label for the card and tab.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function label(): string {
@@ -232,7 +232,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	 * follows the same code path the toggle ultimately affects — the reasoning ACF uses for
 	 * `acf_get_setting()`.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function is_plugin_active(): bool {
@@ -246,7 +246,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	 * `is_plugin_active()` is true. Runs at `plugins_loaded` P20; WPForms reads the filter inside a
 	 * permission callback at request time, so attaching here is early enough on the same request.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return void
 	 */
 	protected function enable_filter(): void {
@@ -262,7 +262,7 @@ class WPForms extends AcrossAI_Integration_Ability_Base implements AcrossAI_Tool
 	 * `Test_Integration_Row_Accuracy` asserts every declared slug resolves whenever WPForms is
 	 * active, which is what keeps this honest.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return array<int, array{slug: string, label: string, description: string}>
 	 */
 	protected function abilities(): array {

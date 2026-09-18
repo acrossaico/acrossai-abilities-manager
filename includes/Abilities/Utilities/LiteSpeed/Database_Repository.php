@@ -17,7 +17,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\LiteSpeed
- * @since      0.0.36
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\LiteSpeed;
@@ -39,7 +39,7 @@ final class Database_Repository {
 	 *
 	 * Mirrors `DB_Optm::$types`, which is private.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	public static function types(): array {
@@ -72,7 +72,7 @@ final class Database_Repository {
 	 * Keys must stay in step with types(); Test_LiteSpeed_Suite_Contract asserts they do, so a future
 	 * LiteSpeed release adding a cleanup type cannot leave a silent hole here.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, array<string, mixed>>
 	 */
 	public static function recommendations(): array {
@@ -130,7 +130,7 @@ final class Database_Repository {
 	/**
 	 * Row count per cleanup type, as ROWS.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function counts(): array {
@@ -151,7 +151,7 @@ final class Database_Repository {
 	/**
 	 * The largest autoloaded options — the usual cause of a slow site.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function autoload_summary(): array {
@@ -171,7 +171,7 @@ final class Database_Repository {
 	/**
 	 * Tables still using the MyISAM engine.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	public static function myisam_tables(): array {

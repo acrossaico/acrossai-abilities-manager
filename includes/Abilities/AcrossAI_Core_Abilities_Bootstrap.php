@@ -1239,7 +1239,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 	 * groups appear in `$claimed` so nothing double-registers. Retiring either is now a deletion — the
 	 * descriptor already carries the same four answers.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  string[] $claimed Groups a hand-written dispatcher already serves.
 	 * @return void
 	 */
@@ -1257,7 +1257,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 	/**
 	 * Feature 107 — instantiate the Classic Editor ability classes.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @return void
 	 */
 	private function register_classic_editor_abilities(): void {
@@ -1270,7 +1270,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 	/**
 	 * Feature 109 — instantiate The Events Calendar ability classes.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @return void
 	 */
 	private function register_events_calendar_abilities(): void {
@@ -1297,7 +1297,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 	/**
 	 * Feature 110 — instantiate the Event Tickets ability classes.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @return void
 	 */
 	private function register_event_tickets_abilities(): void {
@@ -1325,7 +1325,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 	 * Category_Registrar is deliberately absent: it is a singleton with a private constructor,
 	 * hooked via instance() above. Constructing it here would be a fatal on every page load.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return void
 	 */
 	private function register_wpcode_abilities(): void {
@@ -1361,7 +1361,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 	 * Category_Registrar is deliberately absent: it is a singleton with a private constructor, hooked
 	 * via instance() above. Constructing it here would be a fatal on every page load.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return void
 	 */
 	private function register_loco_translate_abilities(): void {
@@ -1387,7 +1387,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 	 * Category_Registrar is deliberately absent: it is a singleton with a private constructor, hooked
 	 * via instance() above. Constructing it here would be a fatal on every page load.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return void
 	 */
 	private function register_consent_abilities(): void {
@@ -1421,7 +1421,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 	 * Category_Registrar is deliberately absent: it is a singleton with a private constructor, hooked
 	 * via instance() above. Constructing it here would be a fatal on every page load.
 	 *
-	 * @since  0.0.49
+	 * @since  0.0.34
 	 * @return void
 	 */
 	private function register_email_abilities(): void {
@@ -1437,7 +1437,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 	 * Category_Registrar is deliberately absent: it is a singleton with a private constructor, hooked
 	 * via instance() above. Constructing it here would be a fatal on every page load.
 	 *
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return void
 	 */
 	/**
@@ -1447,7 +1447,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 	 * backup plugin is present, so the abilities are discoverable — and can say what is missing —
 	 * on a site that has none.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return void
 	 */
 	private function register_backup_abilities(): void {

@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\WPCode
- * @since      0.0.43
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\WPCode;
@@ -19,12 +19,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * switches a WPCode snippet on, and reports honestly when WPCode refuses.
  *
- * @since 0.0.43
+ * @since 0.0.34
  */
 final class Activate_Snippet extends Base_WPCode_Ability {
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -32,7 +32,7 @@ final class Activate_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -40,7 +40,7 @@ final class Activate_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -48,7 +48,7 @@ final class Activate_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -56,7 +56,7 @@ final class Activate_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
@@ -69,7 +69,7 @@ final class Activate_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -77,7 +77,7 @@ final class Activate_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -89,7 +89,7 @@ final class Activate_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -97,7 +97,7 @@ final class Activate_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -107,7 +107,7 @@ final class Activate_Snippet extends Base_WPCode_Ability {
 	/**
 	 * Only executable snippets need confirming; css and text cannot run anything.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return bool
 	 */
@@ -122,7 +122,7 @@ final class Activate_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -130,7 +130,7 @@ final class Activate_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */

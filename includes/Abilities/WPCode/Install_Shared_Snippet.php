@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\WPCode
- * @since      0.0.43
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\WPCode;
@@ -19,12 +19,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * installs a snippet shared by link, inactive.
  *
- * @since 0.0.43
+ * @since 0.0.34
  */
 final class Install_Shared_Snippet extends Base_WPCode_Ability {
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -32,7 +32,7 @@ final class Install_Shared_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -40,7 +40,7 @@ final class Install_Shared_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -48,7 +48,7 @@ final class Install_Shared_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -56,7 +56,7 @@ final class Install_Shared_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
@@ -70,7 +70,7 @@ final class Install_Shared_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -78,7 +78,7 @@ final class Install_Shared_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -90,7 +90,7 @@ final class Install_Shared_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -98,7 +98,7 @@ final class Install_Shared_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -106,7 +106,7 @@ final class Install_Shared_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -114,7 +114,7 @@ final class Install_Shared_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<int, array<string, string>>
 	 */
 	protected function suggested_abilities(): array {
@@ -131,7 +131,7 @@ final class Install_Shared_Snippet extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */

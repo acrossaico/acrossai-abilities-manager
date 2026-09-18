@@ -9,7 +9,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\LiteSpeed
- * @since      0.0.36
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\LiteSpeed;
@@ -28,7 +28,7 @@ final class LiteSpeed_Guard {
 	 *
 	 * Evaluated inside can() so a single filter governs every ability in the suite.
 	 *
-	 * @since 0.0.36
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const PERMISSION_FILTER = 'acrossai_abilities_manager_litespeed_permission';
@@ -39,7 +39,7 @@ final class LiteSpeed_Guard {
 	 * `LiteSpeed\Core` rather than the `LSCWP_V` version constant: its presence also proves the
 	 * plugin's autoloader is live, which the constant does not.
 	 *
-	 * @since 0.0.36
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	private const PROBE_CLASS = '\\LiteSpeed\\Core';
@@ -52,7 +52,7 @@ final class LiteSpeed_Guard {
 	/**
 	 * Whether LiteSpeed Cache is loaded.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_available(): bool {
@@ -65,7 +65,7 @@ final class LiteSpeed_Guard {
 	 * Called first by every execute() as defence in depth: the bootstrap already gates instantiation,
 	 * but the plugin can be deactivated after the abilities were registered in the same request.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return true|WP_Error
 	 */
 	public static function assert_available() {
@@ -82,7 +82,7 @@ final class LiteSpeed_Guard {
 	/**
 	 * Assert the caller confirmed an irreversible or site-wide operation.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  array<string,mixed> $input   Ability input.
 	 * @param  string              $message Optional operation-specific message.
 	 * @return true|WP_Error
@@ -111,7 +111,7 @@ final class LiteSpeed_Guard {
 	 * alone. It is still declared `final` on the base, for the same reason: to stop a future subclass
 	 * quietly lowering it.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  string $floor WordPress capability floor.
 	 * @return callable
 	 */
@@ -128,7 +128,7 @@ final class LiteSpeed_Guard {
 			 * grant (PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY). Returning the filter's value
 			 * directly would let any plugin on the site hand an ability to a subscriber.
 			 *
-			 * @since 0.0.36
+			 * @since 0.0.34
 			 * @param bool   $allowed Whether access is granted. Always true at this point.
 			 * @param string $floor   WordPress capability floor.
 			 */
@@ -139,7 +139,7 @@ final class LiteSpeed_Guard {
 	/**
 	 * Build a success envelope.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  array<string,mixed> $payload Ability-specific keys.
 	 * @param  string              $message Human-readable summary.
 	 * @return array<string,mixed>
@@ -153,7 +153,7 @@ final class LiteSpeed_Guard {
 	/**
 	 * Build a failure envelope from a WP_Error.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  WP_Error $error Error to unwrap.
 	 * @return array<string,mixed>
 	 */
@@ -164,7 +164,7 @@ final class LiteSpeed_Guard {
 	/**
 	 * Build a failure envelope from an explicit code and message.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  string $code    Machine-readable error code.
 	 * @param  string $message Human-readable message.
 	 * @return array<string,mixed>

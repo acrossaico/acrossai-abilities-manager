@@ -12,7 +12,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Yoast
- * @since      0.0.38
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Yoast;
@@ -29,7 +29,7 @@ final class Category_Registrar {
 	/**
 	 * Singleton instance.
 	 *
-	 * @since 0.0.38
+	 * @since 0.0.34
 	 * @var   self|null
 	 */
 	protected static $instance = null;
@@ -42,7 +42,7 @@ final class Category_Registrar {
 	/**
 	 * Return the singleton instance.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return self
 	 */
 	public static function instance(): self {
@@ -56,7 +56,7 @@ final class Category_Registrar {
 	/**
 	 * Register the ability category with the WP Abilities API.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return void
 	 */
 	public function register(): void {

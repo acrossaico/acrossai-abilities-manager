@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Backups
- * @since      0.0.52
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups;
@@ -30,7 +30,7 @@ defined( 'ABSPATH' ) || exit;
  * refusal is passed through with the plugin's own wording rather than being reworded as though the
  * limitation were ours.
  *
- * @since 0.0.52
+ * @since 0.0.34
  */
 final class All_In_One_Provider implements Backup_Provider {
 
@@ -40,7 +40,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	private function __construct() {}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public static function id(): string {
@@ -48,7 +48,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public static function label(): string {
@@ -56,7 +56,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_active(): bool {
@@ -64,7 +64,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $capability Capability key.
 	 * @return bool
 	 */
@@ -85,7 +85,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $capability Capability key.
 	 * @return string
 	 */
@@ -99,7 +99,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function status(): array {
@@ -136,7 +136,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int $limit  Maximum rows.
 	 * @param  int $offset Rows to skip.
 	 * @return array<string, mixed>
@@ -161,7 +161,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $id Archive filename.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -188,7 +188,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	public static function storage_paths(): array {
@@ -205,7 +205,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	 * answers 202 with a job id and leaves the work running in the background, which is what makes
 	 * this safe to call from a request.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $options Provider-neutral options.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -263,7 +263,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $job Unused.
 	 * @return array<string, mixed>
 	 */
@@ -302,7 +302,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $id Archive filename.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -340,7 +340,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string               $id      Unused.
 	 * @param  array<string, mixed> $options Unused.
 	 * @return WP_Error
@@ -393,7 +393,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	/**
 	 * Whether the plugin's own REST routes are registered.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	private static function rest_available(): bool {
@@ -401,7 +401,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	private static function files(): array {
@@ -415,7 +415,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	private static function labels(): array {
@@ -429,7 +429,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  array<string, mixed>  $file   Raw file row.
 	 * @param  array<string, string> $labels Stored labels.
 	 * @return array<string, mixed>
@@ -457,7 +457,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	/**
 	 * Attach a label to an archive.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $id    Archive filename.
 	 * @param  string $label Label text.
 	 * @return array<string, mixed>|WP_Error
@@ -485,7 +485,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	private static function is_running(): bool {
@@ -499,7 +499,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	private static function status_message(): string {
@@ -511,7 +511,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<string, mixed>|null
 	 */
 	private static function status_payload() {
@@ -525,7 +525,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	private static function directory(): string {
@@ -533,7 +533,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int $timestamp Unix timestamp.
 	 * @return string
 	 */

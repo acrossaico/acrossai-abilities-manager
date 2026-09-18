@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\WPCode
- * @since      0.0.43
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\WPCode;
@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
  * setting `active`, but that is its choice and could change; this enforces it rather than inheriting
  * it.
  *
- * @since 0.0.43
+ * @since 0.0.34
  */
 final class Library_Repository {
 
@@ -42,7 +42,7 @@ final class Library_Repository {
 	 * it works perfectly well in wp-admin. The constructor only adds hooks, so building it here is
 	 * cheap and has no side effect beyond what wp-admin already does.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return object|null
 	 */
 	private static function library() {
@@ -80,7 +80,7 @@ final class Library_Repository {
 	 * Assigning it back matters: WPCode's own code reads these through `wpcode()->…`, so a local
 	 * instance would leave the next internal call still facing null.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  string $property Property on the wpcode() object.
 	 * @param  string $class    Global class name.
 	 * @param  string $relative Path under WPCODE_PLUGIN_PATH.
@@ -125,7 +125,7 @@ final class Library_Repository {
 	 * there is no `wpcode()->packs` at all. Its class file is required only in the admin branch, so
 	 * the same on-demand load applies.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return object|null
 	 */
 	private static function packs_helper() {
@@ -161,7 +161,7 @@ final class Library_Repository {
 	/**
 	 * Whether the library is reachable and has data.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return true|WP_Error
 	 */
 	public static function assert_reachable() {
@@ -195,7 +195,7 @@ final class Library_Repository {
 	/**
 	 * Search the library.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  string $search   Free-text search, empty for everything.
 	 * @param  int    $per_page Maximum rows to return.
 	 * @return array<int, array<string, mixed>>|WP_Error
@@ -239,7 +239,7 @@ final class Library_Repository {
 	/**
 	 * One library snippet by its library id.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  int $library_id Library id.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -271,7 +271,7 @@ final class Library_Repository {
 	/**
 	 * Install a library snippet, inactive.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  int $library_id Library id.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -313,7 +313,7 @@ final class Library_Repository {
 	/**
 	 * Apply a snippet pack, leaving everything it created inactive.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  string $slug Pack slug.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -388,7 +388,7 @@ final class Library_Repository {
 	/**
 	 * Every pack, with whether it is installed.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>|WP_Error
 	 */
 	public static function packs() {
@@ -438,7 +438,7 @@ final class Library_Repository {
 	 * client id; handing those to a caller means handing them off-site, which is the hazard Feature
 	 * 106 found in Yoast's stored OAuth tokens. Only the state and the public username leave.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function connection(): array {
@@ -468,7 +468,7 @@ final class Library_Repository {
 	 * "WPCode > Library" makes the person hunt for it, and a link they can click is the difference
 	 * between the step happening and not.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public static function connect_url(): string {
@@ -483,7 +483,7 @@ final class Library_Repository {
 	 * response as `library_connected` either way; this puts it somewhere an assistant will actually
 	 * read, because a field it did not think to look at is a field it will not mention.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $connection Result of self::connection().
 	 * @param  string               $done       Message to use when connected.
 	 * @return string
@@ -509,7 +509,7 @@ final class Library_Repository {
 	 * URL, what to click, and an explicit request to be told when it is done — otherwise an
 	 * assistant tends to either give up or silently retry the same failing call.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  string $what What the caller was trying to do.
 	 * @return WP_Error
 	 */
@@ -529,7 +529,7 @@ final class Library_Repository {
 	/**
 	 * Installed library snippets that have a newer version upstream.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>|WP_Error
 	 */
 	public static function updates() {
@@ -581,7 +581,7 @@ final class Library_Repository {
 	 *    of an update and is fine — but it must be said out loud, which is why the ability is
 	 *    confirm-gated.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  int $snippet_id Local snippet id.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -654,7 +654,7 @@ final class Library_Repository {
 	/**
 	 * Install a snippet shared by link.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  string $hash Share hash from the library URL.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -704,7 +704,7 @@ final class Library_Repository {
 	/**
 	 * Guarantee a freshly installed snippet is not running.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  WPCode_Snippet $snippet Snippet.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -726,7 +726,7 @@ final class Library_Repository {
 	/**
 	 * Shape one library row. Rows, never maps.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $snippet Library payload.
 	 * @return array<string, mixed>
 	 */

@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\LocoTranslate
- * @since      0.0.47
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\LocoTranslate;
@@ -23,14 +23,14 @@ defined( 'ABSPATH' ) || exit;
  * languages` would find the files a site happens to have and miss every bundle that has none — which
  * is precisely the set a caller wants to know about.
  *
- * @since 0.0.47
+ * @since 0.0.34
  */
 final class Bundle_Repository {
 
 	/**
 	 * Bundle types this suite exposes.
 	 *
-	 * @since 0.0.47
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const TYPES = array( 'plugin', 'theme', 'core' );
@@ -43,7 +43,7 @@ final class Bundle_Repository {
 	/**
 	 * Every bundle Loco can see, optionally narrowed to one type.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string $type One of self::TYPES, or '' for all.
 	 * @return array<int, object>|WP_Error Loco_package_Bundle list.
 	 */
@@ -88,7 +88,7 @@ final class Bundle_Repository {
 	 * way to know which one it was given. Returning "not found" for a name the operator can see on
 	 * screen would be the wrong answer to a reasonable question.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string $id Bundle id, handle or slug.
 	 * @return object|WP_Error Loco_package_Bundle on success.
 	 */
@@ -129,7 +129,7 @@ final class Bundle_Repository {
 	/**
 	 * Shape one bundle for output. Rows, never maps.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  object $bundle Loco_package_Bundle.
 	 * @param  bool   $deep   Include per-project file inventory.
 	 * @return array<string, mixed>
@@ -165,7 +165,7 @@ final class Bundle_Repository {
 	/**
 	 * Shape one project, including what translation files it actually has.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  object $project Loco_package_Project.
 	 * @return array<string, mixed>
 	 */
@@ -197,7 +197,7 @@ final class Bundle_Repository {
 	/**
 	 * The locale suffix of a PO filename, when it has one.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string $path Absolute or relative path.
 	 * @return string
 	 */
@@ -214,7 +214,7 @@ final class Bundle_Repository {
 	/**
 	 * Find one project inside a bundle by text domain.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  object $bundle Loco_package_Bundle.
 	 * @param  string $domain Text domain, or '' for the bundle default.
 	 * @return object|WP_Error Loco_package_Project on success.

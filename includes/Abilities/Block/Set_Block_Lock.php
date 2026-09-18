@@ -103,7 +103,7 @@ class Set_Block_Lock extends Ability_Definition {
 	/**
 	 * Where a caller should look before running this.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @return array<int, array<string, string>>
 	 */
 	protected function suggested_abilities(): array {

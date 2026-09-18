@@ -24,7 +24,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\ContactForm7
- * @since      0.0.35
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\ContactForm7;
@@ -43,7 +43,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Ability category shared by the whole suite.
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const CATEGORY = 'acrossai-contact-form-7';
@@ -52,7 +52,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	 * Toolset key. The visible label comes from the integration declaration, because the derived
 	 * form of this key reads badly — see Integrations\Contact_Form_7::toolset_label().
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const TAB_GROUP = 'contact-form-7';
@@ -60,7 +60,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Ability slug suffix, without the `contact-form-7/` prefix.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function slug(): string;
@@ -68,7 +68,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Human-readable label.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_label(): string;
@@ -76,7 +76,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Description an AI client reads when choosing this ability.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_description(): string;
@@ -84,7 +84,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Sub-group (card) this ability belongs to.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function sub_group(): string;
@@ -92,7 +92,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * CF7 capability suffix, without `wpcf7_`. '' skips the CF7 check but never the floor.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function cf7_cap(): string;
@@ -100,7 +100,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Input schema properties, excluding `confirm`.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function input_properties(): array;
@@ -108,7 +108,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Output payload properties, excluding success/message/error_code.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function output_properties(): array;
@@ -116,7 +116,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Required input keys.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	abstract protected function required_input(): array;
@@ -124,7 +124,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * The full annotation triple.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	abstract protected function annotations(): array;
@@ -132,7 +132,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Do the work. Return the payload without `success`, or a WP_Error.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Validated input.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -150,7 +150,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	 * manage them through an ability. That is intended — an ability is reachable by an AI client and
 	 * wp-admin is not.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	final protected function permission_floor(): string {
@@ -160,7 +160,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Whether this ability requires `confirm: true`.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -170,7 +170,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Per-ability sub-group label override.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function sub_group_label(): string {
@@ -183,7 +183,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	 * The derived form would read "Cf7 Forms" — an acronym the label rule cannot know about, inside a
 	 * panel that already says Contact Form 7.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	protected function sub_group_labels(): array {
@@ -199,7 +199,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Default success message.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function success_message(): string {
@@ -209,7 +209,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Assemble the ability definition.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function ability(): array {
@@ -291,7 +291,7 @@ abstract class Base_Contact_Form_7_Ability extends Ability_Definition {
 	/**
 	 * Run the guards, then the ability, then wrap the result.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>
 	 */

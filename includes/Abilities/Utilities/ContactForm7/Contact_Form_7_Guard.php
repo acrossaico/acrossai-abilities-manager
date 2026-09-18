@@ -9,7 +9,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\ContactForm7
- * @since      0.0.35
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\ContactForm7;
@@ -41,7 +41,7 @@ final class Contact_Form_7_Guard {
 	 * `WPCF7_ContactForm` rather than the `WPCF7_VERSION` constant: it is the class every ability
 	 * ultimately reaches through, so its presence also proves CF7's autoloading is live.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_available(): bool {
@@ -54,7 +54,7 @@ final class Contact_Form_7_Guard {
 	 * Called first by every execute() as defence in depth: the bootstrap already gates instantiation,
 	 * but CF7 can be deactivated after the abilities were registered in the same request.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return true|WP_Error
 	 */
 	public static function assert_available() {
@@ -71,7 +71,7 @@ final class Contact_Form_7_Guard {
 	/**
 	 * Assert the caller confirmed an irreversible operation.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  array<string,mixed> $input Ability input.
 	 * @return true|WP_Error
 	 */
@@ -99,7 +99,7 @@ final class Contact_Form_7_Guard {
 	 * a hole in the Rank Math suite when its floor was lowered — see
 	 * Base_Rank_Math_Ability::permission_floor().
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  string $cf7_cap CF7 capability, without the `wpcf7_` prefix. '' skips the check.
 	 * @param  string $floor   WordPress capability floor.
 	 * @return callable
@@ -120,7 +120,7 @@ final class Contact_Form_7_Guard {
 			 * ability is reachable by an AI client and wp-admin is not. A filter that could widen
 			 * would hand that decision to any other plugin on the site.
 			 *
-			 * @since 0.0.35
+			 * @since 0.0.34
 			 * @param bool   $allowed Whether access is granted. Always true at this point.
 			 * @param string $cf7_cap CF7 capability suffix.
 			 * @param string $floor   WordPress capability floor.
@@ -136,7 +136,7 @@ final class Contact_Form_7_Guard {
 	 * (`WPCF7_ADMIN_READ_WRITE_CAPABILITY` / `WPCF7_ADMIN_READ_CAPABILITY`), so the `wpcf7_*` cap is
 	 * checked rather than the primitive it currently maps to.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  string $cap Capability suffix, e.g. `edit_contact_forms`.
 	 * @return bool
 	 */
@@ -154,7 +154,7 @@ final class Contact_Form_7_Guard {
 	 * Per-object defence in depth, used inside run() by the writers. The permission_callback cannot
 	 * do this: it receives no input, so it cannot know which form is being addressed.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  int $form_id Form post ID.
 	 * @return true|WP_Error
 	 */
@@ -172,7 +172,7 @@ final class Contact_Form_7_Guard {
 	/**
 	 * Build a success envelope.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  array<string,mixed> $payload Ability-specific keys.
 	 * @param  string              $message Human-readable summary.
 	 * @return array<string,mixed>
@@ -186,7 +186,7 @@ final class Contact_Form_7_Guard {
 	/**
 	 * Build a failure envelope from a WP_Error.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  WP_Error            $error   Error to unwrap.
 	 * @param  array<string,mixed> $context Optional identifying input to echo back.
 	 * @return array<string,mixed>
@@ -198,7 +198,7 @@ final class Contact_Form_7_Guard {
 	/**
 	 * Build a failure envelope from an explicit code and message.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  string              $code    Machine-readable error code.
 	 * @param  string              $message Human-readable message.
 	 * @param  array<string,mixed> $context Optional identifying input to echo back.

@@ -14,7 +14,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\ContactForm7
- * @since      0.0.35
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\ContactForm7;
@@ -37,7 +37,7 @@ final class Form_Tag_Repository {
 	 * list. Kept here so `list-mail-tags` can answer completely instead of only naming the form's own
 	 * fields, which is the half a caller can already infer.
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @var   array<string,string>
 	 */
 	public const SPECIAL_MAIL_TAGS = array(
@@ -71,7 +71,7 @@ final class Form_Tag_Repository {
 	/**
 	 * Every field in a form, as structured data.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  WPCF7_ContactForm $form Form.
 	 * @return array<int, array<string,mixed>>
 	 */
@@ -100,7 +100,7 @@ final class Form_Tag_Repository {
 	/**
 	 * Whether a form has a field with this name.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  WPCF7_ContactForm $form Form.
 	 * @param  string            $name Field name.
 	 * @return bool
@@ -120,7 +120,7 @@ final class Form_Tag_Repository {
 	 *
 	 * Install-specific: CF7 modules and add-ons register types, so this cannot be a static list.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<int, array<string,mixed>>
 	 */
 	public static function types(): array {
@@ -155,7 +155,7 @@ final class Form_Tag_Repository {
 	/**
 	 * Whether a form-tag type exists on this install.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  string $type Type, with or without the trailing `*`.
 	 * @return bool
 	 */
@@ -170,7 +170,7 @@ final class Form_Tag_Repository {
 	/**
 	 * Mail tags a form makes available.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  WPCF7_ContactForm $form Form.
 	 * @return array<string, array<int, array<string,string>>>
 	 */
@@ -210,7 +210,7 @@ final class Form_Tag_Repository {
 	 * The commonest silent CF7 breakage: a field is renamed and the notification keeps sending with
 	 * an empty line where the value used to be. Nothing warns — the mail still arrives.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  WPCF7_ContactForm $form Form.
 	 * @param  string            $body Text to check.
 	 * @return array<int, string> Unresolvable tag names.
@@ -244,7 +244,7 @@ final class Form_Tag_Repository {
 	/**
 	 * Compose one form tag from its parts.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  string               $type     Tag type without `*`.
 	 * @param  string               $name     Field name.
 	 * @param  bool                 $required Whether the field is required.
@@ -282,7 +282,7 @@ final class Form_Tag_Repository {
 	 * produces broken layout more often than it helps. A caller wanting exact placement has
 	 * `update-form-template`.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  string $template Existing template.
 	 * @param  string $tag      Composed tag.
 	 * @param  string $label    Visible label; '' emits the tag alone.
@@ -304,7 +304,7 @@ final class Form_Tag_Repository {
 	/**
 	 * Replace the tag named $name with $replacement.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  string $template    Existing template.
 	 * @param  string $name        Field name to find.
 	 * @param  string $replacement New tag text, or '' to remove it.
@@ -339,7 +339,7 @@ final class Form_Tag_Repository {
 	 * Removing the tag alone would leave an orphan `<label> Your name </label>` — visible on the
 	 * form, attached to nothing.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  string $template Existing template.
 	 * @param  string $name     Field name.
 	 * @return string|WP_Error
@@ -370,7 +370,7 @@ final class Form_Tag_Repository {
 	 *
 	 * Anchored on the name as a whole word so `your-email` does not match `your-email-2`.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  string $name      Field name.
 	 * @param  bool   $delimited Return a complete pattern rather than a fragment.
 	 * @return string

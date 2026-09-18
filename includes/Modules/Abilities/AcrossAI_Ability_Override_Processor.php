@@ -93,7 +93,7 @@ final class AcrossAI_Ability_Override_Processor {
 	/**
 	 * Capability required by an ability with no rule of its own.
 	 *
-	 * @since 0.0.46
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const DEFAULT_CAPABILITY = 'manage_options';
@@ -101,7 +101,7 @@ final class AcrossAI_Ability_Override_Processor {
 	/**
 	 * Option that can move the default floor site-wide.
 	 *
-	 * @since 0.0.46
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const DEFAULT_CAPABILITY_OPTION = 'acrossai_default_ability_capability';
@@ -109,7 +109,7 @@ final class AcrossAI_Ability_Override_Processor {
 	/**
 	 * Slug prefixes whose permission callback must never be replaced.
 	 *
-	 * @since 0.0.46
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	private const ROUTER_PREFIXES = array( 'toolset/', 'mcp-adapter/' );
@@ -404,7 +404,7 @@ final class AcrossAI_Ability_Override_Processor {
 	 * plugin supports 6.9, where that filter does not exist, so the wrapping is done here.
 	 *
 	 * @since  0.1.0
-	 * @since  0.0.47 Wraps the original callback instead of discarding it.
+	 * @since  0.0.34 Wraps the original callback instead of discarding it.
 	 * @param  string $slug     Ability slug.
 	 * @param  mixed  $original The callback the ability registered with, if any.
 	 * @return callable Closure returning bool|WP_Error.
@@ -430,7 +430,7 @@ final class AcrossAI_Ability_Override_Processor {
 	 *
 	 * @internal public by necessity — called from the closure above.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string $slug     Ability slug.
 	 * @param  mixed  $original The callback the ability registered with, if any.
 	 * @param  mixed  $input    Input passed to the permission check.
@@ -474,7 +474,7 @@ final class AcrossAI_Ability_Override_Processor {
 	 * WordPress. The wiring is asserted at source level instead, and the whole path is exercised
 	 * live.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function floor_allows(): bool {
@@ -487,7 +487,7 @@ final class AcrossAI_Ability_Override_Processor {
 	 * `manage_options`, matching every first-party suite. Filterable and option-backed so a site that
 	 * genuinely needs a lower floor can move it once rather than writing a rule per ability.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public static function default_capability(): string {
@@ -497,7 +497,7 @@ final class AcrossAI_Ability_Override_Processor {
 		/**
 		 * Filters the capability required by an ability with no access rule of its own.
 		 *
-		 * @since 0.0.46
+		 * @since 0.0.34
 		 * @param string $floor Default capability.
 		 */
 		$filtered = (string) apply_filters( 'acrossai_default_ability_capability', $floor );
@@ -516,7 +516,7 @@ final class AcrossAI_Ability_Override_Processor {
 	 *
 	 * Nothing is lost by exempting them: every ability they route to is gated here.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.34
 	 * @param  string $slug Ability slug.
 	 * @return bool
 	 */
@@ -554,7 +554,7 @@ final class AcrossAI_Ability_Override_Processor {
 	 * Check whether the given user has access to an ability per AC rules.
 	 *
 	 * Fail-CLOSED: when the AC library is absent or no rule is configured the answer falls back to
-	 * the default capability floor, not to true. The summary here said "fail-open" until 0.0.47,
+	 * the default capability floor, not to true. The summary here said "fail-open" until Feature 115,
 	 * describing the behaviour Feature 115 replaced — directly above a body comment saying the
 	 * opposite.
 	 *
@@ -587,7 +587,7 @@ final class AcrossAI_Ability_Override_Processor {
 		 * switch would appear to work while doing nothing. See issue #210 for the general question
 		 * of wrapping rather than replacing.
 		 *
-		 * @since 0.0.47
+		 * @since 0.0.34
 		 * @param bool   $refused Whether to refuse. Always false at this point.
 		 * @param string $slug    Ability slug.
 		 * @param int    $user_id WordPress user ID.
@@ -598,7 +598,7 @@ final class AcrossAI_Ability_Override_Processor {
 	/**
 	 * The access decision itself, before any integration refusal.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string $slug    Ability slug.
 	 * @param  int    $user_id WordPress user ID.
 	 * @return bool

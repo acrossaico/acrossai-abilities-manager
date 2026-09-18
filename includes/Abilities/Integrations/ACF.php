@@ -128,7 +128,7 @@ class ACF extends AcrossAI_Integration_Ability_Base implements AcrossAI_Toolset_
 	 * display-only Library rows twice. One instance is created in `Main::define_public_hooks()`, and
 	 * this is the route a third-party integration would use too.
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 */
 	public function __construct() {
 		parent::__construct();
@@ -151,7 +151,7 @@ class ACF extends AcrossAI_Integration_Ability_Base implements AcrossAI_Toolset_
 	 * one. The two happen to coincide for ACF and need not for every integration: an integration with
 	 * no opt-in has no slug at all.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function group(): string {
@@ -165,7 +165,7 @@ class ACF extends AcrossAI_Integration_Ability_Base implements AcrossAI_Toolset_
 	 * itself, which matters next to a switch that turns that feature on; in a list of toolsets it
 	 * reads as a different product.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_label(): string {
@@ -175,7 +175,7 @@ class ACF extends AcrossAI_Integration_Ability_Base implements AcrossAI_Toolset_
 	/**
 	 * What this toolset covers, for an MCP client.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_description(): string {
@@ -198,7 +198,7 @@ class ACF extends AcrossAI_Integration_Ability_Base implements AcrossAI_Toolset_
 	 * were missing entirely. Test_Integration_Row_Accuracy now asserts every declared slug resolves
 	 * whenever the host plugin is active.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public function ability_prefixes(): array {
@@ -208,7 +208,7 @@ class ACF extends AcrossAI_Integration_Ability_Base implements AcrossAI_Toolset_
 	/**
 	 * Whether ACF is present.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public function is_active(): bool {

@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Consent
- * @since      0.0.48
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Consent;
@@ -17,14 +17,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * The one place this suite decides whether it may run, and the one shape it answers in.
  *
- * @since 0.0.48
+ * @since 0.0.34
  */
 final class Consent_Guard {
 
 	/**
 	 * Filter name for the permission decision.
 	 *
-	 * @since 0.0.48
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const PERMISSION_FILTER = 'acrossai_abilities_manager_consent_permission';
@@ -32,7 +32,7 @@ final class Consent_Guard {
 	/**
 	 * Settings option.
 	 *
-	 * @since 0.0.48
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const SETTINGS_OPTION = 'cky_settings';
@@ -40,7 +40,7 @@ final class Consent_Guard {
 	/**
 	 * Rendered banner HTML, keyed by language. The thing a visitor actually sees.
 	 *
-	 * @since 0.0.48
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const TEMPLATE_OPTION = 'cky_banner_template';
@@ -51,7 +51,7 @@ final class Consent_Guard {
 	 * The Feature 106 lesson about stored OAuth tokens, applied before it can bite: these sit in the
 	 * same option as ordinary settings, so a reader that returns the option wholesale hands them out.
 	 *
-	 * @since 0.0.48
+	 * @since 0.0.34
 	 * @var   array<string, string[]>
 	 */
 	public const REDACTED = array(
@@ -71,7 +71,7 @@ final class Consent_Guard {
 	 * name. The controller is what this suite actually calls, and `cky_selected_languages()` is what
 	 * every multilingual field is built from, so both absences would break us.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_available(): bool {
@@ -80,7 +80,7 @@ final class Consent_Guard {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return true|WP_Error
 	 */
 	public static function assert_available() {
@@ -97,7 +97,7 @@ final class Consent_Guard {
 	/**
 	 * Settings, as stored.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function settings(): array {
@@ -114,7 +114,7 @@ final class Consent_Guard {
 	 * (`lite/includes/class-cli.php:112-124`), so on a request that began before a connection it
 	 * would answer for the state the request started in. The option is the truth.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_connected(): bool {
@@ -126,7 +126,7 @@ final class Consent_Guard {
 	/**
 	 * Where a human goes to link the account.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public static function connect_url(): string {
@@ -141,7 +141,7 @@ final class Consent_Guard {
 	 * rather than a dead end, because an assistant handed a vague failure either gives up or
 	 * silently retries the same call. The URL is on the error data as well, for machine use.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  string $what Human-readable name of the thing that needs the account.
 	 * @return true|WP_Error
 	 */
@@ -173,7 +173,7 @@ final class Consent_Guard {
 	 * Reports what it removed rather than removing it silently, so a caller can tell the difference
 	 * between "this setting is empty" and "you may not see this".
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $settings Settings to clean.
 	 * @return array{settings: array<string, mixed>, redacted: string[]}
 	 */
@@ -202,7 +202,7 @@ final class Consent_Guard {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input   Ability input.
 	 * @param  string               $message What the caller is confirming.
 	 * @return true|WP_Error
@@ -224,7 +224,7 @@ final class Consent_Guard {
 	 * A single `current_user_can( $floor )`, and the filter is consulted only after it passes — so a
 	 * filter can tighten access and never widen it (PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY).
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  string $floor WordPress capability floor.
 	 * @return callable
 	 */
@@ -237,7 +237,7 @@ final class Consent_Guard {
 			/**
 			 * Filters whether the current user may use a consent ability.
 			 *
-			 * @since 0.0.48
+			 * @since 0.0.34
 			 * @param bool   $allowed Whether access is granted. Always true at this point.
 			 * @param string $floor   WordPress capability floor.
 			 */
@@ -250,7 +250,7 @@ final class Consent_Guard {
 	 *
 	 * `success` and `message` are set last so a payload key cannot spoof them.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $payload Ability-specific keys.
 	 * @param  string               $message Human-readable summary.
 	 * @return array<string, mixed>
@@ -262,7 +262,7 @@ final class Consent_Guard {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  WP_Error $error Error.
 	 * @return array<string, mixed>
 	 */
@@ -280,7 +280,7 @@ final class Consent_Guard {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  string $code    Machine-readable code.
 	 * @param  string $message Human-readable message.
 	 * @return array<string, mixed>

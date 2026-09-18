@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\ClassicEditor
- * @since      0.0.39
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\ClassicEditor;
@@ -35,14 +35,14 @@ defined( 'ABSPATH' ) || exit;
  *     stored value separately — on a site that has never saved the settings there is no row at all,
  *     and reporting "" would imply "not configured" for a site that is actively behaving as classic.
  *
- * @since 0.0.39
+ * @since 0.0.34
  */
 final class Editor_Settings_Repository {
 
 	/**
 	 * Site option: which editor is the default.
 	 *
-	 * @since 0.0.39
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const OPTION_EDITOR = 'classic-editor-replace';
@@ -50,7 +50,7 @@ final class Editor_Settings_Repository {
 	/**
 	 * Site option: whether users may choose for themselves.
 	 *
-	 * @since 0.0.39
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const OPTION_ALLOW_USERS = 'classic-editor-allow-users';
@@ -58,7 +58,7 @@ final class Editor_Settings_Repository {
 	/**
 	 * Network option: the network-wide default.
 	 *
-	 * @since 0.0.39
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const NETWORK_OPTION_EDITOR = 'classic-editor-replace';
@@ -66,7 +66,7 @@ final class Editor_Settings_Repository {
 	/**
 	 * Network option: whether per-site settings are honoured at all.
 	 *
-	 * @since 0.0.39
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const NETWORK_OPTION_ALLOW_SITES = 'classic-editor-allow-sites';
@@ -75,7 +75,7 @@ final class Editor_Settings_Repository {
 	 * Per-user preference. Stored with update_user_option(), so the real meta key is
 	 * blog-prefixed — read it with get_user_option(), never get_user_meta().
 	 *
-	 * @since 0.0.39
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const USER_OPTION = 'classic-editor-settings';
@@ -87,7 +87,7 @@ final class Editor_Settings_Repository {
 	 * options and the user preference use. Three vocabularies for the same idea; mixing them is the
 	 * most likely bug in this suite.
 	 *
-	 * @since 0.0.39
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const POST_META = 'classic-editor-remember';
@@ -95,7 +95,7 @@ final class Editor_Settings_Repository {
 	/**
 	 * Accepted values for the editor options and the user preference.
 	 *
-	 * @since 0.0.39
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const EDITORS = array( 'classic', 'block' );
@@ -103,7 +103,7 @@ final class Editor_Settings_Repository {
 	/**
 	 * Accepted values for the post meta.
 	 *
-	 * @since 0.0.39
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const POST_EDITORS = array( 'classic-editor', 'block-editor' );
@@ -116,7 +116,7 @@ final class Editor_Settings_Repository {
 	/**
 	 * The effective settings, and which layer decided each one.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  int $user_id Whose preference to apply. 0 = current user.
 	 * @return array<string, mixed>
 	 */
@@ -191,7 +191,7 @@ final class Editor_Settings_Repository {
 	 * Each key is read back after writing and only reported as changed when the stored value
 	 * matches what was asked for (BUG-WRITE-REPORTED-WITHOUT-READ-BACK).
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $patch editor and/or allow_users.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -247,7 +247,7 @@ final class Editor_Settings_Repository {
 	/**
 	 * Persist one option and confirm it took.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  string $option    Option name.
 	 * @param  string $value     Value after the plugin's own validator.
 	 * @param  string $requested What the caller asked for, for the error message.
@@ -281,7 +281,7 @@ final class Editor_Settings_Repository {
 	/**
 	 * Classic Editor's own editor-value validator.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  string $value Candidate.
 	 * @return string
 	 */
@@ -296,7 +296,7 @@ final class Editor_Settings_Repository {
 	/**
 	 * Classic Editor's own allow-users validator.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  string $value Candidate.
 	 * @return string
 	 */
@@ -315,7 +315,7 @@ final class Editor_Settings_Repository {
 	 * that filters gets the answer it actually uses rather than the unfiltered default; the plugin
 	 * memoises its copy per request, so this may fire the filter a second time.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  string $post_type Post type.
 	 * @return array<string, bool>
 	 */
@@ -352,7 +352,7 @@ final class Editor_Settings_Repository {
 	 *     from the post type (classic-editor.php:126-141). A remembered value still sits in the
 	 *     meta and is simply not consulted — so it is reported, and reported as ignored.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  WP_Post $post    Post.
 	 * @param  int     $user_id Whose preference applies. 0 = current user.
 	 * @return array<string, mixed>
@@ -403,7 +403,7 @@ final class Editor_Settings_Repository {
 	/**
 	 * Shape one per-post answer.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  WP_Post              $post              Post.
 	 * @param  string               $editor            Resolved editor.
 	 * @param  string               $reason            What decided it.

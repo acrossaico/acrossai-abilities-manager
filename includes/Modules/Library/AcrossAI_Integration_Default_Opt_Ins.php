@@ -19,7 +19,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Modules/Library
- * @since      0.0.47
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Modules\Library;
@@ -29,14 +29,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * One-time seeding of integration opt-ins whose default is ON.
  *
- * @since 0.0.47
+ * @since 0.0.34
  */
 final class AcrossAI_Integration_Default_Opt_Ins {
 
 	/**
 	 * Guard option. Presence means the seed has already run.
 	 *
-	 * @since 0.0.47
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const DONE_OPTION = 'acrossai_integration_default_opt_ins_done';
@@ -50,7 +50,7 @@ final class AcrossAI_Integration_Default_Opt_Ins {
 	 * value of the toggle is its OFF position, which currently exists nowhere. See
 	 * {@see \AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\WPForms} and issue #210.
 	 *
-	 * @since 0.0.47
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	private const DEFAULT_ON = array( 'wpforms' );
@@ -67,7 +67,7 @@ final class AcrossAI_Integration_Default_Opt_Ins {
 	 * `plugins_loaded` P20, so a seed that ran later would leave the first request of the site's
 	 * life with the integration reading as off.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return void
 	 */
 	public static function maybe_seed(): void {

@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Store
- * @since      0.0.53
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Store;
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Order reads, notes and refunds.
  *
- * @since 0.0.53
+ * @since 0.0.34
  */
 final class Order_Repository {
 
@@ -27,7 +27,7 @@ final class Order_Repository {
 	private function __construct() {}
 
 	/**
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  int $id Order id.
 	 * @return \WC_Order|WP_Error
 	 */
@@ -58,7 +58,7 @@ final class Order_Repository {
 	 * The customer IP and user agent are never returned under any flag: they identify a person's
 	 * device and location and answer no question a store operator actually has.
 	 *
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  \WC_Order $order             Order.
 	 * @param  bool      $with_personal_data Whether to include identifying fields.
 	 * @return array<string, mixed>
@@ -135,7 +135,7 @@ final class Order_Repository {
 	 * WooCommerce can ADD a note and has no way to read one back — a genuine asymmetry, and the
 	 * reason this exists. Customer-facing notes were sent to a person, so they are marked.
 	 *
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  int $id    Order id.
 	 * @param  int $limit Rows.
 	 * @return array<string, mixed>|WP_Error
@@ -182,7 +182,7 @@ final class Order_Repository {
 	 * and is deliberately out of scope. The response says so rather than letting a caller assume the
 	 * customer has been paid.
 	 *
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  int                  $id     Order id.
 	 * @param  array<string, mixed> $fields amount / reason / restock_items.
 	 * @return array<string, mixed>|WP_Error

@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\LiteSpeed
- * @since      0.0.36
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\LiteSpeed;
@@ -27,7 +27,7 @@ final class Crawler_Repository {
 	/**
 	 * Crawl summary: position, timings and the current run's state.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function summary(): array {
@@ -54,7 +54,7 @@ final class Crawler_Repository {
 	 * which happens as soon as one crawler is disabled — encodes as a JSON object, not an array
 	 * (BUG-ARRAY-TYPED-OUTPUT-IS-A-JSON-OBJECT). The index travels inside each row instead.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function crawlers(): array {
@@ -77,7 +77,7 @@ final class Crawler_Repository {
 	/**
 	 * Enable or disable one crawler.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  int  $index   Crawler index.
 	 * @param  bool $enabled Desired state.
 	 * @return bool|WP_Error The resulting state.
@@ -112,7 +112,7 @@ final class Crawler_Repository {
 	 * Long-running and dispatched asynchronously by LiteSpeed, so this reports that the run began,
 	 * never that it finished.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return void
 	 */
 	public static function run(): void {
@@ -122,7 +122,7 @@ final class Crawler_Repository {
 	/**
 	 * Reset the crawl position so the next run starts from the beginning.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return void
 	 */
 	public static function reset(): void {
@@ -132,7 +132,7 @@ final class Crawler_Repository {
 	/**
 	 * A page of the sitemap the crawler works from.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  int $limit  Maximum rows.
 	 * @param  int $offset Rows to skip.
 	 * @return array{total: int, urls: array<int, string>}

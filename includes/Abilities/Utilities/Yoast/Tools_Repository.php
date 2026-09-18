@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Yoast
- * @since      0.0.38
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Yoast;
@@ -28,7 +28,7 @@ final class Tools_Repository {
 	 * `indexables_built` is reported rather than gated on: Yoast stops building them outside
 	 * production, and knowing that is the answer to most of those questions.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string,mixed>
 	 */
 	public static function status(): array {
@@ -47,7 +47,7 @@ final class Tools_Repository {
 	/**
 	 * Plugins Yoast considers conflicting, as ROWS.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<int, array<string,mixed>>
 	 */
 	public static function conflicting_plugins(): array {
@@ -78,7 +78,7 @@ final class Tools_Repository {
 	/**
 	 * Yoast's own conflict list, flattened.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string, array<int,string>>
 	 */
 	private static function known_conflicts(): array {
@@ -97,7 +97,7 @@ final class Tools_Repository {
 	/**
 	 * Indexation progress.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string,mixed>
 	 */
 	public static function indexing_status(): array {
@@ -117,7 +117,7 @@ final class Tools_Repository {
 	 * "reindex now" that is safe to call from a request, because a full rebuild on a large site far
 	 * outlives one.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string $reason Why the reset was requested.
 	 * @return void
 	 */

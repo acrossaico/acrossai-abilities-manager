@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\LocoTranslate
- * @since      0.0.47
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\LocoTranslate;
@@ -33,7 +33,7 @@ defined( 'ABSPATH' ) || exit;
 abstract class Base_Loco_Ability extends Ability_Definition {
 
 	/**
-	 * @since 0.0.47
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const CATEGORY = 'acrossai-loco-translate';
@@ -42,61 +42,61 @@ abstract class Base_Loco_Ability extends Ability_Definition {
 	 * Must equal Integrations\Loco_Translate::TAB_GROUP, or the abilities land in one group and the
 	 * dispatcher serves another.
 	 *
-	 * @since 0.0.47
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const TAB_GROUP = 'loco-translate';
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function slug(): string;
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_label(): string;
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_description(): string;
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function sub_group(): string;
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function input_properties(): array;
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function output_properties(): array;
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	abstract protected function required_input(): array;
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	abstract protected function annotations(): array;
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|\WP_Error
 	 */
@@ -110,7 +110,7 @@ abstract class Base_Loco_Ability extends Ability_Definition {
 	 * wp-admin is a different risk from an AI client writing files that render on every page, and
 	 * issue #200 now puts `manage_options` under every ability regardless.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	final protected function permission_floor(): string {
@@ -118,7 +118,7 @@ abstract class Base_Loco_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -134,7 +134,7 @@ abstract class Base_Loco_Ability extends Ability_Definition {
 	 * confirmation and another that does not, and gating the harmless one is friction with no risk
 	 * behind it.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return bool
 	 */
@@ -145,7 +145,7 @@ abstract class Base_Loco_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -153,7 +153,7 @@ abstract class Base_Loco_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	protected function sub_group_labels(): array {
@@ -167,7 +167,7 @@ abstract class Base_Loco_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function success_message(): string {
@@ -180,7 +180,7 @@ abstract class Base_Loco_Ability extends Ability_Definition {
 	 * Needed separately from the file because the compiler will not write the JSON fragments without
 	 * it — omit the project and the block editor keeps the old strings while everything else updates.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Ability input.
 	 * @return object|\WP_Error Loco_package_Project.
 	 */
@@ -206,7 +206,7 @@ abstract class Base_Loco_Ability extends Ability_Definition {
 	 * the file in use; when none exists the first candidate is where a new one belongs, which is what
 	 * create-translation-file needs.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input          Ability input.
 	 * @param  bool                 $must_exist     Refuse when no file is there yet.
 	 * @return string|\WP_Error Absolute path.
@@ -293,7 +293,7 @@ abstract class Base_Loco_Ability extends Ability_Definition {
 	/**
 	 * Assemble the ability definition.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function ability(): array {
@@ -367,7 +367,7 @@ abstract class Base_Loco_Ability extends Ability_Definition {
 	/**
 	 * Guards, then the ability, then the envelope.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>
 	 */

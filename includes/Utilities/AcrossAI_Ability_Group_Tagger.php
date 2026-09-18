@@ -24,7 +24,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Utilities
- * @since      0.0.35
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -53,7 +53,7 @@ class AcrossAI_Ability_Group_Tagger {
 	 * catch-all instead. Placing it in one of our curated groups would imply this plugin owns it, and
 	 * would quietly grow Diagnostics into the same bucket `core` became.
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @var   array<string, string>
 	 */
 	private const ABILITY_GROUPS = array(
@@ -69,7 +69,7 @@ class AcrossAI_Ability_Group_Tagger {
 	 * `AcrossAI_Ability_Override_Processor` injects DB overrides at P100000. The two touch different
 	 * keys, so the ordering is for clarity rather than correctness.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  mixed  $args Registration args.
 	 * @param  string $name Ability name, namespaced.
 	 * @return mixed Args, with `meta.acrossai.tab_group` filled when it was missing.
@@ -114,7 +114,7 @@ class AcrossAI_Ability_Group_Tagger {
 	 * Order matters: a per-ability placement beats its plugin's prefix, so one ability can be pulled
 	 * out of an integration's group without disturbing the rest.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  string $name Ability name.
 	 * @return string Group key, or '' to leave the ability ungrouped.
 	 */
@@ -139,7 +139,7 @@ class AcrossAI_Ability_Group_Tagger {
 	/**
 	 * Per-ability placements, filterable.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	private static function ability_map(): array {
@@ -149,7 +149,7 @@ class AcrossAI_Ability_Group_Tagger {
 		 * Keyed by full ability name. Takes precedence over the prefix map, so this is how a single
 		 * ability is moved out of the group its plugin otherwise owns.
 		 *
-		 * @since 0.0.35
+		 * @since 0.0.34
 		 * @param array<string, string> $map Ability name => group key.
 		 */
 		$map = apply_filters( 'acrossai_ability_group_tagger_map', self::ABILITY_GROUPS );
@@ -160,7 +160,7 @@ class AcrossAI_Ability_Group_Tagger {
 	/**
 	 * Prefix placements, from the registered integrations.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	private static function prefix_map(): array {
@@ -171,7 +171,7 @@ class AcrossAI_Ability_Group_Tagger {
 		 * integration over filtering this — an integration also supplies the label, the description
 		 * and the dispatcher, where a bare prefix here would create a group with no MCP tool.
 		 *
-		 * @since 0.0.35
+		 * @since 0.0.34
 		 * @param array<string, string> $map Ability-name prefix => group key.
 		 */
 		$map = apply_filters(
@@ -185,7 +185,7 @@ class AcrossAI_Ability_Group_Tagger {
 	/**
 	 * The group already declared in the args, if any.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $args Registration args.
 	 * @return string
 	 */

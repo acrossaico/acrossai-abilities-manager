@@ -16,7 +16,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Yoast
- * @since      0.0.38
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Yoast;
@@ -33,7 +33,7 @@ final class Yoast_Guard {
 	/**
 	 * Filter name allowing site owners to relax the capability policy.
 	 *
-	 * @since 0.0.38
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const PERMISSION_FILTER = 'acrossai_abilities_manager_yoast_permission';
@@ -50,7 +50,7 @@ final class Yoast_Guard {
 	 * define, and `WPSEO_Options` alone is a class name that could collide. Together they also prove
 	 * Yoast's autoloading is live, which the constant does not.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_available(): bool {
@@ -63,7 +63,7 @@ final class Yoast_Guard {
 	 * Called first by every execute() as defence in depth: the bootstrap gates instantiation, but
 	 * Yoast can be deactivated after the abilities were registered in the same request.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return true|WP_Error
 	 */
 	public static function assert_available() {
@@ -83,7 +83,7 @@ final class Yoast_Guard {
 	 * Read by the indexable abilities so they can report an empty index rather than failing. NOT a
 	 * registration gate — see the class docblock.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function has_indexables(): bool {
@@ -102,7 +102,7 @@ final class Yoast_Guard {
 	/**
 	 * Assert the caller confirmed a destructive operation.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  array<string,mixed> $input   Ability input.
 	 * @param  string              $message Optional operation-specific message.
 	 * @return true|WP_Error
@@ -131,7 +131,7 @@ final class Yoast_Guard {
 	 * `add_cap`-editable, so the floor stands alone rather than composing with something a site owner
 	 * may have widened.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string $floor WordPress capability floor.
 	 * @return callable
 	 */
@@ -150,7 +150,7 @@ final class Yoast_Guard {
 			 * grant. Returning the filter's value directly would let any plugin on the site hand an
 			 * SEO write to a subscriber, which is the opposite of what the filter is for.
 			 *
-			 * @since 0.0.38
+			 * @since 0.0.34
 			 * @param bool   $allowed Whether access is granted. Always true at this point.
 			 * @param string $floor   WordPress capability floor.
 			 */
@@ -161,7 +161,7 @@ final class Yoast_Guard {
 	/**
 	 * Build a success envelope.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  array<string,mixed> $payload Ability-specific keys.
 	 * @param  string              $message Human-readable summary.
 	 * @return array<string,mixed>
@@ -175,7 +175,7 @@ final class Yoast_Guard {
 	/**
 	 * Build a failure envelope from a WP_Error.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  WP_Error $error Error to unwrap.
 	 * @return array<string,mixed>
 	 */
@@ -186,7 +186,7 @@ final class Yoast_Guard {
 	/**
 	 * Build a failure envelope from an explicit code and message.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string $code    Machine-readable error code.
 	 * @param  string $message Human-readable message.
 	 * @return array<string,mixed>

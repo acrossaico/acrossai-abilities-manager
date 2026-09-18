@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Backups
- * @since      0.0.52
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups;
@@ -27,14 +27,14 @@ defined( 'ABSPATH' ) || exit;
  * `supports()` exists because the two plugins genuinely differ. Reporting a capability as absent is
  * honest; pretending to offer it and failing at the point of use is not.
  *
- * @since 0.0.52
+ * @since 0.0.34
  */
 interface Backup_Provider {
 
 	/**
 	 * Stable machine identifier, used as the `provider` input value.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public static function id(): string;
@@ -42,7 +42,7 @@ interface Backup_Provider {
 	/**
 	 * Human-readable name, as the plugin calls itself.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public static function label(): string;
@@ -52,7 +52,7 @@ interface Backup_Provider {
 	 *
 	 * Two stable symbols per SEC-002.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_active(): bool;
@@ -60,7 +60,7 @@ interface Backup_Provider {
 	/**
 	 * Whether this provider can do a given thing.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $capability One of: start, progress, delete, restore, label, schedule.
 	 * @return bool
 	 */
@@ -73,7 +73,7 @@ interface Backup_Provider {
 	 * exists -- a paid extension, a missing file, a server setting. Return an empty string to accept
 	 * the generic wording.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $capability Capability key.
 	 * @return string
 	 */
@@ -82,7 +82,7 @@ interface Backup_Provider {
 	/**
 	 * The headline: when did this site last back up, and did it work.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function status(): array;
@@ -90,7 +90,7 @@ interface Backup_Provider {
 	/**
 	 * Backup sets held by this provider, newest first.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int $limit  Maximum rows.
 	 * @param  int $offset Rows to skip.
 	 * @return array<string, mixed>
@@ -100,7 +100,7 @@ interface Backup_Provider {
 	/**
 	 * One backup set in full.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $id Backup identifier, as returned by list_backups().
 	 * @return array<string, mixed>|\WP_Error
 	 */
@@ -112,7 +112,7 @@ interface Backup_Provider {
 	 * Used by the exposure scan. A backup archive holds the whole database, so where it sits and
 	 * whether the web server will serve it is a security question, not a housekeeping one.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	public static function storage_paths(): array;
@@ -120,7 +120,7 @@ interface Backup_Provider {
 	/**
 	 * Begin a backup.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $options Provider-neutral options.
 	 * @return array<string, mixed>|\WP_Error
 	 */
@@ -129,7 +129,7 @@ interface Backup_Provider {
 	/**
 	 * Report on a running or finished job.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $job Job identifier from start_backup().
 	 * @return array<string, mixed>|\WP_Error
 	 */
@@ -138,7 +138,7 @@ interface Backup_Provider {
 	/**
 	 * Delete one backup set.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $id Backup identifier.
 	 * @return array<string, mixed>|\WP_Error
 	 */
@@ -147,7 +147,7 @@ interface Backup_Provider {
 	/**
 	 * Restore the site from one backup set.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string               $id      Backup identifier.
 	 * @param  array<string, mixed> $options Restore options.
 	 * @return array<string, mixed>|\WP_Error

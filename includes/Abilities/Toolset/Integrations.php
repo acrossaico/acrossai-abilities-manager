@@ -25,7 +25,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Toolset
- * @since      0.0.37
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -82,7 +82,7 @@ final class Integrations extends Base_Toolset_Ability {
 	 * Collected from the Toolsets themselves rather than from a list kept here,
 	 * so adding an integration needs no edit in this file.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	protected function groups(): array {
@@ -94,7 +94,7 @@ final class Integrations extends Base_Toolset_Ability {
 		 * to add a group whose abilities are registered without a Toolset, or
 		 * to withhold one.
 		 *
-		 * @since 0.0.37
+		 * @since 0.0.34
 		 * @param string[] $groups Groups collected so far.
 		 */
 		$groups = apply_filters( 'acrossai_toolset_integration_groups', array() );
@@ -122,7 +122,7 @@ final class Integrations extends Base_Toolset_Ability {
 	 * `plugin` here instead. Saying so explicitly costs one field and saves the
 	 * model a guess.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Caller input.
 	 * @return array<string, mixed>|null
 	 */

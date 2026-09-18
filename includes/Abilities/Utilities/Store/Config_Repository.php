@@ -10,7 +10,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Store
- * @since      0.0.54
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Store;
@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Coupons, tax, shipping and settings.
  *
- * @since 0.0.54
+ * @since 0.0.34
  */
 final class Config_Repository {
 
@@ -32,7 +32,7 @@ final class Config_Repository {
 	 * An allow-list, not a passthrough. WooCommerce keeps hundreds of options under this prefix,
 	 * including gateway configuration; a generic writer would reach all of them.
 	 *
-	 * @since 0.0.54
+	 * @since 0.0.34
 	 * @var   array<string, string>
 	 */
 	public const WRITABLE_SETTINGS = array(
@@ -65,7 +65,7 @@ final class Config_Repository {
 	/* -------------------------------------------------------------- coupons */
 
 	/**
-	 * @since  0.0.54
+	 * @since  0.0.34
 	 * @param  \WC_Coupon $coupon Coupon.
 	 * @return array<string, mixed>
 	 */
@@ -91,7 +91,7 @@ final class Config_Repository {
 	}
 
 	/**
-	 * @since  0.0.54
+	 * @since  0.0.34
 	 * @param  int $limit Rows.
 	 * @return array<string, mixed>
 	 */
@@ -124,7 +124,7 @@ final class Config_Repository {
 	}
 
 	/**
-	 * @since  0.0.54
+	 * @since  0.0.34
 	 * @param  string $code Coupon code.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -148,7 +148,7 @@ final class Config_Repository {
 	/**
 	 * Create or change a coupon.
 	 *
-	 * @since  0.0.54
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $fields Supplied fields.
 	 * @param  bool                 $create Whether this is a creation.
 	 * @return array<string, mixed>|WP_Error
@@ -257,7 +257,7 @@ final class Config_Repository {
 	 * Reported, never advised. What a rate ought to be is a question about a business, not a
 	 * configuration, and a wrong answer here does not error — it under-charges tax for a year.
 	 *
-	 * @since  0.0.54
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function tax_rates(): array {
@@ -307,7 +307,7 @@ final class Config_Repository {
 	/**
 	 * Add a tax rate.
 	 *
-	 * @since  0.0.54
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $fields Rate definition.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -353,7 +353,7 @@ final class Config_Repository {
 	/**
 	 * Shipping zones and their methods.
 	 *
-	 * @since  0.0.54
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function shipping_zones(): array {
@@ -420,7 +420,7 @@ final class Config_Repository {
 	/**
 	 * Shipping classes.
 	 *
-	 * @since  0.0.54
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function shipping_classes(): array {
@@ -453,7 +453,7 @@ final class Config_Repository {
 	/**
 	 * The settings this suite is willing to report.
 	 *
-	 * @since  0.0.54
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function settings(): array {
@@ -472,7 +472,7 @@ final class Config_Repository {
 	/**
 	 * Change settings, from the allow-list only.
 	 *
-	 * @since  0.0.54
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $fields Supplied settings.
 	 * @return array<string, mixed>|WP_Error
 	 */

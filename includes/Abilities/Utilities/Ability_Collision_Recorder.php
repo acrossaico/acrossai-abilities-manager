@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities
- * @since      0.0.44
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities;
@@ -31,14 +31,14 @@ defined( 'ABSPATH' ) || exit;
  * Deliberately cheap: a name and a label per attempt, no backtrace. This runs for every ability on
  * every request, so anything heavier would be a real cost for a diagnostic nobody reads most days.
  *
- * @since 0.0.44
+ * @since 0.0.34
  */
 final class Ability_Collision_Recorder {
 
 	/**
 	 * Attempted registrations: name => list of labels, in attempt order.
 	 *
-	 * @since 0.0.44
+	 * @since 0.0.34
 	 * @var   array<string, array<int, string>>
 	 */
 	private static $attempts = array();
@@ -46,7 +46,7 @@ final class Ability_Collision_Recorder {
 	/**
 	 * Whether the filter has been attached.
 	 *
-	 * @since 0.0.44
+	 * @since 0.0.34
 	 * @var   bool
 	 */
 	private static $listening = false;
@@ -62,7 +62,7 @@ final class Ability_Collision_Recorder {
 	 * Priority 1 so the record is taken before any other filter can rewrite the args — including our
 	 * own override processor at P100000, which may legitimately change the label.
 	 *
-	 * @since  0.0.44
+	 * @since  0.0.34
 	 * @return void
 	 */
 	public static function listen(): void {
@@ -78,7 +78,7 @@ final class Ability_Collision_Recorder {
 	/**
 	 * Filter callback. Records and returns the args untouched.
 	 *
-	 * @since  0.0.44
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $args Ability args.
 	 * @param  string               $name Ability name.
 	 * @return array<string, mixed>
@@ -102,7 +102,7 @@ final class Ability_Collision_Recorder {
 	/**
 	 * Names that were claimed more than once, with who won.
 	 *
-	 * @since  0.0.44
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function collisions(): array {
@@ -167,7 +167,7 @@ final class Ability_Collision_Recorder {
 	/**
 	 * Every name seen, for the "nothing collided" case to mean something.
 	 *
-	 * @since  0.0.44
+	 * @since  0.0.34
 	 * @return int
 	 */
 	public static function attempted_count(): int {
@@ -180,7 +180,7 @@ final class Ability_Collision_Recorder {
 	 * A report of zero collisions is only meaningful if the recorder was listening before the
 	 * registrations happened; otherwise it means "nothing was watched", which is a different claim.
 	 *
-	 * @since  0.0.44
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_listening(): bool {
@@ -190,7 +190,7 @@ final class Ability_Collision_Recorder {
 	/**
 	 * Reset — tests only.
 	 *
-	 * @since  0.0.44
+	 * @since  0.0.34
 	 * @return void
 	 */
 	public static function reset(): void {
