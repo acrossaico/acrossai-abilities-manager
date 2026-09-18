@@ -25,6 +25,7 @@ declare( strict_types = 1 );
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Toolset;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\AcrossAI_Toolset_Integration;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\AcrossAI_Toolset_Integrations;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -81,5 +82,36 @@ final class Integration_Toolset extends Base_Toolset_Ability {
 	 */
 	protected function toolset_description(): string {
 		return $this->integration->toolset_description();
+	}
+
+	/**
+	 * Integrations are not part of the server type's default set.
+	 *
+	 * Every dispatcher here exists because a PLUGIN is installed, so including
+	 * them would make the default set differ per site and change whenever a
+	 * plugin is activated or this add-on ships another integration. A connected
+	 * MCP client caches `tools/list` and cannot be told it changed, so a moving
+	 * default set is one that connected clients are quietly wrong about.
+	 *
+	 * They remain fully registered tools — still in the picker, still addable by
+	 * hand, still callable. `toolset/integrations` also lists and runs every one
+	 * of them, so a client whose cached list predates the plugin can still reach
+	 * it.
+	 *
+	 * **The catch-all is the exception.** `other` is an integration in the
+	 * mechanical sense — it is declared through the same registry
+	 * ({@see AcrossAI_Toolset_Integrations::CATCH_ALL_GROUP}) — but it is present
+	 * on every site and holds abilities belonging to no group. It is stable, so
+	 * it stays a default. A blanket `false` here would drop it silently.
+	 *
+	 * @since  0.0.37
+	 * @return bool
+	 */
+	protected function is_server_type_default(): bool {
+		if ( AcrossAI_Toolset_Integrations::CATCH_ALL_GROUP === $this->group() ) {
+			return parent::is_server_type_default();
+		}
+
+		return false;
 	}
 }

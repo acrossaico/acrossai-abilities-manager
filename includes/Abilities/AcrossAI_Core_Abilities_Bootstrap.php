@@ -946,6 +946,16 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Toolset\Elementor();
 		new Toolset\Rank_Math();
 
+		// Spans every Toolset above that is NOT a server-type default, so a
+		// client whose cached tools/list predates a plugin can still reach it.
+		// Registered last only for readability — it collects its groups through
+		// a filter, so order does not matter.
+		new Toolset\Integrations();
+
+		// Not a dispatcher — it explains how the dispatchers are called, and is
+		// registered here because it is advertised to the transport the same way.
+		new Toolset\Guide();
+
 		$this->register_integration_toolsets( array(
 			'content',
 			'blocks',
@@ -961,6 +971,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			'diagnostics',
 			'elementor',
 			'rank-math',
+			'integrations',
 		) );
 	}
 
