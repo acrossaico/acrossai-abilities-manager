@@ -1356,7 +1356,7 @@ abstract class Base_Toolset_Ability {
 	 * @param  array<string, mixed> $input Caller input.
 	 * @return string[]|null
 	 */
-	private function requested_fields( array $input ): ?array {
+	protected function requested_fields( array $input ): ?array {
 		if ( ! isset( $input['include_fields'] ) || ! is_array( $input['include_fields'] ) ) {
 			return null;
 		}
@@ -1377,15 +1377,23 @@ abstract class Base_Toolset_Ability {
 	 * @param  string[]|null        $fields Requested fields.
 	 * @return array<string, mixed>
 	 */
-	private function trim_to( array $row, ?array $fields ): array {
+	protected function trim_to( array $row, ?array $fields, string $always = 'name' ): array {
 		if ( null === $fields ) {
 			return $row;
 		}
 
-		$keep = array( 'name' => $row['name'] );
+		// The identifying key is never trimmed away — a trimmed row a caller
+		// cannot act on is worse than a verbose one. Which key that is depends
+		// on what the row describes: an ability is identified by `name`, a
+		// plugin row by `plugin`. Forcing `name` onto a plugin row invents a
+		// property the output schema does not allow and fails the whole
+		// response.
+		$keep = array_key_exists( $always, $row )
+			? array( $always => $row[ $always ] )
+			: array();
 
 		foreach ( $fields as $field ) {
-			if ( 'name' !== $field && array_key_exists( $field, $row ) ) {
+			if ( $always !== $field && array_key_exists( $field, $row ) ) {
 				$keep[ $field ] = $row[ $field ];
 			}
 		}
