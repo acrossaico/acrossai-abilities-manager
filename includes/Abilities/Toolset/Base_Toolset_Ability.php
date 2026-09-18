@@ -57,21 +57,25 @@ abstract class Base_Toolset_Ability {
 	 *
 	 * @var int
 	 */
-	private const DEFAULT_LIMIT = 50;
+	// PUBLIC so `Guide` can report the limits this class actually enforces
+	// rather than restating them. An advertised number that has drifted from
+	// the enforced one is worse than none: a caller plans around it and is
+	// silently clamped.
+	public const DEFAULT_LIMIT = 50;
 
 	/**
 	 * Largest page a caller may request.
 	 *
 	 * @var int
 	 */
-	private const MAX_LIMIT = 200;
+	public const MAX_LIMIT = 200;
 
 	/**
 	 * Most abilities describable in one `info` call.
 	 *
 	 * @var int
 	 */
-	private const MAX_BATCH = 20;
+	public const MAX_BATCH = 20;
 
 	/**
 	 * Per-request member memo, keyed by group and context.
