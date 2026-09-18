@@ -112,6 +112,38 @@ abstract class Base_Toolset_Ability {
 		add_filter( 'acrossai_mcp_manager_tool_abilities', array( $this, 'declare_tool_level_ability' ) );
 		add_filter( 'acrossai_abilities_manager_protected_slugs', array( $this, 'protect_own_slug' ) );
 		add_filter( 'acrossai_mcp_server_types', array( $this, 'declare_server_type_tool' ) );
+		add_filter( 'acrossai_toolset_integration_groups', array( $this, 'declare_integration_group' ) );
+	}
+
+	/**
+	 * Name this Toolset's group as one `toolset/integrations` should span.
+	 *
+	 * Only non-default Toolsets answer, which makes the two halves of this
+	 * feature exactly complementary: whatever step one removed from the server
+	 * type's default set, step two makes reachable through the directory. A new
+	 * per-plugin Toolset joins both by declaring neither — it simply inherits
+	 * the opt-out and lands here automatically.
+	 *
+	 * Same shape and same reason as the three declarations beside it: a Toolset
+	 * is the only thing that knows its own group, so it says so itself rather
+	 * than having the list repeated somewhere that can drift.
+	 *
+	 * @since  0.0.37
+	 * @param  mixed $groups Groups collected so far.
+	 * @return mixed
+	 */
+	public function declare_integration_group( $groups ) {
+		if ( ! is_array( $groups ) ) {
+			return $groups;
+		}
+
+		if ( $this->slug_taken_by_other || $this->is_server_type_default() ) {
+			return $groups;
+		}
+
+		$groups[] = $this->group();
+
+		return array_values( array_unique( $groups ) );
 	}
 
 	/**
@@ -210,14 +242,72 @@ abstract class Base_Toolset_Ability {
 		// The requirement is this plugin. If this code is running, it is met.
 		$types['acrossai']['requires']   = null;
 
-		$tools   = isset( $types['acrossai']['tools'] ) && is_array( $types['acrossai']['tools'] )
+		$tools = isset( $types['acrossai']['tools'] ) && is_array( $types['acrossai']['tools'] )
 			? $types['acrossai']['tools']
 			: array();
-		$tools[] = $this->slug();
+
+		// Only DEFAULT Toolsets go in the type's tool set. This one line decides
+		// what the transport's "Reset to Type Defaults" restores, so a Toolset
+		// that is not a default is still registered, still a tool, and still
+		// addable by hand from the picker — it is simply not handed out.
+		//
+		// Per-plugin Toolsets opt out (see Integration_Toolset), which is what
+		// makes the default set STABLE: installing a plugin, or shipping a new
+		// integration in this add-on, no longer changes what an existing server
+		// serves. An MCP client caches `tools/list` when it connects and there
+		// is no way to refresh it, so a default set that moves is a default set
+		// half the connected clients are wrong about.
+		if ( $this->is_server_type_default() ) {
+			$tools[] = $this->slug();
+		}
 
 		$types['acrossai']['tools'] = array_values( array_unique( $tools ) );
 
 		return $types;
+	}
+
+	/**
+	 * Whether this Toolset belongs in the `acrossai` type's DEFAULT tool set.
+	 *
+	 * True for the stable Toolsets — the ones that describe WordPress itself and
+	 * are present on every site regardless of what is installed. False for
+	 * per-plugin Toolsets, which come and go.
+	 *
+	 * Deliberately NOT called `is_default`: the entry already carries an
+	 * `is_default` key meaning "preselect this server TYPE for new servers",
+	 * which the transport reads when resolving its default type. Same word, a
+	 * different question.
+	 *
+	 * **Answered at declaration time, never from the ability registry.** The
+	 * note on `declare_server_type_tool()` records why: an earlier gate consulted
+	 * registered abilities and the answer then depended on whether the transport
+	 * resolved its type registry before or after `wp_abilities_api_init` — on a
+	 * REST request it resolved first and every Toolset dropped out. A per-class
+	 * constant answer has no such ordering.
+	 *
+	 * @since  0.0.37
+	 * @return bool
+	 */
+	protected function is_server_type_default(): bool {
+		/**
+		 * Filter whether a Toolset is part of the server type's default set.
+		 *
+		 * Published in the shape of `acrossai_toolset_member_visible`: a `true`
+		 * default a site or companion plugin can flip, keyed on the group.
+		 *
+		 * Callbacks MUST answer from the group name alone. Anything consulting
+		 * `wp_get_abilities()` reintroduces the registration-ordering bug
+		 * described on `declare_server_type_tool()`.
+		 *
+		 * Changing this does not add or remove a tool — every Toolset stays
+		 * registered and stays addable from the picker. It changes only what
+		 * **Reset to Type Defaults** restores.
+		 *
+		 * @since 0.0.37
+		 * @param bool   $is_default Whether this Toolset is a default.
+		 * @param string $group      The Toolset's ability group.
+		 */
+		return (bool) apply_filters( 'acrossai_toolset_is_server_type_default', true, $this->group() );
 	}
 
 	/**
@@ -277,6 +367,46 @@ abstract class Base_Toolset_Ability {
 	 * @return string
 	 */
 	abstract protected function group(): string;
+
+	/**
+	 * Every ability group this Toolset dispatches to.
+	 *
+	 * Almost always the one group it is named after, which is why this is not
+	 * abstract. `toolset/integrations` is the exception: it spans every group
+	 * that is NOT a server-type default, so that a client whose cached
+	 * `tools/list` predates a plugin can still reach that plugin's abilities.
+	 *
+	 * `group()` remains the Toolset's IDENTITY — what it reports, what its
+	 * filters are keyed on, what a collision is logged against. This is only
+	 * the membership question: which abilities may travel through it.
+	 *
+	 * @since  0.0.37
+	 * @return string[]
+	 */
+	protected function groups(): array {
+		return array( $this->group() );
+	}
+
+	/**
+	 * An alternative answer to a bare `discover`, or null for the normal one.
+	 *
+	 * A Toolset covering ONE group can list its abilities directly — a dozen or
+	 * two is a reasonable first response. One covering every plugin on the site
+	 * cannot: the honest first answer there is "here is what this site has",
+	 * not two hundred abilities the caller did not ask for.
+	 *
+	 * Returning null keeps the normal listing, which is what every Toolset but
+	 * `integrations` does.
+	 *
+	 * @since  0.0.37
+	 * @param  array<string, mixed> $input Caller input.
+	 * @return array<string, mixed>|null
+	 */
+	protected function discover_overview( array $input ): ?array {
+		unset( $input );
+
+		return null;
+	}
 
 	/**
 	 * This Toolset's ability slug, e.g. `toolset/content`.
@@ -339,7 +469,7 @@ abstract class Base_Toolset_Ability {
 			return;
 		}
 
-		if ( array() === AcrossAI_Ability_Group::members( $this->group() ) ) {
+		if ( ! $this->has_any_member() ) {
 			return;
 		}
 
@@ -686,6 +816,12 @@ abstract class Base_Toolset_Ability {
 	 * @return array<string, mixed>
 	 */
 	private function do_discover( array $input ): array {
+		$overview = $this->discover_overview( $input );
+
+		if ( null !== $overview ) {
+			return $overview;
+		}
+
 		$members = $this->members( 'discover' );
 
 		if ( array() === $members ) {
@@ -851,6 +987,29 @@ abstract class Base_Toolset_Ability {
 	 * ------------------------------------------------------------------ */
 
 	/**
+	 * Whether any group this Toolset covers has a registered member.
+	 *
+	 * Deliberately does NOT go through `members()`: this runs during
+	 * registration, and memoising a membership list at that moment would freeze
+	 * an answer taken before later-priority callbacks have registered theirs.
+	 * It also skips the visibility filter — an empty-because-hidden group should
+	 * still register its Toolset, or a per-role policy could unregister a tool
+	 * for everyone.
+	 *
+	 * @since  0.0.37
+	 * @return bool
+	 */
+	private function has_any_member(): bool {
+		foreach ( $this->groups() as $group ) {
+			if ( array() !== AcrossAI_Ability_Group::members( (string) $group ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * The abilities this Toolset may act on, for one action.
 	 *
 	 * Membership comes from registration; visibility is applied here, per
@@ -867,11 +1026,21 @@ abstract class Base_Toolset_Ability {
 		}
 
 		$visible = array();
+		$seen    = array();
 
-		foreach ( AcrossAI_Ability_Group::members( $this->group() ) as $ability ) {
-			if ( ! $this->is_dispatchable( $ability ) ) {
-				continue;
-			}
+		foreach ( $this->groups() as $group ) {
+			foreach ( AcrossAI_Ability_Group::members( (string) $group ) as $ability ) {
+				if ( ! $this->is_dispatchable( $ability ) ) {
+					continue;
+				}
+
+				$name = $ability->get_name();
+
+				// A Toolset spanning several groups must not list an ability
+				// twice if two groups ever claim it.
+				if ( isset( $seen[ $name ] ) ) {
+					continue;
+				}
 
 			/**
 			 * Filters whether one ability is visible through one Toolset.
@@ -890,11 +1059,16 @@ abstract class Base_Toolset_Ability {
 			 * @param string     $group   The group being listed.
 			 * @param string     $context One of 'discover' | 'info' | 'execute'.
 			 */
-			if ( ! apply_filters( 'acrossai_toolset_member_visible', true, $ability, $this->group(), $context ) ) {
-				continue;
-			}
+				// The ability's OWN group, not this Toolset's identity — a
+				// policy narrowing `elementor` must still work when the ability
+				// is reached through `integrations`.
+				if ( ! apply_filters( 'acrossai_toolset_member_visible', true, $ability, (string) $group, $context ) ) {
+					continue;
+				}
 
-			$visible[] = $ability;
+				$seen[ $name ] = true;
+				$visible[]     = $ability;
+			}
 		}
 
 		$this->memo[ $context ] = $visible;
@@ -1230,7 +1404,7 @@ abstract class Base_Toolset_Ability {
 			return false;
 		}
 
-		return AcrossAI_Ability_Group::of( $ability ) === $this->group();
+		return in_array( AcrossAI_Ability_Group::of( $ability ), $this->groups(), true );
 	}
 
 	/**
@@ -1262,7 +1436,7 @@ abstract class Base_Toolset_Ability {
 		$ability = function_exists( 'wp_get_ability' ) ? wp_get_ability( $name ) : null;
 		$group   = $ability instanceof WP_Ability ? AcrossAI_Ability_Group::of( $ability ) : '';
 
-		if ( '' !== $group && $group !== $this->group() ) {
+		if ( '' !== $group && ! in_array( $group, $this->groups(), true ) ) {
 			return $this->failure(
 				$action,
 				'ability_not_in_group',
