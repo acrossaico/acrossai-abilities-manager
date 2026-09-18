@@ -547,6 +547,11 @@ abstract class Base_Toolset_Ability {
 					'maxLength'   => 64,
 					'description' => 'discover only. Restrict to one sub-group.',
 				),
+				'plugin'         => array(
+					'type'        => 'string',
+					'maxLength'   => 64,
+					'description' => 'discover only, and only useful on a Toolset that spans several plugins. Restrict to one, as returned by a previous discover call.',
+				),
 				'limit'          => array(
 					'type'        => 'integer',
 					'minimum'     => 1,
@@ -667,12 +672,12 @@ abstract class Base_Toolset_Ability {
 						'type'                 => 'object',
 						'properties'           => array(
 							'toolset'     => array( 'type' => 'string' ),
-							'sub_group'   => array( 'type' => 'string' ),
+							'plugin'      => array( 'type' => 'string' ),
 							'label'       => array( 'type' => 'string' ),
 							'description' => array( 'type' => 'string' ),
 							'abilities'   => array( 'type' => 'integer' ),
 						),
-						'required'             => array( 'toolset', 'sub_group' ),
+						'required'             => array( 'toolset', 'plugin' ),
 						'additionalProperties' => false,
 					),
 				),
@@ -1168,15 +1173,24 @@ abstract class Base_Toolset_Ability {
 		$search    = isset( $input['search'] ) ? strtolower( trim( (string) $input['search'] ) ) : '';
 		$card      = isset( $input['card'] ) ? (string) $input['card'] : '';
 		$sub_group = isset( $input['sub_group'] ) ? (string) $input['sub_group'] : '';
+		// Narrows by GROUP, which `sub_group` cannot: a sub-group is a division
+		// WITHIN a group (`elementor-elements`), so it never equals a group name.
+		// Only meaningful on a Toolset spanning several groups; on any other it
+		// either matches everything or nothing, which is the honest answer.
+		$plugin    = isset( $input['plugin'] ) ? (string) $input['plugin'] : '';
 
-		if ( '' === $search && '' === $card && '' === $sub_group ) {
+		if ( '' === $search && '' === $card && '' === $sub_group && '' === $plugin ) {
 			return $members;
 		}
 
 		return array_values(
 			array_filter(
 				$members,
-				function ( WP_Ability $ability ) use ( $search, $card, $sub_group ): bool {
+				function ( WP_Ability $ability ) use ( $search, $card, $sub_group, $plugin ): bool {
+					if ( '' !== $plugin && AcrossAI_Ability_Group::of( $ability ) !== $plugin ) {
+						return false;
+					}
+
 					if ( '' !== $card && ! $this->card_matches( $ability, $card ) ) {
 						return false;
 					}

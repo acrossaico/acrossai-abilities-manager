@@ -73,7 +73,7 @@ final class Integrations extends Base_Toolset_Ability {
 	 * @return string
 	 */
 	protected function toolset_description(): string {
-		return __( 'Capabilities that come from the plugins installed on this site — page builders, SEO, ecommerce, forms, email delivery, code snippets and whatever else is here. The contents depend entirely on which plugins this site runs, so call action=discover first: it returns the list of plugins, not a wall of abilities. Then call action=discover again with sub_group to see one plugin\'s abilities, or pass search to look across all of them at once. If a plugin has its own toolset in your tool list, prefer calling that directly — it carries the fuller description. If it does not, run the ability from here: everything listed is executable through this tool. action=info returns schemas; action=execute runs one ability.', 'acrossai-abilities-manager' );
+		return __( 'Capabilities that come from the plugins installed on this site — page builders, SEO, ecommerce, forms, email delivery, code snippets and whatever else is here. The contents depend entirely on which plugins this site runs, so call action=discover first: it returns the list of plugins, not a wall of abilities. Then call action=discover again with plugin=<name> to see one plugin\'s abilities, or pass search to look across all of them at once. If a plugin has its own toolset in your tool list, prefer calling that directly — it carries the fuller description. If it does not, run the ability from here: everything listed is executable through this tool. action=info returns schemas; action=execute runs one ability.', 'acrossai-abilities-manager' );
 	}
 
 	/**
@@ -108,21 +108,27 @@ final class Integrations extends Base_Toolset_Ability {
 	 * Listing every ability across every plugin would be hundreds of rows for a
 	 * caller who asked "what is here?". The useful first answer is the map.
 	 *
-	 * Once the caller narrows — `sub_group` for one plugin, or `search` across
-	 * all of them — the normal listing takes over, and returns exactly what that
+	 * Once the caller narrows — `plugin` for one of them, or `search` across all
+	 * of them — the normal listing takes over, and returns exactly what that
 	 * plugin's own Toolset would have returned.
+	 *
+	 * `plugin` rather than `sub_group` deliberately: a sub-group is a division
+	 * WITHIN a group (`elementor-elements`), so it can never equal a group name.
+	 * Telling a caller to pass `sub_group: elementor` would send it to an empty
+	 * result with nothing to explain why.
 	 *
 	 * Each row carries BOTH routes. A client holding a current tool list should
 	 * call the named toolset directly; one holding a stale list cannot, and uses
-	 * `sub_group` here instead. Saying so explicitly costs one field and saves
-	 * the model a guess.
+	 * `plugin` here instead. Saying so explicitly costs one field and saves the
+	 * model a guess.
 	 *
 	 * @since  0.0.37
 	 * @param  array<string, mixed> $input Caller input.
 	 * @return array<string, mixed>|null
 	 */
 	protected function discover_overview( array $input ): ?array {
-		$narrowed = ( isset( $input['sub_group'] ) && '' !== (string) $input['sub_group'] )
+		$narrowed = ( isset( $input['plugin'] ) && '' !== (string) $input['plugin'] )
+			|| ( isset( $input['sub_group'] ) && '' !== (string) $input['sub_group'] )
 			|| ( isset( $input['search'] ) && '' !== (string) $input['search'] )
 			|| ( isset( $input['card'] ) && '' !== (string) $input['card'] );
 
@@ -143,7 +149,7 @@ final class Integrations extends Base_Toolset_Ability {
 
 			$row = array(
 				'toolset'   => 'toolset/' . $group,
-				'sub_group' => $group,
+				'plugin'    => $group,
 				'abilities' => $count,
 			);
 
@@ -181,7 +187,7 @@ final class Integrations extends Base_Toolset_Ability {
 			'plugins'         => $plugins,
 			'total_plugins'   => count( $plugins ),
 			'total_abilities' => $total,
-			'hint'            => __( 'Call discover again with sub_group for one plugin\'s abilities, or search to match across all of them. Prefer the named toolset if it is in your tool list; if it is not, run the ability from here with action=execute.', 'acrossai-abilities-manager' ),
+			'hint'            => __( 'Call discover again with plugin=<name> for one plugin\'s abilities, or search to match across all of them. Prefer the named toolset if it is in your tool list; if it is not, run the ability from here with action=execute.', 'acrossai-abilities-manager' ),
 		);
 	}
 }
