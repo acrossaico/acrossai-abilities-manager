@@ -44,17 +44,22 @@ final class Guide {
 	 * This ability's slug.
 	 *
 	 * Named to match the transport's guide for the other server type, which is
-	 * `mcp-adapter/server-guide`. One shape — `<server-type>/server-guide` — so
-	 * an assistant that has met one AcrossAI server knows what to look for on
+	 * `mcp-adapter/server-guide`. One shape — `<tool family>/server-guide` — so
+	 * an assistant that has met one of these servers knows what to look for on
 	 * the next, whatever type it is.
 	 *
-	 * Not in the `toolset/` namespace despite being about Toolsets: every other
-	 * `toolset/*` entry IS a dispatcher, and this one dispatches to nothing.
+	 * In the `toolset/` namespace even though it dispatches to nothing, because
+	 * that prefix carries meaning beyond dispatch:
+	 * `AcrossAI_Ability_Override_Processor::ROUTER_PREFIXES` lists `toolset/`
+	 * and `mcp-adapter/` as the slugs whose permission callback may never be
+	 * replaced by an operator override. A guide is transport, so it belongs on
+	 * that list — and under `acrossai/` it silently was not, while its opposite
+	 * number already was.
 	 *
 	 * @since 0.0.37
 	 * @var   string
 	 */
-	public const SLUG = 'acrossai/server-guide';
+	public const SLUG = 'toolset/server-guide';
 
 	/**
 	 * Wire registration. The same three a Toolset makes, and for once all three.
