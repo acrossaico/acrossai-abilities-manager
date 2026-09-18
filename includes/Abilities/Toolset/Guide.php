@@ -106,8 +106,9 @@ final class Guide {
 					'properties' => array(
 						'how_to_call' => array( 'type' => 'object' ),
 						'toolsets'    => array(
-							'type'  => 'array',
-							'items' => array( 'type' => 'object' ),
+							'type'        => 'array',
+							'items'       => array( 'type' => 'object' ),
+							'description' => 'Every toolset on this site. `call` says how to reach each one: directly if your tool list carries it, otherwise through toolset/integrations.',
 						),
 						'special'     => array( 'type' => 'object' ),
 						'errors'      => array(
@@ -182,6 +183,12 @@ final class Guide {
 	 * @return array<int, array<string, mixed>>
 	 */
 	private function toolsets(): array {
+		// Which groups are NOT in this server type's default set — the same
+		// source `toolset/integrations` spans, so the two can never disagree
+		// about which half a toolset falls in.
+		$indirect = apply_filters( 'acrossai_toolset_integration_groups', array() );
+		$indirect = is_array( $indirect ) ? array_flip( array_map( 'strval', $indirect ) ) : array();
+
 		$rows = array();
 
 		foreach ( AcrossAI_Ability_Group::counts() as $group => $count ) {
@@ -198,6 +205,15 @@ final class Guide {
 				'name'      => $name,
 				'label'     => $ability->get_label(),
 				'abilities' => (int) $count,
+				// Naming a toolset without saying how to reach it is the same
+				// mistake as naming one that does not exist. A non-default
+				// toolset is a real, callable tool — but only if the client's
+				// tool list happens to carry it, and a list fixed at connect
+				// time usually will not. Say which route to take rather than
+				// letting the caller discover the answer by failing.
+				'call'      => isset( $indirect[ (string) $group ] )
+					? 'toolset/integrations with plugin=' . $group
+					: 'directly',
 			);
 		}
 
