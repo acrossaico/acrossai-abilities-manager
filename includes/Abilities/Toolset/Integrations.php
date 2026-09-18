@@ -136,8 +136,21 @@ final class Integrations extends Base_Toolset_Ability {
 			return null;
 		}
 
-		$counts  = AcrossAI_Ability_Group::counts();
-		$fields  = $this->requested_fields( $input );
+		$counts = AcrossAI_Ability_Group::counts();
+
+		// Lean by default. Each row's `description` is that plugin's full Toolset
+		// description — around 250 tokens for Elementor alone — and a caller
+		// asking "what is here?" needs the names and sizes, not three essays. On
+		// this site the default answer costs ~157 tokens against ~885 untrimmed.
+		//
+		// Descriptions are one `include_fields` away, and the hint says so. The
+		// default is chosen because a model will not think to ask: an unprompted
+		// caller should get the cheap answer, and pay for detail deliberately.
+		$fields = $this->requested_fields( $input );
+
+		if ( null === $fields ) {
+			$fields = array( 'toolset', 'label', 'abilities' );
+		}
 		$plugins = array();
 		$total   = 0;
 
@@ -193,7 +206,7 @@ final class Integrations extends Base_Toolset_Ability {
 			'plugins'         => $plugins,
 			'total_plugins'   => count( $plugins ),
 			'total_abilities' => $total,
-			'hint'            => __( 'Call discover again with plugin=<name> for one plugin\'s abilities, or search to match across all of them. Prefer the named toolset if it is in your tool list; if it is not, run the ability from here with action=execute.', 'acrossai-abilities-manager' ),
+			'hint'            => __( 'Call discover again with plugin=<name> for one plugin\'s abilities, or search to match across all of them. Add include_fields=["description"] here for what each plugin covers. Prefer the named toolset if it is in your tool list; if it is not, run the ability from here with action=execute.', 'acrossai-abilities-manager' ),
 		);
 	}
 }
