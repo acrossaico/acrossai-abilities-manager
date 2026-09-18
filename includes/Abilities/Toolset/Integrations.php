@@ -184,7 +184,7 @@ final class Integrations extends Base_Toolset_Ability {
 			// the two paths cannot drift. It matters more here than in a normal
 			// listing: these rows carry a full Toolset description each, and a
 			// caller that only wants the names should not pay for three of them.
-			$plugins[] = $this->trim_to( $row, $fields, 'plugin' );
+			$plugins[] = $this->trim_to( $row, $fields, array( 'plugin', 'toolset' ) );
 
 			$total += $count;
 		}

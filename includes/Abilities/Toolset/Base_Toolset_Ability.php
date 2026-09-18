@@ -1381,23 +1381,31 @@ abstract class Base_Toolset_Ability {
 	 * @param  string[]|null        $fields Requested fields.
 	 * @return array<string, mixed>
 	 */
-	protected function trim_to( array $row, ?array $fields, string $always = 'name' ): array {
+	protected function trim_to( array $row, ?array $fields, $always = 'name' ): array {
 		if ( null === $fields ) {
 			return $row;
 		}
 
-		// The identifying key is never trimmed away — a trimmed row a caller
-		// cannot act on is worse than a verbose one. Which key that is depends
-		// on what the row describes: an ability is identified by `name`, a
-		// plugin row by `plugin`. Forcing `name` onto a plugin row invents a
-		// property the output schema does not allow and fails the whole
-		// response.
-		$keep = array_key_exists( $always, $row )
-			? array( $always => $row[ $always ] )
-			: array();
+		// Some keys are never trimmed away — a trimmed row the caller cannot act
+		// on is worse than a verbose one, and the output schema REQUIRES them,
+		// so dropping one fails the whole response rather than returning less.
+		//
+		// Which keys those are depends on what the row describes: an ability is
+		// identified by `name`; a plugin row needs BOTH `plugin` and `toolset`,
+		// because they are the two routes to it and a row naming one route is
+		// half an answer. `include_fields=["plugin"]` returning a row without
+		// its toolset was exactly that failure.
+		$always = array_values( array_filter( (array) $always ) );
+		$keep   = array();
+
+		foreach ( $always as $key ) {
+			if ( array_key_exists( $key, $row ) ) {
+				$keep[ $key ] = $row[ $key ];
+			}
+		}
 
 		foreach ( $fields as $field ) {
-			if ( $always !== $field && array_key_exists( $field, $row ) ) {
+			if ( ! in_array( $field, $always, true ) && array_key_exists( $field, $row ) ) {
 				$keep[ $field ] = $row[ $field ];
 			}
 		}
