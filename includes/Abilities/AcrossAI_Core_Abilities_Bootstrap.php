@@ -952,10 +952,6 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// a filter, so order does not matter.
 		new Toolset\Integrations();
 
-		// Not a dispatcher — it answers "what site am I on?" rather than routing
-		// to a group. Registered here because it is advertised the same way.
-		new Toolset\Orientation();
-
 		$this->register_integration_toolsets( array(
 			'content',
 			'blocks',
