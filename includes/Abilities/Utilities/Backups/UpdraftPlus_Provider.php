@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Backups
- * @since      0.0.52
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups;
@@ -20,14 +20,14 @@ defined( 'ABSPATH' ) || exit;
  * Identifiers in this suite are those timestamps rendered as strings, because they are what
  * UpdraftPlus itself uses as the primary key of a set and what its own restore path expects.
  *
- * @since 0.0.52
+ * @since 0.0.34
  */
 final class UpdraftPlus_Provider implements Backup_Provider {
 
 	/**
 	 * The scheduled events UpdraftPlus runs backups on.
 	 *
-	 * @since 0.0.52
+	 * @since 0.0.34
 	 * @var   array<string, string>
 	 */
 	private const SCHEDULES = array(
@@ -41,7 +41,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	private function __construct() {}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public static function id(): string {
@@ -49,7 +49,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public static function label(): string {
@@ -57,7 +57,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_active(): bool {
@@ -65,7 +65,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $capability Capability key.
 	 * @return bool
 	 */
@@ -91,7 +91,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $capability Capability key.
 	 * @return string
 	 */
@@ -108,7 +108,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function status(): array {
@@ -158,7 +158,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int $limit  Maximum rows.
 	 * @param  int $offset Rows to skip.
 	 * @return array<string, mixed>
@@ -182,7 +182,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $id Backup timestamp.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -207,7 +207,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	public static function storage_paths(): array {
@@ -230,7 +230,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	 * fire is scheduled on cron instead. The job is UpdraftPlus's own from that point on; only who
 	 * starts the clock differs.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $options Provider-neutral options.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -307,7 +307,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $job Job nonce.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -341,7 +341,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $id Backup timestamp.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -402,7 +402,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	 * rather than discovering it at the point of no return. The restore itself then runs with output
 	 * captured, so UpdraftPlus's markup never reaches the caller.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string               $id      Backup timestamp.
 	 * @param  array<string, mixed> $options Restore options.
 	 * @return array<string, mixed>|WP_Error
@@ -540,7 +540,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	/**
 	 * Which components of a set the caller asked to restore.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $backup  Shaped backup.
 	 * @param  array<string, mixed> $options Restore options.
 	 * @return array<string, bool>
@@ -562,7 +562,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	/**
 	 * Whether a backup is in progress right now.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	private static function is_running(): bool {
@@ -572,7 +572,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	private static function schedules(): array {
@@ -600,7 +600,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	 * secrets in the same structure as its name, so anything returning the settings would hand those
 	 * out — the position already taken on payment gateways in the store suite.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	private static function remote_storage(): array {
@@ -626,7 +626,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<int|string, mixed>
 	 */
 	private static function history(): array {
@@ -656,7 +656,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	 *
 	 * UpdraftPlus's own entity list is the authority, so it is asked rather than guessed at.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	private static function entity_keys(): array {
@@ -681,7 +681,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	/**
 	 * Turn one history entry into this suite's shape.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int                  $timestamp Set timestamp.
 	 * @param  array<string, mixed> $set       Raw set.
 	 * @param  bool                 $detailed  Whether to include the file list.
@@ -774,7 +774,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	/**
 	 * Every archive filename in a set.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $set Raw set.
 	 * @return array<int, string>
 	 */
@@ -806,7 +806,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	private static function directory(): string {
@@ -828,7 +828,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return object|null
 	 */
 	private static function admin() {
@@ -860,7 +860,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	 * knows which. Reading get_option() directly would be right on single sites and wrong on
 	 * networks.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $name    Option name.
 	 * @param  mixed  $default_value Fallback.
 	 * @return mixed
@@ -876,7 +876,7 @@ final class UpdraftPlus_Provider implements Backup_Provider {
 	/**
 	 * How long ago, in plain words.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int $timestamp Unix timestamp.
 	 * @return string
 	 */

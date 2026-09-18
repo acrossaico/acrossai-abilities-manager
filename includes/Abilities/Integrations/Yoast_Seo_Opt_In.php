@@ -10,7 +10,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Integrations
- * @since      0.0.45
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -30,14 +30,14 @@ defined( 'ABSPATH' ) || exit;
  * registrations were refused as duplicates. Measured: five dead placeholders, and executing one
  * returned `Permission denied`. With the rows no longer registered, the names are free.
  *
- * @since 0.0.45
+ * @since 0.0.34
  */
 final class Yoast_Seo_Opt_In extends AcrossAI_Integration_Ability_Base {
 
 	/**
 	 * Matches Yoast_Seo::TAB_GROUP so the rows land in the same tab as the rest.
 	 *
-	 * @since  0.0.45
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -45,7 +45,7 @@ final class Yoast_Seo_Opt_In extends AcrossAI_Integration_Ability_Base {
 	}
 
 	/**
-	 * @since  0.0.45
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function label(): string {
@@ -55,7 +55,7 @@ final class Yoast_Seo_Opt_In extends AcrossAI_Integration_Ability_Base {
 	/**
 	 * Two stable public symbols rather than one, per SEC-002.
 	 *
-	 * @since  0.0.45
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function is_plugin_active(): bool {
@@ -75,7 +75,7 @@ final class Yoast_Seo_Opt_In extends AcrossAI_Integration_Ability_Base {
 	 * turns on knowingly for a working copy, never a default — which is why it is a toggle and why
 	 * the label says whose abilities it enables.
 	 *
-	 * @since  0.0.45
+	 * @since  0.0.34
 	 * @return void
 	 */
 	protected function enable_filter(): void {
@@ -93,7 +93,7 @@ final class Yoast_Seo_Opt_In extends AcrossAI_Integration_Ability_Base {
 	 * further conditions of their own. The two listed here are the ones measured as actually
 	 * appearing; listing the other three would repeat the mistake that made the ACF count wrong.
 	 *
-	 * @since  0.0.45
+	 * @since  0.0.34
 	 * @return array<int, array{slug: string, label: string, description: string}>
 	 */
 	protected function abilities(): array {

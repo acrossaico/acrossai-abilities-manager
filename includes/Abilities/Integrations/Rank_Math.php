@@ -16,7 +16,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Integrations
- * @since      0.0.35
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -36,13 +36,13 @@ final class Rank_Math implements AcrossAI_Toolset_Integration {
 	 * Matches `Base_Rank_Math_Ability::TAB_GROUP`, which is what this plugin's 61 abilities already
 	 * declare, and `Toolset\Rank_Math::group()`. All three must agree or the halves split apart.
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const TAB_GROUP = 'rank-math';
 
 	/**
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function group(): string {
@@ -57,7 +57,7 @@ final class Rank_Math implements AcrossAI_Toolset_Integration {
 	 * that retiring that class is a deletion rather than a rewrite — see the note in
 	 * `AcrossAI_Core_Abilities_Bootstrap::register_toolsets()`.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_label(): string {
@@ -65,7 +65,7 @@ final class Rank_Math implements AcrossAI_Toolset_Integration {
 	}
 
 	/**
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_description(): string {
@@ -81,7 +81,7 @@ final class Rank_Math implements AcrossAI_Toolset_Integration {
 	 * Claims the prefix for both halves. Ours are skipped by the tagger because they already declare a
 	 * group, so in practice this only ever catches Rank Math's own.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public function ability_prefixes(): array {
@@ -93,7 +93,7 @@ final class Rank_Math implements AcrossAI_Toolset_Integration {
 	 *
 	 * Same check `Category_Registrar` uses, so the category and the toolset appear together.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public function is_active(): bool {

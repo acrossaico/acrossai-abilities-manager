@@ -26,7 +26,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Yoast
- * @since      0.0.38
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Yoast;
@@ -46,7 +46,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Ability category shared by the whole suite.
 	 *
-	 * @since 0.0.38
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const CATEGORY = 'acrossai-yoast-seo';
@@ -54,7 +54,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Toolset key. Must equal Integrations\Yoast_Seo::TAB_GROUP.
 	 *
-	 * @since 0.0.38
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const TAB_GROUP = 'yoast-seo';
@@ -62,7 +62,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Ability slug INCLUDING its namespace, e.g. `seo/get-seo-settings`.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function slug(): string;
@@ -70,7 +70,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Human-readable label.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_label(): string;
@@ -78,7 +78,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Description an AI client reads when choosing this ability.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_description(): string;
@@ -86,7 +86,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Sub-group (card) this ability belongs to.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function sub_group(): string;
@@ -94,7 +94,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Input schema properties, excluding `confirm` and the slash fragment.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function input_properties(): array;
@@ -102,7 +102,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Output payload properties, excluding success/message/error_code.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function output_properties(): array;
@@ -110,7 +110,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Required input keys.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	abstract protected function required_input(): array;
@@ -118,7 +118,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * The full annotation triple.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	abstract protected function annotations(): array;
@@ -126,7 +126,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Do the work. Return the payload without `success`, or a WP_Error.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Validated input.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -135,7 +135,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Capability floor for the whole suite. DELIBERATELY final.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return string
 	 */
 	final protected function permission_floor(): string {
@@ -145,7 +145,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Whether this ability requires `confirm: true`.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -155,7 +155,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Operation-specific confirmation message. '' uses the generic one.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -168,7 +168,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	 * Per the Feature 105 decision, this must mean the ability ACTUALLY calls Slash_Input::slash().
 	 * A flag advertising a control that does nothing is worse than no flag.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function is_writer(): bool {
@@ -178,7 +178,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Display label for every sub-group, in one place.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	protected function sub_group_labels(): array {
@@ -197,7 +197,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Default success message.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function success_message(): string {
@@ -207,7 +207,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Assemble the ability definition.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function ability(): array {
@@ -291,7 +291,7 @@ abstract class Base_Yoast_Ability extends Ability_Definition {
 	/**
 	 * Run the guards, then the ability, then wrap the result.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>
 	 */

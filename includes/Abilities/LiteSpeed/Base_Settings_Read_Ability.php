@@ -10,7 +10,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\LiteSpeed
- * @since      0.0.36
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\LiteSpeed;
@@ -27,13 +27,13 @@ abstract class Base_Settings_Read_Ability extends Base_LiteSpeed_Ability {
 	/**
 	 * The settings area this ability reads, as keyed in Settings_Repository::areas().
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	abstract protected function areas_read(): array;
 
 	/**
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
@@ -41,7 +41,7 @@ abstract class Base_Settings_Read_Ability extends Base_LiteSpeed_Ability {
 	}
 
 	/**
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -49,7 +49,7 @@ abstract class Base_Settings_Read_Ability extends Base_LiteSpeed_Ability {
 	}
 
 	/**
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -60,7 +60,7 @@ abstract class Base_Settings_Read_Ability extends Base_LiteSpeed_Ability {
 	}
 
 	/**
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -72,7 +72,7 @@ abstract class Base_Settings_Read_Ability extends Base_LiteSpeed_Ability {
 	}
 
 	/**
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>
 	 */

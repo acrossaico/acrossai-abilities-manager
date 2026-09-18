@@ -10,7 +10,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Store
- * @since      0.0.53
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Store;
@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Read-only sales insight.
  *
- * @since 0.0.53
+ * @since 0.0.34
  */
 final class Insight_Repository {
 
@@ -30,7 +30,7 @@ final class Insight_Repository {
 	 * `processing` and `completed` only. Pending and failed orders are not revenue, and counting
 	 * `on-hold` would inflate every figure on a store that uses bank transfer.
 	 *
-	 * @since 0.0.53
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const PAID_STATUSES = array( 'wc-processing', 'wc-completed' );
@@ -43,7 +43,7 @@ final class Insight_Repository {
 	/**
 	 * Orders in a window.
 	 *
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  string $from Start date, Y-m-d.
 	 * @param  string $to   End date, Y-m-d.
 	 * @return \WC_Order[]
@@ -74,7 +74,7 @@ final class Insight_Repository {
 	/**
 	 * Revenue and order counts for a window.
 	 *
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  string $from Start date.
 	 * @param  string $to   End date.
 	 * @return array<string, mixed>
@@ -120,7 +120,7 @@ final class Insight_Repository {
 	/**
 	 * Best sellers for a window.
 	 *
-	 * @since  0.0.53
+	 * @since  0.0.34
 	 * @param  string $from    Start date.
 	 * @param  string $to      End date.
 	 * @param  string $rank_by revenue or quantity.

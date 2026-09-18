@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities
- * @since      0.0.39
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities;
@@ -36,14 +36,14 @@ defined( 'ABSPATH' ) || exit;
  * derived plain text in `post_content` and a Divi post keeps `[et_pb_*]` shortcodes there. Checking
  * `has_blocks()` first would mislabel both.
  *
- * @since 0.0.39
+ * @since 0.0.34
  */
 final class Post_Builder_Detector {
 
 	/**
 	 * Rendered content comes from post_content; writing it works normally.
 	 *
-	 * @since 0.0.39
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const WRITES_APPLY = 'applies';
@@ -51,7 +51,7 @@ final class Post_Builder_Detector {
 	/**
 	 * Rendered content comes from elsewhere; writing post_content is a silent no-op.
 	 *
-	 * @since 0.0.39
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const WRITES_IGNORED = 'ignored';
@@ -60,7 +60,7 @@ final class Post_Builder_Detector {
 	 * Rendered content comes from post_content but in a builder's own markup language, so a
 	 * rewrite lands and damages it.
 	 *
-	 * @since 0.0.39
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const WRITES_DESTRUCTIVE = 'destructive';
@@ -80,7 +80,7 @@ final class Post_Builder_Detector {
 	 * Ordered deliberately. `wpbakery` and `fusion` are last among the flagged builders because
 	 * they are matched on content markers rather than an ownership flag, which is weaker evidence.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	private static function builders(): array {
@@ -184,7 +184,7 @@ final class Post_Builder_Detector {
 	 * Weaker evidence than a meta flag, so these run only after every flagged builder has been
 	 * ruled out — and before the block check, because their markup is not block markup.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	private static function content_markers(): array {
@@ -219,7 +219,7 @@ final class Post_Builder_Detector {
 	/**
 	 * Classify one post.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return array<string, mixed>|null Null when the post does not exist.
 	 */
@@ -281,7 +281,7 @@ final class Post_Builder_Detector {
 	 * Elementor's `Db::is_built_with_elementor()` is deprecated as of 3.2.0 in favour of the
 	 * document; only the document form is used here.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  string $slug    Builder slug.
 	 * @param  int    $post_id Post ID.
 	 * @return bool|null Null when the builder cannot be asked.
@@ -313,7 +313,7 @@ final class Post_Builder_Detector {
 	 * `$expected` of '' means any truthy value, which is how the builders that store data rather
 	 * than a mode string signal ownership.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  mixed  $value    Stored meta value.
 	 * @param  string $expected Required value, or '' for any truthy one.
 	 * @return bool
@@ -337,7 +337,7 @@ final class Post_Builder_Detector {
 	 * classic one, so emptiness is checked first. That distinction matters to a caller: writing to
 	 * an empty post is always safe, writing over classic content replaces someone's markup.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  WP_Post                          $post    Post.
 	 * @param  array<int, array<string, mixed>> $signals Collected signals, by reference.
 	 * @return array<string, mixed>
@@ -384,7 +384,7 @@ final class Post_Builder_Detector {
 	 * Rows, not a map — an `array`-typed output property fed an associative array encodes as a
 	 * JSON object and fails the ability's own schema (BUG-ARRAY-TYPED-OUTPUT-IS-A-JSON-OBJECT).
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  string $source Where the signal was read.
 	 * @param  mixed  $value  What was found.
 	 * @param  string $kind   How to read it.
@@ -401,7 +401,7 @@ final class Post_Builder_Detector {
 	/**
 	 * Assemble the answer.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  WP_Post                          $post    Post.
 	 * @param  array<string, mixed>             $builder Matched builder descriptor.
 	 * @param  array<int, array<string, mixed>> $signals Evidence.
@@ -432,7 +432,7 @@ final class Post_Builder_Detector {
 	 * `post_content` — usually the builder's stale derived text — so a write to it DOES take effect
 	 * now and will be reverted if the builder ever comes back.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  array<string, string> $test Class or constant to probe.
 	 * @return bool
 	 */
@@ -451,7 +451,7 @@ final class Post_Builder_Detector {
 	/**
 	 * The sentence a caller should act on.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $builder Matched builder descriptor.
 	 * @param  bool                 $active  Whether the builder is installed.
 	 * @return string

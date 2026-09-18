@@ -15,7 +15,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Acf
- * @since      0.0.37
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Acf;
@@ -37,7 +37,7 @@ final class Acf_Target {
 	/**
 	 * The target kinds this suite addresses, as kind => how the id is interpreted.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	public static function types(): array {
@@ -56,7 +56,7 @@ final class Acf_Target {
 	 * Declared once so all eleven describe the target identically — an AI client that learns the pair
 	 * from one ability can use it on the rest without re-reading a schema.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return array<string, array<string, mixed>>
 	 */
 	public static function schema_fragment(): array {
@@ -83,7 +83,7 @@ final class Acf_Target {
 	/**
 	 * Resolve the pair into the value ACF expects, validating that the target exists.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Ability input.
 	 * @return int|string|WP_Error
 	 */
@@ -150,7 +150,7 @@ final class Acf_Target {
 	 * Without this an ability reports a clean success having read nothing, because ACF returns null
 	 * for a target that is not there just as it does for a field that has no value.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string $type Target kind.
 	 * @param  int    $id   Target ID.
 	 * @return true|WP_Error
@@ -192,7 +192,7 @@ final class Acf_Target {
 	/**
 	 * A human-readable description of a resolved target, for success messages.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Ability input.
 	 * @return string
 	 */

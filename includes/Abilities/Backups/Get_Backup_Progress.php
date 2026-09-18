@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Backups
- * @since      0.0.52
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Backups;
@@ -18,12 +18,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * A backup runs in the background; this is how its progress is read.
  *
- * @since 0.0.52
+ * @since 0.0.34
  */
 final class Get_Backup_Progress extends Base_Backup_Ability {
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -31,7 +31,7 @@ final class Get_Backup_Progress extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -39,7 +39,7 @@ final class Get_Backup_Progress extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -47,7 +47,7 @@ final class Get_Backup_Progress extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -55,7 +55,7 @@ final class Get_Backup_Progress extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
@@ -72,7 +72,7 @@ final class Get_Backup_Progress extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -80,7 +80,7 @@ final class Get_Backup_Progress extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -96,7 +96,7 @@ final class Get_Backup_Progress extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -108,7 +108,7 @@ final class Get_Backup_Progress extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */

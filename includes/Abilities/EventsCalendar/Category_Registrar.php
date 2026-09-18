@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\EventsCalendar
- * @since      0.0.40
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\EventsCalendar;
@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
 final class Category_Registrar {
 
 	/**
-	 * @since 0.0.40
+	 * @since 0.0.34
 	 * @var   self|null
 	 */
 	protected static $instance = null;
@@ -35,7 +35,7 @@ final class Category_Registrar {
 	private function __construct() {}
 
 	/**
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @return self
 	 */
 	public static function instance(): self {
@@ -47,7 +47,7 @@ final class Category_Registrar {
 	}
 
 	/**
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @return void
 	 */
 	public function register(): void {

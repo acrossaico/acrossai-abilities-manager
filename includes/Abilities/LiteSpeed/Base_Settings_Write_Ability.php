@@ -13,7 +13,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\LiteSpeed
- * @since      0.0.36
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\LiteSpeed;
@@ -30,13 +30,13 @@ abstract class Base_Settings_Write_Ability extends Base_LiteSpeed_Ability {
 	/**
 	 * The settings area this ability writes.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function area_written(): string;
 
 	/**
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
@@ -53,7 +53,7 @@ abstract class Base_Settings_Write_Ability extends Base_LiteSpeed_Ability {
 	}
 
 	/**
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -61,7 +61,7 @@ abstract class Base_Settings_Write_Ability extends Base_LiteSpeed_Ability {
 	}
 
 	/**
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -72,7 +72,7 @@ abstract class Base_Settings_Write_Ability extends Base_LiteSpeed_Ability {
 	}
 
 	/**
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -84,7 +84,7 @@ abstract class Base_Settings_Write_Ability extends Base_LiteSpeed_Ability {
 	}
 
 	/**
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|\WP_Error
 	 */

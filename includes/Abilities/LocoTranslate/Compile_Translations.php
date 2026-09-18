@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\LocoTranslate
- * @since      0.0.47
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\LocoTranslate;
@@ -19,12 +19,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * recompiles the artefacts WordPress loads from an existing PO.
  *
- * @since 0.0.47
+ * @since 0.0.34
  */
 final class Compile_Translations extends Base_Loco_Ability {
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -32,7 +32,7 @@ final class Compile_Translations extends Base_Loco_Ability {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -40,7 +40,7 @@ final class Compile_Translations extends Base_Loco_Ability {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -48,7 +48,7 @@ final class Compile_Translations extends Base_Loco_Ability {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -56,7 +56,7 @@ final class Compile_Translations extends Base_Loco_Ability {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
@@ -77,7 +77,7 @@ final class Compile_Translations extends Base_Loco_Ability {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -85,7 +85,7 @@ final class Compile_Translations extends Base_Loco_Ability {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -101,7 +101,7 @@ final class Compile_Translations extends Base_Loco_Ability {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -109,7 +109,7 @@ final class Compile_Translations extends Base_Loco_Ability {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */

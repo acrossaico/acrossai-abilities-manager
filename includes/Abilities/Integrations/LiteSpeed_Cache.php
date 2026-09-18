@@ -14,7 +14,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Integrations
- * @since      0.0.36
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -36,13 +36,13 @@ final class LiteSpeed_Cache implements AcrossAI_Toolset_Integration {
 	 * Must equal `Base_LiteSpeed_Ability::TAB_GROUP`, which is what all 60 abilities declare. If the
 	 * two drift, the abilities land in one group and the dispatcher serves another.
 	 *
-	 * @since 0.0.36
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const TAB_GROUP = 'litespeed-cache';
 
 	/**
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function group(): string {
@@ -55,7 +55,7 @@ final class LiteSpeed_Cache implements AcrossAI_Toolset_Integration {
 	 * Declared rather than derived: the label rule title-cases the group key, which would render
 	 * `litespeed-cache` as "Litespeed Cache" and lose the internal capital in a product name.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_label(): string {
@@ -63,7 +63,7 @@ final class LiteSpeed_Cache implements AcrossAI_Toolset_Integration {
 	}
 
 	/**
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_description(): string {
@@ -76,7 +76,7 @@ final class LiteSpeed_Cache implements AcrossAI_Toolset_Integration {
 	/**
 	 * Claims no prefixes — every ability in this group is declared by us.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public function ability_prefixes(): array {
@@ -88,7 +88,7 @@ final class LiteSpeed_Cache implements AcrossAI_Toolset_Integration {
 	 *
 	 * Delegated to the guard so every LiteSpeed symbol in the suite is named in exactly one directory.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public function is_active(): bool {

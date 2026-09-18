@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\LocoTranslate
- * @since      0.0.47
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\LocoTranslate;
@@ -17,14 +17,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * The one place this suite decides whether it may run, and the one shape it answers in.
  *
- * @since 0.0.47
+ * @since 0.0.34
  */
 final class Loco_Guard {
 
 	/**
 	 * Filter name for the permission decision.
 	 *
-	 * @since 0.0.47
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const PERMISSION_FILTER = 'acrossai_abilities_manager_loco_permission';
@@ -41,7 +41,7 @@ final class Loco_Guard {
 	 * their absence is what would break it. `Loco_package_Bundle` is the discovery root and
 	 * `Loco_gettext_Compiler` is the only sanctioned write path.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_available(): bool {
@@ -49,7 +49,7 @@ final class Loco_Guard {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return true|WP_Error
 	 */
 	public static function assert_available() {
@@ -71,7 +71,7 @@ final class Loco_Guard {
 	 * that artefact means two different things depending on this answer — correct on 6.4, a failure
 	 * on 6.5+. Every report that carries `php_bytes` carries this alongside it.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function uses_php_cache(): bool {
@@ -85,7 +85,7 @@ final class Loco_Guard {
 	 * real file on disk — `wp-content/languages/plugins/foo-nonsense.po` — that nothing ever loads
 	 * and nobody goes looking for.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string $tag Locale tag such as de_DE.
 	 * @return object|WP_Error Loco_Locale on success.
 	 */
@@ -116,7 +116,7 @@ final class Loco_Guard {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input   Ability input.
 	 * @param  string               $message What the caller is confirming.
 	 * @return true|WP_Error
@@ -142,7 +142,7 @@ final class Loco_Guard {
 	 * the floor here: a translator editing strings through wp-admin is a different risk from an AI
 	 * client writing files that execute nowhere but render everywhere.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string $floor WordPress capability floor.
 	 * @return callable
 	 */
@@ -155,7 +155,7 @@ final class Loco_Guard {
 			/**
 			 * Filters whether the current user may use a Loco Translate ability.
 			 *
-			 * @since 0.0.47
+			 * @since 0.0.34
 			 * @param bool   $allowed Whether access is granted. Always true at this point.
 			 * @param string $floor   WordPress capability floor.
 			 */
@@ -168,7 +168,7 @@ final class Loco_Guard {
 	 *
 	 * `success` and `message` are set last so a payload key cannot spoof them.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $payload Ability-specific keys.
 	 * @param  string               $message Human-readable summary.
 	 * @return array<string, mixed>
@@ -180,7 +180,7 @@ final class Loco_Guard {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  WP_Error $error Error.
 	 * @return array<string, mixed>
 	 */
@@ -189,7 +189,7 @@ final class Loco_Guard {
 	}
 
 	/**
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string $code    Machine-readable code.
 	 * @param  string $message Human-readable message.
 	 * @return array<string, mixed>

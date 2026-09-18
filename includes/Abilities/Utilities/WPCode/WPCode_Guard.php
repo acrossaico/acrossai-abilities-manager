@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\WPCode
- * @since      0.0.43
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\WPCode;
@@ -17,14 +17,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * The one place this suite decides whether it may run, and the one shape it answers in.
  *
- * @since 0.0.43
+ * @since 0.0.34
  */
 final class WPCode_Guard {
 
 	/**
 	 * Filter name for the permission decision.
 	 *
-	 * @since 0.0.43
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const PERMISSION_FILTER = 'acrossai_abilities_manager_wpcode_permission';
@@ -35,7 +35,7 @@ final class WPCode_Guard {
 	 * These are the two `run_activation_checks()` test-runs before allowing activation
 	 * (class-wpcode-snippet.php:657). Everything else is emitted, not executed.
 	 *
-	 * @since 0.0.43
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const EXECUTED_TYPES = array( 'php', 'universal' );
@@ -43,7 +43,7 @@ final class WPCode_Guard {
 	/**
 	 * Every code type WPCode supports, from includes/execute/.
 	 *
-	 * @since 0.0.43
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const CODE_TYPES = array( 'php', 'js', 'css', 'html', 'text', 'universal' );
@@ -59,7 +59,7 @@ final class WPCode_Guard {
 	 * The class rather than a constant: WPCode Lite and Pro both define `WPCODE_VERSION` but the
 	 * snippet class is what this suite actually calls, so its absence is what would break us.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_available(): bool {
@@ -67,7 +67,7 @@ final class WPCode_Guard {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return true|WP_Error
 	 */
 	public static function assert_available() {
@@ -88,7 +88,7 @@ final class WPCode_Guard {
 	 * it is on would override a decision the site owner already made, so every PHP write refuses.
 	 * This is correctness, not caution: the snippet would never run either way.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function php_disabled(): bool {
@@ -111,7 +111,7 @@ final class WPCode_Guard {
 	 * activate snippets anyway. Testing for `=== '1'` would report safe mode as off for the
 	 * `?wpcode-safe-mode` and `?wpcode-safe-mode=yes` forms that do in fact enable it.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function safe_mode(): bool {
@@ -124,7 +124,7 @@ final class WPCode_Guard {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  string $code_type Code type to check.
 	 * @return true|WP_Error
 	 */
@@ -152,7 +152,7 @@ final class WPCode_Guard {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input   Ability input.
 	 * @param  string               $message What the caller is confirming.
 	 * @return true|WP_Error
@@ -174,7 +174,7 @@ final class WPCode_Guard {
 	 * A single `current_user_can( $floor )`, and the filter is consulted only after it passes — so a
 	 * filter can tighten access and never widen it (PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY).
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  string $floor WordPress capability floor.
 	 * @return callable
 	 */
@@ -187,7 +187,7 @@ final class WPCode_Guard {
 			/**
 			 * Filters whether the current user may use a WPCode ability.
 			 *
-			 * @since 0.0.43
+			 * @since 0.0.34
 			 * @param bool   $allowed Whether access is granted. Always true at this point.
 			 * @param string $floor   WordPress capability floor.
 			 */
@@ -200,7 +200,7 @@ final class WPCode_Guard {
 	 *
 	 * `success` and `message` are set last so a payload key cannot spoof them.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $payload Ability-specific keys.
 	 * @param  string               $message Human-readable summary.
 	 * @return array<string, mixed>
@@ -212,7 +212,7 @@ final class WPCode_Guard {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  WP_Error $error Error.
 	 * @return array<string, mixed>
 	 */
@@ -221,7 +221,7 @@ final class WPCode_Guard {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  string $code    Machine-readable code.
 	 * @param  string $message Human-readable message.
 	 * @return array<string, mixed>

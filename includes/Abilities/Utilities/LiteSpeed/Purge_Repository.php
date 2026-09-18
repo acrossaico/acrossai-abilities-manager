@@ -15,7 +15,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\LiteSpeed
- * @since      0.0.36
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\LiteSpeed;
@@ -37,7 +37,7 @@ final class Purge_Repository {
 	/**
 	 * Purge targets, as target => human-readable description.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	public static function targets(): array {
@@ -58,7 +58,7 @@ final class Purge_Repository {
 	 * An ability call is not an admin screen interaction; queueing a notice would show it to whoever
 	 * loads wp-admin next, with no context for where it came from.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return void
 	 */
 	private static function silence(): void {
@@ -70,7 +70,7 @@ final class Purge_Repository {
 	/**
 	 * Purge by named target.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  string $target One of targets().
 	 * @return true|WP_Error
 	 */
@@ -126,7 +126,7 @@ final class Purge_Repository {
 	/**
 	 * Purge specific URLs.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  string[] $urls URLs.
 	 * @return array<int, string>|WP_Error The URLs actually purged.
 	 */
@@ -159,7 +159,7 @@ final class Purge_Repository {
 	 *
 	 * Each ID is checked before purging so an unknown one is reported rather than silently skipped.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  int[] $post_ids Post IDs.
 	 * @return array{purged: array<int,int>, missing: array<int,int>}|WP_Error
 	 */
@@ -202,7 +202,7 @@ final class Purge_Repository {
 	 * ids are therefore resolved to slugs here, and every term is checked, so the caller learns which
 	 * ones were real.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  string            $taxonomy `category` or `post_tag`.
 	 * @param  array<int,string> $terms    Slugs or numeric ids.
 	 * @return array{purged: array<int,string>, missing: array<int,string>}|WP_Error
@@ -255,7 +255,7 @@ final class Purge_Repository {
 	/**
 	 * Purge by raw LiteSpeed cache tag.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  string[] $tags Cache tags.
 	 * @return array<int,string>|WP_Error
 	 */

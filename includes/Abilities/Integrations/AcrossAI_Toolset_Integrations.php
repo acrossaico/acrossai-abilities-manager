@@ -14,7 +14,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Integrations
- * @since      0.0.35
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -31,7 +31,7 @@ class AcrossAI_Toolset_Integrations {
 	/**
 	 * Group key of the built-in catch-all.
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const CATCH_ALL_GROUP = 'other';
@@ -42,7 +42,7 @@ class AcrossAI_Toolset_Integrations {
 	 * Per-request only. The set depends on which plugins are active and on a filter, both of which are
 	 * fixed for the life of a request but not between them.
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @var   array<string, AcrossAI_Toolset_Integration>|null
 	 */
 	private static $memo = null;
@@ -54,7 +54,7 @@ class AcrossAI_Toolset_Integrations {
 	 * empty, and excluding them here would mean the tagger silently stopped recognising a prefix the
 	 * moment a plugin was deactivated mid-request — a harder thing to reason about than an empty group.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<string, AcrossAI_Toolset_Integration>
 	 */
 	public static function all(): array {
@@ -68,7 +68,7 @@ class AcrossAI_Toolset_Integrations {
 		 * Append an object implementing {@see AcrossAI_Toolset_Integration}. Entries that are not
 		 * that, or that claim a group already taken, are discarded — see the validation below.
 		 *
-		 * @since 0.0.35
+		 * @since 0.0.34
 		 * @param array<int, AcrossAI_Toolset_Integration> $integrations Integrations collected so far.
 		 */
 		$declared = apply_filters( 'acrossai_toolset_integrations', self::built_in() );
@@ -81,7 +81,7 @@ class AcrossAI_Toolset_Integrations {
 	/**
 	 * The integration owning a group, if any.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  string $group Group key.
 	 * @return AcrossAI_Toolset_Integration|null
 	 */
@@ -96,7 +96,7 @@ class AcrossAI_Toolset_Integrations {
 	 * integration that claimed it, so a later filter callback cannot quietly steal another
 	 * integration's abilities.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	public static function prefix_map(): array {
@@ -128,7 +128,7 @@ class AcrossAI_Toolset_Integrations {
 	 * typo. An integration already declares its own name, so the label is data rather than a second
 	 * rule to keep in sync across PHP and JS.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	public static function labels(): array {
@@ -152,7 +152,7 @@ class AcrossAI_Toolset_Integrations {
 	 *
 	 * Tests, and any caller that adds a filter callback after the first resolve.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return void
 	 */
 	public static function flush(): void {
@@ -162,7 +162,7 @@ class AcrossAI_Toolset_Integrations {
 	/**
 	 * Integrations this plugin ships.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<int, AcrossAI_Toolset_Integration>
 	 */
 	private static function built_in(): array {
@@ -198,7 +198,7 @@ class AcrossAI_Toolset_Integrations {
 	 * too — first declaration wins — because two dispatchers on one group would both register and the
 	 * second would lose the slug-collision check anyway.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  array<int, mixed> $declared Raw filter output.
 	 * @return array<string, AcrossAI_Toolset_Integration>
 	 */

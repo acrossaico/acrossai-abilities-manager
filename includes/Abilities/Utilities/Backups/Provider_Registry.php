@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Backups
- * @since      0.0.52
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups;
@@ -17,14 +17,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * The one place that knows which providers exist.
  *
- * @since 0.0.52
+ * @since 0.0.34
  */
 final class Provider_Registry {
 
 	/**
 	 * Filter for third parties to add a provider.
 	 *
-	 * @since 0.0.52
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const FILTER = 'acrossai_backup_providers';
@@ -37,7 +37,7 @@ final class Provider_Registry {
 	/**
 	 * Every provider this plugin knows about, active or not.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<int, class-string<Backup_Provider>>
 	 */
 	public static function all(): array {
@@ -49,7 +49,7 @@ final class Provider_Registry {
 		/**
 		 * Filters the backup providers this suite can reach.
 		 *
-		 * @since 0.0.52
+		 * @since 0.0.34
 		 * @param array<int, class-string<Backup_Provider>> $providers Provider class names.
 		 */
 		$declared = apply_filters( self::FILTER, $providers );
@@ -74,7 +74,7 @@ final class Provider_Registry {
 	/**
 	 * Providers whose plugin is actually installed and running.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<int, class-string<Backup_Provider>>
 	 */
 	public static function active(): array {
@@ -96,7 +96,7 @@ final class Provider_Registry {
 	 * the caller must say which, because "back up the site" is ambiguous when two plugins could do
 	 * it and picking one silently would be a guess about which the operator trusts.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $id Provider id, or empty to infer.
 	 * @return class-string<Backup_Provider>|WP_Error
 	 */
@@ -156,7 +156,7 @@ final class Provider_Registry {
 	/**
 	 * Resolve for an operation, refusing when the provider cannot do it.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $id         Provider id, or empty to infer.
 	 * @param  string $capability Capability key.
 	 * @return class-string<Backup_Provider>|WP_Error
@@ -192,7 +192,7 @@ final class Provider_Registry {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  array<int, class-string<Backup_Provider>> $providers Providers.
 	 * @return array<int, string>
 	 */
@@ -207,7 +207,7 @@ final class Provider_Registry {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public static function absent_message(): string {

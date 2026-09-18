@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\LocoTranslate
- * @since      0.0.47
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\LocoTranslate;
@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
  * abilities can do — and all of them fall out of step: the file says one thing and the site renders
  * another, with no error anywhere.
  *
- * @since 0.0.47
+ * @since 0.0.34
  */
 final class Translation_Repository {
 
@@ -36,7 +36,7 @@ final class Translation_Repository {
 	/**
 	 * Parse a PO/POT file into Loco's data object.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string $path Absolute path.
 	 * @return object|WP_Error Loco_gettext_Data on success.
 	 */
@@ -84,7 +84,7 @@ final class Translation_Repository {
 	 * `writeAll()` also only writes the JSON fragments when a project is passed — omit it and the
 	 * block editor keeps the old strings while everything else updates.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string      $po_path Absolute path to the PO file.
 	 * @param  object      $po      Loco_gettext_Data to write.
 	 * @param  object|null $project Loco_package_Project, required for the JSON fragments.
@@ -152,7 +152,7 @@ final class Translation_Repository {
 	 * which reorders and renumbers everything — a caller that stored "entry 42" would silently patch
 	 * the wrong string afterwards. Source and context are what gettext itself keys on.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  object $po     Loco_gettext_Data.
 	 * @param  string $filter '', 'untranslated' or 'fuzzy'.
 	 * @param  int    $limit  Maximum rows.
@@ -201,7 +201,7 @@ final class Translation_Repository {
 	/**
 	 * Apply translations to a parsed PO, matching on source and context.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  object                        $po      Loco_gettext_Data.
 	 * @param  array<int, array<string,mixed>> $changes Rows of source, target and optional context.
 	 * @return array<string, mixed> The rebuilt PO under 'po', plus applied and unmatched buckets.
@@ -284,7 +284,7 @@ final class Translation_Repository {
 	/**
 	 * Build a template from a bundle's source code (xgettext).
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  object $bundle  Loco_package_Bundle.
 	 * @param  object $project Loco_package_Project.
 	 * @return array<string, mixed>|WP_Error 'po' plus the skipped-file report.
@@ -324,7 +324,7 @@ final class Translation_Repository {
 	/**
 	 * Reconcile a translation against a newer template or the source.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  object $target  Loco_gettext_Data being updated.
 	 * @param  object $source  Loco_gettext_Data acting as the template.
 	 * @param  object $project Loco_package_Project.
@@ -369,7 +369,7 @@ final class Translation_Repository {
 	 * `.l10n.php`, no JSON. Running it through the four-artefact path would produce a `.mo` beside a
 	 * `.pot`, which WordPress would never load and a reader would rightly find baffling.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string $path Absolute path to the POT.
 	 * @param  object $po   Loco_gettext_Data.
 	 * @return int|WP_Error Bytes written.
@@ -416,7 +416,7 @@ final class Translation_Repository {
 	 * Loco rather than unlinking the file. Removing the PO alone leaves the compiled artefacts on
 	 * disk, and WordPress goes on serving the translations the caller believed they had deleted.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string $po_path Absolute path to the PO file.
 	 * @return array<int, string>|WP_Error Paths removed.
 	 */
@@ -488,13 +488,13 @@ final class Translation_Repository {
 	/**
 	 * Size every artefact that belongs to one PO file, read from disk.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * `getJsons()` takes the text domain as a REQUIRED argument — it prefixes the filename with it
 	 * when the PO is named by locale alone. Calling it without one is a fatal, and passing the wrong
 	 * one silently finds no fragments, which would read as "no JS translations" rather than "asked
 	 * the wrong question".
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string $po_path Absolute path to the PO file.
 	 * @param  string $domain  Text domain, for resolving the JSON fragment names.
 	 * @return array<string, mixed>
@@ -535,7 +535,7 @@ final class Translation_Repository {
 	 * stat cache would report the size the file had BEFORE the write — which is exactly the reading
 	 * this method exists to make trustworthy.
 	 *
-	 * @since  0.0.47
+	 * @since  0.0.34
 	 * @param  string $path Absolute path.
 	 * @return int
 	 */

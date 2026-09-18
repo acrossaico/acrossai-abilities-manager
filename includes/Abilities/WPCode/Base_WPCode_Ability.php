@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\WPCode
- * @since      0.0.43
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\WPCode;
@@ -35,7 +35,7 @@ defined( 'ABSPATH' ) || exit;
 abstract class Base_WPCode_Ability extends Ability_Definition {
 
 	/**
-	 * @since 0.0.43
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const CATEGORY = 'acrossai-wpcode';
@@ -44,61 +44,61 @@ abstract class Base_WPCode_Ability extends Ability_Definition {
 	 * Must equal Integrations\WPCode::TAB_GROUP, or the abilities land in one group and the
 	 * dispatcher serves another.
 	 *
-	 * @since 0.0.43
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	protected const TAB_GROUP = 'wpcode';
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function slug(): string;
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_label(): string;
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function ability_description(): string;
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	abstract protected function sub_group(): string;
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function input_properties(): array;
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	abstract protected function output_properties(): array;
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	abstract protected function required_input(): array;
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	abstract protected function annotations(): array;
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|\WP_Error
 	 */
@@ -114,7 +114,7 @@ abstract class Base_WPCode_Ability extends Ability_Definition {
 	 * `wpcode_edit_snippets` to an editor: these abilities write executable code and are reachable
 	 * by an AI client, which wp-admin is not.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	final protected function permission_floor(): string {
@@ -122,7 +122,7 @@ abstract class Base_WPCode_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -138,7 +138,7 @@ abstract class Base_WPCode_Ability extends Ability_Definition {
 	 * confirmation and another that does not, and gating the harmless one is friction with no risk
 	 * behind it.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return bool
 	 */
@@ -149,7 +149,7 @@ abstract class Base_WPCode_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -157,7 +157,7 @@ abstract class Base_WPCode_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	protected function sub_group_labels(): array {
@@ -171,7 +171,7 @@ abstract class Base_WPCode_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function success_message(): string {
@@ -181,7 +181,7 @@ abstract class Base_WPCode_Ability extends Ability_Definition {
 	/**
 	 * Assemble the ability definition.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function ability(): array {
@@ -255,7 +255,7 @@ abstract class Base_WPCode_Ability extends Ability_Definition {
 	/**
 	 * Guards, then the ability, then the envelope.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>
 	 */

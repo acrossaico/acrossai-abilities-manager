@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\EventTickets
- * @since      0.0.41
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\EventTickets;
@@ -34,14 +34,14 @@ defined( 'ABSPATH' ) || exit;
  *   - Payment-gateway meta is never returned either. Those fields carry processor identifiers and
  *     raw gateway payloads.
  *
- * @since 0.0.41
+ * @since 0.0.34
  */
 final class Attendee_Repository {
 
 	/**
 	 * Fields never returned regardless of flags.
 	 *
-	 * @since 0.0.41
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const NEVER_RETURNED = array(
@@ -53,7 +53,7 @@ final class Attendee_Repository {
 	/**
 	 * Maximum attendees per page, whatever the caller asks for.
 	 *
-	 * @since 0.0.41
+	 * @since 0.0.34
 	 * @var   int
 	 */
 	public const MAX_PER_PAGE = 100;
@@ -66,7 +66,7 @@ final class Attendee_Repository {
 	/**
 	 * Aggregate attendance for a post, with no identifying data.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return array<string, mixed>
 	 */
@@ -105,7 +105,7 @@ final class Attendee_Repository {
 	/**
 	 * Attendees for a post, paginated, identifying fields opt-in.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int  $post_id  Post ID.
 	 * @param  bool $with_pii Whether to include names and emails.
 	 * @param  int  $page     1-based page.
@@ -175,7 +175,7 @@ final class Attendee_Repository {
 	 * across RSVP, Tickets Commerce and the legacy provider has to try each. Deliberately does NOT
 	 * include any security-code key — that field is never returned.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int      $id   Attendee ID.
 	 * @param  string[] $keys Candidate meta keys, in priority order.
 	 * @return string
@@ -195,7 +195,7 @@ final class Attendee_Repository {
 	/**
 	 * Check an attendee in or out.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int  $attendee_id Attendee ID.
 	 * @param  bool $in          True to check in, false to undo.
 	 * @return array<string, mixed>|WP_Error
@@ -248,7 +248,7 @@ final class Attendee_Repository {
 	/**
 	 * Current check-in state, across providers.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int $attendee_id Attendee ID.
 	 * @return bool
 	 */
@@ -265,7 +265,7 @@ final class Attendee_Repository {
 	/**
 	 * One order.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  int  $order_id Order ID.
 	 * @param  bool $with_pii Whether to include purchaser name and email.
 	 * @return array<string, mixed>|WP_Error
@@ -304,7 +304,7 @@ final class Attendee_Repository {
 	 * Read from the plugin's own status handler rather than hardcoded, so a status added upstream
 	 * is included automatically. `trash` is excluded — a trashed order is not part of the ledger.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	private static function order_statuses(): array {
@@ -341,7 +341,7 @@ final class Attendee_Repository {
 	 * Gateway meta — processor identifiers, raw payloads, customer references — is never included.
 	 * Money totals and status are, because that is what an operator is asking about.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  bool $with_pii Whether to include purchaser name and email.
 	 * @param  int  $page     1-based page.
 	 * @param  int  $per_page Page size, capped.

@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\EventsCalendar
- * @since      0.0.40
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\EventsCalendar;
@@ -36,7 +36,7 @@ defined( 'ABSPATH' ) || exit;
  *   3. If the resulting end date precedes the start date, the ORM silently discards the whole date
  *      block and still reports success. Writes are therefore read back and compared.
  *
- * @since 0.0.40
+ * @since 0.0.34
  */
 final class Event_Repository {
 
@@ -44,7 +44,7 @@ final class Event_Repository {
 	 * Recurrence meta. Rules only exist with Events Calendar Pro; free TEC displays them and never
 	 * edits occurrences, so this suite refuses rather than half-handling a series.
 	 *
-	 * @since 0.0.40
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const RECURRENCE_META = '_EventRecurrence';
@@ -52,7 +52,7 @@ final class Event_Repository {
 	/**
 	 * Meta the ORM derives. Writing any of these directly desynchronises the event.
 	 *
-	 * @since 0.0.40
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const DERIVED_META = array(
@@ -71,7 +71,7 @@ final class Event_Repository {
 	/**
 	 * Post type names, read from the plugin's constants rather than hardcoded.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  string $which event|venue|organizer.
 	 * @return string
 	 */
@@ -98,7 +98,7 @@ final class Event_Repository {
 	/**
 	 * The repository for one object type.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  string $which event|venue|organizer.
 	 * @return object|null
 	 */
@@ -118,7 +118,7 @@ final class Event_Repository {
 	/**
 	 * Whether a post is a recurring event this suite must not touch.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return bool
 	 */
@@ -129,7 +129,7 @@ final class Event_Repository {
 	}
 
 	/**
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return true|WP_Error
 	 */
@@ -151,7 +151,7 @@ final class Event_Repository {
 	/**
 	 * Confirm a post exists and is of the expected type.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  int    $post_id Post ID.
 	 * @param  string $which   event|venue|organizer.
 	 * @return WP_Post|WP_Error
@@ -178,7 +178,7 @@ final class Event_Repository {
 	/**
 	 * Create an object through the ORM.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  string               $which event|venue|organizer.
 	 * @param  array<string, mixed> $args  ORM aliases, already validated by the caller.
 	 * @return WP_Post|WP_Error
@@ -210,7 +210,7 @@ final class Event_Repository {
 	/**
 	 * Update one object through the ORM, scoped to a single ID.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  string               $which   event|venue|organizer.
 	 * @param  int                  $post_id Post ID.
 	 * @param  array<string, mixed> $args    ORM aliases.
@@ -260,7 +260,7 @@ final class Event_Repository {
 	 * The ORM discards a relation it cannot resolve, silently, and still reports the save as fine.
 	 * Checking up front turns "the venue quietly did not attach" into a named error.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $args ORM aliases.
 	 * @return true|WP_Error
 	 */
@@ -305,7 +305,7 @@ final class Event_Repository {
 	 * the start date or when a date fails to parse. Without this check the ability reports a
 	 * successful reschedule that never happened.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  int                  $post_id Post ID.
 	 * @param  array<string, mixed> $args    Args as submitted.
 	 * @return true|WP_Error
@@ -348,7 +348,7 @@ final class Event_Repository {
 	 * express "what is on next week" at all, because the dates it would have to compare live in
 	 * meta as strings.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $filters Already-validated filters.
 	 * @param  int                  $page    1-based page.
 	 * @param  int                  $per_page Page size.
@@ -389,7 +389,7 @@ final class Event_Repository {
 	/**
 	 * List venues or organizers.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  string $which    venue|organizer.
 	 * @param  string $search   Optional title search.
 	 * @param  int    $page     1-based page.
@@ -428,7 +428,7 @@ final class Event_Repository {
 	 * Reported before trashing one, because the calendar leaves the events behind pointing at a
 	 * post that no longer exists rather than clearing the link.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  int    $post_id Venue or organizer ID.
 	 * @param  string $which   venue|organizer.
 	 * @return int
@@ -450,7 +450,7 @@ final class Event_Repository {
 	 * custom post type handed to wp_delete_post() is removed permanently with no way back. Refuses
 	 * outright when trash is disabled rather than silently escalating to a permanent delete.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return true|WP_Error
 	 */
@@ -489,7 +489,7 @@ final class Event_Repository {
 	 * Licence keys are NOT in this blob; they are separate `pue_install_key_*` option rows, which
 	 * this suite never reads.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function settings(): array {
@@ -512,7 +512,7 @@ final class Event_Repository {
 	/**
 	 * Whether a settings key holds a credential.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  string $key Option key.
 	 * @return bool
 	 */
@@ -540,7 +540,7 @@ final class Event_Repository {
 	 * Taxonomy terms are ordinary WordPress terms — they are not duplicated into the calendar's
 	 * custom tables — so this uses core term functions rather than the ORM.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  int             $post_id Event ID.
 	 * @param  array<int, int> $term_ids Term IDs.
 	 * @param  string          $mode    replace|add|remove.
@@ -575,7 +575,7 @@ final class Event_Repository {
 	/**
 	 * Event categories with the number of events in each.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function categories(): array {
@@ -611,7 +611,7 @@ final class Event_Repository {
 	 * Rows and scalars only — no nested lazy objects, which do not survive JSON encoding, and no
 	 * name-keyed maps in `array`-typed properties (BUG-ARRAY-TYPED-OUTPUT-IS-A-JSON-OBJECT).
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return array<string, mixed>|null
 	 */
@@ -664,7 +664,7 @@ final class Event_Repository {
 	/**
 	 * A venue or organizer, shaped.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  int    $post_id Post ID.
 	 * @param  string $which   venue|organizer.
 	 * @return array<string, mixed>
@@ -701,7 +701,7 @@ final class Event_Repository {
 	/**
 	 * Category terms on an event, as rows.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return array<int, array<string, mixed>>
 	 */
@@ -730,7 +730,7 @@ final class Event_Repository {
 	 * The decorated event exposes `venues` and `organizers` as collections, not scalars — there is
 	 * no singular `->venue`. They are lazily resolved and must not be handed to json_encode.
 	 *
-	 * @since  0.0.40
+	 * @since  0.0.34
 	 * @param  mixed $collection Lazy collection, array, or null.
 	 * @return array<int, int>
 	 */

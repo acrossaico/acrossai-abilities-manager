@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\WPCode
- * @since      0.0.43
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\WPCode;
@@ -20,12 +20,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * reports whether WPCode snippets are running at all on this site.
  *
- * @since 0.0.43
+ * @since 0.0.34
  */
 final class Get_Snippet_Status extends Base_WPCode_Ability {
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -33,7 +33,7 @@ final class Get_Snippet_Status extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -41,7 +41,7 @@ final class Get_Snippet_Status extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -49,7 +49,7 @@ final class Get_Snippet_Status extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -57,7 +57,7 @@ final class Get_Snippet_Status extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
@@ -65,7 +65,7 @@ final class Get_Snippet_Status extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -73,7 +73,7 @@ final class Get_Snippet_Status extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -93,7 +93,7 @@ final class Get_Snippet_Status extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -101,7 +101,7 @@ final class Get_Snippet_Status extends Base_WPCode_Ability {
 	}
 
 	/**
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */

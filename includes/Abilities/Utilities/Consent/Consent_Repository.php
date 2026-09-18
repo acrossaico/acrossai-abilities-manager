@@ -19,7 +19,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Consent
- * @since      0.0.48
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Consent;
@@ -31,7 +31,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Reads and writes for cookies, categories and banners.
  *
- * @since 0.0.48
+ * @since 0.0.34
  */
 final class Consent_Repository {
 
@@ -47,7 +47,7 @@ final class Consent_Repository {
 	 * a missing language with an empty string — so a partial write silently blanks the others. Read
 	 * it, merge into it, never replace it.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public static function languages(): array {
@@ -57,7 +57,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return \CookieYes\Lite\Admin\Modules\Cookies\Includes\Cookie_Controller
 	 */
 	private static function cookie_controller() {
@@ -65,7 +65,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return \CookieYes\Lite\Admin\Modules\Cookies\Includes\Category_Controller
 	 */
 	private static function category_controller() {
@@ -73,7 +73,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return \CookieYes\Lite\Admin\Modules\Banners\Includes\Controller
 	 */
 	private static function banner_controller() {
@@ -86,7 +86,7 @@ final class Consent_Repository {
 	 * Hashed rather than returned: the template is tens of kilobytes of HTML per language, and the
 	 * only question asked of it is "did this change".
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	public static function template_fingerprint(): array {
@@ -108,7 +108,7 @@ final class Consent_Repository {
 	/**
 	 * State of the rendered banner.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function template_state(): array {
@@ -135,7 +135,7 @@ final class Consent_Repository {
 	 * fingerprint DIFFERENT — either emptied pending rebuild, or already rebuilt. Unchanged means
 	 * the action never fired, which is exactly the silent failure this suite exists to prevent.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  array<string, string> $before Fingerprint taken before the write.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -168,7 +168,7 @@ final class Consent_Repository {
 	/**
 	 * Merge a multilingual field without blanking the languages not supplied.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  mixed                $existing Current value, array keyed by language or a raw string.
 	 * @param  array<string,string> $changes  Language => value.
 	 * @return array<string, string>
@@ -196,7 +196,7 @@ final class Consent_Repository {
 	/**
 	 * Decode a stored multilingual column.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  mixed $value Raw column value.
 	 * @return array<string, string>|string
 	 */
@@ -213,7 +213,7 @@ final class Consent_Repository {
 	/* ---------------------------------------------------------------- cookies */
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  int|null $category Optional category id.
 	 * @return array<int, array<string, mixed>>
 	 */
@@ -235,7 +235,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  int $id Cookie id.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -258,7 +258,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  object $row Raw row.
 	 * @return array<string, mixed>
 	 */
@@ -278,7 +278,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $fields Cookie fields.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -315,7 +315,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  string $slug Cookie slug.
 	 * @return int
 	 */
@@ -334,7 +334,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  int                  $id     Cookie id.
 	 * @param  array<string, mixed> $fields Changed fields.
 	 * @return array<string, mixed>|WP_Error
@@ -364,7 +364,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  int $id Cookie id.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -401,7 +401,7 @@ final class Consent_Repository {
 	/**
 	 * Build the setter payload, merging multilingual fields rather than replacing them.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  array<string, mixed>      $fields  Supplied fields.
 	 * @param  array<string, mixed>|null $current Existing cookie, when updating.
 	 * @return array<string, mixed>
@@ -459,7 +459,7 @@ final class Consent_Repository {
 	/* ------------------------------------------------------------- categories */
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function list_categories(): array {
@@ -474,7 +474,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  int $id Category id.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -496,7 +496,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  object $row Raw row.
 	 * @return array<string, mixed>
 	 */
@@ -514,7 +514,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  int                  $id     Category id.
 	 * @param  array<string, mixed> $fields Changed fields.
 	 * @return array<string, mixed>|WP_Error
@@ -577,7 +577,7 @@ final class Consent_Repository {
 	/* ---------------------------------------------------------------- banners */
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function list_banners(): array {
@@ -592,7 +592,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  object $row Raw row.
 	 * @return array<string, mixed>
 	 */
@@ -607,7 +607,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  int $id Banner id.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -631,7 +631,7 @@ final class Consent_Repository {
 	/* --------------------------------------------------------------- settings */
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return \CookieYes\Lite\Admin\Modules\Settings\Includes\Settings
 	 */
 	private static function settings_object() {
@@ -644,7 +644,7 @@ final class Consent_Repository {
 	 * Credentials are stripped by {@see Consent_Guard::redact()} and the removal is reported, so a
 	 * caller can tell "this is empty" apart from "you may not see this".
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function settings_snapshot(): array {
@@ -672,7 +672,7 @@ final class Consent_Repository {
 	 * The richer plan object, with the scan and log limits, comes from the service and is returned by
 	 * consent/get-scan-status.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  mixed $plan Stored plan value.
 	 * @return array<string, mixed>
 	 */
@@ -693,7 +693,7 @@ final class Consent_Repository {
 	 * beside ordinary settings, so a generic writer would let a caller set credentials, and a
 	 * generic MERGE would let one silently blank them.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $fields Supplied fields.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -719,7 +719,7 @@ final class Consent_Repository {
 	/* ------------------------------------------------------------- languages */
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function languages_state(): array {
@@ -732,7 +732,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  string[]    $selected Language codes to offer.
 	 * @param  string|null $default  Language to fall back to.
 	 * @return array<string, mixed>|WP_Error
@@ -778,7 +778,7 @@ final class Consent_Repository {
 	/* ----------------------------------------------------- google consent mode */
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function gcm_state(): array {
@@ -788,7 +788,7 @@ final class Consent_Repository {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $fields Supplied fields.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -839,7 +839,7 @@ final class Consent_Repository {
 	 * The repair for a site whose tables were written directly. Fires the plugin's own cache-clear
 	 * action rather than touching the option, so anything else listening also runs.
 	 *
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function rebuild_template(): array {

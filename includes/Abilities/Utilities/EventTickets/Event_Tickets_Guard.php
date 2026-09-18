@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\EventTickets
- * @since      0.0.41
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\EventTickets;
@@ -17,12 +17,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * The one place this suite decides whether it may run, and the one shape it answers in.
  *
- * @since 0.0.41
+ * @since 0.0.34
  */
 final class Event_Tickets_Guard {
 
 	/**
-	 * @since 0.0.41
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const PERMISSION_FILTER = 'acrossai_abilities_manager_event_tickets_permission';
@@ -43,7 +43,7 @@ final class Event_Tickets_Guard {
 	 * pages — so gating on the calendar would hide working functionality on a site that only sells
 	 * tickets on pages.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_available(): bool {
@@ -56,7 +56,7 @@ final class Event_Tickets_Guard {
 	 * Reported rather than gated on: RSVP is always available, so most of this suite works with
 	 * Tickets Commerce off.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function commerce_enabled(): bool {
@@ -69,7 +69,7 @@ final class Event_Tickets_Guard {
 	 * The WooCommerce and EDD providers, attendee custom fields and the check-in app all live
 	 * there. An ability that needs one must say so rather than failing obscurely.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function plus_active(): bool {
@@ -77,7 +77,7 @@ final class Event_Tickets_Guard {
 	}
 
 	/**
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @return true|WP_Error
 	 */
 	public static function assert_available() {
@@ -92,7 +92,7 @@ final class Event_Tickets_Guard {
 	}
 
 	/**
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input   Ability input.
 	 * @param  string               $message What the caller is confirming.
 	 * @return true|WP_Error
@@ -114,7 +114,7 @@ final class Event_Tickets_Guard {
 	 * The filter is consulted only after the floor passes, so it can tighten and never widen
 	 * (PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY, and the boolean-filter section added in 106).
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  string $floor WordPress capability floor.
 	 * @return callable
 	 */
@@ -127,7 +127,7 @@ final class Event_Tickets_Guard {
 			/**
 			 * Filters whether the current user may use an Event Tickets ability.
 			 *
-			 * @since 0.0.41
+			 * @since 0.0.34
 			 * @param bool   $allowed Whether access is granted. Always true at this point.
 			 * @param string $floor   WordPress capability floor.
 			 */
@@ -138,7 +138,7 @@ final class Event_Tickets_Guard {
 	/**
 	 * Success envelope. `success` and `message` are set last so a payload key cannot spoof them.
 	 *
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $payload Ability-specific keys.
 	 * @param  string               $message Human-readable summary.
 	 * @return array<string, mixed>
@@ -150,7 +150,7 @@ final class Event_Tickets_Guard {
 	}
 
 	/**
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  WP_Error $error Error.
 	 * @return array<string, mixed>
 	 */
@@ -159,7 +159,7 @@ final class Event_Tickets_Guard {
 	}
 
 	/**
-	 * @since  0.0.41
+	 * @since  0.0.34
 	 * @param  string $code    Machine-readable code.
 	 * @param  string $message Human-readable message.
 	 * @return array<string, mixed>

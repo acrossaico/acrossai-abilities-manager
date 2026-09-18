@@ -22,7 +22,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\LiteSpeed
- * @since      0.0.36
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\LiteSpeed;
@@ -44,7 +44,7 @@ final class Settings_Repository {
 	/**
 	 * Writable settings, grouped by area, as option key => JSON type.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, array<string, string>>
 	 */
 	public static function areas(): array {
@@ -251,7 +251,7 @@ final class Settings_Repository {
 	/**
 	 * The option keys one area owns.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  string $area Area key.
 	 * @return array<string, string> option key => type. Empty when the area is unknown.
 	 */
@@ -262,7 +262,7 @@ final class Settings_Repository {
 	/**
 	 * Whether one option key is writable by this suite.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  string $key Option key.
 	 * @return bool
 	 */
@@ -284,7 +284,7 @@ final class Settings_Repository {
 	 * area there produced a `setting_not_writable` for every key that lived elsewhere — found live.
 	 * Resolving the area from the key makes that class of mistake impossible.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  string $key Option key.
 	 * @return string Area key, or '' when nothing owns it.
 	 */
@@ -304,7 +304,7 @@ final class Settings_Repository {
 	 * `Root::conf()` rather than `get_option()`: LiteSpeed resolves constants defined in wp-config
 	 * over stored values, and only its own accessor knows that.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  string $key Option key.
 	 * @return mixed
 	 */
@@ -321,7 +321,7 @@ final class Settings_Repository {
 	 * (BUG-ARRAY-TYPED-OUTPUT-IS-A-JSON-OBJECT). Every reader in this suite returns these rows, and
 	 * every writer echoes them back, so a caller sees one shape throughout.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  array<string, string> $keys option key => type.
 	 * @return array<int, array<string, mixed>>
 	 */
@@ -343,7 +343,7 @@ final class Settings_Repository {
 	/**
 	 * Describe every option in one area.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  string $area Area key.
 	 * @return array<int, array<string, mixed>>
 	 */
@@ -354,7 +354,7 @@ final class Settings_Repository {
 	/**
 	 * Coerce a value to the type LiteSpeed stores for that option.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  mixed  $value Raw value.
 	 * @param  string $type  One of boolean|integer|string|array.
 	 * @return mixed
@@ -389,7 +389,7 @@ final class Settings_Repository {
 	 * reading it, changing it and writing the whole thing back — a read-modify-write an AI client
 	 * gets wrong by dropping entries it did not know about.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  array<int,string> $current Existing values.
 	 * @param  array<int,string> $values  Incoming values.
 	 * @param  string            $mode    replace|add|remove.
@@ -415,7 +415,7 @@ final class Settings_Repository {
 	 * Refuses the whole patch when any key is outside the area — a partial write on a rejected input
 	 * would leave the caller unable to tell what landed.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  string              $area  Area key.
 	 * @param  array<string,mixed> $patch option key => new value.
 	 * @return array<int, string>|WP_Error Keys actually changed.
@@ -484,7 +484,7 @@ final class Settings_Repository {
 	 * single place to absorb a change in LiteSpeed's API.
 	 * Test_LiteSpeed_Architecture asserts nothing else in the suite calls it.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  array<string,mixed> $matrix option key => value.
 	 * @return void
 	 */

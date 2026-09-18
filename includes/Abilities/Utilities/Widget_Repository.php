@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities
- * @since      0.0.42
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities;
@@ -35,14 +35,14 @@ defined( 'ABSPATH' ) || exit;
  * `wp_set_sidebars_widgets()` restores `array_version` for us, so placement writes go through it and
  * through `wp_assign_widget_to_sidebar()` rather than `update_option()`.
  *
- * @since 0.0.42
+ * @since 0.0.34
  */
 final class Widget_Repository {
 
 	/**
 	 * The pseudo-sidebar holding widgets that are configured but not displayed.
 	 *
-	 * @since 0.0.42
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const INACTIVE = 'wp_inactive_widgets';
@@ -50,7 +50,7 @@ final class Widget_Repository {
 	/**
 	 * Keys inside `sidebars_widgets` that are not sidebars.
 	 *
-	 * @since 0.0.42
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const NON_SIDEBAR_KEYS = array( 'array_version' );
@@ -63,7 +63,7 @@ final class Widget_Repository {
 	/**
 	 * The sidebar map, with the bookkeeping keys removed.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @return array<string, array<int, string>>
 	 */
 	public static function placements(): array {
@@ -84,7 +84,7 @@ final class Widget_Repository {
 	/**
 	 * Which sidebar a widget instance sits in, and where.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @param  string $widget_id Instance id, e.g. "text-3".
 	 * @return array{sidebar: string, position: int}|null
 	 */
@@ -106,7 +106,7 @@ final class Widget_Repository {
 	/**
 	 * Split an instance id into its type and number.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @param  string $widget_id Instance id.
 	 * @return array{id_base: string, number: int}|null
 	 */
@@ -124,7 +124,7 @@ final class Widget_Repository {
 	/**
 	 * The WP_Widget object for a type, which is what knows how to sanitise its own settings.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @param  string $id_base Widget type base, e.g. "text".
 	 * @return \WP_Widget|null
 	 */
@@ -147,7 +147,7 @@ final class Widget_Repository {
 	/**
 	 * Registered widget types, as rows.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function types(): array {
@@ -186,7 +186,7 @@ final class Widget_Repository {
 	 *
 	 * `_multiwidget` is bookkeeping, not an instance, and must survive every write.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @param  string $id_base Widget type base.
 	 * @return array<int, array<string, mixed>>
 	 */
@@ -213,7 +213,7 @@ final class Widget_Repository {
 	/**
 	 * Describe one widget instance.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @param  string $widget_id Instance id.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -258,7 +258,7 @@ final class Widget_Repository {
 	/**
 	 * Write an instance's settings through the widget's own sanitiser.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @param  string               $id_base  Widget type.
 	 * @param  int                  $number   Instance number.
 	 * @param  array<string, mixed> $settings New settings, merged over the old.
@@ -312,7 +312,7 @@ final class Widget_Repository {
 	/**
 	 * The next free instance number for a widget type.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @param  string $id_base Widget type.
 	 * @return int
 	 */
@@ -327,7 +327,7 @@ final class Widget_Repository {
 	 *
 	 * The inactive store counts, because moving a widget there is a legitimate operation.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @param  string $sidebar_id Sidebar id.
 	 * @return bool
 	 */
@@ -353,7 +353,7 @@ final class Widget_Repository {
 	/**
 	 * Whether the active theme actually registers this sidebar.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @param  string $sidebar_id Sidebar id.
 	 * @return bool
 	 */
@@ -366,7 +366,7 @@ final class Widget_Repository {
 	/**
 	 * Registered sidebar ids, plus the inactive store.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public static function sidebar_ids(): array {
@@ -382,7 +382,7 @@ final class Widget_Repository {
 	 * `wp_assign_widget_to_sidebar()` only appends, so ordering is applied afterwards through
 	 * `wp_set_sidebars_widgets()`, which is also what restores `array_version`.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @param  string   $widget_id  Instance id.
 	 * @param  string   $sidebar_id Target sidebar.
 	 * @param  int|null $position   0-based position, or null to append.
@@ -430,7 +430,7 @@ final class Widget_Repository {
 	 * and 3. WordPress tolerates that, but it is a core option other code reads, and anything doing
 	 * positional arithmetic on the raw value would be wrong. Cheap to keep tidy.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @return void
 	 */
 	private static function normalise_placements(): void {
@@ -450,7 +450,7 @@ final class Widget_Repository {
 	/**
 	 * Set the exact order of a sidebar.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @param  string   $sidebar_id Sidebar id.
 	 * @param  string[] $widget_ids The widgets, in the order wanted.
 	 * @return true|WP_Error
@@ -502,7 +502,7 @@ final class Widget_Repository {
 	/**
 	 * Remove an instance entirely: its placement and its stored settings.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @param  string $widget_id Instance id.
 	 * @return true|WP_Error
 	 */
@@ -531,7 +531,7 @@ final class Widget_Repository {
 	/**
 	 * How widgets are managed on this site, and by what.
 	 *
-	 * @since  0.0.42
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function management_status(): array {

@@ -10,7 +10,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Yoast
- * @since      0.0.38
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Yoast;
@@ -36,7 +36,7 @@ final class Term_Repository {
 	 * Yoast prefixes every key `wpseo_`; the friendly names match what the post abilities use, so a
 	 * caller who has learned `seo_title` on a post does not have to relearn `wpseo_title` on a term.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	public static function fields(): array {
@@ -54,7 +54,7 @@ final class Term_Repository {
 	/**
 	 * Resolve and validate a term.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int    $term_id  Term ID.
 	 * @param  string $taxonomy Taxonomy name. Resolved from the term when empty.
 	 * @return WP_Term|WP_Error
@@ -79,7 +79,7 @@ final class Term_Repository {
 	/**
 	 * Describe one term's SEO data as ROWS.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  WP_Term $term Term.
 	 * @return array<int, array<string, mixed>>
 	 */
@@ -101,7 +101,7 @@ final class Term_Repository {
 	/**
 	 * Write SEO fields on a term.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  WP_Term             $term  Term.
 	 * @param  array<string,mixed> $patch Friendly field name => value.
 	 * @return array<int,string>|WP_Error The fields actually changed.
@@ -143,7 +143,7 @@ final class Term_Repository {
 	/**
 	 * Clear every SEO field on a term.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  WP_Term $term Term.
 	 * @return void
 	 */
@@ -160,7 +160,7 @@ final class Term_Repository {
 	/**
 	 * A page of terms in a taxonomy with their SEO data, as ROWS.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string $taxonomy Taxonomy name.
 	 * @param  int    $limit    Maximum rows.
 	 * @param  int    $offset   Rows to skip.
@@ -213,7 +213,7 @@ final class Term_Repository {
 	/**
 	 * The primary term for a post in a taxonomy.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int    $post_id  Post ID.
 	 * @param  string $taxonomy Taxonomy name.
 	 * @return int 0 when none is set.
@@ -227,7 +227,7 @@ final class Term_Repository {
 	/**
 	 * Set the primary term for a post in a taxonomy.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int    $post_id  Post ID.
 	 * @param  string $taxonomy Taxonomy name.
 	 * @param  int    $term_id  Term ID.

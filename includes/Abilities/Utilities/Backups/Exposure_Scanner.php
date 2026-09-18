@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Backups
- * @since      0.0.52
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups;
@@ -24,14 +24,14 @@ defined( 'ABSPATH' ) || exit;
  * This checks what the server actually does rather than what the plugin intended, by asking for a
  * real URL and reading the real status code.
  *
- * @since 0.0.52
+ * @since 0.0.34
  */
 final class Exposure_Scanner {
 
 	/**
 	 * How long to wait for the site to answer itself.
 	 *
-	 * @since 0.0.52
+	 * @since 0.0.34
 	 * @var   int
 	 */
 	private const TIMEOUT = 10;
@@ -44,7 +44,7 @@ final class Exposure_Scanner {
 	/**
 	 * Examine every active provider's storage.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function scan(): array {
@@ -75,7 +75,7 @@ final class Exposure_Scanner {
 	/**
 	 * One directory, checked against the running web server.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $provider Provider id.
 	 * @param  string $label    Provider label.
 	 * @param  string $path     Absolute directory path.
@@ -124,7 +124,7 @@ final class Exposure_Scanner {
 	/**
 	 * Plain words for one directory.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string             $url       Public URL, empty when outside the webroot.
 	 * @param  bool|null          $reachable Whether the server served it.
 	 * @param  array<int, string> $guards    Guard files present.
@@ -151,7 +151,7 @@ final class Exposure_Scanner {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int $exposed Directories served.
 	 * @param  int $total   Directories checked.
 	 * @return string
@@ -181,7 +181,7 @@ final class Exposure_Scanner {
 	/**
 	 * Which guard files the plugin left in the directory.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $path Directory.
 	 * @return array<int, string>
 	 */
@@ -200,7 +200,7 @@ final class Exposure_Scanner {
 	/**
 	 * The public URL of a directory, or empty when it has none.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  string $path Absolute directory path.
 	 * @return string
 	 */
@@ -220,7 +220,7 @@ final class Exposure_Scanner {
 	/**
 	 * Whether this web server reads .htaccess at all.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	private static function htaccess_honoured(): bool {
@@ -233,7 +233,7 @@ final class Exposure_Scanner {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	private static function server_software(): string {

@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\WPCode
- * @since      0.0.43
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\WPCode;
@@ -25,14 +25,14 @@ defined( 'ABSPATH' ) || exit;
  * `get_cached_snippets()`). A snippet written straight to the post table looks perfect in the
  * database, reads back correctly, and never runs, because the cache still holds the old set.
  *
- * @since 0.0.43
+ * @since 0.0.34
  */
 final class Snippet_Repository {
 
 	/**
 	 * The option WPCode's loader actually reads.
 	 *
-	 * @since 0.0.43
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const CACHE_OPTION = 'wpcode_snippets';
@@ -40,7 +40,7 @@ final class Snippet_Repository {
 	/**
 	 * Post type.
 	 *
-	 * @since 0.0.43
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const POST_TYPE = 'wpcode';
@@ -48,7 +48,7 @@ final class Snippet_Repository {
 	/**
 	 * Auto-insert locations, from includes/auto-insert/.
 	 *
-	 * @since 0.0.43
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const LOCATIONS = array(
@@ -72,7 +72,7 @@ final class Snippet_Repository {
 	 * `wpcode_global_*` names the functions are called. Writing the function-shaped name would store
 	 * a value nothing ever outputs.
 	 *
-	 * @since 0.0.43
+	 * @since 0.0.34
 	 * @var   array<string, string>
 	 */
 	public const GLOBAL_KEYS = array(
@@ -89,7 +89,7 @@ final class Snippet_Repository {
 	/**
 	 * Load one snippet.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  int $id Snippet id.
 	 * @return WPCode_Snippet|WP_Error
 	 */
@@ -125,7 +125,7 @@ final class Snippet_Repository {
 	/**
 	 * The set the loader will actually run, straight from the cache option.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<int, int> Snippet ids present in the cache.
 	 */
 	public static function cached_ids(): array {
@@ -142,7 +142,7 @@ final class Snippet_Repository {
 	 * WPCode's business and an empty cache, a flat cache and a nested one all have to answer
 	 * correctly.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  mixed $node Cache fragment.
 	 * @return array<int, int>
 	 */
@@ -171,7 +171,7 @@ final class Snippet_Repository {
 	 *
 	 * The honest proof a write landed: the CPT row is not what decides whether a snippet runs.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  int $id Snippet id.
 	 * @return bool
 	 */
@@ -182,7 +182,7 @@ final class Snippet_Repository {
 	/**
 	 * Shape one snippet for output. Rows, never maps.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  WPCode_Snippet $snippet Snippet.
 	 * @return array<string, mixed>
 	 */
@@ -213,7 +213,7 @@ final class Snippet_Repository {
 	 * Through WPCode's own getter rather than the meta key: it returns `false` for "no error" and an
 	 * array otherwise (class-wpcode-snippet.php), so the empty case has one definition here.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  WPCode_Snippet $snippet Snippet.
 	 * @return string
 	 */
@@ -234,7 +234,7 @@ final class Snippet_Repository {
 	 * depending on how the snippet was loaded. Casting a WP_Term to string is a fatal, so this
 	 * normalises rather than assuming.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  WPCode_Snippet $snippet Snippet.
 	 * @return array<int, string>
 	 */
@@ -267,7 +267,7 @@ final class Snippet_Repository {
 	 *    returns normally and the snippet is simply off. Reporting that as success would be the
 	 *    plainest possible case of BUG-WRITE-REPORTED-WITHOUT-READ-BACK.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  WPCode_Snippet $snippet       Snippet to save.
 	 * @param  bool           $expect_active Whether the caller asked for it to end up active.
 	 * @return array<string, mixed>|WP_Error
@@ -314,7 +314,7 @@ final class Snippet_Repository {
 	 * the meta was empty and the handler held the message. Reporting "(none recorded)" when WPCode
 	 * knows the reason leaves the caller unable to fix the code.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  WPCode_Snippet $snippet Snippet.
 	 * @return string
 	 */
@@ -351,7 +351,7 @@ final class Snippet_Repository {
 	 * and fixed it in duplicate() only, commented "Let's make sure the slashes don't get removed
 	 * from the code".
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  WPCode_Snippet       $snippet Snippet to mutate.
 	 * @param  array<string, mixed> $input   Caller input.
 	 * @return void
@@ -407,7 +407,7 @@ final class Snippet_Repository {
 	 * instead of setting it. The write reports success, auto_insert reads back as true, and the
 	 * location comes back empty, so the snippet is placed nowhere and nothing says why.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  mixed $value Caller-supplied flag.
 	 * @return int 1 or 0, never a boolean.
 	 */
@@ -427,7 +427,7 @@ final class Snippet_Repository {
 	 * `id`. Building the array here keeps WPCode's supported route without widening what a caller
 	 * can reach.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  WPCode_Snippet       $snippet Snippet to mutate.
 	 * @param  array<string, mixed> $data    Whitelisted property => value.
 	 * @return void
@@ -439,7 +439,7 @@ final class Snippet_Repository {
 	/**
 	 * Place a snippet, and say whether it will run there.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  WPCode_Snippet $snippet     Snippet.
 	 * @param  string         $location    One of self::LOCATIONS.
 	 * @param  bool           $auto_insert Whether WPCode should insert it automatically.
@@ -471,7 +471,7 @@ final class Snippet_Repository {
 	 * includes/lite/conditional-logic/ as Pro upsells. Saving one on Lite stores a rule that never
 	 * matches, so a snippet would silently stop appearing with no error anywhere.
 	 *
-	 * @since 0.0.43
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const LITE_RULE_TYPES = array( 'page', 'user' );
@@ -479,7 +479,7 @@ final class Snippet_Repository {
 	/**
 	 * Free-text fields that must survive backslashes intact.
 	 *
-	 * @since 0.0.43
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const FREE_TEXT = array( 'title', 'code', 'note', 'custom_shortcode' );
@@ -490,7 +490,7 @@ final class Snippet_Repository {
 	 * `wp_delete_post()` removes the row but does not rebuild WPCode's cache, so without the rebuild
 	 * a deleted snippet keeps executing from the cached copy until something else saves a snippet.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  int $id Snippet id.
 	 * @return true|WP_Error
 	 */
@@ -531,7 +531,7 @@ final class Snippet_Repository {
 	/**
 	 * Rebuild the option the loader reads.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return void
 	 */
 	public static function rebuild_cache(): void {
@@ -548,7 +548,7 @@ final class Snippet_Repository {
 	 * `page` and `user` evaluators, and a Pro-only rule saved on Lite simply never matches — the
 	 * snippet quietly stops appearing and nothing reports why.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  WPCode_Snippet            $snippet Snippet.
 	 * @param  bool                      $enabled Whether the rules apply at all.
 	 * @param  array<int, array<mixed>>  $groups  WPCode's rule-group structure.
@@ -598,7 +598,7 @@ final class Snippet_Repository {
 	 * `\\d+` (hex 5C5C). Applying one rule to both paths corrupts one of them whichever rule you
 	 * pick.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $values Slot => markup, any subset of self::GLOBAL_KEYS.
 	 * @return array<string, string>|WP_Error
 	 */
@@ -651,7 +651,7 @@ final class Snippet_Repository {
 	/**
 	 * Read the global header/body/footer scripts.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	public static function global_scripts(): array {

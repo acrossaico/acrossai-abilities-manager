@@ -10,7 +10,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\LiteSpeed
- * @since      0.0.36
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\LiteSpeed;
@@ -32,7 +32,7 @@ final class Toolbox_Repository {
 	/**
 	 * The presets LiteSpeed ships, weakest to strongest.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	public static function presets(): array {
@@ -48,7 +48,7 @@ final class Toolbox_Repository {
 	/**
 	 * Backups LiteSpeed took before a preset was applied, as ROWS.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function backups(): array {
@@ -74,7 +74,7 @@ final class Toolbox_Repository {
 	/**
 	 * Apply a preset.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  string $preset One of presets().
 	 * @return true|WP_Error
 	 */
@@ -99,7 +99,7 @@ final class Toolbox_Repository {
 	/**
 	 * Restore a backup taken before a preset was applied.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  int $timestamp Backup timestamp, as reported by backups().
 	 * @return true|WP_Error
 	 */
@@ -125,7 +125,7 @@ final class Toolbox_Repository {
 	/**
 	 * The whole configuration as a portable payload.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public static function export(): string {
@@ -135,7 +135,7 @@ final class Toolbox_Repository {
 	/**
 	 * LiteSpeed's own environment report.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public static function environment_report(): string {
@@ -145,7 +145,7 @@ final class Toolbox_Repository {
 	/**
 	 * Whether the configured object-cache backend is reachable.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function test_object_cache(): bool {
@@ -155,7 +155,7 @@ final class Toolbox_Repository {
 	/**
 	 * Flush the object cache through LiteSpeed's own handler.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return void
 	 */
 	public static function flush_object_cache(): void {
@@ -165,7 +165,7 @@ final class Toolbox_Repository {
 	/**
 	 * Whether LiteSpeed's object-cache drop-in is installed.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function object_cache_dropin_installed(): bool {

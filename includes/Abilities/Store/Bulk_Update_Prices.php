@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Store
- * @since      0.0.52
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Store;
@@ -18,12 +18,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * changes prices across a filtered set of products.
  *
- * @since 0.0.52
+ * @since 0.0.34
  */
 final class Bulk_Update_Prices extends Base_Store_Ability {
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -31,7 +31,7 @@ final class Bulk_Update_Prices extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -39,7 +39,7 @@ final class Bulk_Update_Prices extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -47,7 +47,7 @@ final class Bulk_Update_Prices extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -55,7 +55,7 @@ final class Bulk_Update_Prices extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
@@ -69,7 +69,7 @@ final class Bulk_Update_Prices extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -77,7 +77,7 @@ final class Bulk_Update_Prices extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -92,7 +92,7 @@ final class Bulk_Update_Prices extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -104,7 +104,7 @@ final class Bulk_Update_Prices extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -112,7 +112,7 @@ final class Bulk_Update_Prices extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -127,7 +127,7 @@ final class Bulk_Update_Prices extends Base_Store_Ability {
 	 * teaches a caller to pass confirm reflexively, which is exactly the habit the gate exists to
 	 * prevent. Measured: the first version asked for confirmation on a preview.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return bool
 	 */
@@ -136,7 +136,7 @@ final class Bulk_Update_Prices extends Base_Store_Ability {
 	}
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */

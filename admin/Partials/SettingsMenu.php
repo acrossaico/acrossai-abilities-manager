@@ -78,7 +78,7 @@ class SettingsMenu {
 	 * The cap exists to bound response size: each row carries its full input and output JSON
 	 * Schema, measured at roughly 1.4 KB, so 100 rows is already ~140 KB.
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @var   int
 	 */
 	public const MAX_PER_PAGE = 100;

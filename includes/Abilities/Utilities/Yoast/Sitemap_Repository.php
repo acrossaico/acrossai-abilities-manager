@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Yoast
- * @since      0.0.38
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Yoast;
@@ -27,7 +27,7 @@ final class Sitemap_Repository {
 	/**
 	 * Whether XML sitemaps are switched on, and where the index lives.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string,mixed>
 	 */
 	public static function status(): array {
@@ -42,7 +42,7 @@ final class Sitemap_Repository {
 	/**
 	 * The sitemap types Yoast can be asked to invalidate.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
 	public static function types(): array {
@@ -70,7 +70,7 @@ final class Sitemap_Repository {
 	/**
 	 * Invalidate one sitemap type, or every type when none is named.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string $type Sitemap type, or '' for all.
 	 * @return array<int,string>|WP_Error The types invalidated.
 	 */
@@ -101,7 +101,7 @@ final class Sitemap_Repository {
 	/**
 	 * Invalidate the sitemap entry for one post.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return true|WP_Error
 	 */
@@ -129,7 +129,7 @@ final class Sitemap_Repository {
 	 * keeping a separate sitemap list — a distinction worth surfacing, since a caller looking for a
 	 * "sitemap exclusions" setting will not find one.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<int, array<string,mixed>>
 	 */
 	public static function coverage(): array {

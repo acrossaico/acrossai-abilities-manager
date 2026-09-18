@@ -20,7 +20,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Yoast
- * @since      0.0.38
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Yoast;
@@ -37,7 +37,7 @@ final class Settings_Repository {
 	/**
 	 * Memoised result of areas().
 	 *
-	 * @since 0.0.38
+	 * @since 0.0.34
 	 * @var   array<string, array<string, array{0:string,1:string}>>|null
 	 */
 	private static $areas_cache = null;
@@ -51,7 +51,7 @@ final class Settings_Repository {
 	/**
 	 * Writable settings, grouped by area, as key => [ json type, Yoast option group ].
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string, array<string, array{0:string,1:string}>>
 	 */
 	/**
@@ -62,7 +62,7 @@ final class Settings_Repository {
 	 * cache is safe. Anything that registers a post type or taxonomy afterwards must call this, or the
 	 * new type's keys stay invisible for the rest of the request.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return void
 	 */
 	public static function flush(): void {
@@ -117,7 +117,7 @@ final class Settings_Repository {
 	 * Families are matched longest-prefix-first, so `title-ptarchive-guide` resolves as an archive
 	 * title rather than a post type named "ptarchive-guide".
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string, array{0:string,1:string,2:string}> key => [ type, option group, area ]
 	 */
 	private static function dynamic_keys(): array {
@@ -202,7 +202,7 @@ final class Settings_Repository {
 	 * asserts it still covers everything Yoast's live constant names, so an upstream addition
 	 * fails CI instead of silently becoming readable.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public static function disallowed(): array {
@@ -248,7 +248,7 @@ final class Settings_Repository {
 	 * Call `areas()` instead — this is the raw literal and exposes keys that must never be read
 	 * or written. It is separate only so the subtraction has something to subtract from.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array<string, array<string, array{0:string,1:string}>>
 	 */
 	private static function declared_areas(): array {
@@ -502,7 +502,7 @@ final class Settings_Repository {
 	/**
 	 * The keys one area owns, as key => json type.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string $area Area key.
 	 * @return array<string, string>
 	 */
@@ -519,7 +519,7 @@ final class Settings_Repository {
 	/**
 	 * Which area owns one key, or '' when nothing does.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string $key Option key.
 	 * @return string
 	 */
@@ -531,7 +531,7 @@ final class Settings_Repository {
 	 * nine abilities that do not exist. Every value here is asserted resolvable by
 	 * Test_Yoast_Suite_Contract, and Test_Yoast_Architecture asserts the map covers every area.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string $area Area key.
 	 * @return string Full ability slug, or ''.
 	 */
@@ -569,7 +569,7 @@ final class Settings_Repository {
 	/**
 	 * Read one option's current value through Yoast's accessor.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string $key Option key.
 	 * @return mixed
 	 */
@@ -586,7 +586,7 @@ final class Settings_Repository {
 	 * (BUG-ARRAY-TYPED-OUTPUT-IS-A-JSON-OBJECT — three features running). Every reader in this suite
 	 * returns these rows and every writer echoes them back.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string $area Area key.
 	 * @return array<int, array<string, mixed>>
 	 */
@@ -609,7 +609,7 @@ final class Settings_Repository {
 	/**
 	 * Coerce a value to the type Yoast stores.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  mixed  $value Raw value.
 	 * @param  string $type  boolean|integer|string|array.
 	 * @return mixed
@@ -636,7 +636,7 @@ final class Settings_Repository {
 	 * Refuses the whole patch when any key is outside the area, so a caller can always tell what
 	 * landed. A partial write on a rejected input is the harder failure to reason about.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string              $area  Area key.
 	 * @param  array<string,mixed> $patch Option key => new value.
 	 * @return array<int, string>|WP_Error Keys actually changed.
@@ -742,7 +742,7 @@ final class Settings_Repository {
 	 * single place to absorb a change in its API. Test_Yoast_Architecture asserts nothing else in the
 	 * suite calls it.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  string $key   Option key.
 	 * @param  mixed  $value Cast value.
 	 * @param  string $group Yoast option group.

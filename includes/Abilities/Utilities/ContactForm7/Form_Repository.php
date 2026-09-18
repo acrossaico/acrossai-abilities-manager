@@ -11,7 +11,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\ContactForm7
- * @since      0.0.35
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\ContactForm7;
@@ -30,7 +30,7 @@ final class Form_Repository {
 	/**
 	 * The five properties CF7 stores per form, plus the two scalars.
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const PROPERTIES = array( 'form', 'mail', 'mail_2', 'messages', 'additional_settings' );
@@ -38,7 +38,7 @@ final class Form_Repository {
 	/**
 	 * Fields of a mail template.
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @var   string[]
 	 */
 	public const MAIL_FIELDS = array(
@@ -61,7 +61,7 @@ final class Form_Repository {
 	 * indication on the form itself. A free-text passthrough here would let a caller disable a site's
 	 * contact route by accident, so the suite writes only these four and rejects the rest.
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @var   array<string, bool> setting => whether changing it needs confirmation.
 	 */
 	public const WRITABLE_SETTINGS = array(
@@ -79,7 +79,7 @@ final class Form_Repository {
 	/**
 	 * Load one form.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  int $form_id Post ID.
 	 * @return WPCF7_ContactForm|WP_Error
 	 */
@@ -107,7 +107,7 @@ final class Form_Repository {
 	/**
 	 * Summarise every form.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  string $search Optional title substring.
 	 * @param  int    $limit  Maximum rows.
 	 * @param  int    $offset Rows to skip.
@@ -133,7 +133,7 @@ final class Form_Repository {
 	/**
 	 * Compact description of a form, for list views.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  WPCF7_ContactForm $form Form.
 	 * @return array<string,mixed>
 	 */
@@ -153,7 +153,7 @@ final class Form_Repository {
 	/**
 	 * Full description of a form, for single reads.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  WPCF7_ContactForm $form Form.
 	 * @return array<string,mixed>
 	 */
@@ -179,7 +179,7 @@ final class Form_Repository {
 	 * exemption exists for a trusted human typing into wp-admin; an ability is reachable by an AI
 	 * client, so the suite does not inherit it.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  array<string,mixed> $data Keys: id, title, locale, form, mail, mail_2, messages,
 	 *                                   additional_settings. Absent keys are untouched.
 	 * @return int|WP_Error New or existing post ID.
@@ -209,7 +209,7 @@ final class Form_Repository {
 	 *
 	 * `copy()` returns an unsaved object, so the save is ours to make.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  WPCF7_ContactForm $form  Source.
 	 * @param  string            $title Optional new title.
 	 * @return int|WP_Error
@@ -236,7 +236,7 @@ final class Form_Repository {
 	 * CF7's `delete()` calls `wp_delete_post( $id, true )` — it bypasses the trash entirely and there
 	 * is no recovery. Callers must be confirm-gated.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  WPCF7_ContactForm $form Form.
 	 * @return true|WP_Error
 	 */
@@ -251,7 +251,7 @@ final class Form_Repository {
 	/**
 	 * Run CF7's own configuration validator.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  WPCF7_ContactForm $form Form.
 	 * @return array<int, array<string,mixed>>
 	 */
@@ -282,7 +282,7 @@ final class Form_Repository {
 	/**
 	 * How many configuration errors a form has.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  WPCF7_ContactForm $form Form.
 	 * @return int
 	 */
@@ -293,7 +293,7 @@ final class Form_Repository {
 	/**
 	 * Parse `additional_settings` into key/value pairs.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  WPCF7_ContactForm $form Form.
 	 * @return array<string,string>
 	 */
@@ -317,7 +317,7 @@ final class Form_Repository {
 	 * output schema the moment a form has one setting. Both the read and the write ability share this
 	 * shape so a caller sees the same rows before and after a change.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  WPCF7_ContactForm $form Form.
 	 * @return array<int, array<string,mixed>>
 	 */
@@ -338,7 +338,7 @@ final class Form_Repository {
 	/**
 	 * Render key/value pairs back into the newline-separated property.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @param  array<string,string> $settings Settings.
 	 * @return string
 	 */
@@ -355,7 +355,7 @@ final class Form_Repository {
 	/**
 	 * The message slugs CF7 recognises, with their default text.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return array<string,string>
 	 */
 	public static function default_messages(): array {

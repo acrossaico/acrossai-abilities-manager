@@ -11,7 +11,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Store
- * @since      0.0.52
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Store;
@@ -23,14 +23,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Catalogue reads and writes.
  *
- * @since 0.0.52
+ * @since 0.0.34
  */
 final class Product_Repository {
 
 	/**
 	 * Most products a single bulk price change may touch.
 	 *
-	 * @since 0.0.52
+	 * @since 0.0.34
 	 * @var   int
 	 */
 	public const MAX_BULK = 200;
@@ -41,7 +41,7 @@ final class Product_Repository {
 	 * A 3x4x5 attribute set is 60 products. Generating them is slow, and a request that times out
 	 * half way leaves a partly-built variable product that looks finished.
 	 *
-	 * @since 0.0.52
+	 * @since 0.0.34
 	 * @var   int
 	 */
 	public const MAX_VARIATIONS = 50;
@@ -54,7 +54,7 @@ final class Product_Repository {
 	/**
 	 * Load a product, or say why not.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int $id Product or variation id.
 	 * @return \WC_Product|WP_Error
 	 */
@@ -82,7 +82,7 @@ final class Product_Repository {
 	 * something wrote the product outside WooCommerce, and the shop is answering those queries with
 	 * the older values while the product page looks correct.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  \WC_Product $product Product.
 	 * @return array<string, mixed>
 	 */
@@ -152,7 +152,7 @@ final class Product_Repository {
 	/**
 	 * A product, in full.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  \WC_Product $product Product.
 	 * @return array<string, mixed>
 	 */
@@ -223,7 +223,7 @@ final class Product_Repository {
 	 * prices during save, syncs taxonomy terms and rewrites the lookup row, so the only honest
 	 * account of what happened is a fresh read.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  \WC_Product $product Product to save.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -265,7 +265,7 @@ final class Product_Repository {
 	/**
 	 * Fields WooCommerce's own product-update does not reach.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int                  $id     Product id.
 	 * @param  array<string, mixed> $fields Supplied fields.
 	 * @return array<string, mixed>|WP_Error
@@ -339,7 +339,7 @@ final class Product_Repository {
 	 * the catalogue actually filters on, and rebuilds the lookup row. A raw term write does none of
 	 * that.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int                  $id     Product id.
 	 * @param  array<string, mixed> $fields category_ids / tag_ids / mode.
 	 * @return array<string, mixed>|WP_Error
@@ -382,7 +382,7 @@ final class Product_Repository {
 	/* -------------------------------------------------------------- images */
 
 	/**
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int                  $id     Product id.
 	 * @param  array<string, mixed> $fields image_id / gallery_image_ids.
 	 * @return array<string, mixed>|WP_Error
@@ -453,7 +453,7 @@ final class Product_Repository {
 	 * holds for THIRTY DAYS, so a sale written any other way can leave a shop off-sale for a month
 	 * with nothing anywhere suggesting a problem.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int                  $id     Product id.
 	 * @param  array<string, mixed> $fields sale_price / from / to / clear.
 	 * @return array<string, mixed>|WP_Error
@@ -512,7 +512,7 @@ final class Product_Repository {
 	 * The most dangerous ability in the suite, so: dry run by default, an explicit filter required,
 	 * a hard cap, and a per-product before/after in the response. Nothing about "all products".
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Filter, change and flags.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -619,7 +619,7 @@ final class Product_Repository {
 	/**
 	 * Replace a product's attributes.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int                              $id         Product id.
 	 * @param  array<int, array<string, mixed>> $attributes Attribute definitions.
 	 * @return array<string, mixed>|WP_Error
@@ -681,7 +681,7 @@ final class Product_Repository {
 	 * WooCommerce's own `product-create` cannot do this: its type list is
 	 * physical|virtual|digital|affiliate|grouped, with no variable at all.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input name / sku / status / attributes.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -725,7 +725,7 @@ final class Product_Repository {
 	 * Dry run by default and hard-capped. A 3x4x5 attribute set is 60 products; a request that times
 	 * out half way leaves a partly-built variable product that looks finished.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int  $id    Parent product id.
 	 * @param  bool $apply Whether to create them.
 	 * @return array<string, mixed>|WP_Error
@@ -852,7 +852,7 @@ final class Product_Repository {
 	/**
 	 * Change one variation.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int                  $id     Variation id.
 	 * @param  array<string, mixed> $fields Supplied fields.
 	 * @return array<string, mixed>|WP_Error
@@ -927,7 +927,7 @@ final class Product_Repository {
 	 * case the variation's own `_stock` row is read by nothing — the most common silent stock bug,
 	 * and the reason this is a separate ability rather than a field on the product read.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int $id Product or variation id.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -987,7 +987,7 @@ final class Product_Repository {
 	 * stock status, refreshes the `outofstock` visibility term and the lookup row, and fires the
 	 * hooks every inventory integration listens on. None of that happens on a meta write.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int    $id        Product or variation id.
 	 * @param  float  $quantity  Amount.
 	 * @param  string $operation set, increase or decrease.
@@ -1068,7 +1068,7 @@ final class Product_Repository {
 	/**
 	 * Products at or below a stock threshold.
 	 *
-	 * @since  0.0.52
+	 * @since  0.0.34
 	 * @param  int $threshold Quantity at or below which a product counts as low.
 	 * @param  int $limit     Rows to return.
 	 * @return array<string, mixed>

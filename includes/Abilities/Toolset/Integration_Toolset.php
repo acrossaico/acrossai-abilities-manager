@@ -17,7 +17,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Toolset
- * @since      0.0.35
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -37,13 +37,13 @@ final class Integration_Toolset extends Base_Toolset_Ability {
 	/**
 	 * The declaration this dispatcher serves.
 	 *
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @var   AcrossAI_Toolset_Integration
 	 */
 	private $integration;
 
 	/**
-	 * @since 0.0.35
+	 * @since 0.0.34
 	 * @param AcrossAI_Toolset_Integration $integration Declaration to serve.
 	 */
 	public function __construct( AcrossAI_Toolset_Integration $integration ) {
@@ -53,7 +53,7 @@ final class Integration_Toolset extends Base_Toolset_Ability {
 	}
 
 	/**
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function group(): string {
@@ -61,7 +61,7 @@ final class Integration_Toolset extends Base_Toolset_Ability {
 	}
 
 	/**
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -69,7 +69,7 @@ final class Integration_Toolset extends Base_Toolset_Ability {
 	}
 
 	/**
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function toolset_label(): string {
@@ -77,7 +77,7 @@ final class Integration_Toolset extends Base_Toolset_Ability {
 	}
 
 	/**
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function toolset_description(): string {
@@ -104,7 +104,7 @@ final class Integration_Toolset extends Base_Toolset_Ability {
 	 * on every site and holds abilities belonging to no group. It is stable, so
 	 * it stays a default. A blanket `false` here would drop it silently.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function is_server_type_default(): bool {

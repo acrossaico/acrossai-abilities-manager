@@ -132,7 +132,7 @@ abstract class Base_Toolset_Ability {
 	 * is the only thing that knows its own group, so it says so itself rather
 	 * than having the list repeated somewhere that can drift.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  mixed $groups Groups collected so far.
 	 * @return mixed
 	 */
@@ -218,7 +218,7 @@ abstract class Base_Toolset_Ability {
 	 * flag, whatever it says, is the transport's to decide — see the inline
 	 * note at the assignment below.
 	 *
-	 * @since  0.0.36
+	 * @since  0.0.34
 	 * @param  mixed $types Types collected so far, keyed by slug.
 	 * @return mixed The list with this Toolset's slug appended to `acrossai`.
 	 */
@@ -306,7 +306,7 @@ abstract class Base_Toolset_Ability {
 	 * REST request it resolved first and every Toolset dropped out. A per-class
 	 * constant answer has no such ordering.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function is_server_type_default(): bool {
@@ -324,7 +324,7 @@ abstract class Base_Toolset_Ability {
 		 * registered and stays addable from the picker. It changes only what
 		 * **Reset to Type Defaults** restores.
 		 *
-		 * @since 0.0.37
+		 * @since 0.0.34
 		 * @param bool   $is_default Whether this Toolset is a default.
 		 * @param string $group      The Toolset's ability group.
 		 */
@@ -401,7 +401,7 @@ abstract class Base_Toolset_Ability {
 	 * filters are keyed on, what a collision is logged against. This is only
 	 * the membership question: which abilities may travel through it.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	protected function groups(): array {
@@ -419,7 +419,7 @@ abstract class Base_Toolset_Ability {
 	 * Returning null keeps the normal listing, which is what every Toolset but
 	 * `integrations` does.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Caller input.
 	 * @return array<string, mixed>|null
 	 */
@@ -1052,7 +1052,7 @@ abstract class Base_Toolset_Ability {
 	 * still register its Toolset, or a per-role policy could unregister a tool
 	 * for everyone.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	private function has_any_member(): bool {
@@ -1350,7 +1350,7 @@ abstract class Base_Toolset_Ability {
 	 * `AcrossAI_Ability_Library_Registry::apply_suggested_abilities_decoration()` applies on the
 	 * Library path. Without this check the admin toggle would silently stop working for MCP.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  WP_Ability $ability Member.
 	 * @return array<int, mixed>
 	 */

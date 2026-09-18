@@ -8,7 +8,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Content
- * @since      0.0.50
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
@@ -21,12 +21,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Reports whether the generic content writers are the right tool for a post type.
  *
- * @since 0.0.50
+ * @since 0.0.34
  */
 class Inspect_Post_Type extends Ability_Definition {
 
 	/**
-	 * @since  0.0.50
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function ability(): array {
@@ -98,7 +98,7 @@ class Inspect_Post_Type extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.50
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>
 	 */

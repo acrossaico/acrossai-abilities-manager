@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Email
- * @since      0.0.49
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Email;
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Reads, writes and the one real diagnostic.
  *
- * @since 0.0.49
+ * @since 0.0.34
  */
 final class Email_Repository {
 
@@ -33,7 +33,7 @@ final class Email_Repository {
 	 * that accessor ends in `Crypto::decrypt()` — asking it politely for the SMTP password returns
 	 * the SMTP password.
 	 *
-	 * @since  0.0.49
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function settings(): array {
@@ -78,7 +78,7 @@ final class Email_Repository {
 	 * it is the usual cause of "the site sends nothing": many hosts drop it silently, and the site
 	 * reports success either way.
 	 *
-	 * @since  0.0.49
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function status(): array {
@@ -134,7 +134,7 @@ final class Email_Repository {
 	 * Judged from what the mailer's own group actually stores rather than from a hardcoded map, so a
 	 * mailer added by a later release is covered without an edit here.
 	 *
-	 * @since  0.0.49
+	 * @since  0.0.34
 	 * @param  string             $mailer Selected mailer.
 	 * @param  array<string,bool> $set    Credential presence, keyed group.key.
 	 * @return array<string, bool>
@@ -158,7 +158,7 @@ final class Email_Repository {
 	/**
 	 * Another mail plugin fighting for the same job.
 	 *
-	 * @since  0.0.49
+	 * @since  0.0.34
 	 * @return array{name: string, all: string[]}
 	 */
 	private static function conflict(): array {
@@ -200,7 +200,7 @@ final class Email_Repository {
 	/**
 	 * The last failure the mail plugin recorded.
 	 *
-	 * @since  0.0.49
+	 * @since  0.0.34
 	 * @return string
 	 */
 	private static function last_error(): string {
@@ -226,7 +226,7 @@ final class Email_Repository {
 	 * matching credentials stops ALL mail on the site — password resets included — and the
 	 * credentials are absent because writing a secret is not this plugin's job.
 	 *
-	 * @since  0.0.49
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $fields Supplied fields.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -303,7 +303,7 @@ final class Email_Repository {
 	 * Routed through the mail plugin's own test sender so the domain check and its error capture
 	 * come with it.
 	 *
-	 * @since  0.0.49
+	 * @since  0.0.34
 	 * @param  string $recipient Where to send it.
 	 * @return array<string, mixed>|WP_Error
 	 */

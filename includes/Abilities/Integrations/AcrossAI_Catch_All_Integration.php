@@ -16,7 +16,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Integrations
- * @since      0.0.35
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -31,7 +31,7 @@ defined( 'ABSPATH' ) || exit;
 final class AcrossAI_Catch_All_Integration implements AcrossAI_Toolset_Integration {
 
 	/**
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function group(): string {
@@ -39,7 +39,7 @@ final class AcrossAI_Catch_All_Integration implements AcrossAI_Toolset_Integrati
 	}
 
 	/**
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_label(): string {
@@ -54,7 +54,7 @@ final class AcrossAI_Catch_All_Integration implements AcrossAI_Toolset_Integrati
 	 * vagueness: an assistant that skips this tool because the description sounded irrelevant would
 	 * miss abilities that are only reachable through it.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_description(): string {
@@ -67,7 +67,7 @@ final class AcrossAI_Catch_All_Integration implements AcrossAI_Toolset_Integrati
 	/**
 	 * Claims nothing: membership is by fallback, never by prefix.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public function ability_prefixes(): array {
@@ -77,7 +77,7 @@ final class AcrossAI_Catch_All_Integration implements AcrossAI_Toolset_Integrati
 	/**
 	 * Always available — it depends on no host plugin.
 	 *
-	 * @since  0.0.35
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public function is_active(): bool {

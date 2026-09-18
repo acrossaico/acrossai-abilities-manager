@@ -14,7 +14,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Yoast
- * @since      0.0.38
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Yoast;
@@ -31,7 +31,7 @@ final class Content_Repository {
 	/**
 	 * Yoast's per-post meta keys.
 	 *
-	 * @since 0.0.38
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	private const SCORE       = '_yoast_wpseo_linkdex';
@@ -48,7 +48,7 @@ final class Content_Repository {
 	/**
 	 * Published post IDs, newest first.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int                  $limit Maximum posts.
 	 * @param  array<string, mixed> $meta  Optional meta_query.
 	 * @return int[]
@@ -77,7 +77,7 @@ final class Content_Repository {
 	/**
 	 * Summarise one post.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return array<string,mixed>
 	 */
@@ -99,7 +99,7 @@ final class Content_Repository {
 	/**
 	 * Cornerstone posts, with their incoming link counts.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int $limit Maximum posts.
 	 * @return array<int, array<string,mixed>>
 	 */
@@ -129,7 +129,7 @@ final class Content_Repository {
 	/**
 	 * Mark or unmark a post as cornerstone.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int  $post_id Post ID.
 	 * @param  bool $on      Desired state.
 	 * @return void
@@ -147,7 +147,7 @@ final class Content_Repository {
 	/**
 	 * Internal links for one post.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int $post_id Post ID.
 	 * @return array{outgoing: array<int,array<string,mixed>>, incoming: int}
 	 */
@@ -161,7 +161,7 @@ final class Content_Repository {
 	 * `ready` distinguishes "nothing is orphaned" from "the link index is empty", which look
 	 * identical from the counts alone and mean opposite things.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int $limit Maximum posts to examine.
 	 * @return array{posts: array<int,array<string,mixed>>, ready: bool}
 	 */
@@ -196,7 +196,7 @@ final class Content_Repository {
 	 * Bands match Yoast's own traffic lights: 71+ good, 41-70 needs improvement, 1-40 bad, and
 	 * unanalysed reported separately rather than folded into "bad" — they are different problems.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @return array{bands: array<int,array<string,mixed>>, total: int}
 	 */
 	public static function score_summary(): array {
@@ -245,7 +245,7 @@ final class Content_Repository {
 	/**
 	 * Published posts scoring below a threshold, worst first.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int $below Threshold.
 	 * @param  int $limit Maximum rows.
 	 * @return array<int, array<string,mixed>>
@@ -273,7 +273,7 @@ final class Content_Repository {
 	/**
 	 * Focus keyphrases in use, as ROWS, with the posts using each.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  bool $duplicates_only Only keyphrases used more than once.
 	 * @return array<int, array<string,mixed>>
 	 */
@@ -315,7 +315,7 @@ final class Content_Repository {
 	/**
 	 * Content problems worth acting on, each naming the ability that addresses it.
 	 *
-	 * @since  0.0.38
+	 * @since  0.0.34
 	 * @param  int $limit Maximum posts to examine.
 	 * @return array<int, array<string,mixed>>
 	 */

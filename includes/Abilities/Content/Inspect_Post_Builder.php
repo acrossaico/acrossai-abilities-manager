@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Content
- * @since      0.0.39
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
@@ -104,7 +104,7 @@ class Inspect_Post_Builder extends Ability_Definition {
 	/**
 	 * Where a caller usually goes next.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @return array<int, array<string, string>>
 	 */
 	protected function suggested_abilities(): array {
@@ -123,7 +123,7 @@ class Inspect_Post_Builder extends Ability_Definition {
 	/**
 	 * Run.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Ability input.
 	 * @return array<string, mixed>
 	 */
@@ -171,7 +171,7 @@ class Inspect_Post_Builder extends Ability_Definition {
 	/**
 	 * A one-line summary that leads with the thing the caller must not miss.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @param  array<int, array<string, mixed>> $rows    Detected rows.
 	 * @param  array<int, int>                  $missing IDs that do not exist.
 	 * @return string

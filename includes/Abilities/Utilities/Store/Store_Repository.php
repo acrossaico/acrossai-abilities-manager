@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Store
- * @since      0.0.51
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Store;
@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Store diagnostics: where the data lives, and whether the derived copies of it are current.
  *
- * @since 0.0.51
+ * @since 0.0.34
  */
 final class Store_Repository {
 
@@ -27,7 +27,7 @@ final class Store_Repository {
 	/**
 	 * Whether orders are kept outside the posts table.
 	 *
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function hpos_enabled(): bool {
@@ -54,7 +54,7 @@ final class Store_Repository {
 	 * — and those products are then invisible to exactly those queries while looking perfectly fine
 	 * in the admin list.
 	 *
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function lookup_health(): array {
@@ -96,7 +96,7 @@ final class Store_Repository {
 	 * Reported because both hold for THIRTY DAYS. A sale written outside WooCommerce's own save path
 	 * can therefore be wrong for a month with nothing on the site suggesting anything is amiss.
 	 *
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function catalogue_transients(): array {
@@ -122,7 +122,7 @@ final class Store_Repository {
 	 * the Feature 106 lesson about stored credentials. Knowing a gateway is enabled is the useful
 	 * part and carries no secret.
 	 *
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function gateways(): array {
@@ -168,7 +168,7 @@ final class Store_Repository {
 	/**
 	 * Everything `store/get-store-status` answers.
 	 *
-	 * @since  0.0.51
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	public static function status(): array {

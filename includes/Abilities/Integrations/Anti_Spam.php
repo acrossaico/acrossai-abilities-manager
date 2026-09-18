@@ -11,7 +11,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Integrations
- * @since      0.0.49
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -28,13 +28,13 @@ final class Anti_Spam implements AcrossAI_Toolset_Integration {
 	/**
 	 * Toolset key. Must equal Base_Email_Ability::TAB_GROUP.
 	 *
-	 * @since 0.0.49
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const TAB_GROUP = 'akismet';
 
 	/**
-	 * @since  0.0.49
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function group(): string {
@@ -42,7 +42,7 @@ final class Anti_Spam implements AcrossAI_Toolset_Integration {
 	}
 
 	/**
-	 * @since  0.0.49
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_label(): string {
@@ -50,7 +50,7 @@ final class Anti_Spam implements AcrossAI_Toolset_Integration {
 	}
 
 	/**
-	 * @since  0.0.49
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_description(): string {
@@ -63,7 +63,7 @@ final class Anti_Spam implements AcrossAI_Toolset_Integration {
 	/**
 	 * The prefix this group adopts.
 	 *
-	 * @since  0.0.49
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public function ability_prefixes(): array {
@@ -71,7 +71,7 @@ final class Anti_Spam implements AcrossAI_Toolset_Integration {
 	}
 
 	/**
-	 * @since  0.0.49
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public function is_active(): bool {

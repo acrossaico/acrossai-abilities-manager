@@ -14,7 +14,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Acf
- * @since      0.0.37
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Acf;
@@ -39,7 +39,7 @@ final class Field_Repository {
 	 * `format_value` left at ACF's default true so relationships hydrate to post objects and dates
 	 * come back formatted — the shape a caller expects from ACF rather than the raw stored scalar.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string     $selector Field name or key.
 	 * @param  int|string $target   Resolved ACF target.
 	 * @return mixed
@@ -62,7 +62,7 @@ final class Field_Repository {
 	 * to ACF's own loose name lookup (`acf_maybe_get_field( …, $strict = false )`) for the definition
 	 * alone. A field that resolves through neither genuinely does not exist.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string     $selector Field name or key.
 	 * @param  int|string $target   Resolved ACF target.
 	 * @return array<string,mixed>|null
@@ -86,7 +86,7 @@ final class Field_Repository {
 	 * ability that only called it would report a clean read of nothing for a typo'd name.
 	 * `get_field_object()` distinguishes the two.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string     $selector Field name or key.
 	 * @param  int|string $target   Resolved ACF target.
 	 * @return bool
@@ -98,7 +98,7 @@ final class Field_Repository {
 	/**
 	 * Describe one field, or a WP_Error when it is not attached to the target.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string     $selector Field name or key.
 	 * @param  int|string $target   Resolved ACF target.
 	 * @return array<string,mixed>|WP_Error
@@ -129,7 +129,7 @@ final class Field_Repository {
 	 * row instead, which also leaves room for the key and type a caller needs to do anything useful
 	 * with the value.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  int|string $target Resolved ACF target.
 	 * @return array<int, array<string,mixed>>
 	 */
@@ -161,7 +161,7 @@ final class Field_Repository {
 	/**
 	 * Shape one ACF field object into the row every reader returns.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  array<string,mixed> $object ACF field object.
 	 * @return array<string,mixed>
 	 */
@@ -178,7 +178,7 @@ final class Field_Repository {
 	/**
 	 * Write one field value.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string     $selector Field name or key.
 	 * @param  mixed      $value    New value, already slashed by the caller via Slash_Input.
 	 * @param  int|string $target   Resolved ACF target.
@@ -208,7 +208,7 @@ final class Field_Repository {
 	/**
 	 * Clear one field value.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string     $selector Field name or key.
 	 * @param  int|string $target   Resolved ACF target.
 	 * @return true|WP_Error
@@ -231,7 +231,7 @@ final class Field_Repository {
 	/**
 	 * How many rows a repeater or flexible-content field currently holds.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string     $selector Field name or key.
 	 * @param  int|string $target   Resolved ACF target.
 	 * @return int
@@ -248,7 +248,7 @@ final class Field_Repository {
 	 * Used by the row abilities: `add_row()` on a text field silently does nothing, so the type has
 	 * to be checked before the call rather than inferred from its return value.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string     $selector Field name or key.
 	 * @param  int|string $target   Resolved ACF target.
 	 * @param  string[]   $types    Acceptable field types.
@@ -299,7 +299,7 @@ final class Field_Repository {
 	 * one PHP request instead of across three round trips to an AI client, which is where the cost
 	 * actually mattered. Appending stays cheap; inserting is the expensive case by nature.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string              $selector Field name or key.
 	 * @param  array<string,mixed> $row      Sub-field values.
 	 * @param  int|string          $target   Resolved ACF target.
@@ -341,7 +341,7 @@ final class Field_Repository {
 	/**
 	 * Patch one row by 1-based index.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string              $selector Field name or key.
 	 * @param  int                 $index    1-based row index.
 	 * @param  array<string,mixed> $row      Sub-field values to merge.
@@ -362,7 +362,7 @@ final class Field_Repository {
 	/**
 	 * Remove one row by 1-based index.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string     $selector Field name or key.
 	 * @param  int        $index    1-based row index.
 	 * @param  int|string $target   Resolved ACF target.
@@ -386,7 +386,7 @@ final class Field_Repository {
 	 * indistinguishable from a genuine failure. Checking first turns that into a typed error naming
 	 * the valid range.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  int $index 1-based index.
 	 * @param  int $count Current row count.
 	 * @return true|WP_Error

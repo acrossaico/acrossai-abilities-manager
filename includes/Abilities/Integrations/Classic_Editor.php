@@ -10,7 +10,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Integrations
- * @since      0.0.39
+ * @since      0.0.34
  */
 
 declare( strict_types = 1 );
@@ -27,13 +27,13 @@ final class Classic_Editor implements AcrossAI_Toolset_Integration {
 	/**
 	 * Toolset key. Must equal Base_Classic_Editor_Ability::TAB_GROUP.
 	 *
-	 * @since 0.0.39
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const TAB_GROUP = 'classic-editor';
 
 	/**
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function group(): string {
@@ -41,7 +41,7 @@ final class Classic_Editor implements AcrossAI_Toolset_Integration {
 	}
 
 	/**
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_label(): string {
@@ -49,7 +49,7 @@ final class Classic_Editor implements AcrossAI_Toolset_Integration {
 	}
 
 	/**
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @return string
 	 */
 	public function toolset_description(): string {
@@ -62,7 +62,7 @@ final class Classic_Editor implements AcrossAI_Toolset_Integration {
 	/**
 	 * Claims no prefixes — every ability in this group is declared by us.
 	 *
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @return string[]
 	 */
 	public function ability_prefixes(): array {
@@ -70,7 +70,7 @@ final class Classic_Editor implements AcrossAI_Toolset_Integration {
 	}
 
 	/**
-	 * @since  0.0.39
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public function is_active(): bool {

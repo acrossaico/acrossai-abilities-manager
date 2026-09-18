@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Consent
- * @since      0.0.48
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Consent;
@@ -18,12 +18,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * sets the banner languages.
  *
- * @since 0.0.48
+ * @since 0.0.34
  */
 final class Set_Languages extends Base_Consent_Ability {
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -31,7 +31,7 @@ final class Set_Languages extends Base_Consent_Ability {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -39,7 +39,7 @@ final class Set_Languages extends Base_Consent_Ability {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -47,7 +47,7 @@ final class Set_Languages extends Base_Consent_Ability {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -55,7 +55,7 @@ final class Set_Languages extends Base_Consent_Ability {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
@@ -66,7 +66,7 @@ final class Set_Languages extends Base_Consent_Ability {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -74,7 +74,7 @@ final class Set_Languages extends Base_Consent_Ability {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -86,7 +86,7 @@ final class Set_Languages extends Base_Consent_Ability {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -98,7 +98,7 @@ final class Set_Languages extends Base_Consent_Ability {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -106,7 +106,7 @@ final class Set_Languages extends Base_Consent_Ability {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -114,7 +114,7 @@ final class Set_Languages extends Base_Consent_Ability {
 	}
 
 	/**
-	 * @since  0.0.48
+	 * @since  0.0.34
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */

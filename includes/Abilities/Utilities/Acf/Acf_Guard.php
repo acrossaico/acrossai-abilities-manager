@@ -14,7 +14,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities\Acf
- * @since      0.0.37
+ * @since      0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Acf;
@@ -31,7 +31,7 @@ final class Acf_Guard {
 	/**
 	 * Filter name allowing site owners to relax the capability policy.
 	 *
-	 * @since 0.0.37
+	 * @since 0.0.34
 	 * @var   string
 	 */
 	public const PERMISSION_FILTER = 'acrossai_abilities_manager_acf_permission';
@@ -51,7 +51,7 @@ final class Acf_Guard {
 	 * Deliberately does NOT look at the filesystem. A development machine commonly has both the free
 	 * and Pro directories present, and that says nothing about which one is running.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_available(): bool {
@@ -66,7 +66,7 @@ final class Acf_Guard {
 	 * that at `pro/acf-pro.php` via `acf()->define( 'ACF_PRO', true )` and free never does. Going
 	 * through the helper keeps this correct if ACF ever changes how it marks the edition.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function is_pro(): bool {
@@ -84,7 +84,7 @@ final class Acf_Guard {
 	 *
 	 * It also covers the case a field type is removed by filter rather than by edition.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string $type Field type name, e.g. `repeater`.
 	 * @return bool
 	 */
@@ -95,7 +95,7 @@ final class Acf_Guard {
 	/**
 	 * Whether ACF blocks are available. Pro only.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return bool
 	 */
 	public static function has_blocks(): bool {
@@ -109,7 +109,7 @@ final class Acf_Guard {
 	 * edition can be switched — or ACF deactivated — after the abilities were registered in the same
 	 * request.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @return true|WP_Error
 	 */
 	public static function assert_available() {
@@ -126,7 +126,7 @@ final class Acf_Guard {
 	/**
 	 * Assert the running edition is ACF Pro.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string $feature What the caller was trying to do, named in the message.
 	 * @return true|WP_Error
 	 */
@@ -148,7 +148,7 @@ final class Acf_Guard {
 	/**
 	 * Assert a field type exists before operating on it.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string $type Field type name.
 	 * @return true|WP_Error
 	 */
@@ -170,7 +170,7 @@ final class Acf_Guard {
 	/**
 	 * Assert the caller confirmed a destructive operation.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  array<string,mixed> $input   Ability input.
 	 * @param  string              $message Optional operation-specific message.
 	 * @return true|WP_Error
@@ -194,7 +194,7 @@ final class Acf_Guard {
 	 * A SINGLE `current_user_can( $floor )`, never OR-ed with a default, so the filter can only ever
 	 * raise the requirement (PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY).
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string $floor WordPress capability floor.
 	 * @return callable
 	 */
@@ -211,7 +211,7 @@ final class Acf_Guard {
 			 * grant (PATTERN-FILTERABLE-CAPABILITY-RAISE-ONLY). Returning the filter's value
 			 * directly would let any plugin on the site hand an ability to a subscriber.
 			 *
-			 * @since 0.0.37
+			 * @since 0.0.34
 			 * @param bool   $allowed Whether access is granted. Always true at this point.
 			 * @param string $floor   WordPress capability floor.
 			 */
@@ -222,7 +222,7 @@ final class Acf_Guard {
 	/**
 	 * Build a success envelope.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  array<string,mixed> $payload Ability-specific keys.
 	 * @param  string              $message Human-readable summary.
 	 * @return array<string,mixed>
@@ -236,7 +236,7 @@ final class Acf_Guard {
 	/**
 	 * Build a failure envelope from a WP_Error.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  WP_Error $error Error to unwrap.
 	 * @return array<string,mixed>
 	 */
@@ -247,7 +247,7 @@ final class Acf_Guard {
 	/**
 	 * Build a failure envelope from an explicit code and message.
 	 *
-	 * @since  0.0.37
+	 * @since  0.0.34
 	 * @param  string $code    Machine-readable error code.
 	 * @param  string $message Human-readable message.
 	 * @return array<string,mixed>
