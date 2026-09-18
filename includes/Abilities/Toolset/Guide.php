@@ -227,10 +227,21 @@ final class Guide {
 	 * @return array<string, string>
 	 */
 	private function special(): array {
-		return array(
-			'toolset/' . AcrossAI_Toolset_Integrations::CATCH_ALL_GROUP => __( 'Abilities that matched no group. Membership is by fallthrough, never assignment, so its contents depend entirely on which plugins are installed — call discover before assuming it is irrelevant. Anything here is a normal ability with its own permissions.', 'acrossai-abilities-manager' ),
-			'toolset/integrations' => __( 'Capability from installed plugins, and the route to plugins your tool list does not show. Your tool list was fixed when you connected and cannot be refreshed, so a plugin installed since then has no tool of its own from your point of view — it is reachable here. Call discover for the plugin list, then discover again with plugin=<name>, then execute.', 'acrossai-abilities-manager' ),
-		);
+		$special = array();
+
+		// Only describe the catch-all when it actually exists. It has no
+		// dispatcher on a site where every ability found a group — which is the
+		// normal, healthy state — and describing a tool the caller cannot call
+		// is the exact fault this guide exists to prevent.
+		$catch_all = 'toolset/' . AcrossAI_Toolset_Integrations::CATCH_ALL_GROUP;
+
+		if ( function_exists( 'wp_has_ability' ) && wp_has_ability( $catch_all ) ) {
+			$special[ $catch_all ] = __( 'Abilities that matched no group. Membership is by fallthrough, never assignment, so its contents depend entirely on which plugins are installed — call discover before assuming it is irrelevant. Anything here is a normal ability with its own permissions.', 'acrossai-abilities-manager' );
+		}
+
+		$special['toolset/integrations'] = __( 'Capability from installed plugins, and the route to plugins your tool list does not show. Your tool list was fixed when you connected and cannot be refreshed, so a plugin installed since then has no tool of its own from your point of view — it is reachable here. Call discover for the plugin list, then discover again with plugin=<name>, then execute.', 'acrossai-abilities-manager' );
+
+		return $special;
 	}
 
 	/**
