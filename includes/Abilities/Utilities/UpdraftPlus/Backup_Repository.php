@@ -347,6 +347,17 @@ final class Backup_Repository {
 			return $existing;
 		}
 
+		/*
+		 * get_filesystem_method(), request_filesystem_credentials() and WP_Filesystem() all live in
+		 * wp-admin/includes/file.php, which WordPress does not load for a REST request -- and every
+		 * call into this suite is a REST request. Without this the restore died with "Call to
+		 * undefined function get_filesystem_method()" before it checked anything, which is how it
+		 * behaved for every input, not just a bad one. Measured.
+		 */
+		if ( ! function_exists( 'get_filesystem_method' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+
 		// Checked before anything is touched: this is the condition that would otherwise exit()
 		// halfway through replacing the site.
 		if ( 'direct' !== get_filesystem_method() ) {
