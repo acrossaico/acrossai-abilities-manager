@@ -97,7 +97,8 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 
 		// Feature 121 — store category (self-guards on WooCommerce inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', Store\Category_Registrar::instance(), 'register' );
-		$loader->add_action( 'wp_abilities_api_categories_init', Backups\Category_Registrar::instance(), 'register' );
+		$loader->add_action( 'wp_abilities_api_categories_init', UpdraftPlus\Category_Registrar::instance(), 'register' );
+		$loader->add_action( 'wp_abilities_api_categories_init', AllInOne\Category_Registrar::instance(), 'register' );
 
 		// Feature 104 — LiteSpeed Cache category (self-guards on the host probe inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', LiteSpeed\Category_Registrar::instance(), 'register' );
@@ -674,11 +675,13 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_store_abilities();
 		}
 
-		// Feature 126 — backup suite. Registered unconditionally and deliberately: the abilities
-		// speak to whichever backup plugin is present through a provider layer, and on a site with
-		// none they are the thing that says so. Gating them on a backup plugin being installed would
-		// hide the answer exactly when "is this site backed up?" is answered no.
-		$this->register_backup_abilities();
+		// Feature 127 — one suite per backup plugin. Registered unconditionally and deliberately:
+		// each suite's guard answers at call time, so on a site without that plugin the abilities
+		// are still discoverable and are the thing that says it is missing. Gating registration on
+		// the plugin being installed would hide the answer exactly when "is this site backed up?"
+		// is answered no.
+		$this->register_updraftplus_abilities();
+		$this->register_all_in_one_abilities();
 
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
 		// so every group it may cover already exists. Each declines to register
@@ -939,11 +942,12 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Toolset\Updates();
 		new Toolset\Cron();
 		new Toolset\Cache();
-		// `new Toolset\Backups()` was here. It was the one Toolset named after
-		// a CATEGORY rather than a plugin — reaching UpdraftPlus and All-in-One
-		// WP Migration through a provider layer — while every other integration
-		// Toolset is named for the plugin it serves. Being rebuilt per plugin;
-		// see the issue. The `backups/*` abilities and the providers are kept.
+		// Rebuilt per plugin, as every other integration Toolset is: one named
+		// for UpdraftPlus and one for All-in-One WP Migration, each reaching its
+		// own plugin directly. The provider layer and the `backups/*` abilities
+		// that sat behind the retired `toolset/backups` are gone with it.
+		new Toolset\UpdraftPlus();
+		new Toolset\All_In_One();
 		new Toolset\Database();
 		new Toolset\Files();
 		new Toolset\Diagnostics();
@@ -969,6 +973,8 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			'updates',
 			'cron',
 			'cache',
+			'updraftplus',
+			'all-in-one-wp-migration',
 			'database',
 			'files',
 			'diagnostics',
@@ -1444,25 +1450,38 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 	 * @return void
 	 */
 	/**
-	 * Feature 126 — the backup suite.
+	 * Feature 127 — the UpdraftPlus suite.
 	 *
-	 * Registered unconditionally like every other suite. The guard decides at call time whether any
-	 * backup plugin is present, so the abilities are discoverable — and can say what is missing —
-	 * on a site that has none.
-	 *
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return void
 	 */
-	private function register_backup_abilities(): void {
-		new Backups\Get_Status();
-		new Backups\List_Backups();
-		new Backups\Get_Backup();
-		new Backups\Check_Exposure();
-		new Backups\Get_Backup_Progress();
-		new Backups\Start_Backup();
-		new Backups\Set_Backup_Label();
-		new Backups\Delete_Backup();
-		new Backups\Restore_Backup();
+	private function register_updraftplus_abilities(): void {
+		new UpdraftPlus\Get_Status();
+		new UpdraftPlus\List_Backups();
+		new UpdraftPlus\Get_Backup();
+		new UpdraftPlus\Check_Exposure();
+		new UpdraftPlus\Get_Backup_Progress();
+		new UpdraftPlus\Start_Backup();
+		new UpdraftPlus\Delete_Backup();
+		new UpdraftPlus\Restore_Backup();
+	}
+
+	/**
+	 * Feature 127 — the All-in-One WP Migration suite.
+	 *
+	 * @since  0.0.35
+	 * @return void
+	 */
+	private function register_all_in_one_abilities(): void {
+		new AllInOne\Get_Status();
+		new AllInOne\List_Backups();
+		new AllInOne\Get_Backup();
+		new AllInOne\Check_Exposure();
+		new AllInOne\Get_Export_Progress();
+		new AllInOne\Start_Export();
+		new AllInOne\Set_Backup_Label();
+		new AllInOne\Delete_Backup();
+		new AllInOne\Restore_Backup();
 	}
 
 	private function register_store_abilities(): void {

@@ -1,16 +1,16 @@
 <?php
 /**
- * Feature 126 - put the site back to an earlier state. There is no undo.
+ * Feature 127 - put the site back to an earlier state. There is no undo.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
- * @subpackage Includes\Abilities\Backups
- * @since      0.0.34
+ * @subpackage Includes\Abilities\AllInOne
+ * @since      0.0.35
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Backups;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\AllInOne;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups\Provider_Registry;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\AllInOne\Archive_Repository;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -26,20 +26,20 @@ defined( 'ABSPATH' ) || exit;
  * The current state is reported BEFORE the restore runs, so the answer to "what am I about to lose"
  * is in the response rather than left to be inferred.
  *
- * @since 0.0.34
+ * @since 0.0.35
  */
-final class Restore_Backup extends Base_Backup_Ability {
+final class Restore_Backup extends Base_All_In_One_Ability {
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function slug(): string {
-		return 'backups/restore-backup';
+		return 'all-in-one/restore-backup';
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -47,15 +47,15 @@ final class Restore_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_description(): string {
-		return __( 'Restore this site from a backup set. THIS IS IRREVERSIBLE. It overwrites the current database and files with the contents of the backup: everything created or changed since that backup was taken - orders, posts, users, settings, uploads - is permanently lost, and there is no undo. Requires explicit confirmation. Consider taking a fresh backup first with backups/start-backup, so the current state remains recoverable.', 'acrossai-abilities-manager' );
+		return __( 'Restore this site from an archive. THIS IS IRREVERSIBLE: it overwrites the current database and files, and everything created or changed since the archive was taken - orders, posts, users, settings, uploads - is permanently lost. Restoring is part of All-in-One WP Migration\'s paid Unlimited Extension; without it this reports what the plugin itself says and names the manual import route. Requires explicit confirmation.', 'acrossai-abilities-manager' );
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -63,7 +63,7 @@ final class Restore_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -71,37 +71,33 @@ final class Restore_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
-		return __( 'THIS IS IRREVERSIBLE. Restoring replaces the current site with the backup: every order, post, user, setting and upload created or changed since that backup was taken is permanently lost, and there is no undo. If the current state matters, take a backup of it first with backups/start-backup. Pass confirm: true to proceed.', 'acrossai-abilities-manager' );
+		return __( 'THIS IS IRREVERSIBLE. Restoring replaces the current site with the backup: every order, post, user, setting and upload created or changed since that backup was taken is permanently lost, and there is no undo. If the current state matters, take a backup of it first with all-in-one/start-export. Pass confirm: true to proceed.', 'acrossai-abilities-manager' );
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
 		return array(
 			'id'         => array(
 				'type'        => 'string',
-				'description' => __( 'Backup identifier from backups/list-backups.', 'acrossai-abilities-manager' ),
+				'description' => __( 'Backup identifier from all-in-one/list-backups.', 'acrossai-abilities-manager' ),
 			),
 			'components' => array(
 				'type'        => 'array',
 				'items'       => array( 'type' => 'string' ),
 				'description' => __( 'Restrict the restore to these components of the set. Omit to restore all of them.', 'acrossai-abilities-manager' ),
 			),
-			'provider' => array(
-				'type'        => 'string',
-				'description' => __( 'Which backup plugin to use. Optional when only one is active; required when more than one is.', 'acrossai-abilities-manager' ),
-			),
 		);
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -109,12 +105,11 @@ final class Restore_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
 		return array(
-			'provider'        => array( 'type' => 'string' ),
 			'backup_id'       => array( 'type' => 'string' ),
 			'entities'        => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
 			'job_id'          => array( 'type' => array( 'string', 'null' ) ),
@@ -129,7 +124,7 @@ final class Restore_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -141,19 +136,13 @@ final class Restore_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */
 	protected function run( array $input ) {
-		$provider = Provider_Registry::resolve_for( isset( $input['provider'] ) ? (string) $input['provider'] : '', 'restore' );
-
-		if ( is_wp_error( $provider ) ) {
-			return $provider;
-		}
-
 		$id     = (string) $input['id'];
-		$backup = $provider::get_backup( $id );
+		$backup = Archive_Repository::get_backup( $id );
 
 		if ( is_wp_error( $backup ) ) {
 			return $backup;
@@ -162,7 +151,7 @@ final class Restore_Backup extends Base_Backup_Ability {
 		// Recorded BEFORE the restore, because afterwards there is nothing left to read it from.
 		$before = self::current_state( isset( $backup['created'] ) ? (int) $backup['created'] : 0 );
 
-		$result = $provider::restore_backup( $id, $input );
+		$result = Archive_Repository::restore_backup( $id, $input );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -170,7 +159,7 @@ final class Restore_Backup extends Base_Backup_Ability {
 
 		$result['replaced_state'] = $before;
 		$result['irreversible']   = true;
-		$result['note']           = __( 'The restore has been handed to the backup plugin and cannot be undone. Anything created or changed since the backup was taken is gone. Check the plugin\'s own screen for the outcome, and expect to sign in again if the users table was part of the set.', 'acrossai-abilities-manager' );
+		$result['note']           = __( 'The restore has run and cannot be undone. Anything created or changed since the backup was taken is gone. Expect to sign in again if the users table was part of the set.', 'acrossai-abilities-manager' );
 
 		return $result;
 	}
@@ -181,7 +170,7 @@ final class Restore_Backup extends Base_Backup_Ability {
 	 * Counts rather than contents: enough for an operator to recognise the scale of what a restore
 	 * discards, without dumping the site into a response.
 	 *
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  int $backup_time When the backup being restored was taken.
 	 * @return array<string, mixed>
 	 */

@@ -1,14 +1,14 @@
 <?php
 /**
- * Feature 126 — All-in-One WP Migration behind the provider contract.
+ * Feature 127 — everything this plugin knows about All-in-One WP Migration.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
- * @subpackage Includes\Abilities\Utilities\Backups
- * @since      0.0.34
+ * @subpackage Includes\Abilities\Utilities\AllInOne
+ * @since      0.0.35
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\AllInOne;
 
 use WP_Error;
 
@@ -30,9 +30,9 @@ defined( 'ABSPATH' ) || exit;
  * refusal is passed through with the plugin's own wording rather than being reworded as though the
  * limitation were ours.
  *
- * @since 0.0.34
+ * @since 0.0.35
  */
-final class All_In_One_Provider implements Backup_Provider {
+final class Archive_Repository {
 
 	/**
 	 * Private constructor — static utility (DEC-UTILITY-STATIC-ONLY).
@@ -40,66 +40,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	private function __construct() {}
 
 	/**
-	 * @since  0.0.34
-	 * @return string
-	 */
-	public static function id(): string {
-		return 'all-in-one-wp-migration';
-	}
-
-	/**
-	 * @since  0.0.34
-	 * @return string
-	 */
-	public static function label(): string {
-		return 'All-in-One WP Migration';
-	}
-
-	/**
-	 * @since  0.0.34
-	 * @return bool
-	 */
-	public static function is_active(): bool {
-		return defined( 'AI1WM_BACKUPS_PATH' ) && class_exists( 'Ai1wm_Backups' );
-	}
-
-	/**
-	 * @since  0.0.34
-	 * @param  string $capability Capability key.
-	 * @return bool
-	 */
-	public static function supports( string $capability ): bool {
-		$supported = array(
-			'start'    => self::rest_available(),
-			'progress' => true,
-			'delete'   => true,
-			// Not a limitation of this plugin's API but of its licence: restore lives in the paid
-			// Unlimited Extension and the free route refuses with upgrade_required.
-			'restore'  => false,
-			'label'    => true,
-			// Scheduled exports are likewise a paid extension, so there is no schedule to read.
-			'schedule' => false,
-		);
-
-		return $supported[ $capability ] ?? false;
-	}
-
-	/**
-	 * @since  0.0.34
-	 * @param  string $capability Capability key.
-	 * @return string
-	 */
-	public static function unsupported_reason( string $capability ): string {
-		$reasons = array(
-			'restore'  => __( 'All-in-One WP Migration does not include restoring in its free version - it is part of their paid Unlimited Extension. The archives it has taken are still valid: they can be restored by importing one at Tools > All-in-One WP Migration > Import. If UpdraftPlus is also installed, its backups can be restored from here.', 'acrossai-abilities-manager' ),
-			'schedule' => __( 'Scheduled backups are part of All-in-One WP Migration\'s paid extensions, so there is no schedule to read. UpdraftPlus schedules backups in its free version.', 'acrossai-abilities-manager' ),
-		);
-
-		return $reasons[ $capability ] ?? '';
-	}
-
-	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	public static function status(): array {
@@ -115,9 +56,6 @@ final class All_In_One_Provider implements Backup_Provider {
 		}
 
 		return array(
-			'provider'           => self::id(),
-			'label'              => self::label(),
-			'active'             => true,
 			'backup_count'       => count( $files ),
 			'last_backup_time'   => $newest,
 			'last_backup_gmt'    => $newest ? gmdate( 'c', $newest ) : null,
@@ -136,7 +74,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  int $limit  Maximum rows.
 	 * @param  int $offset Rows to skip.
 	 * @return array<string, mixed>
@@ -152,8 +90,6 @@ final class All_In_One_Provider implements Backup_Provider {
 		}
 
 		return array(
-			'provider' => self::id(),
-			'label'    => self::label(),
 			'backups'  => $rows,
 			'count'    => count( $rows ),
 			'total'    => $total,
@@ -161,7 +97,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  string $id Archive filename.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -181,14 +117,14 @@ final class All_In_One_Provider implements Backup_Provider {
 			'unknown_backup',
 			sprintf(
 				/* translators: %s: the backup identifier that was asked for. */
-				__( 'All-in-One has no archive named %s. Use backups/list-backups to see what exists.', 'acrossai-abilities-manager' ),
+				__( 'All-in-One has no archive named %s. Use all-in-one/list-backups to see what exists.', 'acrossai-abilities-manager' ),
 				$id
 			)
 		);
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<int, string>
 	 */
 	public static function storage_paths(): array {
@@ -205,7 +141,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	 * answers 202 with a job id and leaves the work running in the background, which is what makes
 	 * this safe to call from a request.
 	 *
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  array<string, mixed> $options Provider-neutral options.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -251,19 +187,18 @@ final class All_In_One_Provider implements Backup_Provider {
 		}
 
 		return array(
-			'provider' => self::id(),
 			'job_id'   => $job_id,
 			'started'  => true,
 			'includes' => array(
 				'files'    => ! isset( $exclude['no_media'] ),
 				'database' => ! isset( $exclude['no_database'] ),
 			),
-			'note'     => __( 'The export runs in the background and is not finished when this returns. Poll backups/get-backup-progress with this job_id. The archive appears in backups/list-backups only once it completes.', 'acrossai-abilities-manager' ),
+			'note'     => __( 'The export runs in the background and is not finished when this returns. Poll all-in-one/get-export-progress with this job_id. The archive appears in all-in-one/list-backups only once it completes.', 'acrossai-abilities-manager' ),
 		);
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  string $job Unused.
 	 * @return array<string, mixed>
 	 */
@@ -277,21 +212,19 @@ final class All_In_One_Provider implements Backup_Provider {
 				$status = is_array( $data ) && isset( $data['status'] ) ? (string) $data['status'] : '';
 
 				return array(
-					'provider'     => self::id(),
-					'job_id'       => $job,
+							'job_id'       => $job,
 					'running'      => 'running' === $status,
 					'finished'     => in_array( $status, array( 'done', 'completed', 'error' ), true ),
 					'backup_id'    => is_array( $data ) && isset( $data['name'] ) ? (string) $data['name'] : null,
 					'last_message' => is_array( $data ) && isset( $data['message'] ) ? (string) $data['message'] : '',
 					'note'         => 'error' === $status
-						? __( 'The export reported an error. backups/get-backup-progress returns its last message; the full log is on the plugin\'s own screen.', 'acrossai-abilities-manager' )
+						? __( 'The export reported an error. all-in-one/get-export-progress returns its last message; the full log is on the plugin\'s own screen.', 'acrossai-abilities-manager' )
 						: '',
 				);
 			}
 		}
 
 		return array(
-			'provider'     => self::id(),
 			'job_id'       => $job,
 			'running'      => self::is_running(),
 			'finished'     => ! self::is_running(),
@@ -302,7 +235,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  string $id Archive filename.
 	 * @return array<string, mixed>|WP_Error
 	 */
@@ -331,7 +264,6 @@ final class All_In_One_Provider implements Backup_Provider {
 		}
 
 		return array(
-			'provider'      => self::id(),
 			'backup_id'     => $id,
 			'files_removed' => array( $id ),
 			'bytes_freed'   => $bytes,
@@ -340,7 +272,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  string               $id      Unused.
 	 * @param  array<string, mixed> $options Unused.
 	 * @return WP_Error
@@ -365,8 +297,7 @@ final class All_In_One_Provider implements Backup_Provider {
 				$data = $response->get_data();
 
 				return array(
-					'provider'  => self::id(),
-					'backup_id' => $id,
+							'backup_id' => $id,
 					'entities'  => array( 'database', 'files' ),
 					'job_id'    => is_array( $data ) && isset( $data['job_id'] ) ? (string) $data['job_id'] : null,
 				);
@@ -393,7 +324,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	/**
 	 * Whether the plugin's own REST routes are registered.
 	 *
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return bool
 	 */
 	private static function rest_available(): bool {
@@ -401,7 +332,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<int, array<string, mixed>>
 	 */
 	private static function files(): array {
@@ -415,7 +346,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, string>
 	 */
 	private static function labels(): array {
@@ -429,7 +360,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  array<string, mixed>  $file   Raw file row.
 	 * @param  array<string, string> $labels Stored labels.
 	 * @return array<string, mixed>
@@ -439,7 +370,6 @@ final class All_In_One_Provider implements Backup_Provider {
 		$mtime = isset( $file['mtime'] ) ? (int) $file['mtime'] : 0;
 
 		return array(
-			'provider'     => self::id(),
 			'id'           => $name,
 			'created'      => $mtime > 0 ? $mtime : null,
 			'created_gmt'  => $mtime > 0 ? gmdate( 'c', $mtime ) : null,
@@ -457,7 +387,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	/**
 	 * Attach a label to an archive.
 	 *
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  string $id    Archive filename.
 	 * @param  string $label Label text.
 	 * @return array<string, mixed>|WP_Error
@@ -478,14 +408,13 @@ final class All_In_One_Provider implements Backup_Provider {
 		$after = self::get_backup( $id );
 
 		return array(
-			'provider'  => self::id(),
 			'backup_id' => $id,
 			'label'     => is_wp_error( $after ) ? $label : (string) $after['label'],
 		);
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return bool
 	 */
 	private static function is_running(): bool {
@@ -499,7 +428,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	private static function status_message(): string {
@@ -511,7 +440,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>|null
 	 */
 	private static function status_payload() {
@@ -525,7 +454,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	private static function directory(): string {
@@ -533,7 +462,7 @@ final class All_In_One_Provider implements Backup_Provider {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  int $timestamp Unix timestamp.
 	 * @return string
 	 */

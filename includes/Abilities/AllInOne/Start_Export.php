@@ -1,16 +1,16 @@
 <?php
 /**
- * Feature 126 - take a backup now.
+ * Feature 127 - take a backup now.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
- * @subpackage Includes\Abilities\Backups
- * @since      0.0.34
+ * @subpackage Includes\Abilities\AllInOne
+ * @since      0.0.35
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Backups;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\AllInOne;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups\Provider_Registry;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\AllInOne\Archive_Repository;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -18,20 +18,20 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Starts a background job. It is not finished when this returns.
  *
- * @since 0.0.34
+ * @since 0.0.35
  */
-final class Start_Backup extends Base_Backup_Ability {
+final class Start_Export extends Base_All_In_One_Ability {
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function slug(): string {
-		return 'backups/start-backup';
+		return 'all-in-one/start-export';
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -39,15 +39,15 @@ final class Start_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_description(): string {
-		return __( 'Start a backup of this site now. The work runs in the background and is NOT finished when this returns - it returns a job_id to poll with backups/get-backup-progress, and the new set appears in backups/list-backups only once it completes. On a quiet site the job may need a visitor before WordPress cron advances it. Take a backup before any change that would be hard to undo.', 'acrossai-abilities-manager' );
+		return __( 'Start a backup of this site now. The work runs in the background and is NOT finished when this returns - it returns a job_id to poll with all-in-one/get-export-progress, and the new set appears in all-in-one/list-backups only once it completes. On a quiet site the job may need a visitor before WordPress cron advances it. Take a backup before any change that would be hard to undo.', 'acrossai-abilities-manager' );
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -55,15 +55,11 @@ final class Start_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
 		return array(
-			'provider' => array(
-				'type'        => 'string',
-				'description' => __( 'Which backup plugin to use. Optional when only one is active; required when more than one is.', 'acrossai-abilities-manager' ),
-			),
 			'files'          => array(
 				'type'        => 'boolean',
 				'default'     => true,
@@ -88,7 +84,7 @@ final class Start_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -96,12 +92,11 @@ final class Start_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
 		return array(
-			'provider' => array( 'type' => 'string' ),
 			'job_id'   => array( 'type' => 'string' ),
 			'started'  => array( 'type' => 'boolean' ),
 			'includes' => array( 'type' => 'object', 'additionalProperties' => true ),
@@ -110,7 +105,7 @@ final class Start_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -122,17 +117,11 @@ final class Start_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */
 	protected function run( array $input ) {
-		$provider = Provider_Registry::resolve_for( isset( $input['provider'] ) ? (string) $input['provider'] : '', 'start' );
-
-		if ( is_wp_error( $provider ) ) {
-			return $provider;
-		}
-
-		return $provider::start_backup( $input );
+		return Archive_Repository::start_backup( $input );
 	}
 }
