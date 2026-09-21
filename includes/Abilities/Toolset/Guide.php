@@ -240,9 +240,10 @@ final class Guide {
 		$indirect = apply_filters( 'acrossai_toolset_integration_groups', array() );
 		$indirect = is_array( $indirect ) ? array_flip( array_map( 'strval', $indirect ) ) : array();
 
-		$rows = array();
+		$rows   = array();
+		$counts = AcrossAI_Ability_Group::counts();
 
-		foreach ( AcrossAI_Ability_Group::counts() as $group => $count ) {
+		foreach ( $counts as $group => $count ) {
 			$name    = 'toolset/' . $group;
 			$ability = function_exists( 'wp_get_ability' ) ? wp_get_ability( $name ) : null;
 
@@ -279,7 +280,89 @@ final class Guide {
 			);
 		}
 
+		// Counts is built by walking abilities, so a group holding none has no
+		// key there at all. Default Toolsets register regardless, so the map is
+		// no longer the whole list — and a tool the caller can see but this
+		// guide never names is the precise fault the guide exists to prevent.
+		foreach ( self::empty_groups( $counts ) as $group ) {
+			$name    = 'toolset/' . $group;
+			$ability = function_exists( 'wp_get_ability' ) ? wp_get_ability( $name ) : null;
+
+			if ( ! $ability instanceof WP_Ability ) {
+				continue;
+			}
+
+			$rows[] = array(
+				'name'      => $name,
+				'label'     => $ability->get_label(),
+				'covers'    => self::summarise( $ability->get_description() ),
+				'abilities' => 0,
+				'call'      => __( 'Call it directly — it is in the default set, so your tool list has it. It holds nothing at the moment, and that changes when a plugin or theme is activated, so call discover rather than ruling it out for the rest of this session.', 'acrossai-abilities-manager' ),
+			);
+		}
+
 		return $rows;
+	}
+
+	/**
+	 * Registered dispatchers whose group holds nothing right now.
+	 *
+	 * Only defaults can be here: a per-plugin Toolset with an empty group does
+	 * not register at all, so it is not a tool and must not be named.
+	 *
+	 * **Membership is decided by the dispatcher's own marker, never by the slug
+	 * prefix.** `toolset/` is a shared namespace: the transport registers
+	 * `toolset/setup-required` there, a diagnostic it serves ONLY while this
+	 * add-on is missing and removes from every healthy server. Matching on the
+	 * prefix listed it here as an empty default and told a model to call a tool
+	 * it will never be given — the precise fault this guide exists to prevent.
+	 * `meta.acrossai.toolset` is set by `args()` on every dispatcher and by
+	 * nothing else; the group tagger already relies on it for the same reason.
+	 *
+	 * `server-guide` carries no such marker, so it is excluded without being
+	 * named. `integrations` does carry one and is described under `special()`,
+	 * so it is skipped explicitly.
+	 *
+	 * @since  0.0.38
+	 * @param  array<string, int> $counted Groups already named, keyed by group.
+	 * @return array<int, string>
+	 */
+	private static function empty_groups( array $counted ): array {
+		if ( ! function_exists( 'wp_get_abilities' ) ) {
+			return array();
+		}
+
+		$skip   = array(
+			'server-guide' => true,
+			'integrations' => true,
+		);
+		$groups = array();
+
+		foreach ( wp_get_abilities() as $ability ) {
+			$name = (string) $ability->get_name();
+
+			if ( 0 !== strpos( $name, 'toolset/' ) ) {
+				continue;
+			}
+
+			$meta = $ability->get_meta_item( 'acrossai' );
+
+			if ( ! is_array( $meta ) || empty( $meta['toolset'] ) ) {
+				continue;
+			}
+
+			$group = substr( $name, strlen( 'toolset/' ) );
+
+			if ( isset( $counted[ $group ] ) || isset( $skip[ $group ] ) ) {
+				continue;
+			}
+
+			$groups[] = $group;
+		}
+
+		sort( $groups );
+
+		return $groups;
 	}
 
 	/**
@@ -331,17 +414,18 @@ final class Guide {
 	private function special(): array {
 		$special = array();
 
-		// Only describe the catch-all when it actually exists. It has no
-		// dispatcher on a site where every ability found a group — which is the
-		// normal, healthy state — and describing a tool the caller cannot call
-		// is the exact fault this guide exists to prevent.
+		// The catch-all is a default, so it registers even on a site where every
+		// ability found a group and it holds nothing. The guard remains for the
+		// one case that still leaves it unregistered — another plugin claiming
+		// the slug first — because describing a tool the caller cannot call is
+		// the exact fault this guide exists to prevent.
 		$catch_all = 'toolset/' . AcrossAI_Toolset_Integrations::CATCH_ALL_GROUP;
 
 		if ( function_exists( 'wp_has_ability' ) && wp_has_ability( $catch_all ) ) {
-			$special[ $catch_all ] = __( 'Abilities that matched no group. Membership is by fallthrough, never assignment, so its contents depend entirely on which plugins are installed — call discover before assuming it is irrelevant. Anything here is a normal ability with its own permissions.', 'acrossai-abilities-manager' );
+			$special[ $catch_all ] = __( 'Abilities that matched no group. Membership is by fallthrough, never assignment, so its contents depend entirely on which plugins are installed — call discover before assuming it is irrelevant. It is often empty, and it fills and empties as plugins and themes are activated, so an earlier answer does not settle it. Anything here is a normal ability with its own permissions.', 'acrossai-abilities-manager' );
 		}
 
-		$special['toolset/integrations'] = __( 'Capability from installed plugins, and the route to plugins your tool list does not show. Your tool list was fixed when you connected and cannot be refreshed, so a plugin installed since then has no tool of its own from your point of view — it is reachable here. Call discover for the plugin list, then discover again with plugin=<name>, then execute.', 'acrossai-abilities-manager' );
+		$special['toolset/integrations'] = __( 'Capability from installed plugins, and the route to plugins your tool list does not show. Your tool list was fixed when you connected and cannot be refreshed, so a plugin installed since then has no tool of its own from your point of view — it is reachable here. Its contents move with the site: activating or deactivating a plugin changes them, so call discover again rather than reusing an earlier answer. Call discover for the plugin list, then discover again with plugin=<name>, then execute.', 'acrossai-abilities-manager' );
 
 		return $special;
 	}

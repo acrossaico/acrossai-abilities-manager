@@ -28,6 +28,22 @@ final class Fixture_Toolset extends Base_Toolset_Ability {
 	/** @var string */
 	public static string $for_group = 'content';
 
+	/** @var bool Whether this fixture belongs to the server type's default set. */
+	public static bool $is_default = true;
+
+	/** @var bool Whether this fixture's membership tracks what is installed. */
+	public static bool $is_volatile = false;
+
+	/** @return bool */
+	protected function is_server_type_default(): bool {
+		return self::$is_default;
+	}
+
+	/** @return bool */
+	protected function is_volatile(): bool {
+		return self::$is_volatile;
+	}
+
 	/** @return string */
 	protected function group(): string {
 		return self::$for_group;
@@ -109,6 +125,8 @@ class Test_Toolset_Dispatch extends TestCase {
 		Fixture_Ability::$permissions           = array();
 		Fixture_Ability::$throws                = array();
 		Fixture_Toolset::$for_group             = 'content';
+		Fixture_Toolset::$is_default            = true;
+		Fixture_Toolset::$is_volatile           = false;
 		AcrossAI_Ability_Group::flush();
 	}
 

@@ -41,6 +41,8 @@ class Test_Toolset_Permissions extends TestCase {
 		Fixture_Ability::$permissions          = array();
 		Fixture_Ability::$throws               = array();
 		Fixture_Toolset::$for_group            = 'content';
+		Fixture_Toolset::$is_default           = true;
+		Fixture_Toolset::$is_volatile          = false;
 		AcrossAI_Ability_Group::flush();
 	}
 
@@ -334,15 +336,25 @@ class Test_Toolset_Permissions extends TestCase {
 	/**
 	 * A Toolset that never registered still contributes, and that is fine.
 	 *
-	 * `register()` bails on an empty group. Naming a slug nothing has claimed
-	 * is inert, so there is nothing to protect against — and the alternative
-	 * costs the case above.
+	 * `register()` bails on an empty NON-DEFAULT group. Naming a slug nothing
+	 * has claimed is inert, so there is nothing to protect against — and the
+	 * alternative costs the case above.
+	 *
+	 * A default with an empty group registers instead of bailing; that half is
+	 * covered by {@see Test_Toolset_Empty_Registration}.
 	 */
 	public function test_unregistered_toolset_still_contributes(): void {
-		// No members, so register() bails before claiming the slug.
+		// Non-default AND memberless, which is the only combination that still
+		// bails before claiming the slug.
+		Fixture_Toolset::$is_default = false;
+
 		$toolset = new Fixture_Toolset();
 		$toolset->register();
 
+		$this->assertFalse(
+			wp_has_ability( 'toolset/content' ),
+			'Precondition: an empty non-default Toolset does not register.'
+		);
 		$this->assertSame( array( 'toolset/content' ), $toolset->declare_tool_level_ability( array() ) );
 	}
 

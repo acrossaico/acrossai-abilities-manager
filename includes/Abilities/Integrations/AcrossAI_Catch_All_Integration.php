@@ -59,7 +59,7 @@ final class AcrossAI_Catch_All_Integration implements AcrossAI_Toolset_Integrati
 	 */
 	public function toolset_description(): string {
 		return __(
-			'Abilities from plugins that have no toolset of their own on this site. The contents are not fixed — they depend on which plugins are installed here — so treat this as the place to look when no other toolset matches, and call action=discover first to see what it actually holds. Anything here is a normal ability with its own permissions. action=discover lists this group; action=info returns schemas; action=execute runs one ability.',
+			'Abilities from plugins that have no toolset of their own on this site. The contents are not fixed — they depend on which plugins are installed here — so treat this as the place to look when no other toolset matches, and call action=discover first to see what it actually holds. It may hold nothing at all on a site where every ability has a home elsewhere, and it fills and empties as plugins and themes are activated — so call discover again rather than trusting an earlier answer. Anything here is a normal ability with its own permissions. action=discover lists this group; action=info returns schemas; action=execute runs one ability.',
 			'acrossai-abilities-manager'
 		);
 	}
