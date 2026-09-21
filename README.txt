@@ -5,7 +5,7 @@ Tags: abilities, ability management, access control, site management, ai
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.0.34
+Stable tag: 0.0.35
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -197,6 +197,10 @@ No data is sent to any external server without an explicit administrator action.
 
 = Unreleased =
 
+(nothing yet)
+
+= 0.0.35 - 2026-09-21 =
+
 * **The backup abilities are now two tabs, one per plugin.** `UpdraftPlus` and `All-in-One WP Migration` each get their own tab, their own toolset and their own abilities, the same way Elementor, Rank Math, WPCode and every other integration works. 0.0.34 shipped them as a single "Backups" tab that reached both plugins through a shared layer; that made two genuinely different plugins look interchangeable and turned every real difference into a flag you had to go and check.
 * **Each suite now offers only what its plugin can actually do.** UpdraftPlus schedules backups and restores them, and stores no label - so it has no label ability. All-in-One labels its archives, and restoring belongs to their paid Unlimited Extension - so that ability asks the plugin and passes its own answer back, naming the manual import route, rather than refusing on its behalf.
 * **Breaking: the `backups/*` abilities are gone.** They are replaced by `updraftplus/*` and `all-in-one/*`. Anything holding a `backups/` slug needs updating; there are no aliases. The suite was one release old.
@@ -275,6 +279,9 @@ Every release before 0.0.32 is recorded in full in changelog.txt, shipped inside
 https://github.com/acrossaico/acrossai-abilities-manager/blob/main/changelog.txt
 
 == Upgrade Notice ==
+
+= 0.0.35 =
+BREAKING - the `backups/*` abilities added in 0.0.34 are replaced by `updraftplus/*` and `all-in-one/*`. Anything holding a `backups/` slug needs updating; there are no aliases. The backup abilities are now two tabs, one per plugin, matching how every other integration works: each offers only what its plugin can actually do rather than advertising everything and reporting absence when you try to use it. Also fixes restoring, which never worked outside the admin screens in 0.0.34 - it checked the filesystem using a function WordPress only loads inside wp-admin, so every restore request failed on that line before checking anything. If you rely on restoring from UpdraftPlus through this plugin, this release is the one that makes it work. Nothing else changes; existing abilities, overrides and access rules are unaffected.
 
 = 0.0.34 =
 BREAKING - abilities now require administrator rights unless a rule says otherwise. If anyone below administrator drives this site through an AI client, they lose access on update until an administrator grants it: set a rule on the individual ability under User Access, or move the site-wide floor with the `acrossai_default_ability_capability` filter. This closes a real hole - measured on one site, three installed abilities had no permission check at all, two were open to any logged-in subscriber, and one that writes content was open at contributor level. Otherwise additive: 19 new tabs and around 400 new abilities, including WooCommerce, backups, Yoast SEO, LiteSpeed Cache and Contact Form 7. Existing abilities, overrides and access rules are unaffected.
