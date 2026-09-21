@@ -939,7 +939,11 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Toolset\Updates();
 		new Toolset\Cron();
 		new Toolset\Cache();
-		new Toolset\Backups();
+		// `new Toolset\Backups()` was here. It was the one Toolset named after
+		// a CATEGORY rather than a plugin — reaching UpdraftPlus and All-in-One
+		// WP Migration through a provider layer — while every other integration
+		// Toolset is named for the plugin it serves. Being rebuilt per plugin;
+		// see the issue. The `backups/*` abilities and the providers are kept.
 		new Toolset\Database();
 		new Toolset\Files();
 		new Toolset\Diagnostics();
@@ -965,7 +969,6 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			'updates',
 			'cron',
 			'cache',
-			'backups',
 			'database',
 			'files',
 			'diagnostics',
