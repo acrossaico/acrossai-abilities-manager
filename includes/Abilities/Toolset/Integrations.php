@@ -73,7 +73,7 @@ final class Integrations extends Base_Toolset_Ability {
 	 * @return string
 	 */
 	protected function toolset_description(): string {
-		return __( 'Capabilities that come from the plugins installed on this site — page builders, SEO, ecommerce, forms, email delivery, code snippets and whatever else is here. The contents depend entirely on which plugins this site runs, so call action=discover first: it returns the list of plugins, not a wall of abilities. Then call action=discover again with plugin=<name> to see one plugin\'s abilities, or pass search to look across all of them at once. If a plugin has its own toolset in your tool list, prefer calling that directly — it carries the fuller description. If it does not, run the ability from here: everything listed is executable through this tool. action=info returns schemas; action=execute runs one ability.', 'acrossai-abilities-manager' );
+		return __( 'Capabilities that come from the plugins installed on this site — page builders, SEO, ecommerce, forms, email delivery, code snippets and whatever else is here. The contents depend entirely on which plugins this site runs, so call action=discover first: it returns the list of plugins, not a wall of abilities. That list also moves while you are connected — activating or deactivating a plugin adds or removes entries — so call discover again rather than reusing an earlier answer. Then call action=discover again with plugin=<name> to see one plugin\'s abilities, or pass search to look across all of them at once. If a plugin has its own toolset in your tool list, prefer calling that directly — it carries the fuller description. If it does not, run the ability from here: everything listed is executable through this tool. action=info returns schemas; action=execute runs one ability.', 'acrossai-abilities-manager' );
 	}
 
 	/**
@@ -100,6 +100,20 @@ final class Integrations extends Base_Toolset_Ability {
 		$groups = apply_filters( 'acrossai_toolset_integration_groups', array() );
 
 		return is_array( $groups ) ? array_values( array_unique( array_map( 'strval', $groups ) ) ) : array();
+	}
+
+	/**
+	 * Every group here belongs to a plugin, so the contents move with the site.
+	 *
+	 * This is the Toolset most likely to be read once and remembered, because it
+	 * is the one a caller reaches for when its cached tool list is already out of
+	 * date — exactly the caller least able to notice the answer has moved again.
+	 *
+	 * @since  0.0.38
+	 * @return bool
+	 */
+	protected function is_volatile(): bool {
+		return true;
 	}
 
 	/**

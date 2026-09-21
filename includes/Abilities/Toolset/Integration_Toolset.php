@@ -114,4 +114,19 @@ final class Integration_Toolset extends Base_Toolset_Ability {
 
 		return false;
 	}
+
+	/**
+	 * Every dispatcher built from a declaration follows a plugin.
+	 *
+	 * True for the catch-all too, and most of all: what falls through to `other`
+	 * is decided by which prefixes the installed plugins claim, so it can gain
+	 * and lose abilities without anything being installed that is obviously
+	 * "its" plugin.
+	 *
+	 * @since  0.0.38
+	 * @return bool
+	 */
+	protected function is_volatile(): bool {
+		return true;
+	}
 }

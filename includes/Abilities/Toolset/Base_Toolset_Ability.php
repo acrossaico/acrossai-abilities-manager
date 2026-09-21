@@ -332,6 +332,49 @@ abstract class Base_Toolset_Ability {
 	}
 
 	/**
+	 * Whether this Toolset's membership tracks what is installed on the site.
+	 *
+	 * False for the Toolsets describing WordPress itself: `content` holds the
+	 * same abilities on every site, so one `discover` stays true for the rest of
+	 * a caller's session.
+	 *
+	 * True where activating a plugin or theme changes the answer. A caller that
+	 * kept such a listing is wrong from the next activation onwards and has no
+	 * way to notice: the adapter advertises `tools.listChanged: false`, and a
+	 * client handed the notification anyway ignored it (#129). Saying so in the
+	 * discover payload is the only channel that reaches the model, because —
+	 * unlike the tool description, which is cached when the client connects — it
+	 * is regenerated on every call.
+	 *
+	 * @since  0.0.38
+	 * @return bool
+	 */
+	protected function is_volatile(): bool {
+		return false;
+	}
+
+	/**
+	 * Mark a discover response whose contents can change under the caller.
+	 *
+	 * Applied to every `discover` return, the empty one included: an empty
+	 * answer is the likeliest of all to be mistaken for a settled one.
+	 *
+	 * @since  0.0.38
+	 * @param  array<string, mixed> $response Response to annotate.
+	 * @return array<string, mixed>
+	 */
+	private function with_volatility( array $response ): array {
+		if ( ! $this->is_volatile() ) {
+			return $response;
+		}
+
+		$response['volatile'] = true;
+		$response['note']     = __( 'This listing reflects the plugins and themes active right now, and changes when one is activated or deactivated. Call discover again rather than reusing an earlier result.', 'acrossai-abilities-manager' );
+
+		return $response;
+	}
+
+	/**
 	 * Keep this Toolset out of the sitewide abilities surface.
 	 *
 	 * A Toolset is not an ability anyone edits. Listed as an ordinary one it
@@ -459,10 +502,30 @@ abstract class Base_Toolset_Ability {
 	 * ------------------------------------------------------------------ */
 
 	/**
-	 * Register this Toolset, unless its group is empty or its slug is taken.
+	 * Register this Toolset, unless its slug is taken or it is an empty non-default.
 	 *
-	 * A Toolset for a group with no registered abilities would advertise a
-	 * subject area that does not exist, so it is not created at all.
+	 * A per-plugin Toolset for a group with no registered abilities would
+	 * advertise a subject area that does not exist, so it is not created at all.
+	 * It is reachable through `toolset/integrations` the moment its plugin
+	 * arrives, so nothing is lost by leaving it out until then.
+	 *
+	 * **A DEFAULT Toolset registers even when its group is empty.** The default
+	 * set is what every server of this type serves, and an MCP client caches
+	 * `tools/list` when it connects with no way to be told it changed. A default
+	 * that is absent merely because it happens to hold nothing today is absent
+	 * for the life of that connection — including after the plugin that would
+	 * have filled it is installed. That is how `toolset/other` went missing from
+	 * a site whose abilities all had a home, and how `toolset/integrations` —
+	 * the one route to a plugin a cached list predates — could disappear on a
+	 * site that blocked the two ability families feeding it.
+	 *
+	 * An empty Toolset is not a dead end: `do_discover()` answers it with a
+	 * message rather than an error, and a volatile one says so.
+	 *
+	 * `is_server_type_default()` is safe to ask here because it answers from the
+	 * group name alone and never consults the ability registry — see the note on
+	 * `declare_server_type_tool()` for the ordering bug that rule exists to
+	 * prevent.
 	 *
 	 * @since  0.0.34
 	 * @return void
@@ -490,7 +553,7 @@ abstract class Base_Toolset_Ability {
 			return;
 		}
 
-		if ( ! $this->has_any_member() ) {
+		if ( ! $this->has_any_member() && ! $this->is_server_type_default() ) {
 			return;
 		}
 
@@ -647,6 +710,18 @@ abstract class Base_Toolset_Ability {
 				'error_message' => array( 'type' => 'string' ),
 				'error_code' => array( 'type' => 'string' ),
 				'message'    => array( 'type' => 'string' ),
+				/*
+				 * discover only, and only on a Toolset whose membership tracks
+				 * what is installed. Declared here for the reason given on
+				 * `plugins` below: the schema is `additionalProperties: false`,
+				 * so a key the response carries but the schema does not name
+				 * fails the entire call rather than being dropped.
+				 */
+				'volatile'   => array(
+					'type'        => 'boolean',
+					'description' => 'True when this listing changes as plugins and themes are activated. Call discover again rather than reusing the result.',
+				),
+				'note'       => array( 'type' => 'string' ),
 				'abilities'  => array(
 					'type'  => 'array',
 					'items' => array(
@@ -875,13 +950,20 @@ abstract class Base_Toolset_Ability {
 		$overview = $this->discover_overview( $input );
 
 		if ( null !== $overview ) {
-			return $overview;
+			return $this->with_volatility( $overview );
 		}
 
 		$members = $this->members( 'discover' );
 
 		if ( array() === $members ) {
-			return array(
+			// A volatile group says the emptiness is a fact about this moment.
+			// The settled wording invites a caller to stop asking, which is the
+			// wrong lesson when installing a plugin is what fills the group.
+			$empty_message = $this->is_volatile()
+				? __( 'Nothing is in this group right now. That changes as plugins and themes are activated, so call discover again rather than treating this as final.', 'acrossai-abilities-manager' )
+				: __( 'No abilities in this group are currently available to you.', 'acrossai-abilities-manager' );
+
+			return $this->with_volatility( array(
 				'action'    => 'discover',
 				'group'     => $this->group(),
 				'success'   => true,
@@ -890,8 +972,8 @@ abstract class Base_Toolset_Ability {
 				'returned'  => 0,
 				'offset'    => 0,
 				'has_more'  => false,
-				'message'   => __( 'No abilities in this group are currently available to you.', 'acrossai-abilities-manager' ),
-			);
+				'message'   => $empty_message,
+			) );
 		}
 
 		$members = $this->apply_filters_to( $members, $input );
@@ -909,7 +991,7 @@ abstract class Base_Toolset_Ability {
 			$rows[] = $this->summarise( $ability, $fields );
 		}
 
-		return array(
+		return $this->with_volatility( array(
 			'action'    => 'discover',
 			'group'     => $this->group(),
 			'success'   => true,
@@ -918,7 +1000,7 @@ abstract class Base_Toolset_Ability {
 			'returned'  => count( $rows ),
 			'offset'    => $offset,
 			'has_more'  => ( $offset + count( $rows ) ) < $total,
-		);
+		) );
 	}
 
 	/**
