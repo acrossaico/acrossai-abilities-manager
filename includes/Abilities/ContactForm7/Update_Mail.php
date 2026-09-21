@@ -82,6 +82,10 @@ class Update_Mail extends Base_Contact_Form_7_Ability {
 			'mail'             => array( 'type' => 'object' ),
 			'updated'          => array( 'type' => 'array' ),
 			'unresolved_tags'  => array( 'type' => 'array' ),
+			'sanitised'        => array(
+				'type'        => 'array',
+				'description' => 'Fields whose content was altered by sanitising before it was stored. Read the returned mail to see what was kept.',
+			),
 		);
 	}
 
@@ -120,9 +124,10 @@ class Update_Mail extends Base_Contact_Form_7_Ability {
 			return $allowed;
 		}
 
-		$which   = isset( $input['which'] ) && 'mail_2' === $input['which'] ? 'mail_2' : 'mail';
-		$mail    = (array) $form->prop( $which );
-		$updated = array();
+		$which     = isset( $input['which'] ) && 'mail_2' === $input['which'] ? 'mail_2' : 'mail';
+		$mail      = (array) $form->prop( $which );
+		$updated   = array();
+		$sanitised = array();
 
 		foreach ( array( 'subject', 'sender', 'recipient', 'body', 'additional_headers' ) as $field ) {
 			if ( ! isset( $input[ $field ] ) ) {
@@ -138,6 +143,19 @@ class Update_Mail extends Base_Contact_Form_7_Ability {
 					'confirmation_required',
 					__( 'Changing the recipient redirects every submission of this form. Pass confirm: true to proceed.', 'acrossai-abilities-manager' )
 				);
+			}
+
+			if ( 'body' === $field ) {
+				// Sanitising happens in the repository, so without this the caller
+				// is told the write succeeded and never learns that part of what it
+				// sent was dropped. Silence is the bug; the stripping is deliberate.
+				$clean = Form_Repository::sanitise_mail_body( $value );
+
+				if ( $clean !== $value ) {
+					$sanitised[] = $field;
+				}
+
+				$value = $clean;
 			}
 
 			$mail[ $field ] = $value;
@@ -183,12 +201,21 @@ class Update_Mail extends Base_Contact_Form_7_Ability {
 				$fresh,
 				(string) ( $stored['body'] ?? '' ) . ' ' . (string) ( $stored['subject'] ?? '' )
 			),
-			'message'         => sprintf(
-				/* translators: 1: mail or mail_2, 2: comma-separated field names */
-				__( 'Updated %1$s: %2$s.', 'acrossai-abilities-manager' ),
-				$which,
-				implode( ', ', $updated )
-			),
+			'sanitised'       => $sanitised,
+			'message'         => array() === $sanitised
+				? sprintf(
+					/* translators: 1: mail or mail_2, 2: comma-separated field names */
+					__( 'Updated %1$s: %2$s.', 'acrossai-abilities-manager' ),
+					$which,
+					implode( ', ', $updated )
+				)
+				: sprintf(
+					/* translators: 1: mail or mail_2, 2: comma-separated field names, 3: comma-separated field names */
+					__( 'Updated %1$s: %2$s. Sanitising changed what was stored for: %3$s — read the returned mail before assuming it says what you sent.', 'acrossai-abilities-manager' ),
+					$which,
+					implode( ', ', $updated ),
+					implode( ', ', $sanitised )
+				),
 		);
 	}
 }

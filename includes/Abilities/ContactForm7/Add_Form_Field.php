@@ -67,7 +67,7 @@ class Add_Form_Field extends Base_Contact_Form_7_Ability {
 			'options'  => array(
 				'type'        => 'array',
 				'items'       => array( 'type' => 'string' ),
-				'description' => __( 'Raw tag options, e.g. placeholder or class:wide.', 'acrossai-abilities-manager' ),
+				'description' => __( 'Tag options, e.g. class:wide, id:enquiry-phone or maxlength:40. Write each as key:value; a value containing spaces is quoted for you, and one with a space but no key is refused.', 'acrossai-abilities-manager' ),
 			),
 			'values'   => array(
 				'type'        => 'array',
@@ -153,6 +153,21 @@ class Add_Form_Field extends Base_Contact_Form_7_Ability {
 					/* translators: %s: field name */
 					__( 'This form already has a field named "%s". Use contact-form-7/update-form-field.', 'acrossai-abilities-manager' ),
 					$name
+				)
+			);
+		}
+
+		$invalid_options = Form_Tag_Repository::invalid_options(
+			isset( $input['options'] ) ? (array) $input['options'] : array()
+		);
+
+		if ( array() !== $invalid_options ) {
+			return new WP_Error(
+				'invalid_option',
+				sprintf(
+					/* translators: %s: comma-separated offending options */
+					__( 'CF7 splits a form tag on whitespace, so an option containing a space must be written as key:value and will be quoted for you. These have no key to quote: %s', 'acrossai-abilities-manager' ),
+					implode( ', ', $invalid_options )
 				)
 			);
 		}

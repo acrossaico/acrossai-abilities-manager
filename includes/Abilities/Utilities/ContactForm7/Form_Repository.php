@@ -191,7 +191,7 @@ final class Form_Repository {
 
 		foreach ( array( 'mail', 'mail_2' ) as $which ) {
 			if ( isset( $data[ $which ]['body'] ) ) {
-				$data[ $which ]['body'] = wpcf7_kses( (string) $data[ $which ]['body'], 'text' );
+				$data[ $which ]['body'] = self::sanitise_mail_body( (string) $data[ $which ]['body'] );
 			}
 		}
 
@@ -202,6 +202,51 @@ final class Form_Repository {
 		}
 
 		return (int) $form->id();
+	}
+
+	/**
+	 * Run a mail body through `wpcf7_kses()` without eating its mail tags.
+	 *
+	 * `From: [your-name] <[your-email]>` is the canonical way to write a From
+	 * line in a plain-text mail body, and it is what anyone familiar with email
+	 * will type. kses reads `<[your-email]>` as an unknown HTML tag and deletes
+	 * it — silently, taking the mail tag with it. The write then reports success,
+	 * and `validate-mail-tags` afterwards reports the template as VALID, because
+	 * the tag it would have flagged is no longer there to flag. Found by writing
+	 * exactly that line over MCP and reading it back.
+	 *
+	 * The sanitising itself is not the bug and is not relaxed here: an ability is
+	 * reachable by an AI client, so the suite deliberately does not inherit CF7's
+	 * `unfiltered_html` exemption (see {@see self::save()}). What changes is that
+	 * one specific, harmless shape survives it.
+	 *
+	 * The mask is deliberately narrow. Only `<` + a bare mail tag + `>` matches,
+	 * with the tag name held to the same character class the tag parser uses, so
+	 * nothing but a tag reference can ride through — no attribute, no second
+	 * token, no element. Everything else still meets kses exactly as before.
+	 *
+	 * @since  0.0.38
+	 * @param  string $body Mail body as supplied.
+	 * @return string Sanitised body, angle-bracketed mail tags intact.
+	 */
+	public static function sanitise_mail_body( string $body ): string {
+		$masked = array();
+
+		$protected = (string) preg_replace_callback(
+			'/<(\[[a-zA-Z_][0-9a-zA-Z:._-]*\])>/',
+			static function ( array $match ) use ( &$masked ): string {
+				// No angle brackets in the placeholder, so kses leaves it alone.
+				$key            = sprintf( '{{acrossai-cf7-mailtag-%d}}', count( $masked ) );
+				$masked[ $key ] = '<' . $match[1] . '>';
+
+				return $key;
+			},
+			$body
+		);
+
+		$clean = wpcf7_kses( $protected, 'text' );
+
+		return array() === $masked ? $clean : strtr( $clean, $masked );
 	}
 
 	/**

@@ -245,6 +245,7 @@
 			<file>tests/phpunit/abilities/Test_LiteSpeed_Suite_Contract.php</file>
 			<file>tests/phpunit/abilities/Test_Contact_Form_7_Architecture.php</file>
 			<file>tests/phpunit/abilities/Test_Contact_Form_7_Suite_Contract.php</file>
+			<file>tests/phpunit/abilities/Test_Contact_Form_7_Tag_Composition.php</file>
 			<file>tests/phpunit/abilities/Test_Rank_Math_Architecture.php</file>
 			<file>tests/phpunit/abilities/Test_Rank_Math_Settings_Writer.php</file>
 			<file>tests/phpunit/abilities/Test_Rank_Math_Settings_Abilities.php</file>
