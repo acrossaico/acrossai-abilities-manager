@@ -5,7 +5,7 @@ Tags: abilities, ability management, access control, site management, ai
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.0.35
+Stable tag: 0.0.36
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -197,6 +197,10 @@ No data is sent to any external server without an explicit administrator action.
 
 = Unreleased =
 
+(nothing yet)
+
+= 0.0.36 - 2026-09-21 =
+
 * **Listing posts no longer forces you to download every body.** `content/list-posts`, `content/list-pages` and `content/list-cpt-items` returned every field of every item including the whole post_content — ten posts came to about 172 KB when almost all of it was content nobody had asked for yet. Pass `fields: "summary"` to get just what identifies an item: title, status, dates, slug, author, a trimmed excerpt, and content_bytes so you can size the follow-up read. Measured at 36-39x smaller. The default is unchanged, so nothing existing sees a difference.
 * **Fixed: the block outline reported the wrong total.** Asking for 3 blocks of a 40-block post reported `total: 3` — it counted what it returned rather than what matched, because it stopped walking the moment it had enough. It now reports `total: 40` with a new `returned: 3` alongside, so you can tell a small post from a truncated view of a large one. Each block also reports `subtree_bytes` next to `bytes`, which distinguishes a genuinely small block from a small wrapper around half the page.
 * **Site Health results can now be read as text.** The description and actions fields carry WordPress core's own markup — paragraph tags, icon spans that render as pictures and read as nothing, and screen-reader spans that repeat every link's text. Pass `format: "text"` for plain sentences with the link destinations kept. The default still returns the markup unchanged.
@@ -283,6 +287,9 @@ Every release before 0.0.32 is recorded in full in changelog.txt, shipped inside
 https://github.com/acrossaico/acrossai-abilities-manager/blob/main/changelog.txt
 
 == Upgrade Notice ==
+
+= 0.0.36 =
+No breaking changes - every addition here is optional and defaults to what the plugin did before. Worth updating for three things. Listing posts, pages or custom post type items no longer forces the whole post body down the wire: pass fields: "summary" for titles, dates, slugs and a content size instead, measured 36x smaller on ten real posts. The block outline reported the wrong total when truncated - asking for 3 blocks of a 40-block post said "total: 3" - which is now the true match count with a separate "returned" alongside. And Site Health results can be read as plain text with format: "text" rather than WordPress core's own markup. Also adds a check that every ability declares whether it reads, destroys or can be repeated, since an AI client treats a missing flag as "not destructive".
 
 = 0.0.35 =
 BREAKING - the `backups/*` abilities added in 0.0.34 are replaced by `updraftplus/*` and `all-in-one/*`. Anything holding a `backups/` slug needs updating; there are no aliases. The backup abilities are now two tabs, one per plugin, matching how every other integration works: each offers only what its plugin can actually do rather than advertising everything and reporting absence when you try to use it. Also fixes restoring, which never worked outside the admin screens in 0.0.34 - it checked the filesystem using a function WordPress only loads inside wp-admin, so every restore request failed on that line before checking anything. If you rely on restoring from UpdraftPlus through this plugin, this release is the one that makes it work. Nothing else changes; existing abilities, overrides and access rules are unaffected.
