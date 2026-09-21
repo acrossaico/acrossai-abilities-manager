@@ -1,14 +1,14 @@
 <?php
 /**
- * Feature 126 — availability, permission and envelope for the backup suite.
+ * Feature 127 — availability, permission and envelope for the UpdraftPlus suite.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
- * @subpackage Includes\Abilities\Utilities\Backups
+ * @subpackage Includes\Abilities\Utilities\UpdraftPlus
  * @since      0.0.34
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\UpdraftPlus;
 
 use WP_Error;
 
@@ -19,13 +19,13 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 0.0.34
  */
-final class Backup_Guard {
+final class UpdraftPlus_Guard {
 
 	/**
 	 * @since 0.0.34
 	 * @var   string
 	 */
-	public const PERMISSION_FILTER = 'acrossai_abilities_manager_backup_permission';
+	public const PERMISSION_FILTER = 'acrossai_abilities_manager_updraftplus_permission';
 
 	/**
 	 * Private constructor — static utility (DEC-UTILITY-STATIC-ONLY).
@@ -33,16 +33,16 @@ final class Backup_Guard {
 	private function __construct() {}
 
 	/**
-	 * Whether any backup plugin is present.
+	 * Whether UpdraftPlus is present.
 	 *
-	 * Unlike the single-vendor suites, availability here is not one plugin's symbols but whether the
-	 * registry can find anything at all — the whole point of the provider layer.
+	 * Two stable symbols per SEC-002: the directory constant the plugin defines at load, and the
+	 * history class every read in this suite routes through.
 	 *
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return bool
 	 */
 	public static function is_available(): bool {
-		return ! empty( Provider_Registry::active() );
+		return defined( 'UPDRAFTPLUS_DIR' ) && class_exists( 'UpdraftPlus_Backup_History' );
 	}
 
 	/**
@@ -51,7 +51,10 @@ final class Backup_Guard {
 	 */
 	public static function assert_available() {
 		if ( ! self::is_available() ) {
-			return new WP_Error( 'no_backup_plugin', Provider_Registry::absent_message() );
+			return new WP_Error(
+				'updraftplus_missing',
+				__( 'UpdraftPlus is not active on this site, so there is no backup history to read and no backup to take. Install and activate it, or use another backup plugin this manager supports.', 'acrossai-abilities-manager' )
+			);
 		}
 
 		return true;
@@ -91,7 +94,7 @@ final class Backup_Guard {
 			}
 
 			/**
-			 * Filters whether the current user may use a backup ability.
+			 * Filters whether the current user may use an UpdraftPlus ability.
 			 *
 			 * @since 0.0.34
 			 * @param bool   $allowed Whether access is granted. Always true at this point.

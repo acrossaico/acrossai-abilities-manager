@@ -1,16 +1,16 @@
 <?php
 /**
- * Feature 126 - how a running backup is getting on.
+ * Feature 127 - how a running backup is getting on.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
- * @subpackage Includes\Abilities\Backups
- * @since      0.0.34
+ * @subpackage Includes\Abilities\AllInOne
+ * @since      0.0.35
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Backups;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\AllInOne;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups\Provider_Registry;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\AllInOne\Archive_Repository;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -18,20 +18,20 @@ defined( 'ABSPATH' ) || exit;
 /**
  * A backup runs in the background; this is how its progress is read.
  *
- * @since 0.0.34
+ * @since 0.0.35
  */
-final class Get_Backup_Progress extends Base_Backup_Ability {
+final class Get_Export_Progress extends Base_All_In_One_Ability {
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function slug(): string {
-		return 'backups/get-backup-progress';
+		return 'all-in-one/get-export-progress';
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -39,15 +39,15 @@ final class Get_Backup_Progress extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_description(): string {
-		return __( 'Report on a backup started by backups/start-backup. A backup is not finished when it is started - it runs in the background - so this is how to find out whether it is still going, whether it finished, and which backup set it produced. Pass the job_id that start-backup returned.', 'acrossai-abilities-manager' );
+		return __( 'Report on a backup started by all-in-one/start-export. A backup is not finished when it is started - it runs in the background - so this is how to find out whether it is still going, whether it finished, and which backup set it produced. Pass the job_id that start-backup returned.', 'acrossai-abilities-manager' );
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -55,24 +55,20 @@ final class Get_Backup_Progress extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
 		return array(
 			'job_id'   => array(
 				'type'        => 'string',
-				'description' => __( 'Job identifier returned by backups/start-backup.', 'acrossai-abilities-manager' ),
-			),
-			'provider' => array(
-				'type'        => 'string',
-				'description' => __( 'Which backup plugin to use. Optional when only one is active; required when more than one is.', 'acrossai-abilities-manager' ),
+				'description' => __( 'Job identifier returned by all-in-one/start-export.', 'acrossai-abilities-manager' ),
 			),
 		);
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -80,7 +76,7 @@ final class Get_Backup_Progress extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -90,13 +86,12 @@ final class Get_Backup_Progress extends Base_Backup_Ability {
 			'finished'     => array( 'type' => 'boolean' ),
 			'backup_id'    => array( 'type' => array( 'string', 'null' ) ),
 			'last_message' => array( 'type' => 'string' ),
-			'provider'     => array( 'type' => 'string' ),
 			'note'         => array( 'type' => 'string' ),
 		);
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -108,17 +103,11 @@ final class Get_Backup_Progress extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */
 	protected function run( array $input ) {
-		$provider = Provider_Registry::resolve_for( isset( $input['provider'] ) ? (string) $input['provider'] : '', 'progress' );
-
-		if ( is_wp_error( $provider ) ) {
-			return $provider;
-		}
-
-		return $provider::job_progress( (string) $input['job_id'] );
+		return Archive_Repository::job_progress( (string) $input['job_id'] );
 	}
 }

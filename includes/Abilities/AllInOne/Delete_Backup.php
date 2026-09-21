@@ -1,16 +1,16 @@
 <?php
 /**
- * Feature 126 - remove a backup set, and with it that recovery point.
+ * Feature 127 - remove a backup set, and with it that recovery point.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
- * @subpackage Includes\Abilities\Backups
- * @since      0.0.34
+ * @subpackage Includes\Abilities\AllInOne
+ * @since      0.0.35
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Backups;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\AllInOne;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups\Provider_Registry;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\AllInOne\Archive_Repository;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -18,20 +18,20 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Deleting a backup removes the ability to go back to that moment.
  *
- * @since 0.0.34
+ * @since 0.0.35
  */
-final class Delete_Backup extends Base_Backup_Ability {
+final class Delete_Backup extends Base_All_In_One_Ability {
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function slug(): string {
-		return 'backups/delete-backup';
+		return 'all-in-one/delete-backup';
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -39,7 +39,7 @@ final class Delete_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -47,7 +47,7 @@ final class Delete_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -55,7 +55,7 @@ final class Delete_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -63,7 +63,7 @@ final class Delete_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -71,24 +71,20 @@ final class Delete_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
 		return array(
 			'id'       => array(
 				'type'        => 'string',
-				'description' => __( 'Backup identifier from backups/list-backups.', 'acrossai-abilities-manager' ),
-			),
-			'provider' => array(
-				'type'        => 'string',
-				'description' => __( 'Which backup plugin to use. Optional when only one is active; required when more than one is.', 'acrossai-abilities-manager' ),
+				'description' => __( 'Backup identifier from all-in-one/list-backups.', 'acrossai-abilities-manager' ),
 			),
 		);
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -96,12 +92,11 @@ final class Delete_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
 		return array(
-			'provider'      => array( 'type' => 'string' ),
 			'backup_id'     => array( 'type' => 'string' ),
 			'files_removed' => array( 'type' => 'array', 'items' => array( 'type' => 'string' ) ),
 			'bytes_freed'   => array( 'type' => 'integer' ),
@@ -111,7 +106,7 @@ final class Delete_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -123,18 +118,12 @@ final class Delete_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */
 	protected function run( array $input ) {
-		$provider = Provider_Registry::resolve_for( isset( $input['provider'] ) ? (string) $input['provider'] : '', 'delete' );
-
-		if ( is_wp_error( $provider ) ) {
-			return $provider;
-		}
-
-		$result = $provider::delete_backup( (string) $input['id'] );
+		$result = Archive_Repository::delete_backup( (string) $input['id'] );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -142,7 +131,7 @@ final class Delete_Backup extends Base_Backup_Ability {
 
 		// Read the count back rather than assuming the delete landed, and say plainly when it was
 		// the last one: a site with no backups left is a different situation from one with nine.
-		$remaining = $provider::status();
+		$remaining = Archive_Repository::status();
 		$left      = isset( $remaining['backup_count'] ) ? (int) $remaining['backup_count'] : 0;
 
 		$result['remaining'] = $left;
@@ -150,7 +139,7 @@ final class Delete_Backup extends Base_Backup_Ability {
 		if ( 0 === $left ) {
 			$result['note'] = trim(
 				( isset( $result['note'] ) ? (string) $result['note'] . ' ' : '' )
-				. __( 'That was the last backup set this plugin held. There is now nothing to restore this site from.', 'acrossai-abilities-manager' )
+				. __( 'That was the last backup set All-in-One WP Migration held. There is now nothing to restore this site from.', 'acrossai-abilities-manager' )
 			);
 		}
 

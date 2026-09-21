@@ -1,16 +1,17 @@
 <?php
 /**
- * Feature 126 - whether the web server will hand out a backup archive.
+ * Feature 127 - whether the web server will hand out a backup archive.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
- * @subpackage Includes\Abilities\Backups
- * @since      0.0.34
+ * @subpackage Includes\Abilities\AllInOne
+ * @since      0.0.35
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Backups;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\AllInOne;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups\Exposure_Scanner;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backup_Exposure;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\AllInOne\Archive_Repository;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -18,20 +19,20 @@ defined( 'ABSPATH' ) || exit;
 /**
  * A backup archive is the whole database. This asks whether anyone can download it.
  *
- * @since 0.0.34
+ * @since 0.0.35
  */
-final class Check_Exposure extends Base_Backup_Ability {
+final class Check_Exposure extends Base_All_In_One_Ability {
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function slug(): string {
-		return 'backups/check-exposure';
+		return 'all-in-one/check-exposure';
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -39,7 +40,7 @@ final class Check_Exposure extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -47,7 +48,7 @@ final class Check_Exposure extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -55,7 +56,7 @@ final class Check_Exposure extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
@@ -65,7 +66,7 @@ final class Check_Exposure extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -73,7 +74,7 @@ final class Check_Exposure extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -93,7 +94,7 @@ final class Check_Exposure extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -105,13 +106,13 @@ final class Check_Exposure extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */
 	protected function run( array $input ) {
 		unset( $input );
 
-		return Exposure_Scanner::scan();
+		return Backup_Exposure::scan( 'All-in-One WP Migration', Archive_Repository::storage_paths() );
 	}
 }

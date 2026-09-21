@@ -1,21 +1,21 @@
 <?php
 /**
- * Feature 126 — registers the ability category used by the backup suite.
+ * Feature 127 — registers the ability category used by the UpdraftPlus suite.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
- * @subpackage Includes\Abilities\Backups
- * @since      0.0.34
+ * @subpackage Includes\Abilities\UpdraftPlus
+ * @since      0.0.35
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Backups;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\UpdraftPlus;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups\Backup_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\UpdraftPlus\UpdraftPlus_Guard;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers `acrossai-backups` on wp_abilities_api_categories_init.
+ * Registers `acrossai-updraftplus` on wp_abilities_api_categories_init.
  *
  * WP core silently drops any ability whose category was not pre-registered
  * (BUG-WP-CORE-ABILITY-CATEGORY-PRE-REGISTRATION), so this must keep running before the Library
@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
 final class Category_Registrar {
 
 	/**
-	 * @since 0.0.34
+	 * @since 0.0.35
 	 * @var   self|null
 	 */
 	protected static $instance = null;
@@ -35,7 +35,7 @@ final class Category_Registrar {
 	private function __construct() {}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return self
 	 */
 	public static function instance(): self {
@@ -47,19 +47,19 @@ final class Category_Registrar {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return void
 	 */
 	public function register(): void {
-		if ( ! Backup_Guard::is_available() ) {
+		if ( ! UpdraftPlus_Guard::is_available() ) {
 			return;
 		}
 
 		wp_register_ability_category(
-			'acrossai-backups',
+			'acrossai-updraftplus',
 			array(
-				'label'       => __( 'AcrossAI Abilities Manager — Backups', 'acrossai-abilities-manager' ),
-				'description' => __( 'Abilities for backups: what exists, how recent it is, whether it is exposed, and taking or restoring one.', 'acrossai-abilities-manager' ),
+				'label'       => __( 'AcrossAI Abilities Manager — UpdraftPlus', 'acrossai-abilities-manager' ),
+				'description' => __( 'Abilities for UpdraftPlus: what backups exist, how recent they are, whether they are exposed, and taking or restoring one.', 'acrossai-abilities-manager' ),
 			)
 		);
 	}

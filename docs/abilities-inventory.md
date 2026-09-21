@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-17. **Total abilities:** 788 across 40 topic namespaces.
+Snapshot taken 2026-09-21. **Total abilities:** 798 across 41 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -38,10 +38,11 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `acf` — Acf | 16 |
 | `cron` — Cron | 16 |
 | `event-tickets` — Event Tickets | 16 |
+| `` —  | 16 |
 | `users` — Users | 16 |
-| `` —  | 14 |
 | `loco-translate` — Loco Translate | 14 |
-| `backups` — Backups | 9 |
+| `all-in-one-wp-migration` — All In One Wp Migration | 9 |
+| `updraftplus` — Updraftplus | 8 |
 | `cache` — Cache | 7 |
 | `classic-editor` — Classic Editor | 4 |
 | `wp-mail-smtp` — Wp Mail Smtp | 4 |
@@ -52,7 +53,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 |---|---:|---|
 | `acrossai/` | 7 | `acrossai-debugging` |
 | `admin-menu/` | 5 | `acrossai-admin-menu` |
-| `backups/` | 9 | `acrossai-backups` |
+| `all-in-one/` | 9 | `acrossai-all-in-one` |
 | `blocks/` | 92 | `acrossai-block`, `acrossai-acf` |
 | `cache/` | 7 | `acrossai-cache` |
 | `comments/` | 12 | `acrossai-comments` |
@@ -86,8 +87,9 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `taxonomies/` | 16 | `acrossai-taxonomies`, `acrossai-yoast-seo` |
 | `themes/` | 7 | `acrossai-themes` |
 | `tickets/` | 16 | `acrossai-event-tickets` |
-| `toolset/` | 14 | `acrossai-toolset` |
+| `toolset/` | 16 | `acrossai-toolset` |
 | `translations/` | 14 | `acrossai-loco-translate` |
+| `updraftplus/` | 8 | `acrossai-updraftplus` |
 | `users/` | 16 | `acrossai-users` |
 | `widgets/` | 11 | `acrossai-widgets` |
 
@@ -107,15 +109,15 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `admin-menu/` | `admin-menu/list-admin-menu-pages` | configuration | admin-menu | List Admin Menu Pages |
 | `admin-menu/` | `admin-menu/list-admin-settings` | configuration | admin-menu | List Admin Settings |
 | `admin-menu/` | `admin-menu/refresh-admin-menu-context` | configuration | admin-menu | Refresh Admin Menu Context |
-| `backups/` | `backups/check-exposure` | backups |  |  |
-| `backups/` | `backups/delete-backup` | backups |  |  |
-| `backups/` | `backups/get-backup` | backups |  |  |
-| `backups/` | `backups/get-backup-progress` | backups |  |  |
-| `backups/` | `backups/get-status` | backups |  |  |
-| `backups/` | `backups/list-backups` | backups |  |  |
-| `backups/` | `backups/restore-backup` | backups |  |  |
-| `backups/` | `backups/set-backup-label` | backups |  |  |
-| `backups/` | `backups/start-backup` | backups |  |  |
+| `all-in-one/` | `all-in-one/check-exposure` | all-in-one-wp-migration |  |  |
+| `all-in-one/` | `all-in-one/delete-backup` | all-in-one-wp-migration |  |  |
+| `all-in-one/` | `all-in-one/get-backup` | all-in-one-wp-migration |  |  |
+| `all-in-one/` | `all-in-one/get-export-progress` | all-in-one-wp-migration |  |  |
+| `all-in-one/` | `all-in-one/get-status` | all-in-one-wp-migration |  |  |
+| `all-in-one/` | `all-in-one/list-backups` | all-in-one-wp-migration |  |  |
+| `all-in-one/` | `all-in-one/restore-backup` | all-in-one-wp-migration |  |  |
+| `all-in-one/` | `all-in-one/set-backup-label` | all-in-one-wp-migration |  |  |
+| `all-in-one/` | `all-in-one/start-export` | all-in-one-wp-migration |  |  |
 | `blocks/` | `blocks/add-block` | blocks | post-blocks | Add Block |
 | `blocks/` | `blocks/analyze-content` | blocks | analysis | Analyze Content |
 | `blocks/` | `blocks/audit-content` | blocks | analysis | Audit Content |
@@ -828,8 +830,8 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `tickets/` | `tickets/set-ticket-capacity` | event-tickets |  |  |
 | `tickets/` | `tickets/undo-check-in` | event-tickets |  |  |
 | `tickets/` | `tickets/update-ticket` | event-tickets |  |  |
+| `toolset/` | `toolset/all-in-one-wp-migration` |  |  |  |
 | `toolset/` | `toolset/appearance` |  |  |  |
-| `toolset/` | `toolset/backups` |  |  |  |
 | `toolset/` | `toolset/blocks` |  |  |  |
 | `toolset/` | `toolset/cache` |  |  |  |
 | `toolset/` | `toolset/configuration` |  |  |  |
@@ -839,8 +841,10 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `toolset/` | `toolset/diagnostics` |  |  |  |
 | `toolset/` | `toolset/elementor` |  |  |  |
 | `toolset/` | `toolset/files` |  |  |  |
+| `toolset/` | `toolset/integrations` |  |  |  |
 | `toolset/` | `toolset/rank-math` |  |  |  |
 | `toolset/` | `toolset/updates` |  |  |  |
+| `toolset/` | `toolset/updraftplus` |  |  |  |
 | `toolset/` | `toolset/users` |  |  |  |
 | `translations/` | `translations/compile-translations` | loco-translate |  |  |
 | `translations/` | `translations/create-translation-file` | loco-translate |  |  |
@@ -856,6 +860,14 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `translations/` | `translations/list-strings` | loco-translate |  |  |
 | `translations/` | `translations/sync-translations` | loco-translate |  |  |
 | `translations/` | `translations/update-strings` | loco-translate |  |  |
+| `updraftplus/` | `updraftplus/check-exposure` | updraftplus |  |  |
+| `updraftplus/` | `updraftplus/delete-backup` | updraftplus |  |  |
+| `updraftplus/` | `updraftplus/get-backup` | updraftplus |  |  |
+| `updraftplus/` | `updraftplus/get-backup-progress` | updraftplus |  |  |
+| `updraftplus/` | `updraftplus/get-status` | updraftplus |  |  |
+| `updraftplus/` | `updraftplus/list-backups` | updraftplus |  |  |
+| `updraftplus/` | `updraftplus/restore-backup` | updraftplus |  |  |
+| `updraftplus/` | `updraftplus/start-backup` | updraftplus |  |  |
 | `users/` | `users/add-role-capability` | users | roles | Add Role Capability |
 | `users/` | `users/add-user-capability` | users | users | Add User Capability |
 | `users/` | `users/create-role` | users | roles | Create Role |

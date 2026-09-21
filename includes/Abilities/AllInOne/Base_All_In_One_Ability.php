@@ -1,18 +1,16 @@
 <?php
 /**
- * Feature 126 — the sole ability assembler for the backup suite.
+ * Feature 127 — the sole ability assembler for the All-in-One WP Migration suite.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
- * @subpackage Includes\Abilities\Backups
- * @since      0.0.34
+ * @subpackage Includes\Abilities\AllInOne
+ * @since      0.0.35
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Backups;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\AllInOne;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups\Backup_Guard;
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups\Backup_Provider;
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups\Provider_Registry;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\AllInOne\All_In_One_Guard;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 
 defined( 'ABSPATH' ) || exit;
@@ -23,82 +21,82 @@ defined( 'ABSPATH' ) || exit;
  * The base owns what must not vary: the category, the tab group, the capability floor, the guard
  * order and the envelope.
  *
- * Unlike the single-vendor suites, nothing here is bound to one plugin. Abilities ask
- * {@see Provider_Registry} which backup plugins are active and speak to each through
- * {@see Backup_Provider}, so a site running UpdraftPlus, All-in-One WP Migration, or both, gets the
- * same answers in the same shape. "Is this site backed up?" is a question about the site, not about
- * a vendor.
+ * One suite, one plugin. An earlier version put UpdraftPlus and All-in-One WP Migration behind a
+ * shared provider interface and a single "backups" tab. That made two genuinely different plugins
+ * look interchangeable: All-in-One labels archives and needs a paid extension to restore, UpdraftPlus
+ * schedules backups and restores them. Every real difference had to be reported as a capability
+ * flag the caller then had to check. Separate suites let each one simply offer what its plugin can
+ * do, which is also how every other integration here is arranged.
  *
- * The floor is `manage_options` and final. Backups are the recovery path for the whole site: reading
- * them reveals the shape of the install, and acting on them can replace or destroy it.
+ * The floor is `manage_options` and final. A backup is the recovery path for the whole site:
+ * reading one reveals the shape of the install, and acting on one can replace or destroy it.
  *
- * `Slash_Input` is deliberately ABSENT. Nothing here writes post content; the only free text that
- * reaches storage is a backup label, which goes through the provider's own setter.
+ * `Slash_Input` is deliberately ABSENT. Nothing here writes post content.
  */
-abstract class Base_Backup_Ability extends Ability_Definition {
+abstract class Base_All_In_One_Ability extends Ability_Definition {
 
 	/**
-	 * @since 0.0.34
+	 * @since 0.0.35
 	 * @var   string
 	 */
-	protected const CATEGORY = 'acrossai-backups';
+	protected const CATEGORY = 'acrossai-all-in-one';
 
 	/**
-	 * @since 0.0.34
+	 * @since 0.0.35
 	 * @var   string
 	 */
-	protected const TAB_GROUP = 'backups';
+	protected const TAB_GROUP = 'all-in-one-wp-migration';
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	abstract protected function slug(): string;
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	abstract protected function ability_label(): string;
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	abstract protected function ability_description(): string;
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	abstract protected function sub_group(): string;
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	abstract protected function input_properties(): array;
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	abstract protected function output_properties(): array;
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<int, string>
 	 */
 	abstract protected function required_input(): array;
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, bool>
 	 */
 	abstract protected function annotations(): array;
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|\WP_Error
 	 */
@@ -107,7 +105,7 @@ abstract class Base_Backup_Ability extends Ability_Definition {
 	/**
 	 * Administrator, and not overridable by a subclass.
 	 *
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	final protected function permission_floor(): string {
@@ -115,7 +113,7 @@ abstract class Base_Backup_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -123,7 +121,7 @@ abstract class Base_Backup_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  array<string, mixed> $input Input.
 	 * @return bool
 	 */
@@ -132,7 +130,7 @@ abstract class Base_Backup_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -140,7 +138,7 @@ abstract class Base_Backup_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, string>
 	 */
 	protected function sub_group_labels(): array {
@@ -154,7 +152,7 @@ abstract class Base_Backup_Ability extends Ability_Definition {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function success_message(): string {
@@ -164,7 +162,7 @@ abstract class Base_Backup_Ability extends Ability_Definition {
 	/**
 	 * Assemble the ability definition.
 	 *
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function ability(): array {
@@ -202,7 +200,7 @@ abstract class Base_Backup_Ability extends Ability_Definition {
 				'description'         => $this->ability_description(),
 				'category'            => self::CATEGORY,
 				'execute_callback'    => array( $this, 'execute' ),
-				'permission_callback' => Backup_Guard::can( $this->permission_floor() ),
+				'permission_callback' => All_In_One_Guard::can( $this->permission_floor() ),
 				'input_schema'        => array(
 					'type'                 => 'object',
 					'properties'           => $properties,
@@ -242,34 +240,34 @@ abstract class Base_Backup_Ability extends Ability_Definition {
 	 * operation that cannot run either way wastes a round trip and reads as though confirming would
 	 * help.
 	 *
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>
 	 */
 	public function execute( array $input = array() ): array {
-		$available = Backup_Guard::assert_available();
+		$available = All_In_One_Guard::assert_available();
 
 		if ( is_wp_error( $available ) ) {
-			return Backup_Guard::fail( $available );
+			return All_In_One_Guard::fail( $available );
 		}
 
 		if ( $this->needs_confirmation_for( $input ) ) {
-			$confirmed = Backup_Guard::assert_confirmed( $input, $this->confirmation_message() );
+			$confirmed = All_In_One_Guard::assert_confirmed( $input, $this->confirmation_message() );
 
 			if ( is_wp_error( $confirmed ) ) {
-				return Backup_Guard::fail( $confirmed );
+				return All_In_One_Guard::fail( $confirmed );
 			}
 		}
 
 		$result = $this->run( $input );
 
 		if ( is_wp_error( $result ) ) {
-			return Backup_Guard::fail( $result );
+			return All_In_One_Guard::fail( $result );
 		}
 
 		$message = isset( $result['message'] ) ? (string) $result['message'] : $this->success_message();
 		unset( $result['message'] );
 
-		return Backup_Guard::ok( $result, $message );
+		return All_In_One_Guard::ok( $result, $message );
 	}
 }

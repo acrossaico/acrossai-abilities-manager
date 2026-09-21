@@ -1,16 +1,16 @@
 <?php
 /**
- * Feature 126 - enumerate the backup sets that exist.
+ * Feature 127 - enumerate the backup sets that exist.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
- * @subpackage Includes\Abilities\Backups
- * @since      0.0.34
+ * @subpackage Includes\Abilities\UpdraftPlus
+ * @since      0.0.35
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Backups;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\UpdraftPlus;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups\Provider_Registry;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\UpdraftPlus\Backup_Repository;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -18,20 +18,20 @@ defined( 'ABSPATH' ) || exit;
 /**
  * What could actually be restored from, newest first.
  *
- * @since 0.0.34
+ * @since 0.0.35
  */
-final class List_Backups extends Base_Backup_Ability {
+final class List_Backups extends Base_UpdraftPlus_Ability {
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function slug(): string {
-		return 'backups/list-backups';
+		return 'updraftplus/list-backups';
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -39,7 +39,7 @@ final class List_Backups extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -47,7 +47,7 @@ final class List_Backups extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -55,15 +55,11 @@ final class List_Backups extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
 		return array(
-			'provider' => array(
-				'type'        => 'string',
-				'description' => __( 'Which backup plugin to use. Optional when only one is active; required when more than one is.', 'acrossai-abilities-manager' ),
-			),
 			'limit'    => array(
 				'type'    => 'integer',
 				'minimum' => 1,
@@ -79,7 +75,7 @@ final class List_Backups extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -87,21 +83,22 @@ final class List_Backups extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
 		return array(
-			'results' => array(
+			'backups' => array(
 				'type'  => 'array',
 				'items' => array( 'type' => 'object', 'additionalProperties' => true ),
 			),
 			'count'   => array( 'type' => 'integer' ),
+			'total'   => array( 'type' => 'integer' ),
 		);
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -113,39 +110,14 @@ final class List_Backups extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */
 	protected function run( array $input ) {
 		$limit  = isset( $input['limit'] ) ? (int) $input['limit'] : 20;
 		$offset = isset( $input['offset'] ) ? (int) $input['offset'] : 0;
-		$wanted = isset( $input['provider'] ) ? (string) $input['provider'] : '';
 
-		if ( '' !== $wanted ) {
-			$provider = Provider_Registry::resolve( $wanted );
-
-			if ( is_wp_error( $provider ) ) {
-				return $provider;
-			}
-
-			$providers = array( $provider );
-		} else {
-			$providers = Provider_Registry::active();
-		}
-
-		$results = array();
-		$count   = 0;
-
-		foreach ( $providers as $provider ) {
-			$listing = $provider::list_backups( $limit, $offset );
-			$count  += isset( $listing['count'] ) ? (int) $listing['count'] : 0;
-			$results[] = $listing;
-		}
-
-		return array(
-			'results' => $results,
-			'count'   => $count,
-		);
+		return Backup_Repository::list_backups( $limit, $offset );
 	}
 }

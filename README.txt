@@ -197,7 +197,10 @@ No data is sent to any external server without an explicit administrator action.
 
 = Unreleased =
 
-(nothing yet)
+* **The backup abilities are now two tabs, one per plugin.** `UpdraftPlus` and `All-in-One WP Migration` each get their own tab, their own toolset and their own abilities, the same way Elementor, Rank Math, WPCode and every other integration works. 0.0.34 shipped them as a single "Backups" tab that reached both plugins through a shared layer; that made two genuinely different plugins look interchangeable and turned every real difference into a flag you had to go and check.
+* **Each suite now offers only what its plugin can actually do.** UpdraftPlus schedules backups and restores them, and stores no label - so it has no label ability. All-in-One labels its archives, and restoring belongs to their paid Unlimited Extension - so that ability asks the plugin and passes its own answer back, naming the manual import route, rather than refusing on its behalf.
+* **Breaking: the `backups/*` abilities are gone.** They are replaced by `updraftplus/*` and `all-in-one/*`. Anything holding a `backups/` slug needs updating; there are no aliases. The suite was one release old.
+* **The exposure check is shared and reports per plugin.** Whether the web server will hand out a backup archive has nothing to do with which plugin wrote it, so that logic exists once - but each tab now reports on its own storage rather than on everything at once.
 
 = 0.0.34 - 2026-09-18 =
 

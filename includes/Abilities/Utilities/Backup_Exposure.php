@@ -1,14 +1,14 @@
 <?php
 /**
- * Feature 126 — whether the web server will hand out a backup archive.
+ * Feature 127 — whether the web server will hand out a backup archive.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
- * @subpackage Includes\Abilities\Utilities\Backups
+ * @subpackage Includes\Abilities\Utilities
  * @since      0.0.34
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 0.0.34
  */
-final class Exposure_Scanner {
+final class Backup_Exposure {
 
 	/**
 	 * How long to wait for the site to answer itself.
@@ -42,33 +42,38 @@ final class Exposure_Scanner {
 	private function __construct() {}
 
 	/**
-	 * Examine every active provider's storage.
+	 * Examine one backup plugin's storage directories.
 	 *
-	 * @since  0.0.34
+	 * Takes the directories rather than discovering them: each backup suite owns its own plugin and
+	 * knows where that plugin writes. This helper only answers the question both suites share --
+	 * will the web server hand the archive out -- and that question has nothing to do with which
+	 * plugin wrote it.
+	 *
+	 * @since  0.0.35
+	 * @param  string             $label Plugin name, for the report.
+	 * @param  array<int, string> $paths Absolute directories to check.
 	 * @return array<string, mixed>
 	 */
-	public static function scan(): array {
+	public static function scan( string $label, array $paths ): array {
 		$findings = array();
 		$exposed  = 0;
 
-		foreach ( Provider_Registry::active() as $provider ) {
-			foreach ( $provider::storage_paths() as $path ) {
-				$finding = self::examine( $provider::id(), $provider::label(), $path );
+		foreach ( $paths as $path ) {
+			$finding = self::examine( $label, (string) $path );
 
-				if ( ! empty( $finding['reachable'] ) ) {
-					++$exposed;
-				}
-
-				$findings[] = $finding;
+			if ( ! empty( $finding['reachable'] ) ) {
+				++$exposed;
 			}
+
+			$findings[] = $finding;
 		}
 
 		return array(
-			'server'          => self::server_software(),
+			'server'            => self::server_software(),
 			'htaccess_honoured' => self::htaccess_honoured(),
-			'directories'     => $findings,
-			'exposed_count'   => $exposed,
-			'note'            => self::summary( $exposed, count( $findings ) ),
+			'directories'       => $findings,
+			'exposed_count'     => $exposed,
+			'note'              => self::summary( $exposed, count( $findings ) ),
 		);
 	}
 
@@ -76,12 +81,11 @@ final class Exposure_Scanner {
 	 * One directory, checked against the running web server.
 	 *
 	 * @since  0.0.34
-	 * @param  string $provider Provider id.
-	 * @param  string $label    Provider label.
-	 * @param  string $path     Absolute directory path.
+	 * @param  string $label Plugin name.
+	 * @param  string $path  Absolute directory path.
 	 * @return array<string, mixed>
 	 */
-	private static function examine( string $provider, string $label, string $path ): array {
+	private static function examine( string $label, string $path ): array {
 		$url       = self::url_for( $path );
 		$guards    = self::guards_in( $path );
 		$reachable = null;
@@ -109,7 +113,6 @@ final class Exposure_Scanner {
 		}
 
 		return array(
-			'provider'     => $provider,
 			'label'        => $label,
 			'path'         => $path,
 			'url'          => $url,

@@ -1,16 +1,16 @@
 <?php
 /**
- * Feature 126 - one backup set in full.
+ * Feature 127 - one backup set in full.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
- * @subpackage Includes\Abilities\Backups
- * @since      0.0.34
+ * @subpackage Includes\Abilities\AllInOne
+ * @since      0.0.35
  */
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Backups;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\AllInOne;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Backups\Provider_Registry;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\AllInOne\Archive_Repository;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
@@ -18,20 +18,20 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Everything known about one set, including the files it is made of.
  *
- * @since 0.0.34
+ * @since 0.0.35
  */
-final class Get_Backup extends Base_Backup_Ability {
+final class Get_Backup extends Base_All_In_One_Ability {
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function slug(): string {
-		return 'backups/get-backup';
+		return 'all-in-one/get-backup';
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -39,15 +39,15 @@ final class Get_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function ability_description(): string {
-		return __( 'Report one backup set in full: when it was taken, what components it holds, the archive files it is made of, its size and where it is stored. Use the id exactly as returned by backups/list-backups.', 'acrossai-abilities-manager' );
+		return __( 'Report one backup set in full: when it was taken, what components it holds, the archive files it is made of, its size and where it is stored. Use the id exactly as returned by all-in-one/list-backups.', 'acrossai-abilities-manager' );
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -55,24 +55,20 @@ final class Get_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function input_properties(): array {
 		return array(
 			'id'       => array(
 				'type'        => 'string',
-				'description' => __( 'Backup identifier from backups/list-backups.', 'acrossai-abilities-manager' ),
-			),
-			'provider' => array(
-				'type'        => 'string',
-				'description' => __( 'Which backup plugin to use. Optional when only one is active; required when more than one is.', 'acrossai-abilities-manager' ),
+				'description' => __( 'Backup identifier from all-in-one/list-backups.', 'acrossai-abilities-manager' ),
 			),
 		);
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<int, string>
 	 */
 	protected function required_input(): array {
@@ -80,7 +76,7 @@ final class Get_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, mixed>
 	 */
 	protected function output_properties(): array {
@@ -90,7 +86,7 @@ final class Get_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @return array<string, bool>
 	 */
 	protected function annotations(): array {
@@ -102,18 +98,12 @@ final class Get_Backup extends Base_Backup_Ability {
 	}
 
 	/**
-	 * @since  0.0.34
+	 * @since  0.0.35
 	 * @param  array<string, mixed> $input Input.
 	 * @return array<string, mixed>|WP_Error
 	 */
 	protected function run( array $input ) {
-		$provider = Provider_Registry::resolve( isset( $input['provider'] ) ? (string) $input['provider'] : '' );
-
-		if ( is_wp_error( $provider ) ) {
-			return $provider;
-		}
-
-		$backup = $provider::get_backup( (string) $input['id'] );
+		$backup = Archive_Repository::get_backup( (string) $input['id'] );
 
 		if ( is_wp_error( $backup ) ) {
 			return $backup;
