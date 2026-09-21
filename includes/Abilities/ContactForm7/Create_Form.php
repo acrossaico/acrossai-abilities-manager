@@ -47,9 +47,13 @@ class Create_Form extends Base_Contact_Form_7_Ability {
 				'description' => __( 'Form title, shown in the admin list.', 'acrossai-abilities-manager' ),
 			),
 			'locale'              => array( 'type' => 'string' ),
+			'template'            => array(
+				'type'        => 'string',
+				'description' => __( 'Optional form template markup. Omit for Contact Form 7\'s default template. Named to match contact-form-7/get-form-template and update-form-template.', 'acrossai-abilities-manager' ),
+			),
 			'form'                => array(
 				'type'        => 'string',
-				'description' => __( 'Optional form template. Omit for the default template.', 'acrossai-abilities-manager' ),
+				'description' => __( 'Deprecated alias of "template". Accepted so existing callers keep working; prefer "template".', 'acrossai-abilities-manager' ),
 			),
 			'mail'                => array( 'type' => 'object' ),
 			'mail_2'              => array( 'type' => 'object' ),
@@ -83,10 +87,21 @@ class Create_Form extends Base_Contact_Form_7_Ability {
 			'title' => sanitize_text_field( (string) ( $input['title'] ?? '' ) ),
 		);
 
-		foreach ( array( 'locale', 'form', 'additional_settings' ) as $key ) {
+		foreach ( array( 'locale', 'additional_settings' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$data[ $key ] = (string) $input[ $key ];
 			}
+		}
+
+		// This ability called the template `form` while get-form-template and
+		// update-form-template call it `template`, so the same string had two
+		// names across three abilities and a caller that learned one got an
+		// invalid_input from the next. `template` is the name everywhere now;
+		// `form` still works, because it is also what CF7 calls the property.
+		if ( isset( $input['template'] ) ) {
+			$data['form'] = (string) $input['template'];
+		} elseif ( isset( $input['form'] ) ) {
+			$data['form'] = (string) $input['form'];
 		}
 
 		foreach ( array( 'mail', 'mail_2', 'messages' ) as $key ) {

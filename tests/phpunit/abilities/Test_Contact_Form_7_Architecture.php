@@ -13,6 +13,7 @@
 namespace AcrossAI_Abilities_Manager\Tests\PHPUnit\Abilities;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\ContactForm7\Contact_Form_7_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\ContactForm7\Form_Repository;
 use WP_UnitTestCase;
 
 class Test_Contact_Form_7_Architecture extends WP_UnitTestCase {
@@ -337,12 +338,65 @@ class Test_Contact_Form_7_Architecture extends WP_UnitTestCase {
 
 	/**
 	 * And that single call site must run wpcf7_kses() on the two fields CF7 exempts.
+	 *
+	 * The body goes through `sanitise_mail_body()`, which masks an angle-bracketed
+	 * mail tag and then runs the very same `wpcf7_kses( …, 'text' )`. This asserts
+	 * both halves: that the helper is what the save path uses, and that the helper
+	 * still sanitises. Matching the kses call inside the helper rather than at the
+	 * save site keeps this a guard against the sanitising being REMOVED, which is
+	 * what it is for, without freezing where it happens to live.
 	 */
 	public function test_the_repository_sanitises_the_fields_contact_form_7_exempts(): void {
 		$code = self::code_only( (string) file_get_contents( self::utilities_dir() . 'Form_Repository.php' ) );
 
 		$this->assertStringContainsString( "wpcf7_kses( (string) \$data['form'], 'form' )", $code );
-		$this->assertStringContainsString( "wpcf7_kses( (string) \$data[ \$which ]['body'], 'text' )", $code );
+		$this->assertStringContainsString( "self::sanitise_mail_body( (string) \$data[ \$which ]['body'] )", $code );
+		$this->assertStringContainsString( "wpcf7_kses( \$protected, 'text' )", $code );
+	}
+
+	/**
+	 * A mail tag in angle brackets survives sanitising; an HTML tag does not.
+	 *
+	 * `From: [your-name] <[your-email]>` is how a From line is written in a
+	 * plain-text body, and kses used to read `<[your-email]>` as an unknown
+	 * element and delete it — taking the mail tag with it, reporting success, and
+	 * leaving validate-mail-tags to call the template valid because the evidence
+	 * was gone. Found by writing that line over MCP and reading it back.
+	 *
+	 * @dataProvider provide_mail_bodies
+	 * @param string $body     Body as supplied.
+	 * @param string $expected What must survive.
+	 */
+	public function test_sanitising_a_mail_body_keeps_tags_and_drops_html( string $body, string $expected ): void {
+		$this->assertSame( $expected, Form_Repository::sanitise_mail_body( $body ) );
+	}
+
+	/**
+	 * @return array<string, array{string, string}>
+	 */
+	public static function provide_mail_bodies(): array {
+		return array(
+			'angle-bracketed mail tag survives' => array(
+				'From: [your-name] <[your-email]>',
+				'From: [your-name] <[your-email]>',
+			),
+			'plain body is untouched'           => array(
+				'Subject: [your-subject]',
+				'Subject: [your-subject]',
+			),
+			'several tags all survive'          => array(
+				'<[one]> and <[two]>',
+				'<[one]> and <[two]>',
+			),
+			'script is still removed'           => array(
+				'Hi <script>alert(1)</script> there',
+				'Hi alert(1) there',
+			),
+			'the mask cannot smuggle markup'    => array(
+				'<[tag] onerror=alert(1)>',
+				'',
+			),
+		);
 	}
 
 	/**

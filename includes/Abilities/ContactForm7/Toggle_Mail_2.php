@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\ContactForm7;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\ContactForm7\Contact_Form_7_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\ContactForm7\Form_Repository;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\ContactForm7\Form_Tag_Repository;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -52,9 +53,13 @@ class Toggle_Mail_2 extends Base_Contact_Form_7_Ability {
 
 	protected function output_properties(): array {
 		return array(
-			'form_id' => array( 'type' => 'integer' ),
-			'active'  => array( 'type' => 'boolean' ),
-			'mail_2'  => array( 'type' => 'object' ),
+			'form_id'         => array( 'type' => 'integer' ),
+			'active'          => array( 'type' => 'boolean' ),
+			'mail_2'          => array( 'type' => 'object' ),
+			'unresolved_tags' => array(
+				'type'        => 'array',
+				'description' => 'Mail tags in the autoresponder that match no field on this form, reported when it is enabled. Each entry is { field, tag }.',
+			),
 		);
 	}
 
@@ -107,13 +112,50 @@ class Toggle_Mail_2 extends Base_Contact_Form_7_Ability {
 
 		$stored = (array) $fresh->prop( 'mail_2' );
 
+		// Enabling is the half that can go wrong quietly. A form whose template
+		// was rewritten keeps CF7's stock autoresponder, which addresses
+		// [your-email] — so on a form without that field the reply is sent to
+		// nobody, and the visitor still sees a success message. Nothing else
+		// reports it, so this does: the check is the one validate-mail-tags runs,
+		// applied at the moment the template is switched on.
+		$unresolved = array();
+
+		if ( $active ) {
+			foreach ( array( 'recipient', 'subject', 'body', 'sender', 'additional_headers' ) as $field ) {
+				foreach ( Form_Tag_Repository::unresolvable_tags( $fresh, (string) ( $stored[ $field ] ?? '' ) ) as $tag ) {
+					$unresolved[] = array(
+						'field' => $field,
+						'tag'   => '[' . $tag . ']',
+					);
+				}
+			}
+		}
+
+		if ( ! $active ) {
+			$message = __( 'Autoresponder disabled.', 'acrossai-abilities-manager' );
+		} elseif ( array() === $unresolved ) {
+			$message = __( 'Autoresponder enabled.', 'acrossai-abilities-manager' );
+		} else {
+			$fields  = array_values( array_unique( wp_list_pluck( $unresolved, 'field' ) ) );
+			$message = sprintf(
+				/* translators: 1: number of unresolved tags, 2: comma-separated field names */
+				_n(
+					'Autoresponder enabled, but %1$d mail tag resolves to nothing (%2$s). It will send anyway, and the visitor still sees success — fix it with contact-form-7/update-mail using which=mail_2.',
+					'Autoresponder enabled, but %1$d mail tags resolve to nothing (%2$s). It will send anyway, and the visitor still sees success — fix them with contact-form-7/update-mail using which=mail_2.',
+					count( $unresolved ),
+					'acrossai-abilities-manager'
+				),
+				count( $unresolved ),
+				implode( ', ', $fields )
+			);
+		}
+
 		return array(
-			'form_id' => $form_id,
-			'active'  => ! empty( $stored['active'] ),
-			'mail_2'  => $stored,
-			'message' => $active
-				? __( 'Autoresponder enabled.', 'acrossai-abilities-manager' )
-				: __( 'Autoresponder disabled.', 'acrossai-abilities-manager' ),
+			'form_id'         => $form_id,
+			'active'          => ! empty( $stored['active'] ),
+			'mail_2'          => $stored,
+			'unresolved_tags' => $unresolved,
+			'message'         => $message,
 		);
 	}
 }

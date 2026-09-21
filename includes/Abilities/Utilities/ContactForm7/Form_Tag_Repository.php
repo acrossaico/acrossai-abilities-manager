@@ -128,17 +128,38 @@ final class Form_Tag_Repository {
 			return array();
 		}
 
-		$manager = WPCF7_FormTagsManager::get_instance();
-		$types   = array();
+		$manager   = WPCF7_FormTagsManager::get_instance();
+		$collected = array_map( 'strval', (array) $manager->collect_tag_types() );
 
-		foreach ( (array) $manager->collect_tag_types() as $type ) {
-			$type = (string) $type;
+		// CF7 registers `text` and `text*` as separate tag types, so appending an
+		// asterisk to whatever came back produced both a duplicate row and the
+		// string `text**`, which is not CF7 syntax at all. Report one row per base
+		// type, and claim a required form only where CF7 actually has one: `submit`
+		// and the captcha types have none.
+		$starred = array_flip( array_filter(
+			$collected,
+			static function ( string $type ): bool {
+				return str_ends_with( $type, '*' );
+			}
+		) );
+
+		$types = array();
+		$seen  = array();
+
+		foreach ( $collected as $type ) {
+			$base = rtrim( $type, '*' );
+
+			if ( '' === $base || isset( $seen[ $base ] ) ) {
+				continue;
+			}
+
+			$seen[ $base ] = true;
 
 			$types[] = array(
-				'type'          => $type,
-				'required_form' => $type . '*',
-				'accepts_name'  => (bool) $manager->tag_type_supports( $type, 'name-attr' ),
-				'in_mail'       => ! $manager->tag_type_supports( $type, 'not-for-mail' ),
+				'type'          => $base,
+				'required_form' => isset( $starred[ $base . '*' ] ) ? $base . '*' : null,
+				'accepts_name'  => (bool) $manager->tag_type_supports( $base, 'name-attr' ),
+				'in_mail'       => ! $manager->tag_type_supports( $base, 'not-for-mail' ),
 			);
 		}
 
@@ -256,7 +277,7 @@ final class Form_Tag_Repository {
 		$parts = array( rtrim( $type, '*' ) . ( $required ? '*' : '' ), $name );
 
 		foreach ( $options as $option ) {
-			$option = trim( (string) $option );
+			$option = self::normalise_option( (string) $option );
 
 			if ( '' !== $option ) {
 				$parts[] = $option;
@@ -272,6 +293,69 @@ final class Form_Tag_Repository {
 		}
 
 		return '[' . implode( ' ', $parts ) . ']';
+	}
+
+	/**
+	 * Put a tag option into a form CF7 will read back as ONE option.
+	 *
+	 * CF7 splits a form tag on whitespace, so `placeholder:+44 7700 900000`
+	 * arrives as three options and the field ends up with a placeholder of
+	 * `+44`. Values were already quoted here; options were passed through raw,
+	 * which made one ability speak two conventions.
+	 *
+	 * Quoting the value half is what CF7's own syntax asks for, so
+	 * `key:some words` becomes `key:"some words"`. An option with no `key:`
+	 * prefix has no value half to quote and cannot be repaired here — see
+	 * {@see self::invalid_options()}, which the write abilities call first so
+	 * the caller is told rather than handed a silently mangled tag.
+	 *
+	 * @since  0.0.38
+	 * @param  string $option Raw option.
+	 * @return string Normalised option, or '' when empty.
+	 */
+	public static function normalise_option( string $option ): string {
+		$option = trim( $option );
+
+		if ( '' === $option || 1 !== preg_match( '/\s/', $option ) ) {
+			return $option;
+		}
+
+		if ( 1 === preg_match( '/^([A-Za-z0-9_-]+):(.*)$/s', $option, $match ) ) {
+			return $match[1] . ':"' . str_replace( '"', '', $match[2] ) . '"';
+		}
+
+		return $option;
+	}
+
+	/**
+	 * Options that cannot survive being written into a tag.
+	 *
+	 * Only one shape qualifies: whitespace with no `key:` prefix, so there is no
+	 * value half to quote. Returning them lets the ability refuse with the
+	 * offending text in hand, which is worth more than a tag that looks saved
+	 * and reads back as several options.
+	 *
+	 * @since  0.0.38
+	 * @param  array<int,mixed> $options Raw options.
+	 * @return array<int,string> Offending options, in the order given.
+	 */
+	public static function invalid_options( array $options ): array {
+		$invalid = array();
+
+		foreach ( $options as $option ) {
+			$option = trim( (string) $option );
+
+			if ( '' === $option ) {
+				continue;
+			}
+
+			if ( 1 === preg_match( '/\s/', $option )
+				&& 1 !== preg_match( '/^[A-Za-z0-9_-]+:/', $option ) ) {
+				$invalid[] = $option;
+			}
+		}
+
+		return $invalid;
 	}
 
 	/**

@@ -508,6 +508,60 @@ if ( ! function_exists( 'wp_kses_post' ) ) {
 	}
 }
 
+if ( ! class_exists( 'WPCF7_FormTagsManager' ) ) {
+	/**
+	 * Stub: Contact Form 7's form-tag registry.
+	 *
+	 * Driven by globals so a test can describe the exact registry it needs. CF7
+	 * registers a base type and its required variant as SEPARATE types (`text`
+	 * and `text*`) while some types have no required variant at all, and telling
+	 * those apart is the whole point of the listing.
+	 */
+	class WPCF7_FormTagsManager {
+
+		/** @return self */
+		public static function get_instance(): self {
+			return new self();
+		}
+
+		/** @return array<int, string> */
+		public function collect_tag_types(): array {
+			return array_map( 'strval', (array) ( $GLOBALS['acrossai_test_cf7_tag_types'] ?? array() ) );
+		}
+
+		/**
+		 * @param  string $type    Tag type.
+		 * @param  string $feature Feature name, e.g. name-attr or not-for-mail.
+		 * @return bool
+		 */
+		public function tag_type_supports( string $type, string $feature ): bool {
+			$map = (array) ( $GLOBALS['acrossai_test_cf7_tag_features'] ?? array() );
+
+			return in_array( $type, (array) ( $map[ $feature ] ?? array() ), true );
+		}
+	}
+}
+
+if ( ! function_exists( 'wpcf7_kses' ) ) {
+	/**
+	 * Stub: Contact Form 7's sanitiser.
+	 *
+	 * Tag-stripping, like the `wp_kses` stub above — which is exactly the
+	 * behaviour that made an angle-bracketed mail tag disappear, so the mask in
+	 * `Form_Repository::sanitise_mail_body()` is genuinely exercised here rather
+	 * than passing because the stub is permissive.
+	 *
+	 * @param  string $content Content to sanitise.
+	 * @param  string $context CF7 context: 'form' or 'text'.
+	 * @return string
+	 */
+	function wpcf7_kses( string $content, string $context = 'form' ): string {
+		unset( $context );
+
+		return strip_tags( $content );
+	}
+}
+
 if ( ! function_exists( 'absint' ) ) {
 	/** Stub: converts to absolute integer. */
 	function absint( mixed $maybeint ): int {
