@@ -9,6 +9,10 @@ this file carries everything, in full, and is shipped inside the plugin.
 
 (nothing yet)
 
+= 0.0.37 - 2026-09-21 =
+
+* **Fixed: the UpdraftPlus and All-in-One WP Migration tools were offered on sites without those plugins.** Both appeared in an MCP server's tool picker, and in the set a new server starts with, whether or not the backup plugin was anywhere on the site. Every other per-plugin toolset — Elementor, Rank Math, LiteSpeed — already excluded itself; these two, added in 0.0.35, did not. The tools themselves were never broken: they are still registered when their plugin is active, still addable by hand, and still reachable through the Integrations toolset. What changes is that they are no longer part of what a new server is given by default. If a server already has one and the plugin is not installed, "Reset to Type Defaults" clears it.
+
 = 0.0.36 - 2026-09-21 =
 
 * **Listing posts no longer forces you to download every body.** `content/list-posts`, `content/list-pages` and `content/list-cpt-items` returned every field of every item including the whole post_content — ten posts came to about 172 KB when almost all of it was content nobody had asked for yet. Pass `fields: "summary"` to get just what identifies an item: title, status, dates, slug, author, a trimmed excerpt, and content_bytes so you can size the follow-up read. Measured at 36-39x smaller. The default is unchanged, so nothing existing sees a difference.

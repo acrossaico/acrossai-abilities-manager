@@ -167,6 +167,35 @@ class Test_Backup_Suites extends WP_UnitTestCase {
 	}
 
 	/**
+	 * A per-plugin Toolset must opt out of the server type's default set.
+	 *
+	 * Two different lists: what is REGISTERED as an ability, and what is DECLARED into the
+	 * `acrossai` server type. `declare_server_type_tool()` deliberately never consults the ability
+	 * registry — an earlier version did, and on REST requests the transport resolved its type
+	 * registry before `wp_abilities_api_init`, so every Toolset dropped out. It answers from a
+	 * per-class constant instead.
+	 *
+	 * Which means a per-plugin Toolset has to say so itself. Measured: with UpdraftPlus and
+	 * All-in-One deactivated, both were still being declared into the type and offered in the Tools
+	 * picker, while Elementor's and Rank Math's correctly were not — because those two override
+	 * this and these two, generated from the always-present Cache Toolset, inherited `true`.
+	 *
+	 * A default set that changes when a plugin is activated is the specific harm: a connected MCP
+	 * client caches tools/list and has no way to be told it moved.
+	 */
+	public function test_per_plugin_toolsets_are_not_server_type_defaults(): void {
+		foreach ( array( 'UpdraftPlus.php', 'All_In_One.php' ) as $file ) {
+			$src = self::code_only( self::read( dirname( __DIR__, 3 ) . '/includes/Abilities/Toolset/' . $file ) );
+
+			$this->assertMatchesRegularExpression(
+				'/protected function is_server_type_default\(\): bool \{\s*return false;/',
+				$src,
+				"Toolset/{$file} drives one plugin, so it must not be in the default set — the same override Elementor and Rank Math carry."
+			);
+		}
+	}
+
+	/**
 	 * Only what each plugin can actually do is offered.
 	 *
 	 * UpdraftPlus stores no label against a backup set; All-in-One does. Offering an ability that
