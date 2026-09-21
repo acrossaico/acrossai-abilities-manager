@@ -10,6 +10,7 @@
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
 
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Post_Summary;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 
 defined( 'ABSPATH' ) || exit;
@@ -30,7 +31,7 @@ class List_Pages extends Ability_Definition {
 			'name' => 'content/list-pages',
 			'args' => array(
 				'label'               => __( 'Get Pages', 'acrossai-abilities-manager' ),
-				'description'         => __( 'List pages via get_pages(). Supports parent / child_of filters and sort_column / sort_order.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'List pages via get_pages(). Supports parent / child_of filters and sort_column / sort_order. Returns every page field including the full post_content by default; pass fields: "summary" to get just titles, dates, slugs and content_bytes, which is far cheaper when browsing. Read one page in full with content/get-page.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-content',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -65,6 +66,7 @@ class List_Pages extends Ability_Definition {
 							'type'  => 'array',
 							'items' => array( 'type' => 'integer' ),
 						),
+						'fields'     => Post_Summary::input_property(),
 					),
 					'additionalProperties' => false,
 				),
@@ -100,6 +102,31 @@ class List_Pages extends Ability_Definition {
 	}
 
 	/**
+	 * Feature 128 — point a browsing caller at the cheap paths.
+	 *
+	 * Measured on ten real posts averaging 16 KB of body: the full response was 171,582 bytes and
+	 * the summary 4,361 — 39x. A caller listing to find one item pays that difference for content
+	 * it then throws away.
+	 *
+	 * @since  0.0.36
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'content/list-pages',
+				'reason' => __( 'Browsing to find something? Call this with fields: "summary" — it returns titles, dates, slugs and content_bytes instead of every field including the whole post_content.', 'acrossai-abilities-manager' ),
+				'saves'  => __( '~39x fewer tokens when browsing (171 KB -> 4 KB measured on 10 posts)', 'acrossai-abilities-manager' ),
+			),
+			array(
+				'slug'   => 'content/get-page',
+				'reason' => __( 'Once you know which page you want, read that one in full. Listing everything in full to read a single page is the expensive way round.', 'acrossai-abilities-manager' ),
+				'saves'  => __( 'Avoids pulling every other item\'s body to read one', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.
@@ -122,10 +149,7 @@ class List_Pages extends Ability_Definition {
 			$pages = array();
 		}
 
-		$out = array();
-		foreach ( $pages as $p ) {
-			$out[] = (array) $p;
-		}
+		$out = Post_Summary::rows( $pages, Post_Summary::wants_summary( $input ) );
 
 		return array(
 			'success' => true,

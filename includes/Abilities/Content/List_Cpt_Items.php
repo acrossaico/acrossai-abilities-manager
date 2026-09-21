@@ -10,6 +10,7 @@
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
 
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Post_Summary;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 
 defined( 'ABSPATH' ) || exit;
@@ -64,6 +65,7 @@ class List_Cpt_Items extends Ability_Definition {
 							'enum'    => array( 'ASC', 'DESC', 'asc', 'desc' ),
 							'default' => 'DESC',
 						),
+						'fields'    => Post_Summary::input_property(),
 					),
 					'required'             => array( 'post_type' ),
 					'additionalProperties' => false,
@@ -102,6 +104,31 @@ class List_Cpt_Items extends Ability_Definition {
 	}
 
 	/**
+	 * Feature 128 — point a browsing caller at the cheap paths.
+	 *
+	 * Measured on ten real posts averaging 16 KB of body: the full response was 171,582 bytes and
+	 * the summary 4,361 — 39x. A caller listing to find one item pays that difference for content
+	 * it then throws away.
+	 *
+	 * @since  0.0.36
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'content/list-cpt-items',
+				'reason' => __( 'Browsing to find something? Call this with fields: "summary" — it returns titles, dates, slugs and content_bytes instead of every field including the whole post_content.', 'acrossai-abilities-manager' ),
+				'saves'  => __( '~39x fewer tokens when browsing (171 KB -> 4 KB measured on 10 posts)', 'acrossai-abilities-manager' ),
+			),
+			array(
+				'slug'   => 'content/get-cpt-item',
+				'reason' => __( 'Once you know which item you want, read that one in full. Listing everything in full to read a single item is the expensive way round.', 'acrossai-abilities-manager' ),
+				'saves'  => __( 'Avoids pulling every other item\'s body to read one', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.
@@ -130,10 +157,7 @@ class List_Cpt_Items extends Ability_Definition {
 		}
 
 		$query = new \WP_Query( $args );
-		$out   = array();
-		foreach ( $query->posts as $p ) {
-			$out[] = (array) $p;
-		}
+		$out   = Post_Summary::rows( $query->posts, Post_Summary::wants_summary( $input ) );
 
 		return array(
 			'success' => true,

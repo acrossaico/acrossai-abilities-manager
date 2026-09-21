@@ -360,13 +360,79 @@ class AcrossAI_Ability_Library_Registry {
 	 */
 	public static function apply_suggested_abilities_decoration( array $definitions ): array {
 		$kill_switch = (bool) get_option( 'acrossai_disable_ability_suggestions', 0 );
-		if ( ! $kill_switch ) {
+
+		if ( $kill_switch ) {
+			foreach ( $definitions as &$row ) {
+				if ( isset( $row['args']['meta']['acrossai']['suggested_abilities'] ) ) {
+					unset( $row['args']['meta']['acrossai']['suggested_abilities'] );
+				}
+			}
+			unset( $row );
+
 			return $definitions;
 		}
 
+		return self::prune_unregistered_suggestions( $definitions );
+	}
+
+	/**
+	 * Feature 128: drop suggestions that asked to be shown only when their target exists.
+	 *
+	 * Why it happens HERE and not in the ability's own `suggested_abilities()`: that method runs
+	 * inside `push_definition()`, while definitions are still being COLLECTED.
+	 * `AcrossAI_Ability_Library_Processor::register_abilities()` only calls
+	 * `wp_register_ability()` afterwards, in a second loop -- so at `suggested_abilities()` time
+	 * nothing is registered yet and `wp_get_ability()` returns null for everything, including
+	 * abilities this plugin is about to register itself. `WP_Ability::$meta` is protected with
+	 * getters only, so the meta cannot be amended after registration either. This pass is the one
+	 * place that sees the complete set before any of it is registered.
+	 *
+	 * Opt-in per entry, via `'only_if_registered' => true`. Entries without the flag are left
+	 * exactly as declared, which preserves the documented contract that a suggestion may point at
+	 * an ability the caller's site does not have -- third-party ability plugins rely on that.
+	 *
+	 * The flag itself is stripped from the surviving entry: it is an instruction to this pass, not
+	 * something a caller should have to read.
+	 *
+	 * @since  0.0.36
+	 * @param  array<int, array<string, mixed>> $definitions Cached rows.
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function prune_unregistered_suggestions( array $definitions ): array {
+		$known = array();
+
+		foreach ( $definitions as $row ) {
+			if ( isset( $row['name'] ) && is_string( $row['name'] ) ) {
+				$known[ $row['name'] ] = true;
+			}
+		}
+
 		foreach ( $definitions as &$row ) {
-			if ( isset( $row['args']['meta']['acrossai']['suggested_abilities'] ) ) {
+			if ( empty( $row['args']['meta']['acrossai']['suggested_abilities'] ) || ! is_array( $row['args']['meta']['acrossai']['suggested_abilities'] ) ) {
+				continue;
+			}
+
+			$kept = array();
+
+			foreach ( $row['args']['meta']['acrossai']['suggested_abilities'] as $entry ) {
+				if ( ! is_array( $entry ) ) {
+					continue;
+				}
+
+				$conditional = ! empty( $entry['only_if_registered'] );
+				unset( $entry['only_if_registered'] );
+
+				if ( $conditional && ! isset( $known[ (string) ( $entry['slug'] ?? '' ) ] ) ) {
+					continue;
+				}
+
+				$kept[] = $entry;
+			}
+
+			if ( empty( $kept ) ) {
 				unset( $row['args']['meta']['acrossai']['suggested_abilities'] );
+			} else {
+				$row['args']['meta']['acrossai']['suggested_abilities'] = array_values( $kept );
 			}
 		}
 		unset( $row );

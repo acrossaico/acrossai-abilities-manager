@@ -32,7 +32,7 @@ class Get_Site_Health_Status extends Ability_Definition {
 			'name' => 'site-health/get-site-health-status',
 			'args' => array(
 				'label'               => __( 'Get Site Health Status', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Run the WordPress Site Health direct tests and return the per-test results together with the good / recommended / critical counts shown on Tools → Site Health → Status. Optionally also runs async tests via their direct fallbacks.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Run the WordPress Site Health direct tests and return the per-test results together with the good / recommended / critical counts shown on Tools → Site Health → Status. Optionally also runs async tests via their direct fallbacks. The description and actions fields carry WordPress core\'s own HTML by default; pass format: "text" for plain readable sentences with link destinations preserved.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-site-health',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -45,6 +45,12 @@ class Get_Site_Health_Status extends Ability_Definition {
 							'type'        => 'boolean',
 							'default'     => true,
 							'description' => __( 'Also run async tests via their direct fallback callbacks (loopback, dotorg communication, background updates, https status, page cache when available).', 'acrossai-abilities-manager' ),
+						),
+						'format'        => array(
+							'type'        => 'string',
+							'enum'        => array( 'html', 'text' ),
+							'default'     => 'html',
+							'description' => __( 'How to return the description and actions fields. "html" (the default) passes WordPress core\'s markup through unchanged. "text" strips the tags, drops the dashicon and screen-reader spans, keeps link destinations as "text (url)", decodes entities and collapses whitespace.', 'acrossai-abilities-manager' ),
 						),
 					),
 					'additionalProperties' => false,
@@ -107,7 +113,25 @@ class Get_Site_Health_Status extends Ability_Definition {
 	 * @param array $input Ability input payload.
 	 * @return array
 	 */
+	/**
+	 * Feature 128 — point callers at the readable form.
+	 *
+	 * @since  0.0.36
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'site-health/get-site-health-status',
+				'reason' => __( 'Reading these results rather than rendering them? Pass format: "text". The description and actions fields carry WordPress core\'s own markup - dashicon spans that render as glyphs and read as nothing, and screen-reader spans that repeat the link text - none of which helps a caller decide what to do.', 'acrossai-abilities-manager' ),
+				'saves'  => __( 'Removes the markup and the duplicated link labels; keeps every link destination', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
 	public function execute( array $input = array() ): array {
+		$as_text = isset( $input['format'] ) && 'text' === $input['format'];
+
 		if ( ! class_exists( 'WP_Site_Health' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/class-wp-site-health.php';
 		}
@@ -124,7 +148,7 @@ class Get_Site_Health_Status extends Ability_Definition {
 			}
 			$result = $this->run_test( $callback );
 			if ( is_array( $result ) ) {
-				$results[] = $this->normalize_result( $test_id, $test, $result );
+				$results[] = $this->normalize_result( $test_id, $test, $result, $as_text );
 			}
 		}
 
@@ -135,7 +159,7 @@ class Get_Site_Health_Status extends Ability_Definition {
 				}
 				$result = $this->run_test( $test['async_direct_test'] );
 				if ( is_array( $result ) ) {
-					$results[] = $this->normalize_result( $test_id, $test, $result );
+					$results[] = $this->normalize_result( $test_id, $test, $result, $as_text );
 				}
 			}
 		}
@@ -201,16 +225,76 @@ class Get_Site_Health_Status extends Ability_Definition {
 	 * @param string $test_id Identifier from the tests array key.
 	 * @param array  $test    Original test definition (provides a fallback label).
 	 * @param array  $result  Raw test result.
+	 * @param bool   $as_text Whether to flatten description/actions to plain text.
 	 * @return array
 	 */
-	private function normalize_result( string $test_id, array $test, array $result ): array {
+	private function normalize_result( string $test_id, array $test, array $result, bool $as_text = false ): array {
+		$description = isset( $result['description'] ) ? (string) $result['description'] : '';
+		$actions     = isset( $result['actions'] ) ? (string) $result['actions'] : '';
+
+		if ( $as_text ) {
+			$description = self::to_text( $description );
+			$actions     = self::to_text( $actions );
+		}
+
 		return array(
 			'test'        => isset( $result['test'] ) ? (string) $result['test'] : $test_id,
 			'label'       => isset( $result['label'] ) ? (string) $result['label'] : (string) ( $test['label'] ?? $test_id ),
 			'status'      => isset( $result['status'] ) ? (string) $result['status'] : '',
 			'badge'       => isset( $result['badge'] ) && is_array( $result['badge'] ) ? $result['badge'] : array(),
-			'description' => isset( $result['description'] ) ? (string) $result['description'] : '',
-			'actions'     => isset( $result['actions'] ) ? (string) $result['actions'] : '',
+			'description' => $description,
+			'actions'     => $actions,
 		);
+	}
+
+	/**
+	 * Flatten WordPress core's Site Health markup to something readable.
+	 *
+	 * Core writes these fields for a browser: `<p>` wrappers, dashicon `<span>`s that render as
+	 * glyphs and read as nothing, and screen-reader-text spans that duplicate what the link already
+	 * says. Passed through verbatim they cost tokens and tell an AI caller less than the plain
+	 * sentence would.
+	 *
+	 * Link hrefs are kept as `text (url)` because they are frequently the actionable part -- the
+	 * whole point of an "actions" field is the place it sends you.
+	 *
+	 * @since  0.0.36
+	 * @param  string $html Core-supplied markup.
+	 * @return string
+	 */
+	private static function to_text( string $html ): string {
+		if ( '' === $html ) {
+			return '';
+		}
+
+		// Drop screen-reader-only spans first: they exist to repeat link text for assistive
+		// technology, so keeping them duplicates every link label.
+		$html = preg_replace( '#<span[^>]*class="[^"]*screen-reader-text[^"]*"[^>]*>.*?</span>#is', ' ', $html ) ?? $html;
+
+		// Keep the destination of a link, which is usually the actionable part.
+		$html = preg_replace_callback(
+			'#<a\b[^>]*href=(["\'])(.*?)\1[^>]*>(.*?)</a>#is',
+			static function ( array $m ): string {
+				$text = trim( wp_strip_all_tags( $m[3] ) );
+				$url  = trim( $m[2] );
+
+				if ( '' === $url ) {
+					return $text;
+				}
+
+				return '' === $text ? $url : $text . ' (' . $url . ')';
+			},
+			$html
+		) ?? $html;
+
+		// Block-level boundaries become spaces so sentences do not run together.
+		$html = preg_replace( '#</(p|div|li|h[1-6])>#i', ' ', $html ) ?? $html;
+		$html = preg_replace( '#<br\s*/?>#i', ' ', $html ) ?? $html;
+
+		$text = wp_strip_all_tags( $html );
+		$text = html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		$text = preg_replace( '/\s+/u', ' ', $text ) ?? $text;
+
+		return trim( $text );
 	}
 }

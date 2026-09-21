@@ -861,6 +861,18 @@ if ( ! class_exists( 'Test_Fake_WP_Filesystem' ) ) {
 	}
 }
 
+if ( ! function_exists( 'strip_shortcodes' ) ) {
+	/**
+	 * Minimal stub: removes [shortcode] and [/shortcode] markers.
+	 *
+	 * @param string $content Content.
+	 * @return string
+	 */
+	function strip_shortcodes( string $content ): string {
+		return (string) preg_replace( '/\[\/?[^\]]*\]/', '', $content );
+	}
+}
+
 if ( ! function_exists( 'wp_strip_all_tags' ) ) {
 	/**
 	 * Stub: mirrors WP wp_strip_all_tags — strip every tag and also drop any
@@ -987,14 +999,45 @@ if ( ! class_exists( 'WP_Post' ) ) {
 	class WP_Post {
 		public int $ID = 0;
 		public string $post_content = '';
+		public string $post_content_filtered = '';
 		public string $post_title = '';
 		public string $post_name = '';
 		public string $post_status = 'publish';
 		public string $post_type = '';
 		public string $post_excerpt = '';
+		public string $post_date = '';
+		public string $post_modified = '';
 		public string $post_modified_gmt = '';
 		public int $post_parent = 0;
 		public int $post_author = 0;
+
+		/**
+		 * Copy declared properties off a row object, as WP_Post itself does.
+		 *
+		 * Without this the stub silently ignored its argument, so a test that built a post with
+		 * content got one with an empty body and asserted against nothing. The argument stays
+		 * optional so existing `new WP_Post()` calls are unaffected.
+		 *
+		 * @param object|array<string, mixed>|null $row Row to copy from.
+		 */
+		public function __construct( $row = null ) {
+			if ( null === $row ) {
+				return;
+			}
+
+			foreach ( (array) $row as $key => $value ) {
+				if ( ! property_exists( $this, (string) $key ) ) {
+					continue;
+				}
+
+				// Typed properties: coerce to the declared type rather than fataling.
+				if ( in_array( $key, array( 'ID', 'post_parent', 'post_author' ), true ) ) {
+					$this->$key = (int) $value;
+				} else {
+					$this->$key = (string) $value;
+				}
+			}
+		}
 	}
 }
 

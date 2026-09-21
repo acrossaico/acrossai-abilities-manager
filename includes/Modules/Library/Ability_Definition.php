@@ -128,6 +128,76 @@ abstract class Ability_Definition {
 	}
 
 	/**
+	 * Every ability must say whether it reads, destroys, and can be repeated.
+	 *
+	 * Feature 128. An AI caller uses these three to decide whether an ability is safe to try, safe
+	 * to retry, and safe to run without asking. A null is not "unknown" to a caller -- it reads as
+	 * "not destructive", which is the dangerous direction to be wrong in. Measured live:
+	 * `mailerpress/list-campaigns` reported null for all three while its own description said
+	 * "Read-only".
+	 *
+	 * Deliberately advisory at runtime. This runs for every ability on every request, so it must
+	 * not throw and must cost nothing in production: the whole check is skipped unless WP_DEBUG is
+	 * on. The test suite enforces it properly by iterating the full collected set.
+	 *
+	 * @since  0.0.36
+	 * @param  string               $name Ability name, for the message.
+	 * @param  array<string, mixed> $args Ability args.
+	 * @return void
+	 */
+	private static function assert_annotations( string $name, array $args ): void {
+		if ( ! defined( 'WP_DEBUG' ) || ! WP_DEBUG ) {
+			return;
+		}
+
+		$missing = self::missing_annotations( $args );
+
+		if ( empty( $missing ) ) {
+			return;
+		}
+
+		_doing_it_wrong(
+			__METHOD__,
+			sprintf(
+				/* translators: 1: ability name, 2: comma-separated annotation keys. */
+				esc_html__( 'Ability "%1$s" does not declare %2$s. An AI caller reads a missing annotation as "not destructive", so every ability must set readonly, destructive and idempotent explicitly.', 'acrossai-abilities-manager' ),
+				esc_html( $name ),
+				esc_html( implode( ', ', $missing ) )
+			),
+			'0.0.36'
+		);
+	}
+
+	/**
+	 * Which of the three required annotations are missing or null.
+	 *
+	 * Public + static so the test suite can iterate the collected definitions without standing up
+	 * a definition object per ability.
+	 *
+	 * @since  0.0.36
+	 * @param  array<string, mixed> $args Ability args.
+	 * @return string[] Missing keys, empty when all three are present.
+	 */
+	public static function missing_annotations( array $args ): array {
+		$annotations = ( isset( $args['meta']['annotations'] ) && is_array( $args['meta']['annotations'] ) )
+			? $args['meta']['annotations']
+			: array();
+
+		$missing = array();
+
+		foreach ( array( 'readonly', 'destructive', 'idempotent' ) as $key ) {
+			// array_key_exists, not isset: a key present with a null value is exactly the case
+			// this guard exists to catch, and isset() would call it absent either way but
+			// array_key_exists keeps the distinction honest if the message ever needs it.
+			if ( ! array_key_exists( $key, $annotations ) || null === $annotations[ $key ] ) {
+				$missing[] = $key;
+			}
+		}
+
+		return $missing;
+	}
+
+	/**
 	 * Filter callback — wired automatically by the constructor.
 	 *
 	 * Derives Library grouping fields from ability() so subclasses only need
@@ -140,6 +210,8 @@ abstract class Ability_Definition {
 		$spec = $this->ability();
 		$name = $spec['name'] ?? '';
 		$args = $spec['args'] ?? array();
+
+		self::assert_annotations( (string) $name, $args );
 
 		// Feature 088: auto-inject subclass-declared suggested plugins into
 		// meta.acrossai.suggested_plugins. Only writes when the subclass

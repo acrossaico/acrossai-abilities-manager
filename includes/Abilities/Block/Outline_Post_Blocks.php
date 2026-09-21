@@ -43,7 +43,7 @@ class Outline_Post_Blocks extends Ability_Definition {
 			'name' => 'blocks/outline-post-blocks',
 			'args' => array(
 				'label'               => __( 'Outline Post Blocks', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Return a flat, depth-first index of a post\'s Gutenberg blocks — canonical path, block type, child count, byte size, and a short text preview — without any block content. Cheap way to locate a block before editing it via blocks/add-block, blocks/update-post-block, or blocks/remove-block; paths returned here are drop-in usable with those abilities. Paths are positional and valid as of the response\'s post_modified_gmt: re-run the outline after any write rather than caching paths across edits. The "contains" filter matches only within the extracted text preview (up to max_text characters), so raise max_text for deeper substring searches.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Return a flat, depth-first index of a post\'s Gutenberg blocks — canonical path, block type, child count, byte size, and a short text preview — without any block content. Cheap way to locate a block before editing it via blocks/add-block, blocks/update-post-block, or blocks/remove-block; paths returned here are drop-in usable with those abilities. Paths are positional and valid as of the response\'s post_modified_gmt: re-run the outline after any write rather than caching paths across edits. The "contains" filter matches only within the extracted text preview (up to max_text characters), so raise max_text for deeper substring searches. depth counts from the post: 1 returns top-level blocks; 0 with no path returns nothing.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -99,7 +99,14 @@ class Outline_Post_Blocks extends Ability_Definition {
 						'success'           => array( 'type' => 'boolean' ),
 						'post_id'           => array( 'type' => 'integer' ),
 						'post_modified_gmt' => array( 'type' => 'string' ),
-						'total'             => array( 'type' => 'integer' ),
+						'total'             => array(
+							'type'        => 'integer',
+							'description' => __( 'How many blocks matched the filters, before max_results was applied.', 'acrossai-abilities-manager' ),
+						),
+						'returned'          => array(
+							'type'        => 'integer',
+							'description' => __( 'How many blocks are in this response. Lower than total when truncated is true.', 'acrossai-abilities-manager' ),
+						),
 						'truncated'         => array( 'type' => 'boolean' ),
 						'blocks'            => array( 'type' => 'array' ),
 						'message'           => array( 'type' => 'string' ),
@@ -186,7 +193,8 @@ class Outline_Post_Blocks extends Ability_Definition {
 			'success'           => true,
 			'post_id'           => $post_id,
 			'post_modified_gmt' => $post_modified_gmt,
-			'total'             => count( $outcome['blocks'] ),
+			'total'             => (int) $outcome['matched'],
+			'returned'          => count( $outcome['blocks'] ),
 			'truncated'         => $outcome['truncated'],
 			'blocks'            => $outcome['blocks'],
 			/* translators: 1: entry count, 2: post ID */
@@ -220,6 +228,7 @@ class Outline_Post_Blocks extends Ability_Definition {
 		int $max_results
 	): array {
 		$entries      = array();
+		$matched      = 0;
 		$truncated    = false;
 		$type_filter  = ! empty( $block_names ) ? array_flip( $block_names ) : null;
 		$has_contains = '' !== $contains;
@@ -229,6 +238,7 @@ class Outline_Post_Blocks extends Ability_Definition {
 			$blocks,
 			static function ( array $block, array $path ) use (
 				&$entries,
+				&$matched,
 				&$truncated,
 				$start_path,
 				$depth,
@@ -239,9 +249,10 @@ class Outline_Post_Blocks extends Ability_Definition {
 				$include_attrs,
 				$max_results
 			): void {
-				if ( $truncated ) {
-					return;
-				}
+				// NOTE: deliberately no early return once the cap is reached. Stopping the walk
+				// there is what made `total` report the number RETURNED rather than the number
+				// MATCHED -- with max_results: 3 on a 40-block post it said total: 3. Collection
+				// stops at the cap; counting does not.
 				// Only consider the subtree rooted at $start_path.
 				if ( ! self::path_starts_with( $path, $start_path ) ) {
 					return;
@@ -276,6 +287,7 @@ class Outline_Post_Blocks extends Ability_Definition {
 					'blockName'  => $block_name,
 					'childCount' => self::count_named_children( $block ),
 					'bytes'      => strlen( $inner_html ),
+					'subtree_bytes' => self::subtree_bytes( $block ),
 				);
 				if ( $max_text > 0 ) {
 					$entry['text'] = $preview;
@@ -283,9 +295,11 @@ class Outline_Post_Blocks extends Ability_Definition {
 				if ( $include_attrs ) {
 					$entry['attrs'] = isset( $block['attrs'] ) && is_array( $block['attrs'] ) ? $block['attrs'] : array();
 				}
-				$entries[] = $entry;
+				++$matched;
 
-				if ( count( $entries ) >= $max_results ) {
+				if ( count( $entries ) < $max_results ) {
+					$entries[] = $entry;
+				} else {
 					$truncated = true;
 				}
 			}
@@ -293,6 +307,7 @@ class Outline_Post_Blocks extends Ability_Definition {
 
 		return array(
 			'blocks'    => $entries,
+			'matched'   => $matched,
 			'truncated' => $truncated,
 		);
 	}
@@ -339,6 +354,31 @@ class Outline_Post_Blocks extends Ability_Definition {
 			return false;
 		}
 		return array_slice( $path, 0, count( $prefix ) ) === $prefix;
+	}
+
+	/**
+	 * Total innerHTML size of a block and everything nested inside it.
+	 *
+	 * `bytes` is the block's own markup, which for a container -- a group, a columns block -- is
+	 * close to nothing while the subtree beneath it may be most of the post. Reporting both is what
+	 * lets a caller tell "this block is small" from "this block is a small wrapper around 40 KB".
+	 *
+	 * @since  0.0.36
+	 * @param  array<string, mixed> $block Parsed block.
+	 * @return int
+	 */
+	private static function subtree_bytes( array $block ): int {
+		$bytes = strlen( isset( $block['innerHTML'] ) ? (string) $block['innerHTML'] : '' );
+
+		if ( ! empty( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
+			foreach ( $block['innerBlocks'] as $child ) {
+				if ( is_array( $child ) ) {
+					$bytes += self::subtree_bytes( $child );
+				}
+			}
+		}
+
+		return $bytes;
 	}
 
 	/**
