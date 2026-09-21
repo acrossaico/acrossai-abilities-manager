@@ -312,6 +312,30 @@ class Test_Backup_Suites extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The filesystem helpers are loaded before they are called.
+	 *
+	 * get_filesystem_method(), request_filesystem_credentials() and WP_Filesystem() live in
+	 * wp-admin/includes/file.php, which WordPress does not load for a REST request — and every call
+	 * into this suite is a REST request. Measured: restore died with "Call to undefined function
+	 * get_filesystem_method()" before checking anything, for every input rather than only a bad one.
+	 */
+	public function test_restore_loads_the_admin_filesystem_helpers(): void {
+		$body = self::code_only( self::method_body( self::read( self::util( 'UpdraftPlus' ) . 'Backup_Repository.php' ), 'restore_backup' ) );
+
+		$require = strpos( $body, "require_once ABSPATH . 'wp-admin/includes/file.php'" );
+		$use     = strpos( $body, 'get_filesystem_method()' );
+
+		$this->assertNotFalse( $require, 'wp-admin/includes/file.php must be loaded; REST requests do not have it.' );
+		$this->assertNotFalse( $use );
+		$this->assertLessThan( $use, $require, 'It must be loaded BEFORE the first call into it.' );
+		$this->assertMatchesRegularExpression(
+			"/if \\( ! function_exists\\( 'get_filesystem_method' \\) \\) \\{/",
+			$body,
+			'Guarded, so a context that already has it is not re-required.'
+		);
+	}
+
+	/**
 	 * Remote storage is named and never described.
 	 */
 	public function test_remote_storage_credentials_are_never_returned(): void {
