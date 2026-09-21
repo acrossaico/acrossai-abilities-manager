@@ -5,7 +5,7 @@ Tags: abilities, ability management, access control, site management, ai
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.0.36
+Stable tag: 0.0.37
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -199,6 +199,10 @@ No data is sent to any external server without an explicit administrator action.
 
 (nothing yet)
 
+= 0.0.37 - 2026-09-21 =
+
+* **Fixed: the UpdraftPlus and All-in-One WP Migration tools were offered on sites without those plugins.** Both appeared in an MCP server's tool picker, and in the set a new server starts with, whether or not the backup plugin was anywhere on the site. Every other per-plugin toolset — Elementor, Rank Math, LiteSpeed — already excluded itself; these two, added in 0.0.35, did not. The tools themselves were never broken: they are still registered when their plugin is active, still addable by hand, and still reachable through the Integrations toolset. What changes is that they are no longer part of what a new server is given by default. If a server already has one and the plugin is not installed, "Reset to Type Defaults" clears it.
+
 = 0.0.36 - 2026-09-21 =
 
 * **Listing posts no longer forces you to download every body.** `content/list-posts`, `content/list-pages` and `content/list-cpt-items` returned every field of every item including the whole post_content — ten posts came to about 172 KB when almost all of it was content nobody had asked for yet. Pass `fields: "summary"` to get just what identifies an item: title, status, dates, slug, author, a trimmed excerpt, and content_bytes so you can size the follow-up read. Measured at 36-39x smaller. The default is unchanged, so nothing existing sees a difference.
@@ -287,6 +291,9 @@ Every release before 0.0.32 is recorded in full in changelog.txt, shipped inside
 https://github.com/acrossaico/acrossai-abilities-manager/blob/main/changelog.txt
 
 == Upgrade Notice ==
+
+= 0.0.37 =
+Fixes the UpdraftPlus and All-in-One WP Migration tools being offered on sites without those plugins installed - they appeared in the tool picker and in what a new MCP server starts with, unlike every other per-plugin toolset. The tools themselves were never broken and still work exactly as before when their plugin is active. If a server already has one of them and the plugin is not installed, "Reset to Type Defaults" clears it. No other changes.
 
 = 0.0.36 =
 No breaking changes - every addition here is optional and defaults to what the plugin did before. Worth updating for three things. Listing posts, pages or custom post type items no longer forces the whole post body down the wire: pass fields: "summary" for titles, dates, slugs and a content size instead, measured 36x smaller on ten real posts. The block outline reported the wrong total when truncated - asking for 3 blocks of a 40-block post said "total: 3" - which is now the true match count with a separate "returned" alongside. And Site Health results can be read as plain text with format: "text" rather than WordPress core's own markup. Also adds a check that every ability declares whether it reads, destroys or can be repeated, since an AI client treats a missing flag as "not destructive".
