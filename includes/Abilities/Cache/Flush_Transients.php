@@ -87,6 +87,27 @@ class Flush_Transients extends Ability_Definition {
 	 * @param array $input Ability input payload.
 	 * @return array
 	 */
+	/**
+	 * Feature 128 — send page-cache questions to the plugin that owns the page cache.
+	 *
+	 * Clearing transients is not what a visitor sees. On a site running LiteSpeed the page cache is a
+	 * separate layer, and an operator who asked to "clear the cache" and got this almost certainly
+	 * meant that one. `only_if_registered` keeps the hint out of the payload on sites without
+	 * LiteSpeed, where the suggested ability does not exist.
+	 *
+	 * @since  0.0.36
+	 * @return array<int,array<string,string|bool>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'                => 'litespeed/purge-cache',
+				'reason'              => __( 'For page cache purges (what visitors see), use LiteSpeed; this ability only clears transients / object cache.', 'acrossai-abilities-manager' ),
+				'only_if_registered'  => true,
+			),
+		);
+	}
+
 	public function execute( array $input = array() ): array {
 		global $wpdb;
 
