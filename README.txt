@@ -1,7 +1,7 @@
 === AcrossAI Abilities Manager ===
 Contributors: raftaar1191
 Donate link: https://github.com/acrosswp/acrossai-abilities-manager
-Tags: abilities, ability management, access control, site management, ai
+Tags: abilities, mcp, access control, site management, ai
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.1
@@ -9,11 +9,42 @@ Stable tag: 0.0.38
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Manage every WordPress ability registered on your site — view, search, override, and bulk-control ability metadata from a single admin page.
+357 ready-made WordPress abilities across 14 toolsets, plus full control over every ability on your site — browse, override and bulk-manage.
 
 == Description ==
 
-AcrossAI Abilities Manager gives site administrators full visibility and control over every ability registered via the WordPress Abilities API (`wp_get_ability()`).
+AcrossAI Abilities Manager does two things. It **gives your site abilities**, and it **lets you control every ability the site has**.
+
+= What it gives you =
+
+On activation the plugin registers **357 abilities across 14 toolsets**, on any WordPress site, with no configuration. These are the operations an AI assistant, a REST client, or another plugin can discover and call through the WordPress Abilities API:
+
+* **Content** — create and update posts, pages and any custom post type with their meta and revisions; moderate comments; manage the media library, categories and tags; run semantic search to find related content and propose, review and apply internal links.
+* **Blocks** — read and surgically edit a page's block tree without rewriting the page, build from patterns, generate sections and landing pages, and audit copy and design.
+* **Appearance** — theme.json and global styles, site-editor templates and template parts, navigation menus, widget areas, fonts, and site title, logo and icon.
+* **Users** — create and edit users, reset passwords, create roles, and grant or revoke individual capabilities.
+* **Configuration** — read and write any option including values nested inside serialised arrays, change permalinks, and walk the admin menu to find which screen a setting lives on.
+* **Database** — inspect schema and table sizes, audit index health and bloated autoloaded options, EXPLAIN a slow query, optimise tables, or run a serialisation-safe search-and-replace.
+* **Files** — browse, read, write and delete files inside an administrator-defined allowlist; take and extract zip backups; read and edit wp-config constants; read the debug log.
+* **Cron** — see every scheduled task, spot the overdue ones, run one on demand, and prove whether WP-Cron is firing at all.
+* **Updates** — search the WordPress.org directory, install and update plugins, themes and core, roll back, and verify files against official checksums.
+* **Diagnostics** — Site Health, maintenance mode, recent fatal errors, un-pause what WordPress auto-disabled, and bisect a plugin conflict without ever writing `active_plugins`.
+* **Cache** — transients, object cache and rewrite rules.
+
+**Plugins you already run get their own toolsets**, registered only when that plugin is active: WooCommerce, Elementor (and Pro), Rank Math, Yoast SEO, LiteSpeed Cache, Contact Form 7, WPCode, CookieYes, WP Mail SMTP, The Events Calendar, Event Tickets, Loco Translate, Classic Editor, Advanced Custom Fields, Akismet, WPForms, UpdraftPlus and All-in-One WP Migration. With those detected, the catalogue rises to **over 800 abilities across 32 toolsets**.
+
+= Nothing is wide open =
+
+Every ability carries a WordPress capability check, and going through this plugin grants nobody anything they could not already do. Beyond that:
+
+* Roughly **half the catalogue is annotated read-only**, and only about **13% is flagged destructive**, so building a look-but-don't-touch surface is a matter of filtering.
+* Higher-risk operations require an explicit **confirmation flag** before they run.
+* **Search-and-replace is a dry run** unless you deliberately say otherwise.
+* File access is confined to an **administrator-defined path allowlist**, with an empty write-allowlist meaning "deny all writes".
+* **Secrets are redacted** — database credentials and authentication salts are stripped out of file and debug-log reads.
+* Any ability can be **disallowed site-wide**, and an ability turned off is unregistered rather than merely hidden.
+
+= What it lets you control =
 
 **Features:**
 
@@ -66,6 +97,26 @@ to avoid two wizards competing for the same surfaces; the wizard itself stays re
 2. All add-ons are free and hosted on WordPress.org; each card offers a one-click Install / Activate / Deactivate action via the standard WordPress plugin installer.
 
 == Frequently Asked Questions ==
+
+= Is this plugin free? =
+
+Yes, entirely, and under GPL. There is no paid tier of this plugin and no feature is held back.
+
+= What can an AI actually do once this is installed? =
+
+357 abilities across 14 toolsets on any site — content, blocks, appearance, users, configuration, database, files, cron, cache, updates and diagnostics — rising to over 800 across 32 toolsets as it detects plugins such as WooCommerce, Elementor, Rank Math, Yoast SEO, ACF and LiteSpeed Cache. Abilities are the capability layer; connecting an AI assistant to them needs a transport (see below).
+
+= Do I need another plugin to use this with an AI assistant? =
+
+For an AI client to reach these abilities over MCP, yes — you need an MCP server such as [AcrossAI MCP Manager](https://wordpress.org/plugins/acrossai-mcp-manager/), which is also free. This plugin works perfectly well without one: abilities are registered with `show_in_rest`, so they remain reachable over the WordPress REST API and callable by any plugin.
+
+= Can an AI break my site? =
+
+It can only do what you allow. Every ability runs WordPress's own capability check for the calling user, so nothing here grants extra privilege. Roughly half the catalogue is annotated read-only and only about 13% is flagged destructive; higher-risk operations require an explicit confirmation flag; search-and-replace defaults to a dry run; file access is confined to an administrator-defined path allowlist; and secrets such as database credentials and auth salts are stripped from file and log reads. Any ability you disallow is unregistered outright, not merely hidden.
+
+= Does it need WordPress 6.9? =
+
+Yes. The Abilities API arrived in WordPress 6.9, and this plugin registers nothing without it — the registration path is guarded, so an older site simply gets no abilities rather than an error.
 
 = Does this plugin support Multisite? =
 
