@@ -13,64 +13,111 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
-AcrossAI Abilities Manager does two things. It **gives your site abilities**, and it **lets you control every ability the site has**.
+**AcrossAI Abilities Manager gives your WordPress site 357 ready-made abilities, and gives you control over every one of them.**
 
-= What it gives you =
+An *ability* is a self-describing operation that WordPress 6.9's Abilities API lets a plugin register — something an AI assistant, a REST client or another plugin can discover and call. WordPress ships the API; almost nothing ships abilities. This plugin does: **357 across 14 toolsets on any site, with no configuration**, rising to **over 800 across 32 toolsets** as it detects the plugins you already run.
 
-On activation the plugin registers **357 abilities across 14 toolsets**, on any WordPress site, with no configuration. These are the operations an AI assistant, a REST client, or another plugin can discover and call through the WordPress Abilities API:
+It is free, GPL, and works on its own. Pair it with an MCP server and your site becomes something Claude, ChatGPT, Cursor or any MCP-capable assistant can operate.
 
-* **Content** — create and update posts, pages and any custom post type with their meta and revisions; moderate comments; manage the media library, categories and tags; run semantic search to find related content and propose, review and apply internal links.
-* **Blocks** — read and surgically edit a page's block tree without rewriting the page, build from patterns, generate sections and landing pages, and audit copy and design.
+= What Your Site Can Do, Out of the Box =
+
+* **Content** — create and update posts, pages and any custom post type with their meta and revisions; moderate comments; manage the media library, categories and tags; and run semantic search to propose, review and apply internal links.
+* **Blocks** — surgically edit a page's block tree without rewriting the page, build from patterns, generate sections and landing pages, and audit copy and design.
 * **Appearance** — theme.json and global styles, site-editor templates and template parts, navigation menus, widget areas, fonts, and site title, logo and icon.
 * **Users** — create and edit users, reset passwords, create roles, and grant or revoke individual capabilities.
-* **Configuration** — read and write any option including values nested inside serialised arrays, change permalinks, and walk the admin menu to find which screen a setting lives on.
+* **Configuration** — read and write any option including values nested inside serialised arrays, change permalinks, and find which admin screen a setting lives on.
 * **Database** — inspect schema and table sizes, audit index health and bloated autoloaded options, EXPLAIN a slow query, optimise tables, or run a serialisation-safe search-and-replace.
-* **Files** — browse, read, write and delete files inside an administrator-defined allowlist; take and extract zip backups; read and edit wp-config constants; read the debug log.
+* **Files** — browse, read, write and delete files inside an administrator-defined allowlist; take and extract zip backups; edit wp-config constants; read the debug log.
 * **Cron** — see every scheduled task, spot the overdue ones, run one on demand, and prove whether WP-Cron is firing at all.
-* **Updates** — search the WordPress.org directory, install and update plugins, themes and core, roll back, and verify files against official checksums.
-* **Diagnostics** — Site Health, maintenance mode, recent fatal errors, un-pause what WordPress auto-disabled, and bisect a plugin conflict without ever writing `active_plugins`.
+* **Updates** — install and update plugins, themes and core, roll back, and verify files against official checksums.
+* **Diagnostics** — Site Health, maintenance mode, recent fatal errors, and un-pause what WordPress auto-disabled.
 * **Cache** — transients, object cache and rewrite rules.
 
-**Plugins you already run get their own toolsets**, registered only when that plugin is active: WooCommerce, Elementor (and Pro), Rank Math, Yoast SEO, LiteSpeed Cache, Contact Form 7, WPCode, CookieYes, WP Mail SMTP, The Events Calendar, Event Tickets, Loco Translate, Classic Editor, Advanced Custom Fields, Akismet, WPForms, UpdraftPlus and All-in-One WP Migration. With those detected, the catalogue rises to **over 800 abilities across 32 toolsets**.
+= Toolsets: 14 Tools, Not 357 =
 
-= Nothing is wide open =
+An AI client is handed its tool list once, at connect time, and pays for it out of the model's context window on every conversation. Exposing 357 separate tools would flood it — most assistants degrade past a few dozen.
 
-Every ability carries a WordPress capability check, and going through this plugin grants nobody anything they could not already do. Beyond that:
+So abilities are grouped into **toolsets**, and a toolset is a **single tool** answering three actions: `discover` to list what it holds, `info` to read one ability's parameters, and `execute` to run it. Same three everywhere, so an assistant learns the pattern once. Your AI sees roughly fourteen tools and reaches all 357 through them.
 
-* Roughly **half the catalogue is annotated read-only**, and only about **13% is flagged destructive**, so building a look-but-don't-touch surface is a matter of filtering.
+= Plugins You Already Run Get Their Own Toolset =
+
+Eighteen integrations ship with the plugin. Each registers **only when that plugin is active**, so nothing appears for software you do not have, and each becomes one more dispatcher tool rather than a pile of loose ones.
+
+* **Elementor** (89 abilities) — build and edit pages, manage templates and global widgets, read form submissions, manage custom code, and clear its cache. A Pro subset activates only with Elementor Pro.
+* **Yoast SEO** (64) — title and meta templates, archives and indexing, breadcrumbs, the knowledge graph, social defaults and schema.
+* **Rank Math** (61) — audit and fix on-page and site-wide SEO, manage redirections and schema, read analytics, and edit Rank Math settings.
+* **LiteSpeed Cache** (61) — purge the page cache by target, URL, post or taxonomy, and tune TTLs, exclusion lists and vary rules.
+* **WooCommerce** (34) — the catalogue, prices, stock, orders, customers and store health.
+* **Contact Form 7** (25) — create and duplicate forms, edit fields and both mail templates, check their tags resolve, and change validation messages.
+* **WPCode** (24) — create, edit, activate and delete snippets of every type, and set where each is inserted and under what conditional logic.
+* **CookieYes** (22) — the cookies the site declares, the consent categories a visitor chooses between, the banner itself, its languages, and Google Consent Mode.
+* **The Events Calendar** (18) — find events by date, venue, organizer, category or cost; create, reschedule and trash them; manage venues and organizers.
+* **Event Tickets** (16) — manage tickets on a post, see real capacity including shared pools, check people in, and read orders and sales totals.
+* **Advanced Custom Fields** (16) — inspect and create field groups, and register custom post types and taxonomies through ACF.
+* **Loco Translate** (14) — find which plugins, themes and text domains can be translated, see what is untranslated, and write translations.
+* **All-in-One WP Migration** (9) — whether the site can actually be recovered: what archives exist, how recent they are, and exporting or removing them.
+* **UpdraftPlus** (8) — the same recovery question: when a backup last ran, whether it worked, and what each set contains.
+* **WP Mail SMTP** (4) — how this site sends mail, whether it actually can, and a real test send that proves it.
+* **Classic Editor** (4) — the effective editor configuration and which layer decided it, and whether users may choose for themselves.
+* **Akismet** — spam figures it has recorded, and checking a comment against the service. These abilities come from Akismet itself.
+* **WPForms** — read forms and statistics, create forms and change settings. Writes sit behind an admin switch, off by default.
+
+The two backup integrations are deliberate exceptions: they register whether or not their plugin is installed, so *"is this site backed up?"* can be answered **"no, there is no backup plugin here"** rather than having no tool to answer it.
+
+Third-party developers can register a toolset of their own through a filter, without touching this plugin.
+
+= More Integrations With AcrossAI Pro =
+
+The paid [AcrossAI Pro](https://acrossai.co/pricing/) add-on contributes **276 further abilities** through the same toolset mechanism, again only when the host plugin is active:
+
+* **MailerPress** (89 abilities) *(Pro)* — campaigns, contacts, lists, tags, templates, workflows, dashboard, settings and media.
+* **LearnDash** (74) *(Pro)* — courses, lessons, topics, quizzes and questions; enrolment, progress, groups, structure and reporting, plus the Achievements, Certificates, Notifications and WooCommerce add-ons.
+* **BuddyBoss** (60) *(Pro)* — members and profiles, groups, activity, forums, messages, media and albums, connections, invites, notifications and moderation.
+* **MailerPress Pro** (28) *(Pro)* — segments, custom fields, webhooks, embed keys, and WooCommerce and WordPress email templates.
+* **GeoDirectory** (25) *(Pro)* — listings, locations, fields, tabs, sort options, pricing packages, directory pages and display blocks.
+
+Everything else on this page is free.
+
+= Nothing Is Wide Open =
+
+Every ability runs WordPress's own capability check for the calling user, so reaching one through this plugin grants nobody anything they could not already do. On top of that:
+
+* Roughly **half the catalogue is annotated read-only** and only about **13% is flagged destructive**, so a look-but-don't-touch surface is a matter of filtering, not trust.
 * Higher-risk operations require an explicit **confirmation flag** before they run.
-* **Search-and-replace is a dry run** unless you deliberately say otherwise.
-* File access is confined to an **administrator-defined path allowlist**, with an empty write-allowlist meaning "deny all writes".
+* **Search-and-replace is a dry run** unless you say otherwise, and skips post GUIDs unless asked.
+* File access is confined to an **administrator-defined path allowlist** — an empty write-allowlist means "deny all writes" — with a dangerous-extension blocklist and a maximum write size on top.
 * **Secrets are redacted** — database credentials and authentication salts are stripped out of file and debug-log reads.
-* Any ability can be **disallowed site-wide**, and an ability turned off is unregistered rather than merely hidden.
+* Database abilities never accept a raw table name; they work from a fixed allowlist of core tables.
+* Any ability can be **disallowed site-wide**, and one you turn off is unregistered outright rather than merely hidden.
 
-= What it lets you control =
+= Full Control Over Every Ability =
 
-**Features:**
+* **Browse all abilities** — a searchable, sortable, paginated table listing every registered ability with slug, provider, source and current status.
+* **Toggle allow/disallow** — enable or disable any ability site-wide with a single click, saved instantly without a page reload.
+* **Edit ability metadata** — override `readonly`, `destructive`, `idempotent`, `show_in_rest`, `show_in_mcp`, `mcp_type` and `mcp_servers` per ability with a tri-state Yes / No / Inherit control, and reset any of it to registry defaults in one click.
+* **Bulk actions** — allow, disallow or reset up to 50 abilities at once.
+* **Ability Library** — enable or disable add-on ability groups from a dedicated page, with All/Specific mode per group.
+* **Add-ons page** — browse companion plugins from wp-admin; WordPress.org-hosted ones install and activate in place.
 
-* **Browse all abilities** — a searchable, sortable, paginated table listing every registered ability with slug, provider, source, and current status.
-* **Toggle allow/disallow** — enable or disable any ability site-wide with a single click. Changes are saved instantly without a page reload.
-* **Edit ability metadata** — override `readonly`, `destructive`, `idempotent`, `show_in_rest`, `show_in_mcp`, `mcp_type`, and `mcp_servers` fields per ability using a tri-state system (Yes / No / Inherit from registry).
-* **Reset overrides** — restore any ability back to its registry defaults with one click.
-* **Bulk actions** — allow, disallow, or reset up to 50 abilities at once.
-* **Ability Library** — enable or disable add-on ability groups from a dedicated Library page, with All/Specific mode controls per group.
-* **Add-ons page** — browse companion plugins from the WordPress admin. WordPress.org-hosted add-ons install / activate / deactivate in place; add-ons distributed elsewhere link out to the vendor's site so you can install them via Plugins → Add New → Upload Plugin.
-* **MCP server list** — view all registered MCP servers when the MCP Adapter plugin is active.
-* **Debugging → Conflict Testing** — toggle any installed plugin's *effective* active state without ever writing to `wp_options.active_plugins`. Seven WP Abilities API abilities (`acrossai/conflict-test-list-plugins`, `-get-overrides`, `-set-override`, `-bulk-set-overrides`, `-clear-overrides`, `-deploy-mu-plugin`, `-remove-mu-plugin`) let a REST client, MCP AI client, or another plugin reproduce a plugin conflict for a browser session or a support call, then restore the site to its exact prior state by clearing one JSON file. Overrides cascade through WP 6.5+ `Requires Plugins:` headers by default. Every `active=true` write is guarded by a WordPress-core-style `plugin_sandbox_scrape` probe, so a broken plugin can never leave the site in a state where every subsequent page load fatals — the override is refused instead. Feature 061.
+Overrides live in their own table. **The ability registry is never modified** — only fields that differ from registry defaults are stored, so removing the plugin leaves it exactly as found.
 
-All overrides are stored in a dedicated database table. The WordPress ability registry is never modified — only the fields that differ from registry defaults are persisted.
+= Reproduce a Plugin Conflict Without Breaking the Site =
 
-**Security:**
+**Debugging → Conflict Testing** toggles any plugin's *effective* active state **without ever writing to `wp_options.active_plugins`** — reproduce a conflict for one browser session or a support call, then restore the site exactly by clearing a single JSON file.
 
-* All endpoints require `manage_options` capability.
-* All state-changing requests are protected by WordPress nonce verification.
-* All input is sanitized; all output is escaped.
+Seven abilities expose the same thing to a REST client or an AI assistant, so an assistant can bisect a conflict on your behalf. Every activation is guarded by a WordPress-core-style sandbox probe, which means a fatal-erroring plugin can never leave the site in a state where every page load dies — the override is refused instead.
 
-**Third-party integrations (optional):**
+= Works With or Without an MCP Server =
 
-* **MCP Adapter plugin** — if active, the plugin displays a list of registered MCP servers inside the ability edit panel. No data is sent to any external service. The MCP Adapter plugin communicates only with your own WordPress installation.
+Abilities are the capability layer, not the connection. They are registered with `show_in_rest`, so they are reachable over the REST API and callable by any plugin the moment you activate it.
 
-This plugin's own code makes no external HTTP requests. One admin-only surface can contact an external service on your behalf: the AcrossAI → Add-ons page installs WordPress.org-hosted companion plugins directly through WordPress core's own plugin installer (`api.wordpress.org` + `downloads.wordpress.org`). Add-ons registered with any other source (e.g. GitHub, Freemius) are shown as external "Get add-on ↗" links that open the vendor's site in a new browser tab — the plugin does not download or install them itself. The AcrossAI → Consultations submenu renders a static call-to-action button that opens `calendly.com` in a new browser tab only after the administrator clicks it — no third-party asset is loaded inside wp-admin. Full disclosure — including what data is transmitted to each service and links to their terms + privacy policies — is in the **External Services** section below.
+To let an AI assistant reach them over the Model Context Protocol you add a transport — the free [AcrossAI MCP Manager](https://wordpress.org/plugins/acrossai-mcp-manager/) is the one this plugin is built alongside, and it turns the toolsets into MCP tools with per-server curation and access control. Any other MCP server that reads the Abilities API works too.
+
+= Requirements =
+
+* WordPress **6.9 or later** — the Abilities API arrived in 6.9, and this plugin registers nothing without it
+* PHP **8.1 or later**
+* No other plugin is required
 
 == Installation ==
 
@@ -105,6 +152,14 @@ Yes, entirely, and under GPL. There is no paid tier of this plugin and no featur
 = What can an AI actually do once this is installed? =
 
 357 abilities across 14 toolsets on any site — content, blocks, appearance, users, configuration, database, files, cron, cache, updates and diagnostics — rising to over 800 across 32 toolsets as it detects plugins such as WooCommerce, Elementor, Rank Math, Yoast SEO, ACF and LiteSpeed Cache. Abilities are the capability layer; connecting an AI assistant to them needs a transport (see below).
+
+= Why does my AI only see about 14 tools when there are 357 abilities? =
+
+That is deliberate, and it is what makes the catalogue usable. Abilities are grouped into toolsets, and each toolset is a single tool answering three actions — `discover` to list what it holds, `info` to read one ability's parameters, `execute` to run it. Exposing 357 separate tools would flood the model's context window, and most assistants degrade badly past a few dozen. Your AI reaches everything through the fourteen, drilling in only when it needs to.
+
+= Does removing the plugin leave anything behind? =
+
+The WordPress ability registry is never modified, so deactivating returns it exactly as it was. Overrides you set live in the plugin's own table; abilities registered by this plugin simply stop being registered.
 
 = Do I need another plugin to use this with an AI assistant? =
 
@@ -158,79 +213,33 @@ Full disclosure — including what data is transmitted, and links to each servic
 
 == External Services ==
 
-This plugin connects to the following external services on your behalf. Each connection is triggered by a specific admin-only action and is disclosed here per the WordPress.org plugin directory guidelines.
+This plugin's own code makes no external HTTP requests. Each connection below is triggered by a specific admin-only action, and is disclosed per the WordPress.org plugin directory guidelines. In every case the plugin sends no site content, user data or ability data.
 
-**1. Calendly external link (`calendly.com`)**
+**1. Calendly (`calendly.com`)** — a third-party scheduling service.
+*When:* never on render. The Consultations page loads no Calendly script, iframe, cookie or asset; Calendly is reached only if an administrator clicks "Book a Consultation", opening the booking page in a new tab.
+*Data:* only the browser's standard metadata (IP, User-Agent, referrer) on that click. Anything typed into Calendly's own form is processed by Calendly; this plugin never intercepts or stores it.
+*Note:* that page also references Google Fonts (`fonts.googleapis.com`), its only external asset.
+*Terms:* https://calendly.com/pages/terms · *Privacy:* https://calendly.com/pages/privacy
 
-*What it is:* Calendly is a third-party scheduling service. The AcrossAI → Consultations submenu displays a static call-to-action button that links out to a Calendly booking page for AcrossAI consultations ("Using AI in WordPress").
+**2. WordPress.org plugin directory (`api.wordpress.org`, `downloads.wordpress.org`)** — installs free companion plugins from the Add-ons page.
+*When:* only when an administrator with `install_plugins` clicks Install on a card sourced from WordPress.org, always through core's own `plugins_api()` and `Plugin_Upgrader`. Add-ons hosted elsewhere render as plain links; nothing is requested from those vendors.
+*Data:* core's standard plugin-API payload — site URL, WordPress version, PHP version, locale.
+*Terms:* https://wordpress.org/about/terms/ · *Privacy:* https://wordpress.org/about/privacy/
 
-*When it is contacted:* Never on page render. The Consultations submenu at `/wp-admin/admin.php?page=acrossai-consultations` is a self-contained wp-admin page — it does not load any Calendly script, iframe, cookie, or asset. Calendly is only contacted if the administrator explicitly clicks the "Book a Consultation" button, at which point their browser navigates directly to `https://calendly.com/acrossai/using-ai-in-wordpress` in a new tab (`target="_blank" rel="noopener noreferrer"`). This is identical to clicking any external hyperlink from an admin page.
+**3. WordPress.org core version-check (`api.wordpress.org/core/version-check/1.7/`)**
+*When:* only when an administrator invokes the `core/rollback-wp-core` ability and the local cache has expired — at most once per day, per locale, per site.
+*Data:* core's standard version-check payload. Same terms and privacy policy as service 2.
 
-*What is loaded on the Consultations page:* Nothing from Calendly. The page renders self-contained HTML + CSS. The only external asset referenced by the page is Google Fonts (Space Grotesk + IBM Plex Sans via `fonts.googleapis.com`) — permitted under the "third-party CDNs beyond fonts" carve-out in the WordPress plugin guidelines.
+**4. YouTube walkthrough videos (`youtube-nocookie.com`, `youtube.com`)** — short recordings embedded in the setup wizard, via YouTube's privacy-enhanced host.
+*When:* only on the wizard's own screens, gated on the `quick-connect` parameter and loaded nowhere else in wp-admin. Two screens autoplay, so YouTube is contacted on render; the rest show a local placeholder and embed only when play is pressed.
+*Data:* the browser's standard metadata plus a `Referer` limited to the site's origin, because a `strict-origin-when-cross-origin` policy keeps the wp-admin path private. No tracking cookies unless playback begins.
+*Avoiding it:* every embed is paired with a plain link, and the wizard is optional — every screen offers Exit setup.
+*Terms:* https://www.youtube.com/t/terms · *Privacy:* https://policies.google.com/privacy
 
-*What data is transmitted to Calendly:* Nothing by this plugin. If the administrator clicks the CTA button, their browser navigates directly to Calendly and sends standard browser metadata (IP address, User-Agent, referrer) to Calendly as with any external link. If the administrator then chooses to book a consultation on Calendly's own site, any information they enter into Calendly's booking form (name, email address, meeting preferences, etc.) is transmitted to and processed by Calendly. This plugin does not intercept, store, or forward that data.
-
-*Terms of service:* https://calendly.com/pages/terms
-*Privacy policy:* https://calendly.com/pages/privacy
-
-**2. WordPress.org plugin directory (`api.wordpress.org` and `downloads.wordpress.org`)**
-
-*What it is:* The Add-ons page (`/wp-admin/admin.php?page=acrossai-addons`) uses the WordPress.org plugin directory to install free companion plugins directly from wp-admin.
-
-*When it is contacted:* Only when an authenticated administrator (`install_plugins` capability) clicks the "Install" button on a card whose `source` is `wordpress.org`. Contact happens through WordPress core's own `plugins_api()` and `Plugin_Upgrader` — this plugin does not issue direct HTTP requests. Add-ons registered with any other source (e.g. `github`, `freemius`) are rendered as external "Get add-on ↗" links that open the vendor's site in a new browser tab; the plugin does NOT download or install those add-ons itself, so no request is made to the vendor's servers from wp-admin.
-
-*What data is transmitted:* The WordPress core plugin API request payload (site URL, WP version, PHP version, locale) as per WordPress core's standard update check protocol.
-
-*Terms of service:* https://wordpress.org/about/terms/
-*Privacy policy:* https://wordpress.org/about/privacy/
-
-**3. WordPress.org core version-check API (`api.wordpress.org/core/version-check/1.7/`)**
-
-Called only when an administrator invokes the `core/rollback-wp-core` ability (registered under the Core category) and the local core-version cache has expired. Rate-bounded to at most one request per day per locale per site via a site-transient cache. This is a WordPress-core-hosted API — no data beyond the standard WordPress core version-check request payload is transmitted. Same wp.org terms + privacy policy as service #2 above.
-
-**4. YouTube walkthrough videos (`youtube-nocookie.com`, `youtube.com`)**
-
-*What it is:* The Quick Connect setup wizard embeds short walkthrough recordings that explain how to
-edit an ability, how to use bulk actions, and how to reach abilities through the MCP Adapter's
-default server. Embeds use YouTube's privacy-enhanced host, `www.youtube-nocookie.com`.
-
-*When it is contacted:* Only on the wizard's own screens, and never anywhere else in wp-admin — the
-wizard's assets are gated on the `quick-connect` request parameter and load on no other admin page.
-On two of those screens the recording begins on its own, so YouTube is contacted when the screen
-renders rather than on a click. On the remaining screens nothing is requested from YouTube until the
-administrator presses play: a locally-hosted placeholder is shown first and the embed is inserted
-only on that click.
-
-*What data is transmitted:* Nothing by this plugin. Loading an embed causes the administrator's own
-browser to send standard metadata to YouTube (IP address, User-Agent) together with a `Referer`
-limited to the site's origin — the `strict-origin-when-cross-origin` referrer policy means the
-wp-admin path and query string are never disclosed. The privacy-enhanced host does not set tracking
-cookies unless playback begins. This plugin transmits no site content, user data, or ability data to
-YouTube.
-
-*Avoiding it entirely:* Every embed is paired with a plain external link, so the wizard remains
-usable when the embed is blocked by connectivity, a privacy tool, or a regional restriction. The
-wizard can also simply be skipped — it is optional and every screen offers Exit setup.
-
-*Terms of service:* https://www.youtube.com/t/terms
-*Privacy policy:* https://policies.google.com/privacy
-
-**5. GitHub release page (`github.com`)**
-
-*What it is:* MCP Adapter is distributed from GitHub rather than the WordPress plugin directory. The
-wizard's adapter screen links to that project's latest release page so the administrator can
-download the plugin archive.
-
-*When it is contacted:* Never on page render. The screen shows a plain link; GitHub is contacted
-only if the administrator clicks it, at which point their browser navigates to
-`https://github.com/WordPress/mcp-adapter/releases/latest` in a new tab. The plugin performs no
-HTTP request to GitHub and does not download or install anything from it.
-
-*What data is transmitted:* Nothing by this plugin. Standard browser metadata only, as with any
-external hyperlink.
-
-*Terms of service:* https://docs.github.com/site-policy/github-terms/github-terms-of-service
-*Privacy policy:* https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+**5. GitHub (`github.com`)** — the wizard links to MCP Adapter's latest release, which is distributed there rather than on WordPress.org.
+*When:* never on render; only if an administrator clicks the link. The plugin makes no request to GitHub and downloads nothing.
+*Data:* standard browser metadata only, as with any external link.
+*Terms:* https://docs.github.com/site-policy/github-terms/github-terms-of-service · *Privacy:* https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
 
 == Privacy Policy ==
 
