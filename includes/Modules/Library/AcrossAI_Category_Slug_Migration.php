@@ -114,6 +114,7 @@ class AcrossAI_Category_Slug_Migration {
 		'recovery',
 		'settings',
 		'site-health',
+		'site-kit',
 		'taxonomies',
 		'themes',
 		'toolset',

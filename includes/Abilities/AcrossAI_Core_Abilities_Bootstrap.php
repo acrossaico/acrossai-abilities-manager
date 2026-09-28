@@ -73,6 +73,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		$loader->add_action( 'wp_abilities_api_categories_init', Elementor\Category_Registrar::instance(), 'register' );
 		// Feature 069 — Rank Math category (self-guards on class_exists inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', RankMath\Category_Registrar::instance(), 'register' );
+		$loader->add_action( 'wp_abilities_api_categories_init', SiteKit\Category_Registrar::instance(), 'register' );
 
 		// Feature 103 — Contact Form 7 category (self-guards on class_exists inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', ContactForm7\Category_Registrar::instance(), 'register' );
@@ -588,6 +589,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_rank_math_abilities();
 		}
 
+		// Feature 120 — Site Kit by Google suite (11 abilities under site-kit/*). The Contact Form 7
+		// shape rather than the Rank Math one: Site Kit has no entitlement that could change within a
+		// request. Its Google CONNECTION can, but that is runtime state the guards already report per
+		// call, and it is deliberately not a registration gate — the abilities must exist on an
+		// unconnected site precisely so site-kit/get-status can say so.
+		if ( Utilities\SiteKit\Site_Kit_Context::available() ) {
+			$this->register_site_kit_abilities();
+		}
+
 		// Feature 103 — Contact Form 7 ability suite (25 abilities under contact-form-7/*).
 		// Gated at boot, the Elementor shape rather than the Rank Math one: CF7 has no notion of
 		// modules or entitlements that could change within a request, so there is nothing to defer
@@ -953,6 +963,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Toolset\Diagnostics();
 		new Toolset\Elementor();
 		new Toolset\Rank_Math();
+		new Toolset\Site_Kit();
 
 		// Spans every Toolset above that is NOT a server-type default, so a
 		// client whose cached tools/list predates a plugin can still reach it.
@@ -980,8 +991,34 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			'diagnostics',
 			'elementor',
 			'rank-math',
+			'site-kit',
 			'integrations',
 		) );
+	}
+
+	/**
+	 * Feature 120 — instantiate the Site Kit ability classes.
+	 *
+	 * @return void
+	 */
+	private function register_site_kit_abilities(): void {
+		// Connection and setup. get-status is first because every other ability in the
+		// suite fails back to it.
+		new SiteKit\Get_Status();
+
+		// Modules, their settings and their sharing.
+		new SiteKit\List_Modules();
+		new SiteKit\Get_Module_Settings();
+		new SiteKit\Set_Module_State();
+		new SiteKit\Get_Sharing_Settings();
+		new SiteKit\List_Module_Datapoints();
+
+		// Google data, read through Site Kit's own module clients.
+		new SiteKit\Get_Search_Analytics();
+		new SiteKit\Get_Analytics_Report();
+		new SiteKit\Get_Pagespeed_Insights();
+		new SiteKit\Get_Adsense_Report();
+		new SiteKit\Get_Module_Data();
 	}
 
 	/**
