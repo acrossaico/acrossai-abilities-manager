@@ -1,67 +1,67 @@
-=== AcrossAI Abilities Manager ===
+=== AcrossAI Abilities Manager – WordPress Abilities for Claude, ChatGPT & Any AI Agent ===
 Contributors: raftaar1191
 Donate link: https://acrossai.co/abilities-manager/
-Tags: abilities, mcp, access control, site management, ai
+Tags: abilities, ai assistant, chatgpt, claude, mcp
 Requires at least: 6.9
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.0.39
+Stable tag: 0.0.40
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-357 ready-made WordPress abilities across 14 toolsets, plus full control over every ability on your site — browse, override and bulk-manage.
+357 ready-made WordPress abilities for Claude, ChatGPT and any AI agent — browse, override and control every one.
 
 == Description ==
 
 **AcrossAI Abilities Manager gives your WordPress site 357 ready-made abilities, and gives you control over every one of them.**
 
-An *ability* is a self-describing operation that WordPress 6.9's Abilities API lets a plugin register — something an AI assistant, a REST client or another plugin can discover and call. WordPress ships the API; almost nothing ships abilities. This plugin does: **357 across 14 toolsets on any site, with no configuration**, rising to **over 800 across 33 toolsets** as it detects the plugins you already run.
+An *ability* is a self-describing operation that WordPress 6.9's Abilities API lets a plugin register — something an AI assistant, a REST client or another plugin can discover and call. WordPress ships the API; almost nothing ships abilities. This plugin does: **357 on any site, with no configuration**, rising to **over 800** as it detects the plugins you already run.
 
 It is free, GPL, and works on its own. Pair it with an MCP server and your site becomes something Claude, ChatGPT, Cursor or any MCP-capable assistant can operate.
 
 = What Your Site Can Do, Out of the Box =
 
-* **Content** — create and update posts, pages and any custom post type with their meta and revisions; moderate comments; manage the media library, categories and tags; and run semantic search to propose, review and apply internal links.
-* **Blocks** — surgically edit a page's block tree without rewriting the page, build from patterns, generate sections and landing pages, and audit copy and design.
-* **Appearance** — theme.json and global styles, site-editor templates and template parts, navigation menus, widget areas, fonts, and site title, logo and icon.
+* **Content** — posts, pages and any custom post type with meta and revisions; comments; media, categories and tags; and semantic search that proposes, reviews and applies internal links.
+* **Blocks** — edit a page's block tree without rewriting the page, build from patterns, generate sections and landing pages, and audit copy and design.
+* **Appearance** — theme.json and global styles, site-editor templates and parts, menus, widget areas, fonts, and site title, logo and icon.
 * **Users** — create and edit users, reset passwords, create roles, and grant or revoke individual capabilities.
-* **Configuration** — read and write any option including values nested inside serialised arrays, change permalinks, and find which admin screen a setting lives on.
-* **Database** — inspect schema and table sizes, audit index health and bloated autoloaded options, EXPLAIN a slow query, optimise tables, or run a serialisation-safe search-and-replace.
-* **Files** — browse, read, write and delete files inside an administrator-defined allowlist; take and extract zip backups; edit wp-config constants; read the debug log.
-* **Cron** — see every scheduled task, spot the overdue ones, run one on demand, and prove whether WP-Cron is firing at all.
-* **Updates** — install and update plugins, themes and core, roll back, and verify files against official checksums.
-* **Diagnostics** — Site Health, maintenance mode, recent fatal errors, and un-pause what WordPress auto-disabled.
+* **Configuration** — any option including values nested inside serialised arrays, permalinks, and which admin screen a setting lives on.
+* **Database** — schema and table sizes, index health, bloated autoloaded options, EXPLAIN on a slow query, table optimisation, and serialisation-safe search-and-replace.
+* **Files** — browse, read, write and delete inside an administrator-defined allowlist; zip backups; wp-config constants; the debug log.
+* **Cron** — every scheduled task, the overdue ones, running one on demand, and whether WP-Cron is firing at all.
+* **Updates** — plugins, themes and core; rollback; and verification against official checksums.
+* **Diagnostics** — Site Health, maintenance mode, recent fatal errors, and un-pausing what WordPress auto-disabled.
 * **Cache** — transients, object cache and rewrite rules.
 
-= Toolsets: 14 Tools, Not 357 =
+= A Dozen Tools, Not 357 =
 
 An AI client is handed its tool list once, at connect time, and pays for it out of the model's context window on every conversation. Exposing 357 separate tools would flood it — most assistants degrade past a few dozen.
 
-So abilities are grouped into **toolsets**, and a toolset is a **single tool** answering three actions: `discover` to list what it holds, `info` to read one ability's parameters, and `execute` to run it. Same three everywhere, so an assistant learns the pattern once. Your AI sees roughly fourteen tools and reaches all 357 through them.
+So your MCP server groups them into **toolsets**, and a toolset is a **single tool** answering three actions: `discover` to list what it holds, `info` to read one ability's parameters, and `execute` to run it — the same three everywhere. AcrossAI MCP Manager provides that layer; this plugin provides the abilities.
 
 = Plugins You Already Run Get Their Own Toolset =
 
 Nineteen integrations ship with the plugin, each with its own page under https://acrossai.co/integrations/ — and each registers **only when that plugin is active**, so nothing appears for software you do not have, and each becomes one more dispatcher tool rather than a pile of loose ones.
 
-* **[Elementor](https://acrossai.co/integrations/elementor/)** (89 abilities) — build and edit pages, manage templates and global widgets, read form submissions, manage custom code, and clear its cache. A Pro subset activates only with Elementor Pro.
-* **[Yoast SEO](https://acrossai.co/integrations/yoast-seo/)** (64) — title and meta templates, archives and indexing, breadcrumbs, the knowledge graph, social defaults and schema.
-* **[Rank Math](https://acrossai.co/integrations/rank-math/)** (61) — audit and fix on-page and site-wide SEO, manage redirections and schema, read analytics, and edit Rank Math settings.
-* **[LiteSpeed Cache](https://acrossai.co/integrations/litespeed-cache/)** (61) — purge the page cache by target, URL, post or taxonomy, and tune TTLs, exclusion lists and vary rules.
-* **[WooCommerce](https://acrossai.co/integrations/woocommerce/)** (34) — the catalogue, prices, stock, orders, customers and store health.
-* **[Contact Form 7](https://acrossai.co/integrations/contact-form-7/)** (25) — create and duplicate forms, edit fields and both mail templates, check their tags resolve, and change validation messages.
-* **[WPCode](https://acrossai.co/integrations/wpcode/)** (24) — create, edit, activate and delete snippets of every type, and set where each is inserted and under what conditional logic.
-* **[CookieYes](https://acrossai.co/integrations/cookieyes/)** (22) — the cookies the site declares, the consent categories a visitor chooses between, the banner itself, its languages, and Google Consent Mode.
-* **[The Events Calendar](https://acrossai.co/integrations/the-events-calendar/)** (18) — find events by date, venue, organizer, category or cost; create, reschedule and trash them; manage venues and organizers.
-* **[Event Tickets](https://acrossai.co/integrations/event-tickets/)** (16) — manage tickets on a post, see real capacity including shared pools, check people in, and read orders and sales totals.
-* **[Advanced Custom Fields](https://acrossai.co/integrations/advanced-custom-fields/)** (16) — inspect and create field groups, and register custom post types and taxonomies through ACF.
-* **Site Kit by Google** (14) — whether Site Kit is set up and whether the user asking has connected their own Google account, which modules are live, and the data itself: Search Console search analytics, Analytics 4 reports, PageSpeed Insights and AdSense earnings.
-* **[Loco Translate](https://acrossai.co/integrations/loco-translate/)** (14) — find which plugins, themes and text domains can be translated, see what is untranslated, and write translations.
-* **[All-in-One WP Migration](https://acrossai.co/integrations/all-in-one-wp-migration/)** (9) — whether the site can actually be recovered: what archives exist, how recent they are, and exporting or removing them.
-* **[UpdraftPlus](https://acrossai.co/integrations/updraftplus/)** (8) — the same recovery question: when a backup last ran, whether it worked, and what each set contains.
-* **[WP Mail SMTP](https://acrossai.co/integrations/wp-mail-smtp/)** (4) — how this site sends mail, whether it actually can, and a real test send that proves it.
-* **[Classic Editor](https://acrossai.co/integrations/classic-editor/)** (4) — the effective editor configuration and which layer decided it, and whether users may choose for themselves.
-* **Akismet** — spam figures it has recorded, and checking a comment against the service. These abilities come from Akismet itself.
-* **WPForms** — read forms and statistics, create forms and change settings. Writes sit behind an admin switch, off by default.
+* **[Elementor](https://acrossai.co/integrations/elementor/)** (89 abilities) — pages, templates, kits, global widgets, form submissions and its cache. A Pro subset needs Elementor Pro.
+* **[Yoast SEO](https://acrossai.co/integrations/yoast-seo/)** (64) — titles and meta, indexing, breadcrumbs, the knowledge graph, social defaults and schema.
+* **[Rank Math](https://acrossai.co/integrations/rank-math/)** (61) — on-page and site-wide SEO, redirections, schema, analytics and settings.
+* **[LiteSpeed Cache](https://acrossai.co/integrations/litespeed-cache/)** (61) — purge by target, URL, post or taxonomy, and tune TTLs, exclusions and vary rules.
+* **[WooCommerce](https://acrossai.co/integrations/woocommerce/)** (34) — catalogue, prices, stock, orders, customers and store health.
+* **[Contact Form 7](https://acrossai.co/integrations/contact-form-7/)** (25) — forms, fields, both mail templates, tag validation and messages.
+* **[WPCode](https://acrossai.co/integrations/wpcode/)** (24) — snippets of every type, where each is inserted, and its conditional logic.
+* **[CookieYes](https://acrossai.co/integrations/cookieyes/)** (22) — declared cookies, consent categories, the banner, its languages and Google Consent Mode.
+* **[The Events Calendar](https://acrossai.co/integrations/the-events-calendar/)** (18) — find, create, reschedule and trash events; manage venues and organizers.
+* **[Event Tickets](https://acrossai.co/integrations/event-tickets/)** (16) — tickets, real capacity including shared pools, check-ins, orders and sales.
+* **[Advanced Custom Fields](https://acrossai.co/integrations/advanced-custom-fields/)** (16) — field groups, and post types and taxonomies registered through ACF.
+* **Site Kit by Google** (14) — Search Console analytics, Analytics 4 reports, PageSpeed Insights and AdSense, plus what is actually connected.
+* **[Loco Translate](https://acrossai.co/integrations/loco-translate/)** (14) — what can be translated, what is untranslated, and writing translations.
+* **[All-in-One WP Migration](https://acrossai.co/integrations/all-in-one-wp-migration/)** (9) — what archives exist, how recent they are, and exporting or removing them.
+* **[UpdraftPlus](https://acrossai.co/integrations/updraftplus/)** (8) — when a backup last ran, whether it worked, and what each set contains.
+* **[WP Mail SMTP](https://acrossai.co/integrations/wp-mail-smtp/)** (4) — how the site sends mail, whether it can, and a real test send.
+* **[Classic Editor](https://acrossai.co/integrations/classic-editor/)** (4) — the effective editor per post type, which layer decided it, and whether users may choose.
+* **Akismet** — spam figures and checking a comment. These abilities come from Akismet itself.
+* **WPForms** — read forms and statistics, create forms, change settings. Writes sit behind an admin switch, off by default.
 
 The two backup integrations are deliberate exceptions: they register whether or not their plugin is installed, so *"is this site backed up?"* can be answered **"no, there is no backup plugin here"** rather than having no tool to answer it.
 
@@ -71,11 +71,11 @@ Third-party developers can register a toolset of their own through a filter, wit
 
 The paid [AcrossAI Pro](https://acrossai.co/pricing/) add-on contributes **276 further abilities** through the same toolset mechanism, again only when the host plugin is active:
 
-* **MailerPress** (89 abilities) *(Pro)* — campaigns, contacts, lists, tags, templates, workflows, dashboard, settings and media.
-* **LearnDash** (74) *(Pro)* — courses, lessons, topics, quizzes and questions; enrolment, progress, groups, structure and reporting, plus the Achievements, Certificates, Notifications and WooCommerce add-ons.
-* **BuddyBoss** (60) *(Pro)* — members and profiles, groups, activity, forums, messages, media and albums, connections, invites, notifications and moderation.
-* **MailerPress Pro** (28) *(Pro)* — segments, custom fields, webhooks, embed keys, and WooCommerce and WordPress email templates.
-* **GeoDirectory** (25) *(Pro)* — listings, locations, fields, tabs, sort options, pricing packages, directory pages and display blocks.
+* **MailerPress** (89 abilities) *(Pro)* — campaigns, contacts, lists, tags, templates, workflows and settings.
+* **LearnDash** (74) *(Pro)* — courses, lessons, quizzes, enrolment, progress, groups and reporting, plus the Certificates, Notifications and WooCommerce add-ons.
+* **BuddyBoss** (60) *(Pro)* — members, groups, activity, forums, messages, media, connections and moderation.
+* **MailerPress Pro** (28) *(Pro)* — segments, custom fields, webhooks, embed keys and email templates.
+* **GeoDirectory** (25) *(Pro)* — listings, locations, fields, pricing packages and directory pages.
 
 Everything else on this page is free.
 
@@ -104,15 +104,19 @@ Overrides live in their own table. **The ability registry is never modified** �
 
 = Reproduce a Plugin Conflict Without Breaking the Site =
 
-**Debugging → Conflict Testing** toggles any plugin's *effective* active state **without ever writing to `wp_options.active_plugins`** — reproduce a conflict for one browser session or a support call, then restore the site exactly by clearing a single JSON file.
+**Debugging → Conflict Testing** toggles any plugin's *effective* active state **without ever writing to `wp_options.active_plugins`** — reproduce a conflict for one browser session, then restore the site exactly by clearing a single JSON file.
 
-Seven abilities expose the same thing to a REST client or an AI assistant, so an assistant can bisect a conflict on your behalf. Every activation is guarded by a WordPress-core-style sandbox probe, which means a fatal-erroring plugin can never leave the site in a state where every page load dies — the override is refused instead.
+Seven abilities expose the same thing to a REST client or an AI assistant, so an assistant can bisect a conflict for you. Every activation is guarded by a WordPress-core-style sandbox probe, so a fatal-erroring plugin cannot leave the site where every page load dies — the override is refused instead.
 
 = Works With or Without an MCP Server =
 
-Abilities are the capability layer, not the connection. They are registered with `show_in_rest`, so they are reachable over the REST API and callable by any plugin the moment you activate it.
+Abilities are the capability layer, not the connection. Every one is registered through WordPress 6.9's own Abilities API with `show_in_rest`, so it is reachable over the REST API and callable by any plugin the moment you activate this one. Nothing here is proprietary, and nothing is bound to a particular transport.
 
-To let an AI assistant reach them over the Model Context Protocol you add a transport — the free [AcrossAI MCP Manager](https://wordpress.org/plugins/acrossai-mcp-manager/) is the one this plugin is built alongside, and it turns the toolsets into MCP tools with per-server curation and access control. Any other MCP server that reads the Abilities API works too.
+That means anything which reads the Abilities API can expose these abilities — there is no lock-in:
+
+* **[AcrossAI MCP Manager](https://wordpress.org/plugins/acrossai-mcp-manager/)** — the free MCP server this plugin is built alongside. Turns the toolsets into MCP tools with per-server curation and access control.
+* **MCP Adapter** — the WordPress MCP Adapter exposes registered abilities as MCP tools. When it is active, this plugin also lists its servers in the ability edit panel.
+* **Any other consumer** — another MCP server, a REST client, or a plugin calling the Abilities API directly. Abilities registered here are ordinary WordPress abilities, not a private format.
 
 = Requirements =
 
@@ -123,10 +127,10 @@ To let an AI assistant reach them over the Model Context Protocol you add a tran
 = Where To Read More =
 
 * **The plugin** — https://acrossai.co/abilities-manager/
-* **Every ability, searchable** — https://acrossai.co/abilities/ — the full catalogue as a browsable directory, one page per ability, rather than a list in a readme.
-* **Integrations** — https://acrossai.co/integrations/ — a page per plugin this one detects.
-* **Use cases** — https://acrossai.co/use-cases/ — walkthroughs of real jobs done through an AI assistant, start to finish.
-* **Full changelog** — https://acrossai.co/changelog/acrossai-abilities-manager/ — every release, including the older ones trimmed from the Changelog section here to stay inside WordPress.org's word limit.
+* **Every ability, searchable** — https://acrossai.co/abilities/ — one page per ability, rather than a list in a readme.
+* **Integrations** — https://acrossai.co/integrations/
+* **Use cases** — https://acrossai.co/use-cases/ — real jobs done through an AI assistant, start to finish.
+* **Full changelog** — https://acrossai.co/changelog/acrossai-abilities-manager/ — including releases trimmed from the Changelog here for length.
 
 == Installation ==
 
@@ -160,11 +164,11 @@ Yes, entirely, and under GPL. There is no paid tier of this plugin and no featur
 
 = What can an AI actually do once this is installed? =
 
-357 abilities across 14 toolsets on any site — content, blocks, appearance, users, configuration, database, files, cron, cache, updates and diagnostics — rising to over 800 across 33 toolsets as it detects plugins such as WooCommerce, Elementor, Rank Math, Yoast SEO, ACF and LiteSpeed Cache. Abilities are the capability layer; connecting an AI assistant to them needs a transport (see below).
+357 abilities on any site — content, blocks, appearance, users, configuration, database, files, cron, cache, updates and diagnostics — rising to over 800 as it detects plugins such as WooCommerce, Elementor, Rank Math, Yoast SEO, ACF and LiteSpeed Cache. Abilities are the capability layer; connecting an AI assistant to them needs a transport (see below).
 
-= Why does my AI only see about 14 tools when there are 357 abilities? =
+= Why does my AI only see about a dozen tools when there are 357 abilities? =
 
-That is deliberate, and it is what makes the catalogue usable. Abilities are grouped into toolsets, and each toolset is a single tool answering three actions — `discover` to list what it holds, `info` to read one ability's parameters, `execute` to run it. Exposing 357 separate tools would flood the model's context window, and most assistants degrade badly past a few dozen. Your AI reaches everything through the fourteen, drilling in only when it needs to.
+That is deliberate, and it is what makes the catalogue usable. Your MCP server groups the abilities into toolsets, and each toolset is a single tool answering three actions — `discover` to list what it holds, `info` to read one ability's parameters, `execute` to run it. Exposing 357 separate tools would flood the model's context window, and most assistants degrade badly past a few dozen. Your AI reaches everything through those, drilling in only when it needs to.
 
 = Does removing the plugin leave anything behind? =
 
@@ -267,6 +271,17 @@ No data is sent to any external server without an explicit administrator action.
 = Unreleased =
 
 (nothing yet)
+
+= 0.0.40 - 2026-09-28 =
+
+* **Fixed: the plugin's Description was being truncated on WordPress.org.** Every import reported "The Description section is too long and was truncated. A maximum of 2,500 words is supported" — a warning only the plugin's committers can see, so the listing was silently losing its tail for anyone reading it. The cause was not obvious: the Description itself was well inside the limit at around 1,800 words, but WordPress.org folds sections it does not recognise into the Description, and this readme carries two of them — External Services and Privacy Policy, both required disclosures totalling another 750. Together they crossed the limit. The Description is now tightened to 2,372 effective words with every point kept, leaving room for the next few releases, and neither disclosure was touched.
+* **The WordPress.org listing title now says what the plugin does.** It read "AcrossAI Abilities Manager", which tells a search engine nothing, while the sibling plugins carry a descriptive title. It is now "AcrossAI Abilities Manager – WordPress Abilities for Claude, ChatGPT & Any AI Agent". The name shown inside wp-admin is unchanged. The tags move from `abilities, mcp, access control, site management, ai` to `abilities, ai assistant, chatgpt, claude, mcp` — the terms people actually search, with `abilities` kept because it is the one word that distinguishes this plugin from an MCP server.
+* **The listing no longer counts toolsets as this plugin's feature.** It led with "357 ready-made WordPress abilities across 14 toolsets" and explained the toolset dispatch model as something this plugin gives you. That attribution is wrong: AcrossAI MCP Manager owns the toolset layer now. The counts of abilities stay, because those are what this plugin ships; the counts of toolsets are gone, and the explanation of why an AI sees a dozen tools instead of hundreds now credits the MCP server for the grouping. The per-plugin toolsets — Elementor, Rank Math, Site Kit, UpdraftPlus, All-in-One and the rest — are still described here, because they still come from this plugin and MCP Manager deliberately does not carry them. Nothing about the code changed in this release.
+* **Tested up to WordPress 7.1, and the plugin's own one-line description rewritten.** The header still described this as a way to "manage and customize the abilities of AcrossAI … tailor the AI's capabilities", which is what an AI settings panel does, not a plugin that ships 357 abilities. That line is what WordPress shows under the plugin name in wp-admin, so it now says what you actually get.
+* **The listing now says plainly that this works with any Abilities API consumer, not just one MCP server.** Every ability here is registered through WordPress 6.9's own Abilities API, so anything that reads that API can expose them — AcrossAI MCP Manager, the WordPress MCP Adapter, another MCP server, a REST client, or a plugin calling the Abilities API directly. That was previously one clause at the end of a paragraph; it is now three named routes and an explicit statement that nothing here is proprietary or bound to a particular transport.
+* **The integration list is shorter, because each entry now links to its own page.** Every integration gained a link in 0.0.39; the inline paragraph describing each one was then saying what the linked page says at length. Each is now a single line naming the area it covers.
+
+Verified: the Description parses at 2,372 of 2,500 words with the two unrecognised sections folded in, as WordPress.org counts them.
 
 = 0.0.39 - 2026-09-28 =
 
