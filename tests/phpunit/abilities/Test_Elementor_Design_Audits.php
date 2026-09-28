@@ -119,6 +119,134 @@ class Test_Elementor_Design_Audits extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'assert_elementor_available()', $src );
 	}
 
+	/**
+	 * Issue #243 — a skeleton audit must not be registered.
+	 *
+	 * Every one of the 27 returns a fabricated score with no findings, wrapped by the
+	 * base class in "Ran audit: <slug>." and a claim to be grounded in Elementor's
+	 * official documentation. Verified live: audit-generic-layout-patterns scored a
+	 * page of four identical 50/50 sections 100/100. A confidently wrong answer is
+	 * worse than a missing tool, so they stay out of the bootstrap until implemented.
+	 */
+	public function test_no_skeleton_audit_is_registered(): void {
+		$bootstrap = (string) file_get_contents(
+			dirname( __DIR__, 3 ) . '/includes/Abilities/AcrossAI_Core_Abilities_Bootstrap.php'
+		);
+
+		foreach ( self::audit_manifest() as $audit ) {
+			$class = $audit['class'];
+			$src   = (string) file_get_contents(
+				dirname( __DIR__, 3 ) . '/includes/Abilities/Elementor/' . $class . '.php'
+			);
+
+			if ( ! str_contains( $src, 'Skeleton implementation' ) ) {
+				continue;
+			}
+
+			$this->assertStringNotContainsString(
+				"new Elementor\\{$class}()",
+				$bootstrap,
+				"{$class} still declares itself a skeleton but is registered. Implement analyze() "
+					. '(and a confirm gate if it mutates) before restoring its bootstrap line.'
+			);
+		}
+	}
+
+	/**
+	 * The converse, so re-enabling one cannot be half-done: anything registered must
+	 * have stopped calling itself a skeleton.
+	 */
+	public function test_no_registered_audit_still_calls_itself_a_skeleton(): void {
+		$bootstrap = (string) file_get_contents(
+			dirname( __DIR__, 3 ) . '/includes/Abilities/AcrossAI_Core_Abilities_Bootstrap.php'
+		);
+
+		$registered = 0;
+
+		foreach ( self::audit_manifest() as $audit ) {
+			$class = $audit['class'];
+
+			if ( ! str_contains( $bootstrap, "new Elementor\\{$class}()" ) ) {
+				continue;
+			}
+
+			++$registered;
+
+			$src = (string) file_get_contents(
+				dirname( __DIR__, 3 ) . '/includes/Abilities/Elementor/' . $class . '.php'
+			);
+
+			$this->assertStringNotContainsString(
+				'Skeleton implementation',
+				$src,
+				"{$class} is registered but its description still says it is a skeleton."
+			);
+		}
+
+		// Recorded rather than left implicit: today none of the 27 is registered, so
+		// the loop above is empty. When the heuristics land this number rises and the
+		// assertion inside the loop starts doing the work.
+		$this->assertSame( 0, $registered, 'A design audit was re-registered — check it is no longer a skeleton.' );
+	}
+
+	/**
+	 * Issue #243 — evaluate-design failed output validation on EVERY call.
+	 *
+	 * Design_Audit_Runner::run_all() returns subtree_id and audit_count; the output
+	 * schema declared neither while setting additionalProperties:false, so the
+	 * ability errored for every post on every site. It had never worked.
+	 */
+	public function test_evaluate_design_declares_everything_the_runner_returns(): void {
+		$src = (string) file_get_contents(
+			dirname( __DIR__, 3 ) . '/includes/Abilities/Elementor/Evaluate_Design.php'
+		);
+
+		// Scoped to the OUTPUT schema on purpose. Matching the whole file would pass on
+		// keys that only appear in the INPUT schema — subtree_id is in both, which is
+		// exactly how the original bug hid.
+		$start = strpos( $src, "'output_schema'" );
+		$this->assertNotFalse( $start, 'evaluate-design declares no output schema.' );
+
+		// Bounded at 'meta', the next key in the spec. Reading to end of file would
+		// sweep in execute(), where $input['subtree_id'] appears — and that is the
+		// second way this test could pass while the schema is still wrong.
+		$end = strpos( $src, "'meta'", (int) $start );
+		$this->assertNotFalse( $end, 'evaluate-design declares no meta block to bound the schema at.' );
+
+		$output = substr( $src, (int) $start, (int) $end - (int) $start );
+
+		foreach ( array( 'post_id', 'subtree_id', 'audit_count', 'findings', 'recommendations', 'score', 'source_policy', 'guidance_basis', 'audits_run' ) as $key ) {
+			$this->assertStringContainsString(
+				"'{$key}'",
+				$output,
+				"evaluate-design's OUTPUT schema omits '{$key}', which run_all() returns — "
+					. 'with additionalProperties:false that fails every call.'
+			);
+		}
+	}
+
+	/**
+	 * An empty audit registry must not be reported as a clean page.
+	 */
+	public function test_the_aggregators_say_when_no_audit_ran(): void {
+		foreach ( array( 'Evaluate_Design', 'Suggest_Design_Fixes' ) as $class ) {
+			$src = (string) file_get_contents(
+				dirname( __DIR__, 3 ) . '/includes/Abilities/Elementor/' . $class . '.php'
+			);
+
+			$this->assertStringContainsString(
+				"audit_count",
+				$src,
+				"{$class} must branch on how many audits actually ran."
+			);
+			$this->assertStringContainsString(
+				'No Elementor design audits are registered',
+				$src,
+				"{$class} must say plainly that nothing was inspected when nothing ran."
+			);
+		}
+	}
+
 	public function test_manifest_covers_all_27_base_derived_audits_plus_2_aggregators(): void {
 		$this->assertCount( 27, self::audit_manifest(), 'Manifest should list 27 Base_Audit_Ability subclasses (plus 2 self-contained aggregators = 29 total).' );
 	}

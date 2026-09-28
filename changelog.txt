@@ -7,7 +7,10 @@ this file carries everything, in full, and is shipped inside the plugin.
 
 = Unreleased =
 
-(nothing yet)
+* **Removed: 27 Elementor design audits that scored pages without looking at them.** Abilities like `elementor/audit-generic-layout-patterns` and `elementor/score-distinctiveness` were registered and callable, but the analysis inside each was never written. They returned a made-up score with no findings, wrapped in "Ran audit: …" and a claim that the result was grounded in Elementor's official documentation. On a test page built as four identical 50/50 sections carrying the same button — exactly what several of them describe catching — `audit-generic-layout-patterns` answered 100 out of 100 and `score-distinctiveness` answered 75. An assistant relaying that tells you your page design is fine when nothing examined it, which is worse than having no tool at all. They are withdrawn until the analysis is written; their code remains, and the test suite now refuses to let one be registered while it still describes itself as a skeleton.
+* **Twelve of those could have started changing pages with nothing to stop them.** They were annotated as making changes but had no confirmation step — harmless while they did nothing, and a trap the moment someone filled one in. The same test now requires that gate to arrive with the implementation rather than after it.
+* **Fixed: `elementor/evaluate-design` failed on every call, on every site.** It returned two fields its own output schema did not declare, and the schema forbids undeclared fields, so the ability errored out every time it was used. It had never worked. Both fields are now declared.
+* **The Elementor design aggregators no longer report an empty page as a clean one.** With no audits registered, `evaluate-design` said "Design evaluation complete" and `suggest-design-fixes` said "Generated 0 fix recommendations" — both of which read as "nothing is wrong" when they mean "nothing was checked". Each now says plainly that no audits are registered and nothing was inspected, and `evaluate-design` stops claiming its findings are grounded in official documentation when there are none.
 
 = 0.0.38 - 2026-09-22 =
 

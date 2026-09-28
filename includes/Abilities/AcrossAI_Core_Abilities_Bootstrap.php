@@ -865,39 +865,39 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Elementor\List_Global_Widgets();
 		new Elementor\List_Experiments();
 		new Elementor\Update_Experiment();
-		// Design audits — aggregators + scorers.
+		// Design audits — the two aggregators. These are real: they compose whatever
+		// audits are registered with Design_Audit_Runner and report honestly when
+		// none are.
 		new Elementor\Evaluate_Design();
 		new Elementor\Suggest_Design_Fixes();
-		new Elementor\Score_Distinctiveness();
-		new Elementor\Extract_Design_Tokens();
-		// Design audits — 14 audit-* abilities.
-		new Elementor\Audit_Column_Alignment_Rhythm();
-		new Elementor\Audit_Column_Balance();
-		new Elementor\Audit_Column_Dominance();
-		new Elementor\Audit_Column_Necessity();
-		new Elementor\Audit_Column_Patterns();
-		new Elementor\Audit_Composition_Rhythm();
-		new Elementor\Audit_Emphasis_Drift();
-		new Elementor\Audit_Generic_Component_Repetition();
-		new Elementor\Audit_Generic_Layout_Patterns();
-		new Elementor\Audit_Layout_Mechanism_Fit();
-		new Elementor\Audit_Native_Widget_Opportunities();
-		new Elementor\Audit_Section_Rivalry();
-		new Elementor\Audit_Separator_Discipline();
-		new Elementor\Audit_Surface_Overuse();
-		// Design audits — 7 subtree operations.
-		new Elementor\Apply_Text_Hierarchy();
-		new Elementor\Enforce_Boundary_Coherence();
-		new Elementor\Fix_Visible_Gap_Rhythm();
-		new Elementor\Normalize_Responsive_Values();
-		new Elementor\Normalize_Section_Spacing_Rhythm();
-		new Elementor\Reset_Negative_Margins_Subtree();
-		new Elementor\Zero_Container_Padding_Subtree();
-		// Design audits — 4 copy/sync/convert helpers.
-		new Elementor\Copy_Lane_Settings();
-		new Elementor\Copy_Row_Balance();
-		new Elementor\Image_Widget_To_Background_Container();
-		new Elementor\Sync_Component_Variant();
+
+		/*
+		 * Issue #243 — the 27 individual design audits are NOT registered.
+		 *
+		 * Their classes exist and their plumbing is complete, but every analyze() body
+		 * is still a placeholder: they return a fabricated score with no findings, and
+		 * the base class wraps that in "Ran audit: <slug>." plus
+		 * guidance_basis "grounded in Elementor.com official documentation".
+		 *
+		 * Verified on a live site against a page built as four identical 50/50
+		 * sections carrying the same button: audit-generic-layout-patterns — whose own
+		 * description is "audit for repeated generic landing-page composition
+		 * patterns" — returned score 100 and no findings. An assistant relaying that
+		 * tells someone their page design is fine when nothing examined it, and a
+		 * confidently wrong answer is worse than a missing tool.
+		 *
+		 * Twelve of them also declare destructive:true while Base_Audit_Ability adds no
+		 * confirmation gate, so implementing an analyze() body would make them mutate
+		 * documents with nothing in front of them. That gate has to land with the
+		 * heuristics, not after.
+		 *
+		 * To re-enable one: write its analyze() body, add a confirm gate if it mutates,
+		 * drop "Skeleton implementation." from its description, and restore its line
+		 * here. Test_Elementor_Design_Audits pins all four of those conditions.
+		 *
+		 * Registering them from here is all that is needed — nothing else references
+		 * these classes, and the aggregators read a separate registry.
+		 */
 	}
 
 	/**
