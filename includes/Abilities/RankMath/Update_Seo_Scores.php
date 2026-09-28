@@ -36,7 +36,7 @@ class Update_Seo_Scores extends Base_Rank_Math_Ability {
 	}
 
 	protected function ability_description(): string {
-		return __( 'Store Rank Math SEO scores for a batch of posts. Rank Math computes scores client-side only, so this is how a score derived from its rank-math/analyze-post-content ability gets persisted and becomes visible in score filters and reports. Scores must be 0-100; rows that are missing, unauthorised or out of range are reported as skipped with a reason.', 'acrossai-abilities-manager' );
+		return __( 'Store Rank Math SEO scores for a batch of posts. Rank Math computes scores client-side only, so this is how a score derived from its rank-math/analyze-post-content ability gets persisted and becomes visible in score filters and reports. Each score is stamped with the time it was written and where it came from, so a later audit can tell an agent-graded score from one Rank Math\'s own analyzer produced; read those back with rank-math/audit-content-seo. Scores must be 0-100; rows that are missing, unauthorised or out of range are reported as skipped with a reason.', 'acrossai-abilities-manager' );
 	}
 
 	protected function sub_group(): string {
@@ -58,13 +58,24 @@ class Update_Seo_Scores extends Base_Rank_Math_Ability {
 				'description'          => __( 'Post id => score from 0 to 100.', 'acrossai-abilities-manager' ),
 				'additionalProperties' => true,
 			),
+			'source' => array(
+				'type'        => 'string',
+				'enum'        => Post_Meta_Repository::SCORE_SOURCES,
+				'default'     => 'agent',
+				'description' => __( 'Where these scores came from. Use "agent" when you graded the post yourself against the rubric from rank-math/analyze-post-content — this is the normal case and the default. Use "rank-math-analyzer" only for numbers Rank Math\'s own browser analyzer produced, such as those read off its Update SEO Scores tool. Recording this honestly is the point: the two do not always agree.', 'acrossai-abilities-manager' ),
+			),
 		);
 	}
 
 	protected function output_properties(): array {
 		return array(
-			'updated' => array( 'type' => 'array' ),
-			'skipped' => array( 'type' => 'array' ),
+			'updated'   => array( 'type' => 'array' ),
+			'skipped'   => array( 'type' => 'array' ),
+			'scored_at' => array(
+				'type'        => 'string',
+				'description' => __( 'GMT timestamp stamped on every score in this batch.', 'acrossai-abilities-manager' ),
+			),
+			'source'    => array( 'type' => 'string' ),
 		);
 	}
 
@@ -85,16 +96,19 @@ class Update_Seo_Scores extends Base_Rank_Math_Ability {
 			return new WP_Error( 'invalid_input', __( 'scores must be an object keyed by post id.', 'acrossai-abilities-manager' ) );
 		}
 
-		$result = Post_Meta_Repository::update_seo_scores( $input['scores'] );
+		$source = isset( $input['source'] ) ? (string) $input['source'] : 'agent';
+
+		$result = Post_Meta_Repository::update_seo_scores( $input['scores'], $source );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
 		$result['message'] = sprintf(
-			/* translators: 1: number of scores written, 2: number skipped */
-			__( 'Wrote %1$d SEO scores, skipped %2$d.', 'acrossai-abilities-manager' ),
+			/* translators: 1: number of scores written, 2: number skipped, 3: score source */
+			__( 'Wrote %1$d SEO scores, skipped %2$d. Recorded source: %3$s.', 'acrossai-abilities-manager' ),
 			count( $result['updated'] ),
-			count( $result['skipped'] )
+			count( $result['skipped'] ),
+			$result['source']
 		);
 
 		return $result;
