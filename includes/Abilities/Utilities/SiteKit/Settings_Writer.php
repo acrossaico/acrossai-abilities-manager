@@ -159,7 +159,14 @@ final class Settings_Writer {
 				continue;
 			}
 
-			$changed[ (string) $key ] = array( 'from' => $was, 'to' => $now );
+			// A LIST, not a map keyed by setting name. An empty PHP map encodes as []
+			// while a populated one encodes as {}, so a client would see the type of
+			// this field change depending on whether anything happened.
+			$changed[] = array(
+				'setting' => (string) $key,
+				'from'    => $was,
+				'to'      => $now,
+			);
 		}
 
 		$owner_after = self::owner_id( $module );

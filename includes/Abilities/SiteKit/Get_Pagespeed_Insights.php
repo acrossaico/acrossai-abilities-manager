@@ -129,13 +129,20 @@ class Get_Pagespeed_Insights extends Base_Site_Kit_Ability {
 
 		$performance = $result['scores']['performance'] ?? null;
 
+		$failing = count( $result['audits_failing'] );
+
 		$result['message'] = sprintf(
 			/* translators: 1: strategy, 2: URL tested or the site default, 3: performance score or "not scored", 4: number of failing audits */
-			__( 'Ran the %1$s PageSpeed test on %2$s. Performance %3$s, %4$d audits below passing.', 'acrossai-abilities-manager' ),
+			_n(
+				'Ran the %1$s PageSpeed test on %2$s. Performance %3$s, %4$d audit below passing.',
+				'Ran the %1$s PageSpeed test on %2$s. Performance %3$s, %4$d audits below passing.',
+				$failing,
+				'acrossai-abilities-manager'
+			),
 			$strategy,
 			'' !== $result['url'] ? $result['url'] : __( 'the site home URL', 'acrossai-abilities-manager' ),
 			null === $performance ? __( 'not scored', 'acrossai-abilities-manager' ) : $performance . '/100',
-			count( $result['audits_failing'] )
+			$failing
 		);
 
 		return $result;

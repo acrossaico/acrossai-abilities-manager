@@ -71,8 +71,8 @@ class Update_Module_Settings extends Base_Site_Kit_Ability {
 		return array(
 			'slug'          => array( 'type' => 'string' ),
 			'changed'       => array(
-				'type'        => 'object',
-				'description' => __( 'Each key that actually moved, with its old and new value read back from Site Kit after the write.', 'acrossai-abilities-manager' ),
+				'type'        => 'array',
+				'description' => __( 'One entry per setting that actually moved, each with its name and its old and new value read back from Site Kit after the write.', 'acrossai-abilities-manager' ),
 			),
 			'unchanged'     => array(
 				'type'        => 'array',
@@ -131,7 +131,7 @@ class Update_Module_Settings extends Base_Site_Kit_Ability {
 				__( 'Changed %1$d setting(s) on the Site Kit "%2$s" module: %3$s.', 'acrossai-abilities-manager' ),
 				count( $result['changed'] ),
 				$slug,
-				implode( ', ', array_keys( $result['changed'] ) )
+				implode( ', ', array_column( $result['changed'], 'setting' ) )
 			);
 
 		if ( array() !== $result['ignored'] ) {
