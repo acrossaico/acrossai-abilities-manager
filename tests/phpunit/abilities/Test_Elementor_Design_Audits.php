@@ -89,7 +89,14 @@ class Test_Elementor_Design_Audits extends WP_UnitTestCase {
 				continue;
 			}
 			$src = (string) file_get_contents( $dir . $audit['class'] . '.php' );
-			$this->assertStringContainsString( 'protected function is_destructive(): bool { return true; }', $src, "{$audit['class']} should override is_destructive() to return true" );
+			// Matched as a pattern rather than a literal one-liner: the implementations
+			// use the house multi-line form, and this test is about the override
+			// existing, not about how it is laid out.
+			$this->assertMatchesRegularExpression(
+				'/function is_destructive\(\): bool \{\s*return true;\s*\}/',
+				$src,
+				"{$audit['class']} should override is_destructive() to return true"
+			);
 		}
 	}
 
@@ -133,6 +140,8 @@ class Test_Elementor_Design_Audits extends WP_UnitTestCase {
 			dirname( __DIR__, 3 ) . '/includes/Abilities/AcrossAI_Core_Abilities_Bootstrap.php'
 		);
 
+		$skeletons = 0;
+
 		foreach ( self::audit_manifest() as $audit ) {
 			$class = $audit['class'];
 			$src   = (string) file_get_contents(
@@ -143,6 +152,8 @@ class Test_Elementor_Design_Audits extends WP_UnitTestCase {
 				continue;
 			}
 
+			++$skeletons;
+
 			$this->assertStringNotContainsString(
 				"new Elementor\\{$class}()",
 				$bootstrap,
@@ -150,6 +161,11 @@ class Test_Elementor_Design_Audits extends WP_UnitTestCase {
 					. '(and a confirm gate if it mutates) before restoring its bootstrap line.'
 			);
 		}
+
+		// All 27 are implemented now, so the loop above is empty. Asserted rather than
+		// left implicit: if a skeleton is ever reintroduced this number moves and the
+		// assertion inside the loop takes over.
+		$this->assertSame( 0, $skeletons, 'A design audit reverted to a skeleton.' );
 	}
 
 	/**
@@ -183,10 +199,15 @@ class Test_Elementor_Design_Audits extends WP_UnitTestCase {
 			);
 		}
 
-		// Recorded rather than left implicit: today none of the 27 is registered, so
-		// the loop above is empty. When the heuristics land this number rises and the
-		// assertion inside the loop starts doing the work.
-		$this->assertSame( 0, $registered, 'A design audit was re-registered — check it is no longer a skeleton.' );
+		// All 27 are implemented and registered. Asserting the count as well as the
+		// per-file check catches the other way this can go wrong: an audit silently
+		// dropped from the bootstrap would leave the loop passing while the ability
+		// quietly stopped existing.
+		$this->assertSame(
+			count( self::audit_manifest() ),
+			$registered,
+			'Every implemented design audit should be registered in the bootstrap.'
+		);
 	}
 
 	/**
@@ -221,6 +242,34 @@ class Test_Elementor_Design_Audits extends WP_UnitTestCase {
 				$output,
 				"evaluate-design's OUTPUT schema omits '{$key}', which run_all() returns — "
 					. 'with additionalProperties:false that fails every call.'
+			);
+		}
+	}
+
+	/**
+	 * Every key analyze() can return must be declared on the base output schema.
+	 *
+	 * Found live: audits returning 'extras' failed output validation because the schema
+	 * sets additionalProperties:false and did not declare it — the same fault that made
+	 * evaluate-design error on every call. Schema and payload drifting apart is the
+	 * recurring failure in this suite, so it is pinned in both places.
+	 */
+	public function test_the_base_output_schema_declares_every_key_analyze_returns(): void {
+		$src = (string) file_get_contents(
+			dirname( __DIR__, 3 ) . '/includes/Abilities/Elementor/Base_Audit_Ability.php'
+		);
+
+		$start = strpos( $src, "'output_schema'" );
+		$this->assertNotFalse( $start, 'Base_Audit_Ability declares no output schema.' );
+		$end = strpos( $src, "'meta'", (int) $start );
+		$this->assertNotFalse( $end );
+		$schema = substr( $src, (int) $start, (int) $end - (int) $start );
+
+		foreach ( array( 'findings', 'recommendations', 'score', 'extras', 'changed', 'applied', 'source_policy', 'guidance_basis', 'message', 'error_code' ) as $key ) {
+			$this->assertStringContainsString(
+				"'{$key}'",
+				$schema,
+				"Base_Audit_Ability's output schema omits '{$key}', which an audit can return."
 			);
 		}
 	}

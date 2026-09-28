@@ -51,6 +51,8 @@ class Evaluate_Design extends Ability_Definition {
 						'subtree_id'      => array( 'type' => 'string' ),
 						'audit_count'     => array( 'type' => 'integer' ),
 						'score'           => array( 'type' => array( 'number', 'null' ) ),
+						'score_basis'     => array( 'type' => 'string' ),
+						'lowest_score'    => array( 'type' => array( 'number', 'null' ) ),
 						'findings'        => array( 'type' => 'array' ),
 						'recommendations' => array( 'type' => 'array' ),
 						'audits_run'      => array( 'type' => 'array' ),
