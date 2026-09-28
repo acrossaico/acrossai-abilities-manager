@@ -9,13 +9,13 @@ Stable tag: 0.0.40
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-357 ready-made WordPress abilities across 14 toolsets, plus full control over every ability on your site — browse, override and bulk-manage.
+357 ready-made WordPress abilities for Claude, ChatGPT and any AI agent — browse, override and control every one.
 
 == Description ==
 
 **AcrossAI Abilities Manager gives your WordPress site 357 ready-made abilities, and gives you control over every one of them.**
 
-An *ability* is a self-describing operation that WordPress 6.9's Abilities API lets a plugin register — something an AI assistant, a REST client or another plugin can discover and call. WordPress ships the API; almost nothing ships abilities. This plugin does: **357 across 14 toolsets on any site, with no configuration**, rising to **over 800 across 33 toolsets** as it detects the plugins you already run.
+An *ability* is a self-describing operation that WordPress 6.9's Abilities API lets a plugin register — something an AI assistant, a REST client or another plugin can discover and call. WordPress ships the API; almost nothing ships abilities. This plugin does: **357 on any site, with no configuration**, rising to **over 800** as it detects the plugins you already run.
 
 It is free, GPL, and works on its own. Pair it with an MCP server and your site becomes something Claude, ChatGPT, Cursor or any MCP-capable assistant can operate.
 
@@ -33,11 +33,11 @@ It is free, GPL, and works on its own. Pair it with an MCP server and your site 
 * **Diagnostics** — Site Health, maintenance mode, recent fatal errors, and un-pausing what WordPress auto-disabled.
 * **Cache** — transients, object cache and rewrite rules.
 
-= Toolsets: 14 Tools, Not 357 =
+= A Dozen Tools, Not 357 =
 
 An AI client is handed its tool list once, at connect time, and pays for it out of the model's context window on every conversation. Exposing 357 separate tools would flood it — most assistants degrade past a few dozen.
 
-So abilities are grouped into **toolsets**, and a toolset is a **single tool** answering three actions: `discover` to list what it holds, `info` to read one ability's parameters, and `execute` to run it. Same three everywhere, learned once. Your AI sees roughly fourteen tools and reaches all 357 through them.
+So your MCP server groups them into **toolsets**, and a toolset is a **single tool** answering three actions: `discover` to list what it holds, `info` to read one ability's parameters, and `execute` to run it — the same three everywhere. AcrossAI MCP Manager provides that layer; this plugin provides the abilities.
 
 = Plugins You Already Run Get Their Own Toolset =
 
@@ -164,11 +164,11 @@ Yes, entirely, and under GPL. There is no paid tier of this plugin and no featur
 
 = What can an AI actually do once this is installed? =
 
-357 abilities across 14 toolsets on any site — content, blocks, appearance, users, configuration, database, files, cron, cache, updates and diagnostics — rising to over 800 across 33 toolsets as it detects plugins such as WooCommerce, Elementor, Rank Math, Yoast SEO, ACF and LiteSpeed Cache. Abilities are the capability layer; connecting an AI assistant to them needs a transport (see below).
+357 abilities on any site — content, blocks, appearance, users, configuration, database, files, cron, cache, updates and diagnostics — rising to over 800 as it detects plugins such as WooCommerce, Elementor, Rank Math, Yoast SEO, ACF and LiteSpeed Cache. Abilities are the capability layer; connecting an AI assistant to them needs a transport (see below).
 
-= Why does my AI only see about 14 tools when there are 357 abilities? =
+= Why does my AI only see about a dozen tools when there are 357 abilities? =
 
-That is deliberate, and it is what makes the catalogue usable. Abilities are grouped into toolsets, and each toolset is a single tool answering three actions — `discover` to list what it holds, `info` to read one ability's parameters, `execute` to run it. Exposing 357 separate tools would flood the model's context window, and most assistants degrade badly past a few dozen. Your AI reaches everything through the fourteen, drilling in only when it needs to.
+That is deliberate, and it is what makes the catalogue usable. Your MCP server groups the abilities into toolsets, and each toolset is a single tool answering three actions — `discover` to list what it holds, `info` to read one ability's parameters, `execute` to run it. Exposing 357 separate tools would flood the model's context window, and most assistants degrade badly past a few dozen. Your AI reaches everything through those, drilling in only when it needs to.
 
 = Does removing the plugin leave anything behind? =
 
@@ -276,6 +276,7 @@ No data is sent to any external server without an explicit administrator action.
 
 * **Fixed: the plugin's Description was being truncated on WordPress.org.** Every import reported "The Description section is too long and was truncated. A maximum of 2,500 words is supported" — a warning only the plugin's committers can see, so the listing was silently losing its tail for anyone reading it. The cause was not obvious: the Description itself was well inside the limit at around 1,800 words, but WordPress.org folds sections it does not recognise into the Description, and this readme carries two of them — External Services and Privacy Policy, both required disclosures totalling another 750. Together they crossed the limit. The Description is now tightened to 2,372 effective words with every point kept, leaving room for the next few releases, and neither disclosure was touched.
 * **The WordPress.org listing title now says what the plugin does.** It read "AcrossAI Abilities Manager", which tells a search engine nothing, while the sibling plugins carry a descriptive title. It is now "AcrossAI Abilities Manager – WordPress Abilities for Claude, ChatGPT & Any AI Agent". The name shown inside wp-admin is unchanged. The tags move from `abilities, mcp, access control, site management, ai` to `abilities, ai assistant, chatgpt, claude, mcp` — the terms people actually search, with `abilities` kept because it is the one word that distinguishes this plugin from an MCP server.
+* **The listing no longer counts toolsets as this plugin's feature.** It led with "357 ready-made WordPress abilities across 14 toolsets" and explained the toolset dispatch model as something this plugin gives you. That attribution is wrong: AcrossAI MCP Manager owns the toolset layer now. The counts of abilities stay, because those are what this plugin ships; the counts of toolsets are gone, and the explanation of why an AI sees a dozen tools instead of hundreds now credits the MCP server for the grouping. The per-plugin toolsets — Elementor, Rank Math, Site Kit, UpdraftPlus, All-in-One and the rest — are still described here, because they still come from this plugin and MCP Manager deliberately does not carry them. Nothing about the code changed in this release.
 * **Tested up to WordPress 7.1, and the plugin's own one-line description rewritten.** The header still described this as a way to "manage and customize the abilities of AcrossAI … tailor the AI's capabilities", which is what an AI settings panel does, not a plugin that ships 357 abilities. That line is what WordPress shows under the plugin name in wp-admin, so it now says what you actually get.
 * **The listing now says plainly that this works with any Abilities API consumer, not just one MCP server.** Every ability here is registered through WordPress 6.9's own Abilities API, so anything that reads that API can expose them — AcrossAI MCP Manager, the WordPress MCP Adapter, another MCP server, a REST client, or a plugin calling the Abilities API directly. That was previously one clause at the end of a paragraph; it is now three named routes and an explicit statement that nothing here is proprietary or bound to a particular transport.
 * **The integration list is shorter, because each entry now links to its own page.** Every integration gained a link in 0.0.39; the inline paragraph describing each one was then saying what the linked page says at length. Each is now a single line naming the area it covers.
