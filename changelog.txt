@@ -9,6 +9,14 @@ this file carries everything, in full, and is shipped inside the plugin.
 
 (nothing yet)
 
+= 0.0.40 - 2026-09-28 =
+
+* **Fixed: the plugin's Description was being truncated on WordPress.org.** Every import reported "The Description section is too long and was truncated. A maximum of 2,500 words is supported" — a warning only the plugin's committers can see, so the listing was silently losing its tail for anyone reading it. The cause was not obvious: the Description itself was well inside the limit at around 1,800 words, but WordPress.org folds sections it does not recognise into the Description, and this readme carries two of them — External Services and Privacy Policy, both required disclosures totalling another 750. Together they crossed the limit. The Description is now tightened to 2,372 effective words with every point kept, leaving room for the next few releases, and neither disclosure was touched.
+* **The WordPress.org listing title now says what the plugin does.** It read "AcrossAI Abilities Manager", which tells a search engine nothing, while the sibling plugins carry a descriptive title. It is now "AcrossAI Abilities Manager – WordPress Abilities for Claude, ChatGPT & Any AI Agent". The name shown inside wp-admin is unchanged. The tags move from `abilities, mcp, access control, site management, ai` to `abilities, ai assistant, chatgpt, claude, mcp` — the terms people actually search, with `abilities` kept because it is the one word that distinguishes this plugin from an MCP server.
+* **The integration list is shorter, because each entry now links to its own page.** Every integration gained a link in 0.0.39; the inline paragraph describing each one was then saying what the linked page says at length. Each is now a single line naming the area it covers.
+
+Verified: the Description parses at 2,372 of 2,500 words with the two unrecognised sections folded in, as WordPress.org counts them.
+
 = 0.0.39 - 2026-09-28 =
 
 * **Fixed: asking All-in-One WP Migration for a backup told you to install UpdraftPlus.** The All-in-One abilities detect their plugin correctly, but when it was missing they reported the failure using UpdraftPlus's error code and UpdraftPlus's message. So calling `all-in-one/get-status` on a site without All-in-One named the wrong plugin — and following that advice installed the wrong plugin, after which the ability still failed. Worse for anything automated, both suites returned the same `updraftplus_missing` code, so a caller checking which plugin was absent could not tell them apart, which is the one question a typed error code exists to answer. All-in-One now returns `all_in_one_missing` and a message about its own archives and exports. Every guard in the plugin is now checked for a shared code, so this cannot recur quietly.
