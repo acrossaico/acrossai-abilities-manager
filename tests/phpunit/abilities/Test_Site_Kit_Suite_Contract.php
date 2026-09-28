@@ -27,6 +27,9 @@ class Test_Site_Kit_Suite_Contract extends WP_UnitTestCase {
 		'Get_Status'              => 'get-status',
 		'List_Modules'            => 'list-modules',
 		'Get_Module_Settings'     => 'get-module-settings',
+		'Update_Module_Settings'  => 'update-module-settings',
+		'Get_Key_Metrics'         => 'get-key-metrics',
+		'Update_Key_Metrics'      => 'update-key-metrics',
 		'Set_Module_State'        => 'set-module-state',
 		'Get_Sharing_Settings'    => 'get-sharing-settings',
 		'List_Module_Datapoints'  => 'list-module-datapoints',
@@ -225,9 +228,46 @@ class Test_Site_Kit_Suite_Contract extends WP_UnitTestCase {
 	 * whether it may run something without asking.
 	 */
 	public function test_no_write_ability_claims_to_be_readonly(): void {
-		$src = self::src( self::abilities_dir() . 'Set_Module_State.php' );
-		$this->assertMatchesRegularExpression( "/'readonly'\s*=>\s*false/", $src );
-		$this->assertMatchesRegularExpression( '/function requires_confirmation\(\): bool \{\s*return true;/', $src );
+		foreach ( array( 'Set_Module_State.php', 'Update_Module_Settings.php', 'Update_Key_Metrics.php' ) as $file ) {
+			$this->assertMatchesRegularExpression(
+				"/'readonly'\s*=>\s*false/",
+				self::src( self::abilities_dir() . $file ),
+				"{$file} writes but claims readonly."
+			);
+		}
+	}
+
+	/**
+	 * Everything that changes the live site's behaviour is confirm-gated. Key Metrics
+	 * is the deliberate exception: it moves tiles on one user's own admin screen and
+	 * touches neither the site nor its measurement, so gating it would dilute what the
+	 * gate means everywhere else.
+	 */
+	public function test_site_affecting_writes_are_confirm_gated(): void {
+		foreach ( array( 'Set_Module_State.php', 'Update_Module_Settings.php' ) as $file ) {
+			$this->assertMatchesRegularExpression(
+				'/function requires_confirmation\(\): bool \{\s*return true;/',
+				self::src( self::abilities_dir() . $file ),
+				"{$file} changes the live site but is not confirm-gated."
+			);
+		}
+
+		$this->assertStringNotContainsString(
+			'requires_confirmation',
+			self::src( self::abilities_dir() . 'Update_Key_Metrics.php' )
+		);
+	}
+
+	/**
+	 * ownerID decides whose Google credentials serve a module's data to everyone on a
+	 * shared dashboard. Site Kit assigns it; it must never be settable by hand.
+	 */
+	public function test_the_settings_writer_refuses_owner_and_credential_keys(): void {
+		$src = self::src( self::utilities_dir() . 'Settings_Writer.php' );
+		foreach ( array( 'ownerID', 'clientSecret', 'client_secret' ) as $key ) {
+			$this->assertStringContainsString( "'{$key}'", $src );
+		}
+		$this->assertStringContainsString( 'PROTECTED_KEYS', $src );
 	}
 
 	/**

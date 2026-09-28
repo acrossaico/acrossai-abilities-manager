@@ -589,7 +589,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_rank_math_abilities();
 		}
 
-		// Feature 120 — Site Kit by Google suite (11 abilities under site-kit/*). The Contact Form 7
+		// Feature 120 — Site Kit by Google suite (14 abilities under site-kit/*). The Contact Form 7
 		// shape rather than the Rank Math one: Site Kit has no entitlement that could change within a
 		// request. Its Google CONNECTION can, but that is runtime state the guards already report per
 		// call, and it is deliberately not a registration gate — the abilities must exist on an
@@ -1005,10 +1005,13 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// Connection and setup. get-status is first because every other ability in the
 		// suite fails back to it.
 		new SiteKit\Get_Status();
+		new SiteKit\Get_Key_Metrics();
+		new SiteKit\Update_Key_Metrics();
 
 		// Modules, their settings and their sharing.
 		new SiteKit\List_Modules();
 		new SiteKit\Get_Module_Settings();
+		new SiteKit\Update_Module_Settings();
 		new SiteKit\Set_Module_State();
 		new SiteKit\Get_Sharing_Settings();
 		new SiteKit\List_Module_Datapoints();

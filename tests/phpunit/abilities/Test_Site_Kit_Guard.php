@@ -12,9 +12,11 @@
 
 namespace AcrossAI_Abilities_Manager\Tests\PHPUnit\Abilities;
 
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\SiteKit\Key_Metrics_Repository;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\SiteKit\Module_Repository;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\SiteKit\Report_Repository;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\SiteKit\Site_Kit_Context;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\SiteKit\Settings_Writer;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\SiteKit\Site_Kit_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\SiteKit\Status_Repository;
 use WP_Error;
@@ -137,6 +139,80 @@ class Test_Site_Kit_Guard extends WP_UnitTestCase {
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertSame( 'invalid_input', $result->get_error_code() );
 		$this->assertStringContainsString( 'metrics', $result->get_error_message() );
+	}
+
+	/* -------------------------------------------------------- settings writes */
+
+	/**
+	 * ownerID decides whose Google credentials serve shared dashboard data. It must be
+	 * refused BEFORE the module is even resolved, so the refusal holds on any site.
+	 */
+	public function test_writing_owner_id_is_refused(): void {
+		$result = Settings_Writer::update( 'analytics-4', array( 'ownerID' => 99 ) );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'site_kit_protected_setting', $result->get_error_code() );
+	}
+
+	public function test_writing_a_credential_key_is_refused(): void {
+		$result = Settings_Writer::update( 'sign-in-with-google', array( 'clientSecret' => 'hunter2' ) );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'site_kit_protected_setting', $result->get_error_code() );
+	}
+
+	public function test_an_empty_settings_write_is_refused(): void {
+		$result = Settings_Writer::update( 'analytics-4', array() );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'invalid_input', $result->get_error_code() );
+	}
+
+	public function test_protected_keys_are_excluded_from_the_writable_set(): void {
+		$writable = Settings_Writer::writable_keys(
+			array( 'propertyID' => '1', 'ownerID' => 1, 'useSnippet' => true )
+		);
+
+		$this->assertSame( array( 'propertyID', 'useSnippet' ), $writable );
+	}
+
+	/* ----------------------------------------------------------- key metrics */
+
+	public function test_key_metrics_degrade_when_site_kit_is_absent(): void {
+		$this->assertInstanceOf( WP_Error::class, Key_Metrics_Repository::get() );
+	}
+
+	/**
+	 * A write naming neither field would silently do nothing, which reads as success.
+	 */
+	public function test_a_key_metrics_write_with_nothing_to_change_is_refused(): void {
+		$result = Key_Metrics_Repository::update( null, null );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'invalid_input', $result->get_error_code() );
+	}
+
+	/**
+	 * Site Kit's dashboard shows at most eight, and it does not enforce that itself —
+	 * so a ninth would save and then never appear.
+	 */
+	public function test_more_than_eight_key_metrics_tiles_are_refused(): void {
+		$nine = array_map(
+			static fn( int $i ): string => 'kmAnalyticsTopCities' . $i,
+			range( 1, 9 )
+		);
+
+		$result = Key_Metrics_Repository::update( $nine, null );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'invalid_input', $result->get_error_code() );
+		$this->assertStringContainsString( '8', $result->get_error_message() );
+	}
+
+	public function test_the_known_key_metric_slugs_are_a_reference_not_empty(): void {
+		$this->assertContains( 'kmAnalyticsNewVisitors', Key_Metrics_Repository::KNOWN_SLUGS );
+		$this->assertContains( 'kmSearchConsolePopularKeywords', Key_Metrics_Repository::KNOWN_SLUGS );
+		$this->assertSame( 8, Key_Metrics_Repository::MAX_SLUGS );
 	}
 
 	/* ------------------------------------------------------------ capability */

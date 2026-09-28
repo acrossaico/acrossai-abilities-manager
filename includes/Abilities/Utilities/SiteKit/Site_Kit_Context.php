@@ -162,6 +162,51 @@ final class Site_Kit_Context {
 	}
 
 	/**
+	 * The current user's Key Metrics store, or null when this build has none.
+	 *
+	 * Per user: Key_Metrics_Settings extends User_Setting, so it resolves against
+	 * whoever is executing, exactly like authentication does.
+	 *
+	 * NOT memoised. The others are request-scoped singletons because they are
+	 * expensive to build; this one is a thin wrapper over user meta, and memoising it
+	 * would quietly return a stale store after a write.
+	 *
+	 * @return object|null
+	 */
+	public static function key_metrics_settings(): ?object {
+		$user_options = self::user_options();
+
+		if ( null === $user_options || ! class_exists( '\Google\Site_Kit\Core\Key_Metrics\Key_Metrics_Settings' ) ) {
+			return null;
+		}
+
+		try {
+			return new \Google\Site_Kit\Core\Key_Metrics\Key_Metrics_Settings( $user_options );
+		} catch ( \Throwable $e ) {
+			return null;
+		}
+	}
+
+	/**
+	 * The site-wide record of who completed Key Metrics setup, or null.
+	 *
+	 * @return object|null
+	 */
+	public static function key_metrics_setup_completed_by(): ?object {
+		$options = self::options();
+
+		if ( null === $options || ! class_exists( '\Google\Site_Kit\Core\Key_Metrics\Key_Metrics_Setup_Completed_By' ) ) {
+			return null;
+		}
+
+		try {
+			return new \Google\Site_Kit\Core\Key_Metrics\Key_Metrics_Setup_Completed_By( $options );
+		} catch ( \Throwable $e ) {
+			return null;
+		}
+	}
+
+	/**
 	 * Site Kit's version string, or '' when it cannot be determined.
 	 *
 	 * @return string
