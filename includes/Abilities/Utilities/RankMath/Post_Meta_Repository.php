@@ -58,6 +58,28 @@ final class Post_Meta_Repository {
 	public const BULK_COLUMNS = array( 'focus_keyword', 'title', 'description', 'image_alt', 'image_title' );
 
 	/**
+	 * Provenance meta written alongside a score.
+	 *
+	 * Rank Math stores only the number, so a score carries no record of where it came
+	 * from. That matters here because two sources produce scores that are close but not
+	 * identical: Rank Math's own browser analyzer, and an agent grading a post against
+	 * the rubric rank-math/analyze-post-content hands out. Without this an audit cannot
+	 * tell a stale analyzer score from a fresh agent one, and "recalculate" becomes
+	 * guesswork. These keys are ours and prefixed accordingly — writing provenance into
+	 * a rank_math_* key would be writing to another plugin's namespace.
+	 */
+	public const SCORE_AT_KEY     = 'acrossai_seo_score_at';
+	public const SCORE_SOURCE_KEY = 'acrossai_seo_score_source';
+
+	/**
+	 * Recognised score sources.
+	 *
+	 * 'agent' — scored by an AI client against Rank Math's published rubric.
+	 * 'rank-math-analyzer' — the number Rank Math's own client-side analyzer produced.
+	 */
+	public const SCORE_SOURCES = array( 'agent', 'rank-math-analyzer' );
+
+	/**
 	 * Private constructor — this class is static-any (DEC-UTILITY-STATIC-ONLY).
 	 */
 	private function __construct() {}
@@ -436,21 +458,41 @@ final class Post_Meta_Repository {
 	}
 
 	/**
-	 * Write SEO scores for a batch of posts.
+	 * Write SEO scores for a batch of posts, recording where each one came from.
 	 *
 	 * Rank Math's own handler silently skips missing posts and out-of-range scores, so
 	 * updated/skipped are computed here.
 	 *
+	 * Provenance is written in the same pass rather than by a separate call: a score
+	 * whose origin is recorded a moment later, or not at all because the second write
+	 * failed, is worse than no record, because it reads as authoritative.
+	 *
 	 * @param array<int|string,mixed> $scores post id => 0..100.
+	 * @param string                  $source One of SCORE_SOURCES. Defaults to 'agent'.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	public static function update_seo_scores( array $scores ) {
+	public static function update_seo_scores( array $scores, string $source = 'agent' ) {
 		if ( array() === $scores ) {
 			return new WP_Error( 'invalid_input', __( 'scores is empty. Nothing to write.', 'acrossai-abilities-manager' ) );
 		}
 
-		$updated = array();
-		$skipped = array();
+		if ( ! in_array( $source, self::SCORE_SOURCES, true ) ) {
+			return new WP_Error(
+				'invalid_input',
+				sprintf(
+					/* translators: 1: submitted source, 2: comma-separated list of valid sources */
+					__( 'Unknown score source "%1$s". Valid sources: %2$s.', 'acrossai-abilities-manager' ),
+					$source,
+					implode( ', ', self::SCORE_SOURCES )
+				)
+			);
+		}
+
+		// One timestamp for the whole batch, so a single run reads as a single run
+		// rather than as N writes that happened to land in the same second.
+		$scored_at = gmdate( 'Y-m-d H:i:s' );
+		$updated   = array();
+		$skipped   = array();
 
 		foreach ( $scores as $post_id => $score ) {
 			$post_id = absint( $post_id );
@@ -473,12 +515,42 @@ final class Post_Meta_Repository {
 			}
 
 			update_post_meta( $post_id, 'rank_math_seo_score', $value );
-			$updated[] = array( 'id' => $post_id, 'score' => $value );
+			update_post_meta( $post_id, self::SCORE_AT_KEY, $scored_at );
+			update_post_meta( $post_id, self::SCORE_SOURCE_KEY, $source );
+
+			$updated[] = array(
+				'id'        => $post_id,
+				'score'     => $value,
+				'scored_at' => $scored_at,
+				'source'    => $source,
+			);
 		}
 
 		return array(
-			'updated' => $updated,
-			'skipped' => $skipped,
+			'updated'   => $updated,
+			'skipped'   => $skipped,
+			'scored_at' => $scored_at,
+			'source'    => $source,
+		);
+	}
+
+	/**
+	 * Read the provenance recorded for one post's score.
+	 *
+	 * Returns nulls rather than an error for a post that has never been scored through
+	 * this plugin — including every post Rank Math itself scored, which is the common
+	 * case on an existing site and not a fault.
+	 *
+	 * @param int $post_id Post id.
+	 * @return array{scored_at:string|null,source:string|null}
+	 */
+	public static function get_score_provenance( int $post_id ): array {
+		$at     = (string) get_post_meta( $post_id, self::SCORE_AT_KEY, true );
+		$source = (string) get_post_meta( $post_id, self::SCORE_SOURCE_KEY, true );
+
+		return array(
+			'scored_at' => '' === $at ? null : $at,
+			'source'    => '' === $source ? null : $source,
 		);
 	}
 

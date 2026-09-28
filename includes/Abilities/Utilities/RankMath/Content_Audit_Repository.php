@@ -51,39 +51,21 @@ final class Content_Audit_Repository {
 	 * @return array<string,mixed>
 	 */
 	public static function audit( array $args ): array {
-		$post_types = isset( $args['post_types'] ) && is_array( $args['post_types'] ) && array() !== $args['post_types']
-			? array_values( array_filter( array_map( 'sanitize_key', $args['post_types'] ) ) )
-			: array( 'post', 'page' );
-		$statuses   = isset( $args['post_statuses'] ) && is_array( $args['post_statuses'] ) && array() !== $args['post_statuses']
-			? array_values( array_filter( array_map( 'sanitize_key', $args['post_statuses'] ) ) )
-			: array( 'publish' );
-
-		$per_page        = max( 1, min( 200, (int) ( $args['per_page'] ?? 50 ) ) );
-		$page            = max( 1, (int) ( $args['page'] ?? 1 ) );
+		$post_ids        = self::requested_post_ids( $args );
 		$score_below     = max( 0, min( 100, (int) ( $args['score_below'] ?? 70 ) ) );
 		$include_schema  = ! array_key_exists( 'include_schema', $args ) || (bool) $args['include_schema'];
 		$include_inbound = ! empty( $args['include_inbound'] );
-		$only_issues     = ! array_key_exists( 'only_issues', $args ) || (bool) $args['only_issues'];
 
-		$query_args = array(
-			'post_type'              => $post_types,
-			'post_status'            => $statuses,
-			'posts_per_page'         => $per_page,
-			'paged'                  => $page,
-			'orderby'                => 'modified',
-			'order'                  => 'DESC',
-			'update_post_meta_cache' => true,
-			'update_post_term_cache' => false,
-			'ignore_sticky_posts'    => true,
-		);
+		// only_issues defaults true when sweeping, but false when specific ids were
+		// named: "audit these five posts" answered with two rows, because the other
+		// three were healthy, reads as three posts that do not exist. An explicit
+		// only_issues still wins either way.
+		$only_issues = array_key_exists( 'only_issues', $args )
+			? (bool) $args['only_issues']
+			: array() === $post_ids;
 
-		// Authors who cannot edit others' posts only ever see their own.
-		if ( ! current_user_can( 'edit_others_posts' ) ) {
-			$query_args['author'] = get_current_user_id();
-		}
-		if ( ! empty( $args['search'] ) ) {
-			$query_args['s'] = sanitize_text_field( (string) $args['search'] );
-		}
+		$query_args = self::build_query_args( $args, $post_ids );
+		$page       = (int) $query_args['paged'];
 
 		$query   = new WP_Query( $query_args );
 		$inbound = $include_inbound
@@ -105,6 +87,7 @@ final class Content_Audit_Repository {
 			$robots      = is_array( $robots ) ? array_values( $robots ) : array();
 			$score_meta  = get_post_meta( $post->ID, 'rank_math_seo_score', true );
 			$score       = '' === $score_meta ? null : (int) $score_meta;
+			$provenance  = Post_Meta_Repository::get_score_provenance( (int) $post->ID );
 			$schema_used = $include_schema ? self::has_schema( (int) $post->ID ) : null;
 			$in_count    = $include_inbound ? (int) ( $inbound[ $post->ID ] ?? 0 ) : null;
 
@@ -142,19 +125,23 @@ final class Content_Audit_Repository {
 			}
 
 			$items[] = array(
-				'id'              => (int) $post->ID,
-				'title'           => (string) $post->post_title,
-				'post_type'       => (string) $post->post_type,
-				'status'          => (string) $post->post_status,
-				'url'             => (string) get_permalink( $post->ID ),
-				'seo_title'       => $seo_title,
-				'seo_description' => $seo_desc,
-				'focus_keyword'   => $keyword,
-				'robots'          => $robots,
-				'seo_score'       => $score,
-				'has_schema'      => $schema_used,
-				'inbound_count'   => $in_count,
-				'issues'          => $issues,
+				'id'               => (int) $post->ID,
+				'title'            => (string) $post->post_title,
+				'post_type'        => (string) $post->post_type,
+				'status'           => (string) $post->post_status,
+				'url'              => (string) get_permalink( $post->ID ),
+				'seo_title'        => $seo_title,
+				'seo_description'  => $seo_desc,
+				'focus_keyword'    => $keyword,
+				'robots'           => $robots,
+				'seo_score'        => $score,
+				// Null for a score this plugin never wrote — including every score Rank
+				// Math's own analyzer set, which is the normal case on an existing site.
+				'seo_score_at'     => $provenance['scored_at'],
+				'seo_score_source' => $provenance['source'],
+				'has_schema'       => $schema_used,
+				'inbound_count'    => $in_count,
+				'issues'           => $issues,
 			);
 		}
 
@@ -165,6 +152,87 @@ final class Content_Audit_Repository {
 			'pages'  => (int) $query->max_num_pages,
 			'counts' => $counts,
 		);
+	}
+
+	/**
+	 * Normalise the requested post_ids, de-duplicated and order-preserving.
+	 *
+	 * Capped at the same 200 as per_page: the cap is what one response can carry, and
+	 * it should not move just because the ids arrived in a different argument.
+	 *
+	 * @param array<string,mixed> $args Audit options.
+	 * @return int[]
+	 */
+	private static function requested_post_ids( array $args ): array {
+		if ( ! isset( $args['post_ids'] ) || ! is_array( $args['post_ids'] ) ) {
+			return array();
+		}
+
+		$ids = array_filter( array_map( 'absint', $args['post_ids'] ) );
+
+		return array_slice( array_values( array_unique( $ids ) ), 0, 200 );
+	}
+
+	/**
+	 * Build the WP_Query arguments for an audit.
+	 *
+	 * Extracted from audit() so the id-scoped behaviour — which silently changes four
+	 * other arguments — is assertable without a database.
+	 *
+	 * @param array<string,mixed> $args     Audit options.
+	 * @param int[]               $post_ids Already-normalised ids, or empty to sweep.
+	 * @return array<string,mixed>
+	 */
+	public static function build_query_args( array $args, array $post_ids ): array {
+		$has_types = isset( $args['post_types'] ) && is_array( $args['post_types'] ) && array() !== $args['post_types'];
+		$has_stati = isset( $args['post_statuses'] ) && is_array( $args['post_statuses'] ) && array() !== $args['post_statuses'];
+		$scoped    = array() !== $post_ids;
+
+		$post_types = $has_types
+			? array_values( array_filter( array_map( 'sanitize_key', $args['post_types'] ) ) )
+			// Naming ids means naming the posts. Defaulting to post+page/publish there
+			// would drop a named CPT or draft and report it as "not found".
+			: ( $scoped ? 'any' : array( 'post', 'page' ) );
+		$statuses   = $has_stati
+			? array_values( array_filter( array_map( 'sanitize_key', $args['post_statuses'] ) ) )
+			: ( $scoped ? 'any' : array( 'publish' ) );
+
+		$per_page = max( 1, min( 200, (int) ( $args['per_page'] ?? 50 ) ) );
+		$page     = max( 1, (int) ( $args['page'] ?? 1 ) );
+
+		$query_args = array(
+			'post_type'              => $post_types,
+			'post_status'            => $statuses,
+			'posts_per_page'         => $per_page,
+			'paged'                  => $page,
+			'orderby'                => 'modified',
+			'order'                  => 'DESC',
+			'update_post_meta_cache' => true,
+			'update_post_term_cache' => false,
+			'ignore_sticky_posts'    => true,
+		);
+
+		if ( $scoped ) {
+			// An explicit id list is already the page: paginating it would make the
+			// caller ask twice for something it fully enumerated.
+			$query_args['post__in']       = $post_ids;
+			$query_args['posts_per_page'] = count( $post_ids );
+			$query_args['paged']          = 1;
+			// Answer in the order asked, which is what makes a before/after comparison
+			// line up row for row.
+			$query_args['orderby']        = 'post__in';
+			unset( $query_args['order'] );
+		}
+
+		// Authors who cannot edit others' posts only ever see their own.
+		if ( ! current_user_can( 'edit_others_posts' ) ) {
+			$query_args['author'] = get_current_user_id();
+		}
+		if ( ! empty( $args['search'] ) ) {
+			$query_args['s'] = sanitize_text_field( (string) $args['search'] );
+		}
+
+		return $query_args;
 	}
 
 	/**
