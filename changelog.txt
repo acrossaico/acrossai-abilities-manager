@@ -7,7 +7,7 @@ this file carries everything, in full, and is shipped inside the plugin.
 
 = Unreleased =
 
-(nothing yet)
+* **Fixed: asking All-in-One WP Migration for a backup told you to install UpdraftPlus.** The All-in-One abilities detect their plugin correctly, but when it was missing they reported the failure using UpdraftPlus's error code and UpdraftPlus's message. So calling `all-in-one/get-status` on a site without All-in-One named the wrong plugin — and following that advice installed the wrong plugin, after which the ability still failed. Worse for anything automated, both suites returned the same `updraftplus_missing` code, so a caller checking which plugin was absent could not tell them apart, which is the one question a typed error code exists to answer. All-in-One now returns `all_in_one_missing` and a message about its own archives and exports. Every guard in the plugin is now checked for a shared code, so this cannot recur quietly.
 
 = 0.0.38 - 2026-09-22 =
 
