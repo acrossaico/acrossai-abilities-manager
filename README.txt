@@ -120,6 +120,14 @@ To let an AI assistant reach them over the Model Context Protocol you add a tran
 * PHP **8.1 or later**
 * No other plugin is required
 
+= Where To Read More =
+
+* **The plugin** — https://acrossai.co/abilities-manager/
+* **Every ability, searchable** — https://acrossai.co/abilities/ — the full catalogue as a browsable directory, one page per ability, rather than a list in a readme.
+* **Integrations** — https://acrossai.co/integrations/ — a page per plugin this one detects.
+* **Use cases** — https://acrossai.co/use-cases/ — walkthroughs of real jobs done through an AI assistant, start to finish.
+* **Full changelog** — https://acrossai.co/products/acrossai-abilities-manager/ — every release, including the older ones trimmed from the Changelog section here to stay inside WordPress.org's word limit.
+
 == Installation ==
 
 1. Upload the `acrossai-abilities-manager` folder to `/wp-content/plugins/`.
@@ -362,8 +370,7 @@ https://github.com/acrossaico/acrossai-abilities-manager/blob/main/changelog.txt
 
 = Earlier releases =
 
-Every release before 0.0.33 is recorded in full in changelog.txt, shipped inside the plugin and readable at
-https://github.com/acrossaico/acrossai-abilities-manager/blob/main/changelog.txt
+Every release before 0.0.33 is recorded in full at https://acrossai.co/products/acrossai-abilities-manager/ and in changelog.txt, shipped inside the plugin.
 
 == Upgrade Notice ==
 
