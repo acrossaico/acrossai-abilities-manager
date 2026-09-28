@@ -52,8 +52,8 @@ final class All_In_One_Guard {
 	public static function assert_available() {
 		if ( ! self::is_available() ) {
 			return new WP_Error(
-				'updraftplus_missing',
-				__( 'UpdraftPlus is not active on this site, so there is no backup history to read and no backup to take. Install and activate it, or use another backup plugin this manager supports.', 'acrossai-abilities-manager' )
+				'all_in_one_missing',
+				__( 'All-in-One WP Migration is not active on this site, so there is no archive history to read and no export to take. Install and activate it, or use another backup plugin this manager supports.', 'acrossai-abilities-manager' )
 			);
 		}
 

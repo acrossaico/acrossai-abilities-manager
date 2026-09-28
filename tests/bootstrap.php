@@ -984,6 +984,43 @@ if ( ! function_exists( 'get_post_meta' ) ) {
 	}
 }
 
+if ( ! function_exists( 'update_post_meta' ) ) {
+	/**
+	 * Stub: write into the same $__acrossai_test_post_meta store get_post_meta() reads.
+	 *
+	 * Feature 069 follow-up. Without a writer the meta stubs were read-only, so a
+	 * repository that writes could only ever be asserted by reading its source.
+	 *
+	 * @param int    $post_id Post ID.
+	 * @param string $key     Meta key.
+	 * @param mixed  $value   Meta value.
+	 * @return bool
+	 */
+	function update_post_meta( int $post_id, string $key, mixed $value ): bool {
+		global $__acrossai_test_post_meta;
+		if ( ! is_array( $__acrossai_test_post_meta ) ) {
+			$__acrossai_test_post_meta = array();
+		}
+		$__acrossai_test_post_meta[ $post_id ][ $key ] = $value;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'delete_post_meta' ) ) {
+	/**
+	 * Stub: remove a key from $__acrossai_test_post_meta.
+	 *
+	 * @param int    $post_id Post ID.
+	 * @param string $key     Meta key.
+	 * @return bool
+	 */
+	function delete_post_meta( int $post_id, string $key ): bool {
+		global $__acrossai_test_post_meta;
+		unset( $__acrossai_test_post_meta[ $post_id ][ $key ] );
+		return true;
+	}
+}
+
 if ( ! function_exists( 'get_post' ) ) {
 	/**
 	 * Stub: resolve a post from $__acrossai_test_posts.

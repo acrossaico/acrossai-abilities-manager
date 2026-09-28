@@ -422,6 +422,90 @@ class Test_Backup_Suites extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Each guard REPORTS the plugin it just failed to find.
+	 *
+	 * Sibling of the test above, and the one that was missing: detection was always
+	 * correct, but All-in-One's failure branch returned UpdraftPlus's error code and
+	 * UpdraftPlus's message (issue #241). Someone calling all-in-one/get-status on a
+	 * site without All-in-One was told to install UpdraftPlus, and a caller branching
+	 * on error_code could not tell the two suites apart — which is the one question a
+	 * typed error code exists to answer.
+	 */
+	public function test_each_guard_reports_its_own_plugin(): void {
+		$expected = array(
+			'UpdraftPlus' => array(
+				'guard'   => 'UpdraftPlus_Guard',
+				'code'    => 'updraftplus_missing',
+				'names'   => 'UpdraftPlus',
+				'foreign' => 'All-in-One',
+			),
+			'AllInOne'    => array(
+				'guard'   => 'All_In_One_Guard',
+				'code'    => 'all_in_one_missing',
+				'names'   => 'All-in-One WP Migration',
+				'foreign' => 'UpdraftPlus',
+			),
+		);
+
+		foreach ( $expected as $suite => $spec ) {
+			$body = self::code_only(
+				self::method_body( self::read( self::util( $suite ) . $spec['guard'] . '.php' ), 'assert_available' )
+			);
+
+			$this->assertStringContainsString(
+				"'" . $spec['code'] . "'",
+				$body,
+				"{$suite} must report its own error code."
+			);
+			$this->assertStringContainsString(
+				$spec['names'],
+				$body,
+				"{$suite}'s message must name its own plugin."
+			);
+			$this->assertStringNotContainsString(
+				$spec['foreign'],
+				$body,
+				"{$suite}'s message names the other backup plugin — the copy-paste in issue #241."
+			);
+		}
+	}
+
+	/**
+	 * No two suites may share a "missing plugin" error code.
+	 *
+	 * The sweep the issue asked for. Every guard in the plugin is checked, not just
+	 * these two, because a duplicated code is only ever discovered by the caller it
+	 * misleads.
+	 */
+	public function test_no_two_guards_share_a_missing_code(): void {
+		$root  = dirname( __DIR__, 3 ) . '/includes/Abilities/Utilities/';
+		$files = glob( $root . '*/*Guard*.php' );
+		$seen  = array();
+
+		foreach ( is_array( $files ) ? $files : array() as $file ) {
+			$src = self::code_only( self::read( $file ) );
+
+			if ( ! preg_match_all( "/'([a-z0-9_]+_missing)'/", $src, $matches ) ) {
+				continue;
+			}
+
+			foreach ( array_unique( $matches[1] ) as $code ) {
+				$this->assertArrayNotHasKey(
+					$code,
+					$seen,
+					"Error code '{$code}' is returned by both " . basename( (string) ( $seen[ $code ] ?? '' ) )
+						. ' and ' . basename( (string) $file )
+						. ' — a caller cannot tell which plugin is actually absent.'
+				);
+
+				$seen[ $code ] = $file;
+			}
+		}
+
+		$this->assertNotEmpty( $seen, 'No guard error codes were found; the sweep is not looking where it thinks it is.' );
+	}
+
+	/**
 	 * Each suite's permission filter can tighten access and never widen it.
 	 */
 	public function test_the_permission_filters_cannot_widen_access(): void {
