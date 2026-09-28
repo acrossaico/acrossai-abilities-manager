@@ -38,7 +38,7 @@ class Audit_Content_Seo extends Base_Rank_Math_Ability {
 	}
 
 	protected function ability_description(): string {
-		return __( 'Find content with incomplete Rank Math SEO: missing title, description or focus keyword, a noindex directive, a score below a threshold, no schema, or no inbound internal links. Returns per-post issues plus a count per issue type. Set only_issues to false to list every post with its metadata instead, which doubles as a bulk metadata read. Complements Rank Math\'s own rank-math/audit-site-seo, which tests the site technically rather than per post.', 'acrossai-abilities-manager' );
+		return __( 'Find content with incomplete Rank Math SEO: missing title, description or focus keyword, a noindex directive, a score below a threshold, no schema, or no inbound internal links. Returns per-post issues plus a count per issue type. Pass post_ids to report on an exact set of posts, in the order given, which is how you compare the same posts before and after a change. Each row also reports seo_score_at and seo_score_source, so a score written by rank-math/update-seo-scores can be told apart from one Rank Math\'s own analyzer left behind. Set only_issues to false to list every post with its metadata instead, which doubles as a bulk metadata read. Complements Rank Math\'s own rank-math/audit-site-seo, which tests the site technically rather than per post.', 'acrossai-abilities-manager' );
 	}
 
 	protected function sub_group(): string {
@@ -51,15 +51,21 @@ class Audit_Content_Seo extends Base_Rank_Math_Ability {
 
 	protected function input_properties(): array {
 		return array(
+			'post_ids'        => array(
+				'type'        => 'array',
+				'items'       => array( 'type' => 'integer' ),
+				'maxItems'    => 200,
+				'description' => __( 'Audit exactly these posts, returned in the order given. Naming ids overrides post_types and post_statuses unless you also pass them, so a draft or a custom post type is reported rather than silently missing, and the whole set comes back in one response regardless of per_page. It also flips only_issues to false by default, so healthy posts still appear — pass only_issues explicitly to override that.', 'acrossai-abilities-manager' ),
+			),
 			'post_types'      => array(
 				'type'        => 'array',
 				'items'       => array( 'type' => 'string' ),
-				'description' => __( 'Post types to audit. Defaults to post and page.', 'acrossai-abilities-manager' ),
+				'description' => __( 'Post types to audit. Defaults to post and page, or to every type when post_ids is given.', 'acrossai-abilities-manager' ),
 			),
 			'post_statuses'   => array(
 				'type'        => 'array',
 				'items'       => array( 'type' => 'string' ),
-				'description' => __( 'Statuses to audit. Defaults to publish.', 'acrossai-abilities-manager' ),
+				'description' => __( 'Statuses to audit. Defaults to publish, or to every status when post_ids is given.', 'acrossai-abilities-manager' ),
 			),
 			'per_page'        => array( 'type' => 'integer', 'default' => 50, 'minimum' => 1, 'maximum' => 200 ),
 			'page'            => array( 'type' => 'integer', 'default' => 1, 'minimum' => 1 ),
@@ -79,8 +85,7 @@ class Audit_Content_Seo extends Base_Rank_Math_Ability {
 			),
 			'only_issues'     => array(
 				'type'        => 'boolean',
-				'default'     => true,
-				'description' => __( 'Return only posts with problems. Set false to list everything with its metadata.', 'acrossai-abilities-manager' ),
+				'description' => __( 'Return only posts with problems. Set false to list everything with its metadata. Defaults to true when sweeping, and to false when post_ids names an exact set.', 'acrossai-abilities-manager' ),
 			),
 		);
 	}
