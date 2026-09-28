@@ -217,6 +217,7 @@
   "enabledMcpjsonServers": [
     "wordpress-7-0-default-mcp-server",
     "deepwiki",
-    "mcp-local-wp"
+    "mcp-local-wp",
+    "wordpress-7-0-mcp"
   ]
 }

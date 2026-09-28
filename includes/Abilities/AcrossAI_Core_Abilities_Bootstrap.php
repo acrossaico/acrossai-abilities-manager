@@ -875,12 +875,17 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Elementor\List_Global_Widgets();
 		new Elementor\List_Experiments();
 		new Elementor\Update_Experiment();
-		// Design audits — aggregators + scorers.
+		// Design audits — aggregators, then the 27 individual audits they compose.
+		//
+		// Issue #243: these were registered as skeletons that returned a fabricated score
+		// with no findings. They now carry real analyses over Design_Model, and the 11
+		// mutating ones write through Design_Mutator behind a confirm gate.
 		new Elementor\Evaluate_Design();
 		new Elementor\Suggest_Design_Fixes();
 		new Elementor\Score_Distinctiveness();
 		new Elementor\Extract_Design_Tokens();
-		// Design audits — 14 audit-* abilities.
+
+		// 14 read-only audit-* abilities.
 		new Elementor\Audit_Column_Alignment_Rhythm();
 		new Elementor\Audit_Column_Balance();
 		new Elementor\Audit_Column_Dominance();
@@ -895,19 +900,19 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Elementor\Audit_Section_Rivalry();
 		new Elementor\Audit_Separator_Discipline();
 		new Elementor\Audit_Surface_Overuse();
-		// Design audits — 7 subtree operations.
+
+		// 11 mutating design fixes. Every one is confirm-gated.
 		new Elementor\Apply_Text_Hierarchy();
+		new Elementor\Copy_Lane_Settings();
+		new Elementor\Copy_Row_Balance();
 		new Elementor\Enforce_Boundary_Coherence();
 		new Elementor\Fix_Visible_Gap_Rhythm();
+		new Elementor\Image_Widget_To_Background_Container();
 		new Elementor\Normalize_Responsive_Values();
 		new Elementor\Normalize_Section_Spacing_Rhythm();
 		new Elementor\Reset_Negative_Margins_Subtree();
-		new Elementor\Zero_Container_Padding_Subtree();
-		// Design audits — 4 copy/sync/convert helpers.
-		new Elementor\Copy_Lane_Settings();
-		new Elementor\Copy_Row_Balance();
-		new Elementor\Image_Widget_To_Background_Container();
 		new Elementor\Sync_Component_Variant();
+		new Elementor\Zero_Container_Padding_Subtree();
 	}
 
 	/**

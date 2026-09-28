@@ -45,7 +45,14 @@ class Evaluate_Design extends Ability_Definition {
 					'properties' => array(
 						'success'         => array( 'type' => 'boolean' ),
 						'post_id'         => array( 'type' => 'integer' ),
+						// Both are returned by Design_Audit_Runner::run_all() and were
+						// absent here. With additionalProperties:false that made EVERY
+						// call fail output validation — issue #243.
+						'subtree_id'      => array( 'type' => 'string' ),
+						'audit_count'     => array( 'type' => 'integer' ),
 						'score'           => array( 'type' => array( 'number', 'null' ) ),
+						'score_basis'     => array( 'type' => 'string' ),
+						'lowest_score'    => array( 'type' => array( 'number', 'null' ) ),
 						'findings'        => array( 'type' => 'array' ),
 						'recommendations' => array( 'type' => 'array' ),
 						'audits_run'      => array( 'type' => 'array' ),
@@ -80,6 +87,32 @@ class Evaluate_Design extends Ability_Definition {
 		}
 
 		$report = Design_Audit_Runner::run_all( $post_id, $subtree_id );
-		return array_merge( array( 'success' => true, 'message' => __( 'Design evaluation complete.', 'acrossai-abilities-manager' ) ), $report );
+
+		// "Design evaluation complete" with an empty findings list reads as "this page
+		// is fine". When no audit ran, the truthful statement is that nothing looked.
+		if ( 0 === (int) ( $report['audit_count'] ?? 0 ) ) {
+			unset( $report['guidance_basis'] );
+
+			return array_merge(
+				array(
+					'success' => true,
+					'message' => __( 'No Elementor design audits are registered on this site, so nothing was evaluated. This is not a clean result — no check ran. See issue #243.', 'acrossai-abilities-manager' ),
+				),
+				$report
+			);
+		}
+
+		return array_merge(
+			array(
+				'success' => true,
+				'message' => sprintf(
+					/* translators: 1: number of audits run, 2: number of findings */
+					__( 'Ran %1$d design audits and found %2$d issues.', 'acrossai-abilities-manager' ),
+					(int) $report['audit_count'],
+					count( (array) ( $report['findings'] ?? array() ) )
+				),
+			),
+			$report
+		);
 	}
 }

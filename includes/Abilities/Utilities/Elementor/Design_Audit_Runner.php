@@ -96,6 +96,7 @@ final class Design_Audit_Runner {
 		$all_fixes       = array();
 		$score_sum       = 0.0;
 		$score_count     = 0;
+		$scores_seen     = array();
 		foreach ( self::$audits as $name => $_callback ) {
 			$result    = self::run_audit( $name, $post_id, $subtree_id );
 			$results[] = $result;
@@ -115,7 +116,8 @@ final class Design_Audit_Runner {
 				}
 			}
 			if ( isset( $result['score'] ) && is_numeric( $result['score'] ) ) {
-				$score_sum   += (float) $result['score'];
+				$score_sum    += (float) $result['score'];
+				$scores_seen[] = (float) $result['score'];
 				$score_count++;
 			}
 		}
@@ -127,6 +129,11 @@ final class Design_Audit_Runner {
 			'findings'        => $all_findings,
 			'recommendations' => $all_fixes,
 			'score'           => $score_count > 0 ? round( $score_sum / $score_count, 2 ) : null,
+			// The score is a MEAN across audits, so audits that found nothing pull it up:
+			// a page with real findings can still read in the eighties. Stated here so the
+			// number is interpreted rather than trusted — the findings are the substance.
+			'score_basis'     => __( 'Mean score across every audit that returned one. Audits finding nothing score 100, so this rises with the number of audits run — read the findings, not the number.', 'acrossai-abilities-manager' ),
+			'lowest_score'    => array() === $scores_seen ? null : min( $scores_seen ),
 			'source_policy'   => 'elementor_docs_first',
 			'guidance_basis'  => 'grounded in Elementor.com official documentation',
 			'audits_run'      => array_keys( self::$audits ),
