@@ -41,25 +41,25 @@ So abilities are grouped into **toolsets**, and a toolset is a **single tool** a
 
 = Plugins You Already Run Get Their Own Toolset =
 
-Nineteen integrations ship with the plugin. Each registers **only when that plugin is active**, so nothing appears for software you do not have, and each becomes one more dispatcher tool rather than a pile of loose ones.
+Nineteen integrations ship with the plugin, each with its own page at https://acrossai.co/integrations/ Each registers **only when that plugin is active**, so nothing appears for software you do not have, and each becomes one more dispatcher tool rather than a pile of loose ones.
 
-* **Elementor** (89 abilities) — build and edit pages, manage templates and global widgets, read form submissions, manage custom code, and clear its cache. A Pro subset activates only with Elementor Pro.
-* **Yoast SEO** (64) — title and meta templates, archives and indexing, breadcrumbs, the knowledge graph, social defaults and schema.
-* **Rank Math** (61) — audit and fix on-page and site-wide SEO, manage redirections and schema, read analytics, and edit Rank Math settings.
-* **LiteSpeed Cache** (61) — purge the page cache by target, URL, post or taxonomy, and tune TTLs, exclusion lists and vary rules.
-* **WooCommerce** (34) — the catalogue, prices, stock, orders, customers and store health.
-* **Contact Form 7** (25) — create and duplicate forms, edit fields and both mail templates, check their tags resolve, and change validation messages.
-* **WPCode** (24) — create, edit, activate and delete snippets of every type, and set where each is inserted and under what conditional logic.
-* **CookieYes** (22) — the cookies the site declares, the consent categories a visitor chooses between, the banner itself, its languages, and Google Consent Mode.
-* **The Events Calendar** (18) — find events by date, venue, organizer, category or cost; create, reschedule and trash them; manage venues and organizers.
-* **Event Tickets** (16) — manage tickets on a post, see real capacity including shared pools, check people in, and read orders and sales totals.
-* **Advanced Custom Fields** (16) — inspect and create field groups, and register custom post types and taxonomies through ACF.
+* **[Elementor](https://acrossai.co/integrations/elementor/)** (89 abilities) — build and edit pages, manage templates and global widgets, read form submissions, manage custom code, and clear its cache. A Pro subset activates only with Elementor Pro.
+* **[Yoast SEO](https://acrossai.co/integrations/yoast-seo/)** (64) — title and meta templates, archives and indexing, breadcrumbs, the knowledge graph, social defaults and schema.
+* **[Rank Math](https://acrossai.co/integrations/rank-math/)** (61) — audit and fix on-page and site-wide SEO, manage redirections and schema, read analytics, and edit Rank Math settings.
+* **[LiteSpeed Cache](https://acrossai.co/integrations/litespeed-cache/)** (61) — purge the page cache by target, URL, post or taxonomy, and tune TTLs, exclusion lists and vary rules.
+* **[WooCommerce](https://acrossai.co/integrations/woocommerce/)** (34) — the catalogue, prices, stock, orders, customers and store health.
+* **[Contact Form 7](https://acrossai.co/integrations/contact-form-7/)** (25) — create and duplicate forms, edit fields and both mail templates, check their tags resolve, and change validation messages.
+* **[WPCode](https://acrossai.co/integrations/wpcode/)** (24) — create, edit, activate and delete snippets of every type, and set where each is inserted and under what conditional logic.
+* **[CookieYes](https://acrossai.co/integrations/cookieyes/)** (22) — the cookies the site declares, the consent categories a visitor chooses between, the banner itself, its languages, and Google Consent Mode.
+* **[The Events Calendar](https://acrossai.co/integrations/the-events-calendar/)** (18) — find events by date, venue, organizer, category or cost; create, reschedule and trash them; manage venues and organizers.
+* **[Event Tickets](https://acrossai.co/integrations/event-tickets/)** (16) — manage tickets on a post, see real capacity including shared pools, check people in, and read orders and sales totals.
+* **[Advanced Custom Fields](https://acrossai.co/integrations/advanced-custom-fields/)** (16) — inspect and create field groups, and register custom post types and taxonomies through ACF.
 * **Site Kit by Google** (14) — whether Site Kit is set up and whether the user asking has connected their own Google account, which modules are live, and the data itself: Search Console search analytics, Analytics 4 reports, PageSpeed Insights and AdSense earnings.
-* **Loco Translate** (14) — find which plugins, themes and text domains can be translated, see what is untranslated, and write translations.
-* **All-in-One WP Migration** (9) — whether the site can actually be recovered: what archives exist, how recent they are, and exporting or removing them.
-* **UpdraftPlus** (8) — the same recovery question: when a backup last ran, whether it worked, and what each set contains.
-* **WP Mail SMTP** (4) — how this site sends mail, whether it actually can, and a real test send that proves it.
-* **Classic Editor** (4) — the effective editor configuration and which layer decided it, and whether users may choose for themselves.
+* **[Loco Translate](https://acrossai.co/integrations/loco-translate/)** (14) — find which plugins, themes and text domains can be translated, see what is untranslated, and write translations.
+* **[All-in-One WP Migration](https://acrossai.co/integrations/all-in-one-wp-migration/)** (9) — whether the site can actually be recovered: what archives exist, how recent they are, and exporting or removing them.
+* **[UpdraftPlus](https://acrossai.co/integrations/updraftplus/)** (8) — the same recovery question: when a backup last ran, whether it worked, and what each set contains.
+* **[WP Mail SMTP](https://acrossai.co/integrations/wp-mail-smtp/)** (4) — how this site sends mail, whether it actually can, and a real test send that proves it.
+* **[Classic Editor](https://acrossai.co/integrations/classic-editor/)** (4) — the effective editor configuration and which layer decided it, and whether users may choose for themselves.
 * **Akismet** — spam figures it has recorded, and checking a comment against the service. These abilities come from Akismet itself.
 * **WPForms** — read forms and statistics, create forms and change settings. Writes sit behind an admin switch, off by default.
 
