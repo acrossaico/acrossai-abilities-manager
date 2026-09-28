@@ -275,6 +275,32 @@ class Test_Elementor_Design_Audits extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The icon-list suggestion must count per LANE, not per row.
+	 *
+	 * Found by building a well-made page rather than a bad one: three icon-boxes spread
+	 * one per lane across a feature row is the standard 3-up grid, and counting per row
+	 * flagged it as an Icon List — which it is not, since Icon List is a vertical list
+	 * inside a single lane. Advice that is wrong on correct work is how a tool teaches
+	 * people to ignore it.
+	 */
+	public function test_icon_list_suggestion_counts_per_lane(): void {
+		$src = (string) file_get_contents(
+			dirname( __DIR__, 3 ) . '/includes/Abilities/Elementor/Audit_Native_Widget_Opportunities.php'
+		);
+
+		$this->assertStringContainsString(
+			'$lane_types',
+			$src,
+			'The icon-list check must read each lane separately.'
+		);
+		$this->assertStringContainsString(
+			"foreach ( \$lanes as \$lane )",
+			$src,
+			'The icon-list check must iterate lanes rather than summing across the row.'
+		);
+	}
+
+	/**
 	 * An empty audit registry must not be reported as a clean page.
 	 */
 	public function test_the_aggregators_say_when_no_audit_ran(): void {

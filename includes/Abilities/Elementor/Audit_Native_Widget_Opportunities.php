@@ -52,17 +52,34 @@ class Audit_Native_Widget_Opportunities extends Base_Audit_Ability {
 
 			$counts = array_count_values( $types );
 
-			$icons = (int) ( $counts['icon'] ?? 0 ) + (int) ( $counts['icon-box'] ?? 0 );
-			if ( $icons >= 3 ) {
+			// Counted PER LANE, not per row. Three icon-boxes spread one-per-lane across a
+			// three-column row is the standard feature grid and is not an Icon List —
+			// Icon List is a vertical list inside one lane. Counting per row flagged that
+			// correct pattern, which is the kind of advice that teaches people to ignore
+			// the tool.
+			$lanes = (array) $row['lanes'];
+			if ( array() === $lanes ) {
+				$lanes = array( array( 'id' => (string) $row['id'], 'widget_types' => $types ) );
+			}
+
+			foreach ( $lanes as $lane ) {
+				$lane_types = array_count_values( array_map( 'strval', (array) ( $lane['widget_types'] ?? array() ) ) );
+				$icons      = (int) ( $lane_types['icon'] ?? 0 ) + (int) ( $lane_types['icon-box'] ?? 0 );
+
+				if ( $icons < 3 ) {
+					continue;
+				}
+
 				$findings[] = array(
 					'type'     => 'icon_list_candidate',
 					'row_id'   => (string) $row['id'],
+					'lane_id'  => (string) ( $lane['id'] ?? '' ),
 					'widget'   => 'icon-list',
 					'severity' => 'low',
 					'message'  => sprintf(
-						/* translators: 1: row id, 2: icon count */
-						__( 'Row %1$s stacks %2$d icon elements, which the Icon List widget does in one — with its own spacing and list semantics.', 'acrossai-abilities-manager' ),
-						(string) $row['id'],
+						/* translators: 1: lane id, 2: icon count */
+						__( 'Lane %1$s stacks %2$d icon elements in a single column, which the Icon List widget does in one — with its own spacing and list semantics.', 'acrossai-abilities-manager' ),
+						(string) ( $lane['id'] ?? '' ),
 						$icons
 					),
 				);
