@@ -41,7 +41,7 @@ So abilities are grouped into **toolsets**, and a toolset is a **single tool** a
 
 = Plugins You Already Run Get Their Own Toolset =
 
-Nineteen integrations ship with the plugin, each with its own page at https://acrossai.co/integrations/ Each registers **only when that plugin is active**, so nothing appears for software you do not have, and each becomes one more dispatcher tool rather than a pile of loose ones.
+Nineteen integrations ship with the plugin, each with its own page under https://acrossai.co/integrations/ — and each registers **only when that plugin is active**, so nothing appears for software you do not have, and each becomes one more dispatcher tool rather than a pile of loose ones.
 
 * **[Elementor](https://acrossai.co/integrations/elementor/)** (89 abilities) — build and edit pages, manage templates and global widgets, read form submissions, manage custom code, and clear its cache. A Pro subset activates only with Elementor Pro.
 * **[Yoast SEO](https://acrossai.co/integrations/yoast-seo/)** (64) — title and meta templates, archives and indexing, breadcrumbs, the knowledge graph, social defaults and schema.
