@@ -254,6 +254,11 @@
 			<file>tests/phpunit/abilities/Test_Rank_Math_Suite_Contract.php</file>
 			<file>tests/phpunit/abilities/Test_Rank_Math_Score_Provenance.php</file>
 		</testsuite>
+		<!-- Feature 120 — Site Kit by Google suite. -->
+		<testsuite name="feature-120-unit">
+			<file>tests/phpunit/abilities/Test_Site_Kit_Suite_Contract.php</file>
+			<file>tests/phpunit/abilities/Test_Site_Kit_Guard.php</file>
+		</testsuite>
 		<testsuite name="feature-065-unit">
 			<file>tests/phpunit/abilities/Test_Feature_065_Safety_And_Payload.php</file>
 		</testsuite>

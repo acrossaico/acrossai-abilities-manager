@@ -172,6 +172,7 @@ class AcrossAI_Toolset_Integrations {
 		// and adds itself through the filter above — the same route a third-party integration takes.
 		return array(
 			new Rank_Math(),
+			new Site_Kit(),
 			new Contact_Form_7(),
 			new LiteSpeed_Cache(),
 			new Yoast_Seo(),

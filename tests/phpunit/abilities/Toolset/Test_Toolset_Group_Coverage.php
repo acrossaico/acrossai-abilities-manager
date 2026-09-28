@@ -172,6 +172,7 @@ class Test_Toolset_Group_Coverage extends TestCase {
 			'LiteSpeed_Cache.php'    => 'litespeed-cache',
 			'Loco_Translate.php'     => 'loco-translate',
 			'Rank_Math.php'          => 'rank-math',
+			'Site_Kit.php'           => 'site-kit',
 			'WPCode.php'             => 'wpcode',
 			'WPForms.php'            => 'wpforms',
 			'WooCommerce.php'        => 'woocommerce',
