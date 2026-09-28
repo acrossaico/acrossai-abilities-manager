@@ -1,6 +1,6 @@
 === AcrossAI Abilities Manager ===
 Contributors: raftaar1191
-Donate link: https://github.com/acrosswp/acrossai-abilities-manager
+Donate link: https://acrossai.co/abilities-manager/
 Tags: abilities, mcp, access control, site management, ai
 Requires at least: 6.9
 Tested up to: 7.0
@@ -15,7 +15,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 **AcrossAI Abilities Manager gives your WordPress site 357 ready-made abilities, and gives you control over every one of them.**
 
-An *ability* is a self-describing operation that WordPress 6.9's Abilities API lets a plugin register — something an AI assistant, a REST client or another plugin can discover and call. WordPress ships the API; almost nothing ships abilities. This plugin does: **357 across 14 toolsets on any site, with no configuration**, rising to **over 800 across 32 toolsets** as it detects the plugins you already run.
+An *ability* is a self-describing operation that WordPress 6.9's Abilities API lets a plugin register — something an AI assistant, a REST client or another plugin can discover and call. WordPress ships the API; almost nothing ships abilities. This plugin does: **357 across 14 toolsets on any site, with no configuration**, rising to **over 800 across 33 toolsets** as it detects the plugins you already run.
 
 It is free, GPL, and works on its own. Pair it with an MCP server and your site becomes something Claude, ChatGPT, Cursor or any MCP-capable assistant can operate.
 
@@ -41,7 +41,7 @@ So abilities are grouped into **toolsets**, and a toolset is a **single tool** a
 
 = Plugins You Already Run Get Their Own Toolset =
 
-Eighteen integrations ship with the plugin. Each registers **only when that plugin is active**, so nothing appears for software you do not have, and each becomes one more dispatcher tool rather than a pile of loose ones.
+Nineteen integrations ship with the plugin. Each registers **only when that plugin is active**, so nothing appears for software you do not have, and each becomes one more dispatcher tool rather than a pile of loose ones.
 
 * **Elementor** (89 abilities) — build and edit pages, manage templates and global widgets, read form submissions, manage custom code, and clear its cache. A Pro subset activates only with Elementor Pro.
 * **Yoast SEO** (64) — title and meta templates, archives and indexing, breadcrumbs, the knowledge graph, social defaults and schema.
@@ -54,6 +54,7 @@ Eighteen integrations ship with the plugin. Each registers **only when that plug
 * **The Events Calendar** (18) — find events by date, venue, organizer, category or cost; create, reschedule and trash them; manage venues and organizers.
 * **Event Tickets** (16) — manage tickets on a post, see real capacity including shared pools, check people in, and read orders and sales totals.
 * **Advanced Custom Fields** (16) — inspect and create field groups, and register custom post types and taxonomies through ACF.
+* **Site Kit by Google** (14) — whether Site Kit is set up and whether the user asking has connected their own Google account, which modules are live, and the data itself: Search Console search analytics, Analytics 4 reports, PageSpeed Insights and AdSense earnings.
 * **Loco Translate** (14) — find which plugins, themes and text domains can be translated, see what is untranslated, and write translations.
 * **All-in-One WP Migration** (9) — whether the site can actually be recovered: what archives exist, how recent they are, and exporting or removing them.
 * **UpdraftPlus** (8) — the same recovery question: when a backup last ran, whether it worked, and what each set contains.
@@ -151,7 +152,7 @@ Yes, entirely, and under GPL. There is no paid tier of this plugin and no featur
 
 = What can an AI actually do once this is installed? =
 
-357 abilities across 14 toolsets on any site — content, blocks, appearance, users, configuration, database, files, cron, cache, updates and diagnostics — rising to over 800 across 32 toolsets as it detects plugins such as WooCommerce, Elementor, Rank Math, Yoast SEO, ACF and LiteSpeed Cache. Abilities are the capability layer; connecting an AI assistant to them needs a transport (see below).
+357 abilities across 14 toolsets on any site — content, blocks, appearance, users, configuration, database, files, cron, cache, updates and diagnostics — rising to over 800 across 33 toolsets as it detects plugins such as WooCommerce, Elementor, Rank Math, Yoast SEO, ACF and LiteSpeed Cache. Abilities are the capability layer; connecting an AI assistant to them needs a transport (see below).
 
 = Why does my AI only see about 14 tools when there are 357 abilities? =
 
