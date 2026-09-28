@@ -279,6 +279,18 @@ class Test_Site_Kit_Suite_Contract extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The full-page screenshot must be stripped at every detail level. It is a base64
+	 * image ~199 KB in a measured run, larger on its own than most response budgets,
+	 * and no MCP client can display it.
+	 */
+	public function test_the_pagespeed_screenshot_is_always_stripped(): void {
+		$this->assertStringContainsString(
+			"unset( \$result['lighthouseResult']['fullPageScreenshot'] );",
+			self::src( self::utilities_dir() . 'Report_Repository.php' )
+		);
+	}
+
+	/**
 	 * The generic passthrough must never reach a POST datapoint. Site Kit's POST
 	 * datapoints create Analytics properties and rewrite tag configuration.
 	 */

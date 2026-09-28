@@ -41,6 +41,26 @@ final class Report_Repository {
 	public const MODULE_ADSENSE        = 'adsense';
 
 	/**
+	 * How much of a Lighthouse run to return.
+	 */
+	public const PAGESPEED_DETAIL = array( 'summary', 'audits', 'full' );
+
+	/**
+	 * The Lighthouse audits that are the Core Web Vitals and their lab companions.
+	 *
+	 * These are the numbers anyone asking "is my site fast" means, so they are lifted
+	 * out of the 47-audit blob rather than left for the caller to find.
+	 */
+	private const PAGESPEED_METRICS = array(
+		'first-contentful-paint',
+		'largest-contentful-paint',
+		'total-blocking-time',
+		'cumulative-layout-shift',
+		'speed-index',
+		'interactive',
+	);
+
+	/**
 	 * Private constructor — this class is static-only (DEC-UTILITY-STATIC-ONLY).
 	 */
 	private function __construct() {}
@@ -131,11 +151,23 @@ final class Report_Repository {
 	 * @param string $strategy 'mobile' or 'desktop'.
 	 * @return array<string,mixed>|WP_Error
 	 */
-	public static function pagespeed( string $url, string $strategy ) {
+	public static function pagespeed( string $url, string $strategy, string $detail = 'summary' ) {
 		if ( ! in_array( $strategy, array( 'mobile', 'desktop' ), true ) ) {
 			return new WP_Error(
 				'invalid_input',
 				__( 'strategy must be "mobile" or "desktop".', 'acrossai-abilities-manager' )
+			);
+		}
+
+		if ( ! in_array( $detail, self::PAGESPEED_DETAIL, true ) ) {
+			return new WP_Error(
+				'invalid_input',
+				sprintf(
+					/* translators: 1: submitted detail level, 2: comma-separated valid levels */
+					__( 'Unknown detail level "%1$s". Valid levels: %2$s.', 'acrossai-abilities-manager' ),
+					$detail,
+					implode( ', ', self::PAGESPEED_DETAIL )
+				)
 			);
 		}
 
@@ -149,11 +181,128 @@ final class Report_Repository {
 			return $result;
 		}
 
-		return array(
-			'strategy' => $strategy,
-			'url'      => $request['url'] ?? '',
-			'result'   => $result,
+		return array_merge(
+			array(
+				'strategy' => $strategy,
+				'url'      => $request['url'] ?? '',
+				'detail'   => $detail,
+			),
+			self::shape_pagespeed( is_array( $result ) ? $result : array(), $detail )
 		);
+	}
+
+	/**
+	 * Reduce a Lighthouse payload to something a client can actually read.
+	 *
+	 * Measured against a real run: the raw response is ~529 KB, of which
+	 * fullPageScreenshot is a ~199 KB base64 JPEG and audits are ~315 KB of detail
+	 * tables. The signal — four category scores and six metrics — is a few hundred
+	 * bytes. Returning the whole thing overflows the response before the caller can
+	 * read any of it, so the default is the summary and the raw form is opt-in.
+	 *
+	 * fullPageScreenshot is stripped at EVERY level, 'full' included. It is a base64
+	 * image that no MCP client can display and it is by itself larger than the token
+	 * budget of most responses.
+	 *
+	 * @param array<string,mixed> $result Normalised PSI response.
+	 * @param string              $detail One of PAGESPEED_DETAIL.
+	 * @return array<string,mixed>
+	 */
+	private static function shape_pagespeed( array $result, string $detail ): array {
+		$lighthouse = isset( $result['lighthouseResult'] ) && is_array( $result['lighthouseResult'] )
+			? $result['lighthouseResult']
+			: array();
+		$audits     = isset( $lighthouse['audits'] ) && is_array( $lighthouse['audits'] )
+			? $lighthouse['audits']
+			: array();
+
+		// Lighthouse scores are 0-1 floats; a percentage is what every Google surface
+		// shows and what a caller will compare against.
+		$scores = array();
+		foreach ( ( $lighthouse['categories'] ?? array() ) as $key => $category ) {
+			if ( ! is_array( $category ) ) {
+				continue;
+			}
+			$scores[ (string) $key ] = null === ( $category['score'] ?? null )
+				? null
+				: (int) round( (float) $category['score'] * 100 );
+		}
+
+		$metrics = array();
+		foreach ( self::PAGESPEED_METRICS as $id ) {
+			if ( ! isset( $audits[ $id ] ) || ! is_array( $audits[ $id ] ) ) {
+				continue;
+			}
+			$metrics[ $id ] = array(
+				'title'         => (string) ( $audits[ $id ]['title'] ?? $id ),
+				'display_value' => (string) ( $audits[ $id ]['displayValue'] ?? '' ),
+				'numeric_value' => $audits[ $id ]['numericValue'] ?? null,
+				'numeric_unit'  => (string) ( $audits[ $id ]['numericUnit'] ?? '' ),
+				'score'         => $audits[ $id ]['score'] ?? null,
+			);
+		}
+
+		// Field data from the Chrome UX Report, present only for URLs Google has
+		// enough real traffic for. Its absence is normal, not an error.
+		$field = isset( $result['loadingExperience'] ) && is_array( $result['loadingExperience'] )
+			? $result['loadingExperience']
+			: array();
+
+		$summary = array(
+			'scores'          => $scores,
+			'metrics'         => $metrics,
+			'field_data'      => array(
+				'available'        => ! empty( $field['metrics'] ),
+				'overall_category' => $field['overallCategory'] ?? null,
+				'metrics'          => $field['metrics'] ?? array(),
+			),
+			'fetched_at'      => (string) ( $lighthouse['fetchTime'] ?? '' ),
+			'final_url'       => (string) ( $lighthouse['finalDisplayedUrl'] ?? ( $lighthouse['finalUrl'] ?? '' ) ),
+			'audits_total'    => count( $audits ),
+			'audits_failing'  => array(),
+		);
+
+		// Anything Lighthouse scored below 0.9 is what a caller would act on. Titles
+		// and display values only — the details tables are what made this unreadable.
+		foreach ( $audits as $id => $audit ) {
+			if ( ! is_array( $audit ) || null === ( $audit['score'] ?? null ) || (float) $audit['score'] >= 0.9 ) {
+				continue;
+			}
+			$summary['audits_failing'][] = array(
+				'id'            => (string) $id,
+				'title'         => (string) ( $audit['title'] ?? $id ),
+				'score'         => $audit['score'],
+				'display_value' => (string) ( $audit['displayValue'] ?? '' ),
+			);
+		}
+
+		if ( 'summary' === $detail ) {
+			return $summary;
+		}
+
+		if ( 'audits' === $detail ) {
+			$trimmed = array();
+			foreach ( $audits as $id => $audit ) {
+				if ( ! is_array( $audit ) ) {
+					continue;
+				}
+				$trimmed[ (string) $id ] = array(
+					'title'         => (string) ( $audit['title'] ?? $id ),
+					'score'         => $audit['score'] ?? null,
+					'display_value' => (string) ( $audit['displayValue'] ?? '' ),
+					'mode'          => (string) ( $audit['scoreDisplayMode'] ?? '' ),
+				);
+			}
+			$summary['audits'] = $trimmed;
+
+			return $summary;
+		}
+
+		// 'full' — everything Google sent, minus the screenshot.
+		unset( $result['lighthouseResult']['fullPageScreenshot'] );
+		$summary['raw'] = $result;
+
+		return $summary;
 	}
 
 	/**

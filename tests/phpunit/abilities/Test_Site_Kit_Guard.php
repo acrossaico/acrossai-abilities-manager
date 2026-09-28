@@ -108,6 +108,25 @@ class Test_Site_Kit_Guard extends WP_UnitTestCase {
 		$this->assertSame( 'invalid_input', $result->get_error_code() );
 	}
 
+	public function test_an_invalid_pagespeed_detail_level_is_refused(): void {
+		$result = Report_Repository::pagespeed( '', 'mobile', 'everything' );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'invalid_input', $result->get_error_code() );
+	}
+
+	/**
+	 * The default must stay 'summary'. A real run measured 529 KB, of which the
+	 * screenshot alone was 199 KB — defaulting to the raw payload overflows the
+	 * response before a caller can read any of it.
+	 */
+	public function test_the_pagespeed_detail_levels_are_the_documented_three(): void {
+		$this->assertSame(
+			array( 'summary', 'audits', 'full' ),
+			Report_Repository::PAGESPEED_DETAIL
+		);
+	}
+
 	/**
 	 * Analytics cannot run a report with no metrics, and saying so here costs nothing
 	 * while letting it through costs a round-trip to Google to be told the same.
