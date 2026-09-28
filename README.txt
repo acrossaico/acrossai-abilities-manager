@@ -37,7 +37,7 @@ It is free, GPL, and works on its own. Pair it with an MCP server and your site 
 
 An AI client is handed its tool list once, at connect time, and pays for it out of the model's context window on every conversation. Exposing 357 separate tools would flood it — most assistants degrade past a few dozen.
 
-So abilities are grouped into **toolsets**, and a toolset is a **single tool** answering three actions: `discover` to list what it holds, `info` to read one ability's parameters, and `execute` to run it. Same three everywhere, so an assistant learns the pattern once. Your AI sees roughly fourteen tools and reaches all 357 through them.
+So abilities are grouped into **toolsets**, and a toolset is a **single tool** answering three actions: `discover` to list what it holds, `info` to read one ability's parameters, and `execute` to run it. Same three everywhere, learned once. Your AI sees roughly fourteen tools and reaches all 357 through them.
 
 = Plugins You Already Run Get Their Own Toolset =
 
@@ -104,15 +104,19 @@ Overrides live in their own table. **The ability registry is never modified** �
 
 = Reproduce a Plugin Conflict Without Breaking the Site =
 
-**Debugging → Conflict Testing** toggles any plugin's *effective* active state **without ever writing to `wp_options.active_plugins`** — reproduce a conflict for one browser session or a support call, then restore the site exactly by clearing a single JSON file.
+**Debugging → Conflict Testing** toggles any plugin's *effective* active state **without ever writing to `wp_options.active_plugins`** — reproduce a conflict for one browser session, then restore the site exactly by clearing a single JSON file.
 
-Seven abilities expose the same thing to a REST client or an AI assistant, so an assistant can bisect a conflict on your behalf. Every activation is guarded by a WordPress-core-style sandbox probe, which means a fatal-erroring plugin can never leave the site in a state where every page load dies — the override is refused instead.
+Seven abilities expose the same thing to a REST client or an AI assistant, so an assistant can bisect a conflict for you. Every activation is guarded by a WordPress-core-style sandbox probe, so a fatal-erroring plugin cannot leave the site where every page load dies — the override is refused instead.
 
 = Works With or Without an MCP Server =
 
-Abilities are the capability layer, not the connection. They are registered with `show_in_rest`, so they are reachable over the REST API and callable by any plugin the moment you activate it.
+Abilities are the capability layer, not the connection. Every one is registered through WordPress 6.9's own Abilities API with `show_in_rest`, so it is reachable over the REST API and callable by any plugin the moment you activate this one. Nothing here is proprietary, and nothing is bound to a particular transport.
 
-To let an AI assistant reach them over the Model Context Protocol you add a transport — the free [AcrossAI MCP Manager](https://wordpress.org/plugins/acrossai-mcp-manager/) is the one this plugin is built alongside, and it turns the toolsets into MCP tools with per-server curation and access control. Any other MCP server that reads the Abilities API works too.
+That means anything which reads the Abilities API can expose these abilities — there is no lock-in:
+
+* **[AcrossAI MCP Manager](https://wordpress.org/plugins/acrossai-mcp-manager/)** — the free MCP server this plugin is built alongside. Turns the toolsets into MCP tools with per-server curation and access control.
+* **MCP Adapter** — the WordPress MCP Adapter exposes registered abilities as MCP tools. When it is active, this plugin also lists its servers in the ability edit panel.
+* **Any other consumer** — another MCP server, a REST client, or a plugin calling the Abilities API directly. Abilities registered here are ordinary WordPress abilities, not a private format.
 
 = Requirements =
 
@@ -272,6 +276,7 @@ No data is sent to any external server without an explicit administrator action.
 
 * **Fixed: the plugin's Description was being truncated on WordPress.org.** Every import reported "The Description section is too long and was truncated. A maximum of 2,500 words is supported" — a warning only the plugin's committers can see, so the listing was silently losing its tail for anyone reading it. The cause was not obvious: the Description itself was well inside the limit at around 1,800 words, but WordPress.org folds sections it does not recognise into the Description, and this readme carries two of them — External Services and Privacy Policy, both required disclosures totalling another 750. Together they crossed the limit. The Description is now tightened to 2,372 effective words with every point kept, leaving room for the next few releases, and neither disclosure was touched.
 * **The WordPress.org listing title now says what the plugin does.** It read "AcrossAI Abilities Manager", which tells a search engine nothing, while the sibling plugins carry a descriptive title. It is now "AcrossAI Abilities Manager – WordPress Abilities for Claude, ChatGPT & Any AI Agent". The name shown inside wp-admin is unchanged. The tags move from `abilities, mcp, access control, site management, ai` to `abilities, ai assistant, chatgpt, claude, mcp` — the terms people actually search, with `abilities` kept because it is the one word that distinguishes this plugin from an MCP server.
+* **The listing now says plainly that this works with any Abilities API consumer, not just one MCP server.** Every ability here is registered through WordPress 6.9's own Abilities API, so anything that reads that API can expose them — AcrossAI MCP Manager, the WordPress MCP Adapter, another MCP server, a REST client, or a plugin calling the Abilities API directly. That was previously one clause at the end of a paragraph; it is now three named routes and an explicit statement that nothing here is proprietary or bound to a particular transport.
 * **The integration list is shorter, because each entry now links to its own page.** Every integration gained a link in 0.0.39; the inline paragraph describing each one was then saying what the linked page says at length. Each is now a single line naming the area it covers.
 
 Verified: the Description parses at 2,372 of 2,500 words with the two unrecognised sections folded in, as WordPress.org counts them.
