@@ -15,6 +15,7 @@ use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Global_Styles\Global_Styles_Db;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Global_Styles\Global_Styles_Detector;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Global_Styles\Global_Styles_File;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Global_Styles\Global_Styles_Writer;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -78,7 +79,7 @@ class Update_Global_Style extends Ability_Definition {
 						),
 						'section'       => array(
 							'type' => 'string',
-							'enum' => array( '', 'colors', 'typography', 'spacing', 'layout', 'blockStyles', 'customCss' ),
+							'enum' => array( '', 'colors', 'typography', 'spacing', 'layout', 'blockStyles', 'elements', 'customCss' ),
 						),
 						'data'          => array(
 							'type'        => array( 'string', 'object' ),
@@ -97,6 +98,11 @@ class Update_Global_Style extends Ability_Definition {
 						'delete_source' => array(
 							'type'    => 'boolean',
 							'default' => false,
+						),
+						'repair'        => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'DB source only. Adds the version + isGlobalStylesUserThemeJSON keys WordPress requires to a record written without them, changing nothing else. Records written by earlier versions of this plugin are stored but ignored by WordPress until this runs — any ordinary write repairs them too.', 'acrossai-abilities-manager' ),
 						),
 						'return_content' => array(
 							'type'        => 'boolean',
@@ -155,6 +161,7 @@ class Update_Global_Style extends Ability_Definition {
 		$plugin_slug   = sanitize_key( $input['plugin_slug'] ?? '' );
 		$migrate_to    = sanitize_text_field( $input['migrate_to'] ?? '' );
 		$delete_source = ! empty( $input['delete_source'] );
+		$repair        = ! empty( $input['repair'] );
 		$merge         = ! isset( $input['merge'] ) || (bool) $input['merge'];
 
 		$locations = Global_Styles_Detector::locate( $theme );
@@ -187,15 +194,49 @@ class Update_Global_Style extends Ability_Definition {
 			}
 		}
 
-		$payload = $this->resolve_payload( $input );
-		if ( is_wp_error( $payload ) ) {
-			return $this->error_response( $payload );
+		$resolved = $this->resolve_payload( $input );
+		if ( is_wp_error( $resolved ) ) {
+			return $this->error_response( $resolved );
 		}
+		$payload = $resolved['payload'];
+		$ignored = $resolved['ignored'];
 
 		$return_content = ! empty( $input['return_content'] );
 
 		if ( '' !== $migrate_to ) {
 			return $this->migrate( $selected, $migrate_to, $delete_source, $payload, $return_content );
+		}
+
+		if ( $repair ) {
+			if ( 'db' !== $selected_src ) {
+				return array(
+					'success' => false,
+					'message' => __( 'repair=true applies to the database record only — theme.json files never carry the isGlobalStylesUserThemeJSON flag.', 'acrossai-abilities-manager' ),
+				);
+			}
+			if ( ! empty( $payload ) ) {
+				return array(
+					'success' => false,
+					'message' => __( 'repair=true changes nothing but the flags, so it cannot be combined with "content" or "section". Run it on its own, then send the edit.', 'acrossai-abilities-manager' ),
+				);
+			}
+
+			return $this->repair_db( $selected, $return_content );
+		}
+
+		// A section write whose data landed entirely outside that section saved nothing at all and
+		// used to report success. Say so, and name what was ignored.
+		if ( '' !== (string) ( $input['section'] ?? '' ) && empty( $payload ) ) {
+			return array(
+				'success'  => false,
+				'message'  => sprintf(
+					/* translators: 1: section name, 2: comma-separated list of JSON paths. */
+					__( 'Nothing was saved: none of the data you sent belongs to section "%1$s". Ignored: %2$s. Send those keys under the section that owns them, or omit "section" and pass the whole record as "content".', 'acrossai-abilities-manager' ),
+					Global_Styles_Db::normalize_section( (string) $input['section'] ),
+					implode( ', ', $ignored )
+				),
+				'warnings' => $this->ignored_warnings( $ignored, (string) $input['section'] ),
+			);
 		}
 
 		// Scenario 3 — refuse parent theme write.
@@ -207,12 +248,14 @@ class Update_Global_Style extends Ability_Definition {
 			);
 		}
 
+		$warnings = $this->ignored_warnings( $ignored, (string) ( $input['section'] ?? '' ) );
+
 		switch ( $selected_src ) {
 			case 'db':
-				return $this->update_db( $selected, $payload, $merge, $return_content );
+				return $this->update_db( $selected, $payload, $merge, $return_content, $warnings );
 			case 'theme':
 			case 'plugin':
-				return $this->update_file( $selected, $payload, $merge );
+				return $this->update_file( $selected, $payload, $merge, $warnings );
 		}
 
 		return array(
@@ -230,7 +273,7 @@ class Update_Global_Style extends Ability_Definition {
 	 * @param bool $return_content
 	 * @return array
 	 */
-	private function update_db( array $loc, array $payload, bool $merge, bool $return_content ): array {
+	private function update_db( array $loc, array $payload, bool $merge, bool $return_content, array $warnings = array() ): array {
 		$post = get_post( (int) ( $loc['post_id'] ?? 0 ) );
 		if ( ! $post ) {
 			return array(
@@ -238,6 +281,8 @@ class Update_Global_Style extends Ability_Definition {
 				'message' => __( 'wp_global_styles post not found.', 'acrossai-abilities-manager' ),
 			);
 		}
+
+		$was_inert = ! Global_Styles_Db::is_applied_by_wordpress( $post );
 
 		$result = Global_Styles_Db::update( $post, $payload, $merge );
 		if ( is_wp_error( $result ) ) {
@@ -247,11 +292,50 @@ class Update_Global_Style extends Ability_Definition {
 		$updated       = get_post( (int) $result );
 		$content_bytes = $updated ? strlen( (string) $updated->post_content ) : 0;
 
+		if ( $was_inert ) {
+			$warnings[] = __( 'This record was previously missing the keys WordPress requires, so nothing stored in it was being applied. They were added by this write and the record is now live.', 'acrossai-abilities-manager' );
+		}
+
 		return array(
 			'success'       => true,
 			'message'       => __( 'Updated DB Global Styles record.', 'acrossai-abilities-manager' ),
 			'record'        => $updated ? Global_Styles_Db::to_row( $updated, $return_content ) : array(),
 			'content_bytes' => $content_bytes,
+			'warnings'      => $warnings,
+		);
+	}
+
+	/**
+	 * Add the flags a pre-0.0.41 record is missing, changing nothing else.
+	 *
+	 * @since  0.0.41
+	 * @param  array<string, mixed> $loc            Selected location.
+	 * @param  bool                 $return_content Whether to echo the record back.
+	 * @return array<string, mixed>
+	 */
+	private function repair_db( array $loc, bool $return_content ): array {
+		$post = get_post( (int) ( $loc['post_id'] ?? 0 ) );
+		if ( ! $post ) {
+			return array(
+				'success' => false,
+				'message' => __( 'wp_global_styles post not found.', 'acrossai-abilities-manager' ),
+			);
+		}
+
+		$result = Global_Styles_Db::repair( $post );
+		if ( is_wp_error( $result ) ) {
+			return $this->error_response( $result );
+		}
+
+		$updated = get_post( (int) $result['post_id'] );
+
+		return array(
+			'success'       => true,
+			'message'       => $result['changed']
+				? __( 'Added the version and isGlobalStylesUserThemeJSON keys. WordPress now applies this record; no styles were changed.', 'acrossai-abilities-manager' )
+				: __( 'Nothing to repair — this record already carries the keys WordPress requires.', 'acrossai-abilities-manager' ),
+			'record'        => $updated ? Global_Styles_Db::to_row( $updated, $return_content ) : array(),
+			'content_bytes' => $updated ? strlen( (string) $updated->post_content ) : 0,
 			'warnings'      => array(),
 		);
 	}
@@ -264,7 +348,7 @@ class Update_Global_Style extends Ability_Definition {
 	 * @param bool $merge
 	 * @return array
 	 */
-	private function update_file( array $loc, array $payload, bool $merge ): array {
+	private function update_file( array $loc, array $payload, bool $merge, array $warnings = array() ): array {
 		$path     = (string) ( $loc['path'] ?? '' );
 		$existing = Global_Styles_File::read_json( $path );
 		if ( is_wp_error( $existing ) ) {
@@ -287,7 +371,6 @@ class Update_Global_Style extends Ability_Definition {
 			return $this->error_response( $bytes );
 		}
 
-		$warnings = array();
 		if ( 'plugin' === ( $loc['source'] ?? '' ) && false === ( $loc['plugin_active'] ?? true ) ) {
 			/* translators: %s: plugin slug */
 			$warnings[] = sprintf( __( 'Plugin "%s" is inactive — your edit will only take effect once the plugin is activated.', 'acrossai-abilities-manager' ), $loc['plugin'] ?? '' );
@@ -334,7 +417,10 @@ class Update_Global_Style extends Ability_Definition {
 					'message' => __( 'Source DB record not found.', 'acrossai-abilities-manager' ),
 				);
 			}
-			$existing = Global_Styles_Db::decode_content( $post );
+			$existing = Global_Styles_Writer::decode( (string) $post->post_content );
+			if ( is_wp_error( $existing ) ) {
+				return $this->error_response( $existing );
+			}
 		} else {
 			$read = Global_Styles_File::read_json( (string) ( $loc['path'] ?? '' ) );
 			if ( is_wp_error( $read ) ) {
@@ -347,7 +433,24 @@ class Update_Global_Style extends Ability_Definition {
 			? ( is_array( $existing ) ? $existing : array() )
 			: Global_Styles_Db::deep_merge( is_array( $existing ) ? $existing : array(), $payload );
 
-		$valid = Global_Styles_Db::validate_data( $merged );
+		if ( 'db' === $migrate_to ) {
+			// theme.json files legitimately carry keys the user record cannot: core reads only
+			// version/flag/settings/styles/title from the database and drops the rest. Dropping them
+			// here — loudly — is better than refusing the migration over keys that were valid where
+			// they came from.
+			foreach ( array( 'customTemplates', 'templateParts', 'patterns', 'blockTypes', 'description', '$schema' ) as $file_only ) {
+				if ( array_key_exists( $file_only, $merged ) ) {
+					unset( $merged[ $file_only ] );
+					$warnings[] = sprintf(
+						/* translators: %s: theme.json key name. */
+						__( 'Dropped "%s": WordPress ignores it in the database Global Styles record. It is still in the theme.json file it came from.', 'acrossai-abilities-manager' ),
+						$file_only
+					);
+				}
+			}
+		}
+
+		$valid = Global_Styles_Db::validate_data( $merged, 'db' === $migrate_to ? Global_Styles_Db::ORIGIN_USER : Global_Styles_Db::ORIGIN_FILE );
 		if ( is_wp_error( $valid ) ) {
 			return $this->error_response( $valid );
 		}
@@ -392,7 +495,11 @@ class Update_Global_Style extends Ability_Definition {
 			);
 		}
 
-		// migrate_to = child_theme
+		// migrate_to = child_theme. The user-record flag is meaningless in a theme.json file — core
+		// only looks for it on the database record — and leaving it in a shipped file is misleading,
+		// so it is stripped on the way out.
+		unset( $merged[ Global_Styles_Writer::USER_FLAG ] );
+
 		$child_dir = Global_Styles_File::get_child_theme_dir();
 		if ( null === $child_dir ) {
 			return array(
@@ -436,7 +543,17 @@ class Update_Global_Style extends Ability_Definition {
 	}
 
 	/**
-	 * @return array|\WP_Error
+	 * Resolve the payload to write, and record everything the section filter dropped.
+	 *
+	 * A section write keeps only the paths that section owns, which is correct — but the dropped
+	 * keys used to vanish without a word. A `section: "typography"` write carrying `styles.elements`
+	 * saved the typography and silently discarded every heading, link and button style in the same
+	 * call, and reported success. The ignored paths now come back with the payload so the caller is
+	 * told, and a write that saved nothing at all is refused outright.
+	 *
+	 * @since  0.0.41
+	 * @param  array<string, mixed> $input Ability input.
+	 * @return array{payload: array<string, mixed>, ignored: array<int, string>}|\WP_Error
 	 */
 	private function resolve_payload( array $input ) {
 		$section = (string) ( $input['section'] ?? '' );
@@ -453,7 +570,10 @@ class Update_Global_Style extends Ability_Definition {
 			// customCss is a single scalar string (theme.json: styles.css) — accept
 			// the raw CSS directly so callers don't have to hand-build the JSON wrapper.
 			if ( 'customCss' === $norm && isset( $input['data'] ) && is_string( $input['data'] ) ) {
-				return array( 'styles' => array( 'css' => (string) $input['data'] ) );
+				return array(
+					'payload' => array( 'styles' => array( 'css' => (string) $input['data'] ) ),
+					'ignored' => array(),
+				);
 			}
 
 			$data = $this->coerce_array( $input['data'] ?? null );
@@ -470,15 +590,102 @@ class Update_Global_Style extends Ability_Definition {
 					Global_Styles_Db::path_set( $payload, $path, $value );
 				}
 			}
-			return $payload;
+
+			return array(
+				'payload' => $payload,
+				'ignored' => self::dropped_paths( $data, $payload ),
+			);
 		}
 
 		// migrate-only calls don't need content.
 		if ( ! isset( $input['content'] ) ) {
+			return array(
+				'payload' => array(),
+				'ignored' => array(),
+			);
+		}
+
+		$content = $this->coerce_array( $input['content'] );
+		if ( is_wp_error( $content ) ) {
+			return $content;
+		}
+
+		return array(
+			'payload' => $content,
+			'ignored' => array(),
+		);
+	}
+
+	/**
+	 * Dotted paths present in the caller's data but absent from what will be written.
+	 *
+	 * Public-by-visibility-of-test: this is the only thing standing between a caller and a silently
+	 * half-applied write, so it is a static helper that can be exercised without WordPress.
+	 *
+	 * @since  0.0.41
+	 * Reported two levels deep and no deeper, because that is the depth at which sections are
+	 * defined (`settings.color`, `styles.elements`). Naming the top-level branch alone would say
+	 * "styles" when only the element styles were dropped; recursing further would bury the answer
+	 * under every individual property.
+	 *
+	 * @param  array<string, mixed> $sent   What the caller supplied.
+	 * @param  array<string, mixed> $kept   What survived the section filter.
+	 * @param  string               $prefix Path prefix during recursion.
+	 * @param  int                  $depth  Current depth.
+	 * @return array<int, string>
+	 */
+	public static function dropped_paths( array $sent, array $kept, string $prefix = '', int $depth = 0 ): array {
+		$dropped = array();
+
+		foreach ( $sent as $key => $value ) {
+			$path = '' === $prefix ? (string) $key : $prefix . '.' . $key;
+
+			if ( ! array_key_exists( $key, $kept ) ) {
+				if ( $depth < 1 && is_array( $value ) && ! empty( $value ) && ! array_key_exists( 0, $value ) ) {
+					$dropped = array_merge( $dropped, self::dropped_paths( $value, array(), $path, $depth + 1 ) );
+					continue;
+				}
+
+				$dropped[] = $path;
+				continue;
+			}
+
+			if ( $depth < 1 && is_array( $value ) && is_array( $kept[ $key ] ) ) {
+				$dropped = array_merge( $dropped, self::dropped_paths( $value, $kept[ $key ], $path, $depth + 1 ) );
+			}
+		}
+
+		return $dropped;
+	}
+
+	/**
+	 * Turn dropped paths into caller-facing warnings.
+	 *
+	 * @since  0.0.41
+	 * @param  array<int, string> $ignored Dotted paths that were not saved.
+	 * @param  string             $section The section that was written.
+	 * @return array<int, string>
+	 */
+	private function ignored_warnings( array $ignored, string $section ): array {
+		if ( empty( $ignored ) ) {
 			return array();
 		}
 
-		return $this->coerce_array( $input['content'] );
+		$warnings = array();
+		foreach ( $ignored as $path ) {
+			$warnings[] = sprintf(
+				/* translators: 1: JSON path that was not saved, 2: section name. */
+				__( 'ignored: %1$s — not part of section "%2$s", so it was not saved.', 'acrossai-abilities-manager' ),
+				$path,
+				Global_Styles_Db::normalize_section( $section )
+			);
+		}
+
+		if ( in_array( 'styles.elements', $ignored, true ) ) {
+			$warnings[] = __( 'Element styles (heading, h1-h6, link, button, caption) have their own section: pass section="elements".', 'acrossai-abilities-manager' );
+		}
+
+		return $warnings;
 	}
 
 	/**

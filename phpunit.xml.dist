@@ -197,6 +197,7 @@
 			<file>tests/phpunit/abilities/Test_Move_Block.php</file>
 			<file>tests/phpunit/abilities/Test_Duplicate_Block.php</file>
 			<file>tests/phpunit/abilities/Test_Insert_Pattern.php</file>
+			<file>tests/phpunit/abilities/Test_Global_Styles_User_Record_Integrity.php</file>
 		</testsuite>
 		<!--
 			Feature 069 — Rank Math ability suite. Files must be listed explicitly:

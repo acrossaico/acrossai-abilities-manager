@@ -41,7 +41,7 @@ class List_Global_Styles extends Ability_Definition {
 			'name' => 'blocks/list-global-styles',
 			'args' => array(
 				'label'               => __( 'List Global Styles', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Lists Global Styles records across the database (wp_global_styles) and theme.json files in themes and plugins. Each record reports its theme association, which sections are customised, and whether it is the copy WordPress is currently serving.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Lists Global Styles records across the database (wp_global_styles) and theme.json files in themes and plugins. Each record reports its theme association, which sections are customised, whether WordPress is actually applying it (applied_by_wordpress), and whether it is the copy WordPress is currently serving.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -158,6 +158,19 @@ class List_Global_Styles extends Ability_Definition {
 		$warnings = array();
 		if ( is_multisite() ) {
 			$warnings[] = __( 'On multisite, DB Global Styles records are scoped to the current site only; theme.json files are shared across all sites.', 'acrossai-abilities-manager' );
+		}
+
+		// Surface the per-record problems at the top level too: a caller scanning only the summary
+		// would otherwise see an inert record listed as an ordinary one.
+		foreach ( $rows as $row ) {
+			foreach ( (array) ( $row['warnings'] ?? array() ) as $row_warning ) {
+				$warnings[] = sprintf(
+					/* translators: 1: post ID, 2: warning text. */
+					__( 'wp_global_styles #%1$d: %2$s', 'acrossai-abilities-manager' ),
+					(int) ( $row['post_id'] ?? 0 ),
+					(string) $row_warning
+				);
+			}
 		}
 
 		return array(
@@ -302,7 +315,11 @@ class List_Global_Styles extends Ability_Definition {
 
 		$priority = static function ( array $row ): int {
 			if ( 'db' === ( $row['source'] ?? '' ) ) {
-				return 0;
+				// A DB record WordPress is ignoring — no isGlobalStylesUserThemeJSON, or content that
+				// does not decode — outranks nothing. It used to be marked effective regardless,
+				// which told the caller the site was using styles it was not. Ranked last instead,
+				// so the theme.json copy the site really is serving is the one flagged.
+				return false === ( $row['applied_by_wordpress'] ?? true ) ? 9 : 0;
 			}
 			if ( 'theme' === ( $row['source'] ?? '' ) ) {
 				return 'child' === ( $row['theme_type'] ?? '' ) ? 1 : 2;
@@ -319,7 +336,7 @@ class List_Global_Styles extends Ability_Definition {
 				}
 			);
 			foreach ( $group as $i => $row ) {
-				$row['effective'] = ( 0 === $i );
+				$row['effective'] = ( 0 === $i ) && false !== ( $row['applied_by_wordpress'] ?? true );
 				if ( false === $row['effective'] ) {
 					$winner               = $group[0];
 					$row['overridden_by'] = ( $winner['source'] ?? '' ) . ( isset( $winner['theme_type'] ) ? ':' . $winner['theme_type'] : '' );

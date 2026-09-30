@@ -106,30 +106,83 @@ class Get_Style_Guide extends Ability_Definition {
 			$settings = array();
 		}
 
-		$spacing_sizes  = (array) ( $settings['spacing']['spacingSizes'] ?? array() );
-		$palette_theme  = (array) ( $settings['color']['palette']['theme'] ?? array() );
-		$palette_custom = (array) ( $settings['color']['palette']['custom'] ?? array() );
-		$palette        = array_merge( $palette_theme, $palette_custom );
-		$font_families  = (array) ( $settings['typography']['fontFamilies']['theme'] ?? array() );
-		$font_sizes     = (array) ( $settings['typography']['fontSizes']['theme'] ?? array() );
-		$duotone        = (array) ( $settings['color']['duotone']['theme'] ?? array() );
-		$gradients      = (array) ( $settings['color']['gradients']['theme'] ?? array() );
+		$spacing_sizes = $this->effective_presets( $settings['spacing']['spacingSizes'] ?? array() );
+		$palette       = $this->effective_presets( $settings['color']['palette'] ?? array() );
+		$font_families = $this->effective_presets( $settings['typography']['fontFamilies'] ?? array() );
+		$font_sizes    = $this->effective_presets( $settings['typography']['fontSizes'] ?? array() );
+		$duotone       = $this->effective_presets( $settings['color']['duotone'] ?? array() );
+		$gradients     = $this->effective_presets( $settings['color']['gradients'] ?? array() );
 
 		return array(
 			'success'    => true,
-			'spacing'    => array_values( $spacing_sizes ),
-			'palette'    => array_values( $palette ),
+			'spacing'    => $spacing_sizes,
+			'palette'    => $palette,
 			'typography' => array(
-				'font_families' => array_values( $font_families ),
-				'font_sizes'    => array_values( $font_sizes ),
+				'font_families' => $font_families,
+				'font_sizes'    => $font_sizes,
 			),
 			'layout'     => array(
 				'content_size' => sanitize_text_field( (string) ( $settings['layout']['contentSize'] ?? '' ) ),
 				'wide_size'    => sanitize_text_field( (string) ( $settings['layout']['wideSize'] ?? '' ) ),
 			),
-			'duotone'    => array_values( $duotone ),
-			'gradients'  => array_values( $gradients ),
-			'message'    => __( 'Style guide returned from merged theme.json settings.', 'acrossai-abilities-manager' ),
+			'duotone'    => $duotone,
+			'gradients'  => $gradients,
+			'message'    => __( 'Style guide returned from merged theme.json settings. Each preset carries the origin it came from; where a user preset reuses a theme slug, only the user one is listed, because that is the value the site renders.', 'acrossai-abilities-manager' ),
 		);
+	}
+
+	/**
+	 * Flatten core's origin-keyed preset structure into the list the site actually renders.
+	 *
+	 * `WP_Theme_JSON::get_settings()` returns presets grouped by origin — `default`, `theme`,
+	 * `custom` — and a slug may appear in more than one. This used to be handled two different wrong
+	 * ways in the same method: the palette concatenated `theme` and `custom` with no labels, so a
+	 * user colour overriding `accent-1` was listed twice and read as a duplicate; while font
+	 * families, font sizes, duotones and gradients read `theme` only, so user presets were missing
+	 * from the style guide altogether.
+	 *
+	 * One preset per slug now, later origins winning exactly as core's CSS variable generation does,
+	 * each tagged with the origin it came from and — where it replaced one — what it overrode.
+	 *
+	 * @since  0.0.41
+	 * @param  mixed $group Origin-keyed preset group, or a plain list on older shapes.
+	 * @return array<int, array<string, mixed>>
+	 */
+	private function effective_presets( $group ): array {
+		if ( ! is_array( $group ) ) {
+			return array();
+		}
+
+		// A plain list (no origin keys) — pass it through with no origin claimed.
+		if ( array_key_exists( 0, $group ) ) {
+			return array_values( $group );
+		}
+
+		$by_slug = array();
+		// Theme and user presets only, as before — core's own defaults are deliberately left out so
+		// this response stays the size it was.
+		foreach ( array( 'theme', 'custom' ) as $origin ) {
+			foreach ( (array) ( $group[ $origin ] ?? array() ) as $preset ) {
+				if ( ! is_array( $preset ) ) {
+					continue;
+				}
+
+				$slug            = isset( $preset['slug'] ) ? (string) $preset['slug'] : '';
+				$preset['origin'] = $origin;
+
+				if ( '' === $slug ) {
+					$by_slug[] = $preset;
+					continue;
+				}
+
+				if ( isset( $by_slug[ $slug ]['origin'] ) ) {
+					$preset['overrides'] = (string) $by_slug[ $slug ]['origin'];
+				}
+
+				$by_slug[ $slug ] = $preset;
+			}
+		}
+
+		return array_values( $by_slug );
 	}
 }

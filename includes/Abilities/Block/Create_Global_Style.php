@@ -36,6 +36,13 @@ defined( 'ABSPATH' ) || exit;
 class Create_Global_Style extends Ability_Definition {
 
 	/**
+	 * Dotted JSON paths the section filter discarded on this call.
+	 *
+	 * @var array<int, string>
+	 */
+	private array $ignored = array();
+
+	/**
 	 * Full ability spec for wp_register_ability().
 	 *
 	 * @return array
@@ -80,7 +87,7 @@ class Create_Global_Style extends Ability_Definition {
 						),
 						'section'     => array(
 							'type' => 'string',
-							'enum' => array( '', 'colors', 'typography', 'spacing', 'layout', 'blockStyles', 'customCss' ),
+							'enum' => array( '', 'colors', 'typography', 'spacing', 'layout', 'blockStyles', 'elements', 'customCss' ),
 						),
 						'data'        => array(
 							'type'        => array( 'string', 'object' ),
@@ -135,6 +142,8 @@ class Create_Global_Style extends Ability_Definition {
 	 * @return array
 	 */
 	public function execute( array $input = array() ): array {
+		$this->ignored = array();
+
 		$source      = sanitize_text_field( $input['source'] ?? 'db' );
 		$theme       = sanitize_key( $input['theme'] ?? '' );
 		$theme_slug  = sanitize_key( $input['theme_slug'] ?? '' );
@@ -219,6 +228,26 @@ class Create_Global_Style extends Ability_Definition {
 					Global_Styles_Db::path_set( $payload, $path, $value );
 				}
 			}
+
+			// Same rule as update: data that falls outside the named section is not saved, so it is
+			// named back to the caller rather than dropped in silence.
+			$ignored = Update_Global_Style::dropped_paths( $data, $payload );
+			if ( ! empty( $ignored ) ) {
+				$this->ignored = $ignored;
+			}
+
+			if ( empty( $payload ) ) {
+				return new \WP_Error(
+					'section_data_outside_section',
+					sprintf(
+						/* translators: 1: section name, 2: comma-separated list of JSON paths. */
+						__( 'Nothing to create: none of the data you sent belongs to section "%1$s". Ignored: %2$s.', 'acrossai-abilities-manager' ),
+						$norm,
+						implode( ', ', $ignored )
+					)
+				);
+			}
+
 			return $payload;
 		}
 
@@ -260,7 +289,7 @@ class Create_Global_Style extends Ability_Definition {
 		}
 
 		$post     = get_post( (int) $id );
-		$warnings = array();
+		$warnings = $this->ignored_warnings();
 		if ( is_multisite() ) {
 			$warnings[] = __( 'On multisite, this DB record is scoped to the current site only.', 'acrossai-abilities-manager' );
 		}
@@ -333,6 +362,7 @@ class Create_Global_Style extends Ability_Definition {
 			return $this->error_response( $bytes );
 		}
 
+		$warnings   = array_merge( $warnings, $this->ignored_warnings() );
 		$warnings[] = __( 'Site Editor saves will create a DB record that overrides this file copy on the next save.', 'acrossai-abilities-manager' );
 
 		return array(
@@ -393,7 +423,7 @@ class Create_Global_Style extends Ability_Definition {
 			return $this->error_response( $bytes );
 		}
 
-		$warnings = array();
+		$warnings = $this->ignored_warnings();
 		if ( ! $plugin['active'] ) {
 			/* translators: %s: plugin slug */
 			$warnings[] = sprintf( __( 'Plugin "%s" is inactive — its theme.json will not register until the plugin is activated.', 'acrossai-abilities-manager' ), $plugin_slug );
@@ -412,6 +442,22 @@ class Create_Global_Style extends Ability_Definition {
 			),
 			'warnings' => $warnings,
 		);
+	}
+
+	/**
+	 * Warnings for the keys the section filter discarded.
+	 *
+	 * @since  0.0.41
+	 * @return array<int, string>
+	 */
+	private function ignored_warnings(): array {
+		$warnings = array();
+		foreach ( $this->ignored as $path ) {
+			/* translators: %s: JSON path that was not saved. */
+			$warnings[] = sprintf( __( 'ignored: %s — outside the section you named, so it was not saved.', 'acrossai-abilities-manager' ), $path );
+		}
+
+		return $warnings;
 	}
 
 	/**

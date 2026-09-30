@@ -30,9 +30,47 @@ final class Global_Styles_Db {
 	public const THEME_TAX = 'wp_theme';
 
 	/**
+	 * Which shape a payload is validated against.
+	 *
+	 * A theme.json *file* and the *user record* in the database are different documents with
+	 * different legal keys, and validating one against the other was a real defect: the DB source
+	 * rejected `isGlobalStylesUserThemeJSON` as an unknown key — the very key it must store — while
+	 * accepting `templateParts`, `customTemplates` and `patterns`, which mean nothing there and are
+	 * dropped on the floor by core.
+	 *
+	 * @var string
+	 */
+	public const ORIGIN_FILE = 'file';
+
+	/**
+	 * The user record in wp_global_styles. See {@see self::ORIGIN_FILE}.
+	 *
+	 * @var string
+	 */
+	public const ORIGIN_USER = 'user';
+
+	/**
+	 * Top-level keys a theme.json file may carry.
+	 *
+	 * @var array<int, string>
+	 */
+	public const FILE_KEYS = array( 'version', 'settings', 'styles', 'customTemplates', 'templateParts', 'patterns', '$schema', 'title', 'description', 'blockTypes' );
+
+	/**
+	 * Top-level keys the user record in wp_global_styles may carry.
+	 *
+	 * Matches what core itself stores and reads: `WP_REST_Global_Styles_Controller` persists
+	 * `settings`, `styles` and a title, and `WP_Theme_JSON_Resolver::get_user_data()` reads `version`
+	 * plus the flag. Nothing else has any effect from this source.
+	 *
+	 * @var array<int, string>
+	 */
+	public const USER_KEYS = array( 'version', Global_Styles_Writer::USER_FLAG, 'settings', 'styles', 'title' );
+
+	/**
 	 * Canonical section names exposed by the abilities.
 	 */
-	public const SECTIONS = array( 'colors', 'typography', 'spacing', 'layout', 'blockStyles', 'customCss' );
+	public const SECTIONS = array( 'colors', 'typography', 'spacing', 'layout', 'blockStyles', 'elements', 'customCss' );
 
 	/**
 	 * Maps each section to the list of theme.json paths it owns. Used by
@@ -46,6 +84,7 @@ final class Global_Styles_Db {
 		'spacing'     => array( array( 'settings', 'spacing' ), array( 'styles', 'spacing' ) ),
 		'layout'      => array( array( 'settings', 'layout' ) ),
 		'blockStyles' => array( array( 'settings', 'blocks' ), array( 'styles', 'blocks' ) ),
+		'elements'    => array( array( 'styles', 'elements' ) ),
 		'customCss'   => array( array( 'styles', 'css' ) ),
 	);
 
@@ -80,6 +119,7 @@ final class Global_Styles_Db {
 			'spacing'     => 'spacing',
 			'layout'      => 'layout',
 			'blockstyles' => 'blockStyles',
+			'elements'    => 'elements',
 			'customcss'   => 'customCss',
 		);
 		return $map[ $section ] ?? $section;
@@ -147,7 +187,7 @@ final class Global_Styles_Db {
 			return new \WP_Error( 'invalid_theme', __( 'Theme is required.', 'acrossai-abilities-manager' ) );
 		}
 
-		$valid = self::validate_data( $data );
+		$valid = self::validate_data( $data, self::ORIGIN_USER );
 		if ( is_wp_error( $valid ) ) {
 			return $valid;
 		}
@@ -160,21 +200,17 @@ final class Global_Styles_Db {
 			return new \WP_Error( 'exists', __( 'A Global Styles record already exists for this theme. Use update instead.', 'acrossai-abilities-manager' ) );
 		}
 
-		$json = self::encode_json( $data );
-		if ( is_wp_error( $json ) ) {
-			return $json;
-		}
-
-		$post_id = wp_insert_post(
+		// Global_Styles_Writer stamps version + isGlobalStylesUserThemeJSON and slashes the JSON;
+		// see that class for why a hand-built wp_insert_post() call cannot be used here.
+		$post_id = Global_Styles_Writer::insert(
 			array(
-				'post_type'    => self::POST_TYPE,
-				'post_status'  => 'publish',
+				'post_type'   => self::POST_TYPE,
+				'post_status' => 'publish',
 				/* translators: %s: theme slug */
-				'post_title'   => sprintf( __( 'Custom Styles - %s', 'acrossai-abilities-manager' ), $theme ),
-				'post_name'    => 'wp-global-styles-' . $theme,
-				'post_content' => $json,
+				'post_title'  => sprintf( __( 'Custom Styles - %s', 'acrossai-abilities-manager' ), $theme ),
+				'post_name'   => 'wp-global-styles-' . $theme,
 			),
-			true
+			$data
 		);
 
 		if ( is_wp_error( $post_id ) ) {
@@ -191,10 +227,21 @@ final class Global_Styles_Db {
 	 * @return int|\WP_Error Post ID on success.
 	 */
 	public static function update( \WP_Post $post, array $data, bool $merge = true ) {
-		$existing = self::decode_content( $post );
-		$new      = $merge ? self::deep_merge( $existing, $data ) : $data;
+		if ( $merge ) {
+			// A record that does not decode must never be merged into. Treating it as empty — which
+			// is what decode_content() reports — silently discards every section stored before the
+			// write that broke it, turning one bad write into total loss. Replacing the record
+			// outright (merge=false) is still allowed, because that is the repair path.
+			$existing = Global_Styles_Writer::decode( (string) $post->post_content );
+			if ( is_wp_error( $existing ) ) {
+				return $existing;
+			}
+			$new = self::deep_merge( $existing, $data );
+		} else {
+			$new = $data;
+		}
 
-		$valid = self::validate_data( $new );
+		$valid = self::validate_data( $new, self::ORIGIN_USER );
 		if ( is_wp_error( $valid ) ) {
 			return $valid;
 		}
@@ -203,23 +250,47 @@ final class Global_Styles_Db {
 			return $valid;
 		}
 
-		$json = self::encode_json( $new );
-		if ( is_wp_error( $json ) ) {
-			return $json;
+		return Global_Styles_Writer::update( (int) $post->ID, $new );
+	}
+
+	/**
+	 * Add the flags WordPress requires to a record that is otherwise left alone.
+	 *
+	 * The repair path for records written by versions of this plugin that stored `settings`/`styles`
+	 * with no `isGlobalStylesUserThemeJSON`: WordPress ignored those records entirely. Every ordinary
+	 * write now repairs them as a side effect; this exists for the case where an operator wants the
+	 * flags added without changing a single style.
+	 *
+	 * @since  0.0.41
+	 * @param  \WP_Post $post Target record.
+	 * @return array{post_id: int, changed: bool}|\WP_Error
+	 */
+	public static function repair( \WP_Post $post ) {
+		$existing = Global_Styles_Writer::decode( (string) $post->post_content );
+		if ( is_wp_error( $existing ) ) {
+			return $existing;
 		}
 
-		$result = wp_update_post(
-			array(
-				'ID'           => (int) $post->ID,
-				'post_content' => $json,
-			),
-			true
-		);
+		$already = Global_Styles_Writer::has_user_flags( $existing )
+			&& isset( $existing['version'] )
+			&& Global_Styles_Writer::latest_schema() === (int) $existing['version'];
 
+		if ( $already ) {
+			return array(
+				'post_id' => (int) $post->ID,
+				'changed' => false,
+			);
+		}
+
+		$result = Global_Styles_Writer::update( (int) $post->ID, $existing );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
-		return (int) $result;
+
+		return array(
+			'post_id' => (int) $result,
+			'changed' => true,
+		);
 	}
 
 	/**
@@ -272,7 +343,11 @@ final class Global_Styles_Db {
 			);
 		}
 
-		$existing = self::decode_content( $post );
+		$existing = Global_Styles_Writer::decode( (string) $post->post_content );
+		if ( is_wp_error( $existing ) ) {
+			return $existing;
+		}
+
 		foreach ( self::SECTION_PATHS[ $section ] as $path ) {
 			$value = self::path_get( $section_data, $path );
 			if ( null !== $value ) {
@@ -298,13 +373,19 @@ final class Global_Styles_Db {
 			);
 		}
 
-		$existing = self::decode_content( $post );
+		$existing = Global_Styles_Writer::decode( (string) $post->post_content );
+		if ( is_wp_error( $existing ) ) {
+			return $existing;
+		}
+
 		foreach ( self::SECTION_PATHS[ $section ] as $path ) {
 			self::path_delete( $existing, $path );
 		}
 
-		// After section removal, allow an empty styles/settings tree.
-		return self::update( $post, $existing, false );
+		// After section removal, allow an empty styles/settings tree: the flags are stamped here so
+		// deleting the last section leaves `{ version, isGlobalStylesUserThemeJSON }` — exactly what
+		// core seeds a fresh record with — rather than tripping the empty-content guard.
+		return self::update( $post, Global_Styles_Writer::with_user_flags( $existing ), false );
 	}
 
 	// -------------------------------------------------------------------------
@@ -318,12 +399,87 @@ final class Global_Styles_Db {
 	 * @return array
 	 */
 	public static function decode_content( \WP_Post $post ): array {
-		$content = trim( (string) $post->post_content );
-		if ( '' === $content ) {
-			return array();
+		$decoded = Global_Styles_Writer::decode( (string) $post->post_content );
+
+		// Lossy by design, and kept only for callers that genuinely have nothing to do with a broken
+		// record (to_row's metadata, get_customized_sections). Anything that writes, or that reports
+		// what WordPress is serving, MUST use Global_Styles_Writer::decode() and handle the error —
+		// collapsing "corrupt" into "empty" here is what let one bad write erase earlier sections.
+		return is_wp_error( $decoded ) ? array() : $decoded;
+	}
+
+	/**
+	 * Whether the record stores content that is not valid JSON.
+	 *
+	 * @since  0.0.41
+	 * @param  \WP_Post $post Record to inspect.
+	 * @return bool
+	 */
+	public static function is_corrupt( \WP_Post $post ): bool {
+		return is_wp_error( Global_Styles_Writer::decode( (string) $post->post_content ) );
+	}
+
+	/**
+	 * Whether WordPress will actually apply this record.
+	 *
+	 * Both conditions are core's, from `WP_Theme_JSON_Resolver::get_user_data()`: the content decodes
+	 * to an array, and it carries `isGlobalStylesUserThemeJSON`. A record failing either is stored,
+	 * readable, and completely inert — which is exactly the state this subsystem used to report as
+	 * `origin: "db"` and `effective: true`.
+	 *
+	 * @since  0.0.41
+	 * @param  \WP_Post $post Record to inspect.
+	 * @return bool
+	 */
+	public static function is_applied_by_wordpress( \WP_Post $post ): bool {
+		$decoded = Global_Styles_Writer::decode( (string) $post->post_content );
+		if ( is_wp_error( $decoded ) ) {
+			return false;
 		}
-		$decoded = json_decode( $content, true );
-		return is_array( $decoded ) ? $decoded : array();
+
+		// The flag rule is about the one record per theme that core reads as user data. Block style
+		// variations share this post type but are read by a different path and must NOT carry the
+		// flag, so judging them by it would report every variation on the site as broken.
+		if ( ! self::is_main_record( $post ) ) {
+			return true;
+		}
+
+		return Global_Styles_Writer::has_user_flags( $decoded );
+	}
+
+	/**
+	 * Whether this row is the per-theme user record rather than a block style variation.
+	 *
+	 * WordPress names the record it creates `wp-global-styles-{stylesheet}`; variations stored in the
+	 * same post type deliberately do not use that prefix.
+	 *
+	 * @since  0.0.41
+	 * @param  \WP_Post $post Row to classify.
+	 * @return bool
+	 */
+	public static function is_main_record( \WP_Post $post ): bool {
+		return 0 === strpos( (string) $post->post_name, 'wp-global-styles-' );
+	}
+
+	/**
+	 * Warnings that must accompany any report of this record.
+	 *
+	 * @since  0.0.41
+	 * @param  \WP_Post $post Record to inspect.
+	 * @return array<int, string>
+	 */
+	public static function record_warnings( \WP_Post $post ): array {
+		$decoded = Global_Styles_Writer::decode( (string) $post->post_content );
+
+		if ( is_wp_error( $decoded ) ) {
+			return array( __( 'The DB record does not contain valid JSON; WordPress is ignoring it and serving theme.json defaults instead. Re-save the whole record (merge=false) or run update-global-style with repair=true.', 'acrossai-abilities-manager' ) );
+		}
+
+		if ( self::is_main_record( $post ) && ! Global_Styles_Writer::has_user_flags( $decoded ) ) {
+			return array( __( 'DB record is missing isGlobalStylesUserThemeJSON; WordPress is ignoring it. Any write through update-global-style adds it, or run update-global-style with repair=true.', 'acrossai-abilities-manager' ) );
+		}
+
+		return array();
 	}
 
 	/**
@@ -334,16 +490,26 @@ final class Global_Styles_Db {
 	 * @return array
 	 */
 	public static function to_row( \WP_Post $post, bool $include_content = false ): array {
-		$theme = self::get_post_theme( $post );
-		$row   = array(
-			'source'              => 'db',
-			'post_id'             => (int) $post->ID,
-			'title'               => (string) $post->post_title,
-			'theme'               => $theme,
-			'is_active_theme'     => $theme === (string) get_stylesheet(),
-			'customized_sections' => self::get_customized_sections( $post ),
-			'modified'            => (string) $post->post_modified_gmt,
+		$theme    = self::get_post_theme( $post );
+		$applied  = self::is_applied_by_wordpress( $post );
+		$warnings = self::record_warnings( $post );
+
+		$row = array(
+			'source'               => 'db',
+			'post_id'              => (int) $post->ID,
+			'title'                => (string) $post->post_title,
+			'theme'                => $theme,
+			'is_active_theme'      => $theme === (string) get_stylesheet(),
+			'customized_sections'  => self::get_customized_sections( $post ),
+			'modified'             => (string) $post->post_modified_gmt,
+			// Reported on every row, because "stored" and "in use" are different facts and the old
+			// row only ever implied the second.
+			'applied_by_wordpress' => $applied,
 		);
+
+		if ( ! empty( $warnings ) ) {
+			$row['warnings'] = $warnings;
+		}
 
 		if ( $include_content ) {
 			$row['data'] = self::decode_content( $post );
@@ -395,26 +561,51 @@ final class Global_Styles_Db {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Basic theme.json structure validation. Rejects empty or unknown top-level
-	 * keys but does not enforce the full JSON Schema (callers may pass partial
-	 * patches during update).
+	 * Basic structure validation. Rejects empty or unknown top-level keys but does not enforce the
+	 * full JSON Schema (callers may pass partial patches during update).
 	 *
+	 * @param  array<string, mixed> $data   Payload to check.
+	 * @param  string               $origin self::ORIGIN_FILE for a theme.json file (the default, so
+	 *                                      existing callers keep file semantics) or
+	 *                                      self::ORIGIN_USER for the wp_global_styles record.
 	 * @return true|\WP_Error
 	 */
-	public static function validate_data( array $data ) {
+	public static function validate_data( array $data, string $origin = self::ORIGIN_FILE ) {
 		if ( empty( $data ) ) {
 			return new \WP_Error( 'empty_content', __( 'Global Styles content cannot be empty.', 'acrossai-abilities-manager' ) );
 		}
 
-		$allowed = array( 'version', 'settings', 'styles', 'customTemplates', 'templateParts', 'patterns', '$schema', 'title', 'description', 'blockTypes' );
+		$is_user = self::ORIGIN_USER === $origin;
+		$allowed = $is_user ? self::USER_KEYS : self::FILE_KEYS;
+
 		foreach ( array_keys( $data ) as $key ) {
-			if ( ! in_array( $key, $allowed, true ) ) {
+			if ( in_array( $key, $allowed, true ) ) {
+				continue;
+			}
+
+			// Name the file-only keys explicitly: a caller sending templateParts to the DB source has
+			// not made a typo, they have the wrong mental model, and "unknown key" would not say so.
+			if ( $is_user && in_array( $key, array( 'customTemplates', 'templateParts', 'patterns', 'blockTypes' ), true ) ) {
 				return new \WP_Error(
 					'invalid_structure',
-					/* translators: %s: invalid key name */
-					sprintf( __( 'Unknown top-level key "%s" in theme.json structure. Allowed: $schema, version, title, description, settings, styles, customTemplates, templateParts, patterns, blockTypes.', 'acrossai-abilities-manager' ), $key )
+					sprintf(
+						/* translators: 1: rejected key name, 2: comma-separated list of allowed keys. */
+						__( '"%1$s" belongs in a theme.json file, not in the database Global Styles record — WordPress ignores it from that source. Write it with blocks/update-theme-json instead. Allowed here: %2$s.', 'acrossai-abilities-manager' ),
+						$key,
+						implode( ', ', $allowed )
+					)
 				);
 			}
+
+			return new \WP_Error(
+				'invalid_structure',
+				sprintf(
+					/* translators: 1: invalid key name, 2: comma-separated list of allowed keys. */
+					__( 'Unknown top-level key "%1$s". Allowed: %2$s.', 'acrossai-abilities-manager' ),
+					$key,
+					implode( ', ', $allowed )
+				)
+			);
 		}
 
 		// settings/styles should be objects when present.
