@@ -23,7 +23,7 @@ namespace AcrossAI_Abilities_Manager;
  * Plugin Name:       AcrossAI Abilities Manager
  * Plugin URI:        https://acrossai.co/abilities-manager/
  * Description:       357 ready-made WordPress abilities for Claude, ChatGPT and any AI agent, plus full control over every ability on your site.
- * Version:           0.0.40
+ * Version:           0.0.41
  * Requires PHP:      8.1
  * Requires at least: 6.9
  * Tested up to:      7.1

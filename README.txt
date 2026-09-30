@@ -5,7 +5,7 @@ Tags: abilities, ai assistant, chatgpt, claude, mcp
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.0.40
+Stable tag: 0.0.41
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -268,7 +268,7 @@ No data is sent to any external server without an explicit administrator action.
 
 == Changelog ==
 
-= Unreleased =
+= 0.0.41 - 2026-09-30 =
 
 * **Fixed: Global Styles saved through the abilities were stored but never applied.** Every write to the database record (`blocks/create-global-style`, `blocks/update-global-style` with `source: "db"`) saved `settings` and `styles` and nothing else. WordPress only uses that record when it also carries `"isGlobalStylesUserThemeJSON": true` — `WP_Theme_JSON_Resolver::get_user_data()` discards the whole thing otherwise and falls back to the theme's `theme.json`, without logging anything. So a palette, a font, a layout width would be written, read back correctly, reported as `origin: "db"` and `effective: true`, and the site would go on rendering theme defaults. Adding the key by hand did not help either: it was rejected as an unknown top-level key, because the record was being validated against the list of keys a `theme.json` *file* may carry. Both flags — the marker and `version`, set to `WP_Theme_JSON::LATEST_SCHEMA` — are now stamped on the server for every DB write, including section writes, merges, replaces and migrations, so nothing has to be passed by the caller. The DB source is validated against the shape core actually reads from it (`version`, `isGlobalStylesUserThemeJSON`, `settings`, `styles`, `title`); `templateParts`, `customTemplates` and `patterns` are refused there by name, with the message saying they belong in a `theme.json` file and which ability writes one.
 * **Fixed: a font stack containing double quotes wiped the entire Global Styles record, and still reported success.** `"fontFamily": "\"EB Garamond\", Georgia, serif"` is an ordinary value; saving it destroyed everything else in the record. The encoded JSON was handed to `wp_update_post()` unslashed, and core runs `wp_unslash()` over every field it is given, so each `\"` inside the JSON lost its backslash and the stored content stopped being JSON. It then decoded to null, which the read path reported as an *empty* record — so the next merge-write started from empty and saved only the section it was given, silently dropping the colors, layout and spacing saved minutes earlier. The ability reported `success: true` and a non-zero `content_bytes` throughout. Content is now slashed on the way in, exactly as core's own Global Styles REST controller does; every write is read back and decoded before it is called a success, and one that does not decode is rolled back to the previous content and returned as `success: false`. A merge into a record that does not decode is refused outright rather than treated as empty — that conversion is what turned one bad write into total loss. The same fix is applied to block style variation records, which are written through the same path and had the same defect.
@@ -332,66 +332,14 @@ Verified against Site Kit by Google 1.188.0 on a live site with Search Console, 
 * **Every ability now has to say whether it reads, destroys, or can be repeated.** Those three flags are how an AI client decides whether something is safe to try, safe to retry, and safe to run without asking, and a missing one reads as "not destructive" — the dangerous way to be wrong. Abilities missing them are now caught by the test suite, and reported on screen while `WP_DEBUG` is on. Nothing changes on a production site.
 * **The transient and object-cache abilities now point at the page cache when there is one.** Clearing transients is not what a visitor sees. On a site running LiteSpeed, these abilities now suggest `litespeed/purge-cache` for that — and say nothing on sites without it, rather than naming an ability that is not there.
 
-= 0.0.35 - 2026-09-21 =
-
-* **The backup abilities are now two tabs, one per plugin.** `UpdraftPlus` and `All-in-One WP Migration` each get their own tab, their own toolset and their own abilities, the same way Elementor, Rank Math, WPCode and every other integration works. 0.0.34 shipped them as a single "Backups" tab that reached both plugins through a shared layer; that made two genuinely different plugins look interchangeable and turned every real difference into a flag you had to go and check.
-* **Each suite now offers only what its plugin can actually do.** UpdraftPlus schedules backups and restores them, and stores no label - so it has no label ability. All-in-One labels its archives, and restoring belongs to their paid Unlimited Extension - so that ability asks the plugin and passes its own answer back, naming the manual import route, rather than refusing on its behalf.
-* **Breaking: the `backups/*` abilities are gone.** They are replaced by `updraftplus/*` and `all-in-one/*`. Anything holding a `backups/` slug needs updating; there are no aliases. The suite was one release old.
-* **Fixed: restoring never worked outside the admin screens.** The restore checked whether WordPress could write to the filesystem directly - the check that stops a restore dying half-way through - using a function WordPress only loads inside wp-admin. Every restore request therefore failed on that line before checking anything, whatever it was asked to do. This shipped in 0.0.34 and is fixed here.
-* **The exposure check is shared and reports per plugin.** Whether the web server will hand out a backup archive has nothing to do with which plugin wrote it, so that logic exists once - but each tab now reports on its own storage rather than on everything at once.
-
-= 0.0.34 - 2026-09-18 =
-
-The largest release so far: 25 features, 19 new tabs and around 400 new abilities. The theme is reach and honesty - most of the popular plugins a site actually runs can now be driven directly, each behind this plugin's own permission floor, and every ability that cannot do something says why and names the route that works instead.
-
-**Breaking changes**
-
-* **Abilities now require administrator rights unless you say otherwise.** If anyone below administrator drives this site through an AI client - a shop manager running a store, for example - they lose access on update until an administrator grants it. Set a rule on the individual ability under User Access, or move the site-wide floor with the `acrossai_default_ability_capability` filter.
-* **Why: every plugin chose its own lock, and nobody was checking them.** Measured across the abilities installed on one site: three registered with no permission check at all, two were open to any logged-in subscriber, and one that *writes content* was open at contributor level. This plugin now decides who may run an ability, whoever registered it.
-* **Setting access used to be able to remove the lock.** Choosing "Everyone" on an ability replaced its built-in check with one that allowed anybody - an action that reads as tightening actually opened the door. Access rules now sit on top of a floor that cannot be removed by accident.
-
-**New tabs**
-
-* **Store (WooCommerce) - 34 abilities.** The catalogue, pricing, stock, orders, customers, coupons, tax, shipping and store settings, plus WooCommerce's own seven adopted into the same tab. Variable products can now be created at all, which WooCommerce's own abilities cannot do.
-* **Backups - 9 abilities.** Whether this site can be recovered: what exists, when it last ran and whether it worked, whether the archives are reachable over HTTP, and taking, labelling, deleting or restoring one. Works with UpdraftPlus and All-in-One WP Migration through one set of abilities.
-* **Yoast SEO - 64 abilities**, and Yoast's own two now have a home.
-* **LiteSpeed Cache - 61 abilities.**
-* **Contact Form 7 - 25 abilities**, and **WPForms'** own abilities now have a home with an off switch for form writing.
-* **WPCode - 24 abilities**, adopting the five WPCode already had.
-* **Cookie Consent - 22 abilities**, with an honest account gate rather than silent failure.
-* **The Events Calendar - 18 abilities** and **Event Tickets - 16**, with capacity modelled and personal data gated.
-* **Advanced Custom Fields - 16 abilities**, joining the existing ACF tab.
-* **Translations - 14 abilities.**
-* **Email Delivery - 4 abilities**, plus a home for the ones the mail plugin ships, and **Akismet's** own abilities adopted.
-* **Classic Editor - 4 abilities** for what nothing else can reach.
-
-**Safety**
-
-* **Fixed: editing a WooCommerce product or order through the generic content tools silently corrupted the store.** Writing a price through `content/update-cpt-item` left the price the shop actually charges on the old value, and saving the product correctly afterwards did not repair it. Orders were worse: WooCommerce no longer keeps them in the posts table, so the write changed a row nothing reads and was later deleted. Both are now refused, naming the ability that does work.
-* **A backup archive that anyone can download is a total compromise, and this now checks for it.** Both backup plugins drop a .htaccess to prevent it; on nginx, IIS and Caddy that file is never read, so the protection is present, looks correct, and does nothing.
-* **Restoring says plainly that it cannot be undone**, and records what the site looked like beforehand so what was given up is visible.
-
-**The abilities screen**
-
-* **Integration tabs are now named after the plugin they drive**, and abilities registered by other plugins now belong to a toolset instead of vanishing into a catch-all.
-* **One screen, one access model.** The registration gate is gone; tabs were regrouped into task groups, and deep links to retired tabs fall back to "All".
-* **Fixed: WPCode's own five abilities were never actually adopted** into its tab - the prefix could not match.
-
-For the complete detail of this release - all 156 entries - and the full history of every earlier release, see changelog.txt inside the plugin, or
-https://github.com/acrossaico/acrossai-abilities-manager/blob/main/changelog.txt
-
-= 0.0.33 - 2026-08-28 =
-**Release theme: closing the cheap-edit loop.** A follow-up to 0.0.32 that closes the last two gaps between "locate a block cheaply" and "modify it cheaply". Two changes, both surgical and backwards-compatible.
-
-**`return_content:false` default now covers the two block-tree writers.** `blocks/add-block` and `blocks/update-post-block` gain the same `return_content:{boolean, default:false}` input as the six content writers (PR #152) and nine block-editor writers (PR #153). When false (default), the response's `block` object strips its `innerHTML`, `innerContent`, and `innerBlocks` — leaving `blockName`, `attrs`, and `path` — and `content_bytes` reports the saved `innerHTML` size. Container blocks (columns, cover, group) previously echoed their entire innerBlocks subtree; now they don't unless the caller passes `return_content:true`. BREAKING for callers reading `response.block.innerHTML` on these two abilities — pass `return_content:true` explicitly. Every other block-tree read/write (mutate-block-tree, replace-block-text, remove-block, duplicate-block, move-block) already returned lightweight envelopes and is unchanged.
-
-**`blocks/get-post-blocks` gains scoping inputs.** Three new optional inputs close the "read one block's markup" gap between `blocks/get-post-blocks` (full tree, full content) and `blocks/outline-post-blocks` (scoped but never returns content). `path: int[]` scopes the response to a subtree (uses the same raw parse_blocks() index scheme as add-block / update-post-block / remove-block, so returned paths interchange). `depth: integer` bounds descent below the subtree root (-1 unlimited, 0 subtree root only, N below). `include_html: boolean` (default true = backwards-compat) strips innerHTML + innerContent from every returned node when false. Backwards-compatible: existing callers passing only `post_id` see identical responses. An unresolvable `path` returns a standard error envelope with `error_code: invalid_path` naming which depth failed and how many blocks exist at that level.
-
 = Earlier releases =
 
-Every release before 0.0.33 is recorded in full at https://acrossai.co/changelog/acrossai-abilities-manager/ and in changelog.txt, shipped inside the plugin.
+Every release before 0.0.36 is recorded in full at https://acrossai.co/changelog/acrossai-abilities-manager/ and in changelog.txt, shipped inside the plugin.
 
 == Upgrade Notice ==
+
+= 0.0.41 =
+Worth reading before you update if this site's Global Styles were ever set through the abilities rather than the Site Editor. Those records were being saved without the key WordPress requires before it will use them, so the styles were stored, reported back as active, and never applied - the site went on rendering theme defaults. This release adds the key, and a one-time routine on upgrade adds it to records written by earlier versions. The effect is that colours, fonts, spacing and layout widths that were saved months ago and never took effect will start rendering the moment you update. Nothing is changed in those records beyond the two keys, and records whose content is not valid JSON are left untouched for hand-recovery. Also fixes a font stack containing double quotes destroying the whole record while reporting success. No breaking changes to any ability's input.
 
 = 0.0.37 =
 Fixes the UpdraftPlus and All-in-One WP Migration tools being offered on sites without those plugins installed - they appeared in the tool picker and in what a new MCP server starts with, unlike every other per-plugin toolset. The tools themselves were never broken and still work exactly as before when their plugin is active. If a server already has one of them and the plugin is not installed, "Reset to Type Defaults" clears it. No other changes.
