@@ -959,7 +959,11 @@ if ( ! function_exists( 'wp_get_object_terms' ) ) {
 	 * @return array<mixed>
 	 */
 	function wp_get_object_terms( $object_ids, $taxonomy, array $args = array() ): array {
-		return array();
+		// Reads back what wp_set_object_terms() recorded, so a test that creates a record through
+		// the production code can then look it up by theme the way the production code does.
+		$terms = $GLOBALS['__acrossai_test_terms'][ (int) $object_ids ][ (string) $taxonomy ] ?? array();
+
+		return array_values( (array) $terms );
 	}
 }
 
@@ -1068,16 +1072,95 @@ if ( ! function_exists( 'has_blocks' ) ) {
 }
 
 if ( ! function_exists( 'get_stylesheet' ) ) {
-	/** Stub: return an empty stylesheet so is_active_theme comparisons resolve to false. */
+	/**
+	 * Stub: empty by default, so is_active_theme comparisons resolve to false exactly as before.
+	 * Tests that need an active theme set $GLOBALS['__acrossai_test_stylesheet'].
+	 */
 	function get_stylesheet(): string {
-		return '';
+		return (string) ( $GLOBALS['__acrossai_test_stylesheet'] ?? '' );
+	}
+}
+
+if ( ! function_exists( 'get_template' ) ) {
+	/** Stub: the parent theme; defaults to the stylesheet (no child theme). */
+	function get_template(): string {
+		return (string) ( $GLOBALS['__acrossai_test_template'] ?? get_stylesheet() );
+	}
+}
+
+if ( ! function_exists( 'get_theme_root' ) ) {
+	/** Stub: a directory that does not exist unless a test creates one, so no theme.json is found. */
+	function get_theme_root(): string {
+		return (string) ( $GLOBALS['__acrossai_test_theme_root'] ?? sys_get_temp_dir() . '/acrossai-test-themes' );
+	}
+}
+
+if ( ! function_exists( 'get_stylesheet_directory' ) ) {
+	/** Stub: theme root + active stylesheet. */
+	function get_stylesheet_directory(): string {
+		return get_theme_root() . '/' . get_stylesheet();
+	}
+}
+
+if ( ! function_exists( 'get_template_directory' ) ) {
+	/** Stub: theme root + parent template. */
+	function get_template_directory(): string {
+		return get_theme_root() . '/' . get_template();
 	}
 }
 
 if ( ! function_exists( 'get_posts' ) ) {
-	/** Stub: returns an empty array (no seeded DB posts in unit-test bootstrap). */
+	/**
+	 * Stub: empty by default, preserving the original behaviour for every existing test.
+	 *
+	 * A test that sets $GLOBALS['__acrossai_test_get_posts_from_store'] gets a query served from the
+	 * in-memory post store instead, honouring post_type, name, posts_per_page and a wp_theme
+	 * tax_query — enough for the Global Styles lookups (find_by_theme / list_all) to work against
+	 * posts the production code itself created.
+	 *
+	 * @param  array $args Query args.
+	 * @return array
+	 */
 	function get_posts( array $args = array() ): array {
-		return array();
+		global $__acrossai_test_posts;
+
+		if ( empty( $GLOBALS['__acrossai_test_get_posts_from_store'] ) || ! is_array( $__acrossai_test_posts ) ) {
+			return array();
+		}
+
+		$types = (array) ( $args['post_type'] ?? 'post' );
+		$limit = (int) ( $args['posts_per_page'] ?? 5 );
+		$theme = '';
+		foreach ( (array) ( $args['tax_query'] ?? array() ) as $clause ) {
+			if ( is_array( $clause ) && 'wp_theme' === ( $clause['taxonomy'] ?? '' ) ) {
+				$theme = (string) ( is_array( $clause['terms'] ) ? reset( $clause['terms'] ) : $clause['terms'] );
+			}
+		}
+
+		$found = array();
+		foreach ( $__acrossai_test_posts as $id => $row ) {
+			$row = (array) $row;
+
+			if ( ! in_array( (string) ( $row['post_type'] ?? '' ), array_map( 'strval', $types ), true ) ) {
+				continue;
+			}
+			if ( isset( $args['name'] ) && (string) $args['name'] !== (string) ( $row['post_name'] ?? '' ) ) {
+				continue;
+			}
+			if ( '' !== $theme ) {
+				$terms = $GLOBALS['__acrossai_test_terms'][ (int) $id ]['wp_theme'] ?? array();
+				if ( ! in_array( $theme, array_map( 'strval', (array) $terms ), true ) ) {
+					continue;
+				}
+			}
+
+			$found[] = get_post( (int) $id );
+			if ( $limit > 0 && count( $found ) >= $limit ) {
+				break;
+			}
+		}
+
+		return $found;
 	}
 }
 
@@ -1691,4 +1774,182 @@ if ( ! function_exists( 'add_settings_error' ) ) {
 			'type'    => $type,
 		);
 	}
+}
+
+// ---------------------------------------------------------------------------
+// Post storage stubs (Global Styles write path).
+//
+// wp_insert_post() / wp_update_post() are modelled here rather than mocked away
+// because the defect they caused is a property of the real functions: core runs
+// wp_unslash() over every field it is given, so JSON that was not wp_slash()-ed
+// loses the backslashes inside its own string literals and stops being JSON.
+// A stub that simply stored what it was handed would make the regression test
+// pass against the unfixed code, which is worse than no test at all.
+// ---------------------------------------------------------------------------
+
+if ( ! function_exists( 'wp_slash' ) ) {
+	/**
+	 * Stub: mirrors core's wp_slash() — addslashes over strings, recursive over arrays.
+	 *
+	 * @param  mixed $value Value to slash.
+	 * @return mixed
+	 */
+	function wp_slash( $value ) {
+		if ( is_array( $value ) ) {
+			return array_map( 'wp_slash', $value );
+		}
+		return is_string( $value ) ? addslashes( $value ) : $value;
+	}
+}
+
+if ( ! function_exists( 'wp_insert_post' ) ) {
+	/**
+	 * Stub: stores a post in $__acrossai_test_posts, unslashing every field first.
+	 *
+	 * The `content_save_pre` filter is applied to post_content as core does, which is what lets a
+	 * test simulate a storage layer that mangles what it is given.
+	 *
+	 * @param  array $postarr  Post fields.
+	 * @param  bool  $wp_error Whether to return WP_Error on failure.
+	 * @return int|WP_Error
+	 */
+	function wp_insert_post( array $postarr, bool $wp_error = false ) {
+		global $__acrossai_test_posts, $__acrossai_test_next_post_id;
+
+		if ( ! is_array( $__acrossai_test_posts ) ) {
+			$__acrossai_test_posts = array();
+		}
+
+		$id = (int) ( $postarr['ID'] ?? 0 );
+		if ( 0 === $id ) {
+			$__acrossai_test_next_post_id = max( 1, (int) $__acrossai_test_next_post_id ) + 1;
+			$id                           = $__acrossai_test_next_post_id;
+		}
+
+		$row = isset( $__acrossai_test_posts[ $id ] ) ? (array) $__acrossai_test_posts[ $id ] : array();
+		unset( $postarr['ID'] );
+
+		foreach ( $postarr as $field => $value ) {
+			$row[ $field ] = is_string( $value ) ? wp_unslash( $value ) : $value;
+		}
+
+		if ( isset( $row['post_content'] ) ) {
+			$row['post_content'] = (string) apply_filters( 'content_save_pre', $row['post_content'] );
+		}
+
+		$row['ID']                = $id;
+		$row['post_modified_gmt'] = $row['post_modified_gmt'] ?? '2026-01-01 00:00:00';
+
+		$__acrossai_test_posts[ $id ] = $row;
+
+		return $id;
+	}
+}
+
+if ( ! function_exists( 'wp_update_post' ) ) {
+	/**
+	 * Stub: merges fields into an existing stored post. Same unslashing as insert.
+	 *
+	 * @param  array $postarr  Post fields including ID.
+	 * @param  bool  $wp_error Whether to return WP_Error on failure.
+	 * @return int|WP_Error
+	 */
+	function wp_update_post( array $postarr, bool $wp_error = false ) {
+		global $__acrossai_test_posts;
+
+		$id = (int) ( $postarr['ID'] ?? 0 );
+		if ( 0 === $id || ! isset( $__acrossai_test_posts[ $id ] ) ) {
+			return $wp_error ? new WP_Error( 'invalid_post', 'Invalid post ID.' ) : 0;
+		}
+
+		return wp_insert_post( $postarr, $wp_error );
+	}
+}
+
+if ( ! function_exists( 'wp_delete_post' ) ) {
+	/**
+	 * Stub: removes a post from the in-memory store.
+	 *
+	 * @param  int  $post_id      Post ID.
+	 * @param  bool $force_delete Ignored; the stub has no trash.
+	 * @return bool
+	 */
+	function wp_delete_post( int $post_id, bool $force_delete = false ): bool {
+		global $__acrossai_test_posts;
+
+		if ( ! isset( $__acrossai_test_posts[ $post_id ] ) ) {
+			return false;
+		}
+
+		unset( $__acrossai_test_posts[ $post_id ] );
+		return true;
+	}
+}
+
+if ( ! function_exists( 'clean_post_cache' ) ) {
+	/** Stub: no object cache in unit-test mode, so there is nothing to clean. */
+	function clean_post_cache( int $post_id ): void {
+		unset( $post_id );
+	}
+}
+
+if ( ! function_exists( 'wp_set_object_terms' ) ) {
+	/**
+	 * Stub: records term assignments so wp_get_object_terms() can read them back.
+	 *
+	 * @param  int    $object_id Object ID.
+	 * @param  mixed  $terms     Term name(s).
+	 * @param  string $taxonomy  Taxonomy.
+	 * @param  bool   $append    Ignored.
+	 * @return array
+	 */
+	function wp_set_object_terms( int $object_id, $terms, string $taxonomy, bool $append = false ): array {
+		$GLOBALS['__acrossai_test_terms'][ $object_id ][ $taxonomy ] = array_values( (array) $terms );
+
+		return $GLOBALS['__acrossai_test_terms'][ $object_id ][ $taxonomy ];
+	}
+}
+
+if ( ! function_exists( 'add_option' ) ) {
+	/**
+	 * Stub: INSERT semantics — returns false when the option already exists.
+	 *
+	 * @param  string $option     Option name.
+	 * @param  mixed  $value      Option value.
+	 * @param  string $deprecated Unused.
+	 * @param  mixed  $autoload   Unused.
+	 * @return bool
+	 */
+	function add_option( string $option, $value = '', string $deprecated = '', $autoload = 'yes' ): bool {
+		global $__acrossai_test_options;
+
+		if ( is_array( $__acrossai_test_options ) && array_key_exists( $option, $__acrossai_test_options ) ) {
+			return false;
+		}
+
+		return update_option( $option, $value );
+	}
+}
+
+if ( ! function_exists( 'is_multisite' ) ) {
+	/** Stub: single site. */
+	function is_multisite(): bool {
+		return false;
+	}
+}
+
+if ( ! class_exists( 'WP_Theme_JSON' ) ) {
+	/**
+	 * Stub carrying the one constant this plugin reads from core's class, so tests assert against
+	 * the same source the production code does rather than a hardcoded 3.
+	 */
+	class WP_Theme_JSON {
+		public const LATEST_SCHEMA = 3;
+	}
+}
+
+if ( ! defined( 'WP_PLUGIN_DIR' ) ) {
+	// An empty directory: Global_Styles_File::scan_plugins_with_theme_json() then finds no plugin
+	// theme.json, so Global Styles location detection sees only what a test actually created.
+	define( 'WP_PLUGIN_DIR', WP_CONTENT_DIR . '/plugins' );
 }

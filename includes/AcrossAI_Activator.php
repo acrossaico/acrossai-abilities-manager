@@ -17,6 +17,7 @@ use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Settings;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Category_Slug_Migration;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Integration_Default_Opt_Ins;
 use AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Library_Gate_Migration;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Global_Styles\Global_Styles_Flag_Migration;
 use WPBoilerplate\AccessControl\Database\Rule\RuleTable;
 
 // Exit if accessed directly.
@@ -54,6 +55,10 @@ class AcrossAI_Activator {
 		// network pick it up on their own first request (plugins_loaded P1); the flag makes both
 		// paths idempotent.
 		AcrossAI_Library_Gate_Migration::instance()->maybe_migrate();
+		// Global Styles records written before 0.0.41 lack the keys WordPress needs to apply them.
+		// Idempotent and guarded by its own claim option, so this and the init-hook path cannot both
+		// run the repair.
+		Global_Styles_Flag_Migration::instance()->maybe_migrate();
 		// Feature 117 — integrations whose default is ON. Idempotent and guarded by its own option,
 		// so the plugins_loaded path and this one cannot seed twice.
 		AcrossAI_Integration_Default_Opt_Ins::maybe_seed();

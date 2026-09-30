@@ -470,6 +470,14 @@ final class Main {
 		$gate_migration = \AcrossAI_Abilities_Manager\Includes\Modules\Abilities\AcrossAI_Library_Gate_Migration::instance();
 		$this->loader->add_action( 'init', $gate_migration, 'maybe_migrate', 100 );
 
+		// Adds isGlobalStylesUserThemeJSON + version to wp_global_styles records written before
+		// 0.0.41, which WordPress was ignoring outright. Same reasoning as the gate migration for the
+		// hook choice: an admin-only trigger would leave an unattended site serving theme defaults
+		// while its abilities reported a DB record as effective. It reads no request input and is
+		// claimed once per site.
+		$global_styles_flags = \AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Global_Styles\Global_Styles_Flag_Migration::instance();
+		$this->loader->add_action( 'init', $global_styles_flags, 'maybe_migrate', 100 );
+
 		// Feature 184: give abilities registered by other plugins a toolset. Hooked to the core
 		// wp_register_ability_args filter at P10 so the value is on the WP_Ability itself, which is
 		// what makes the tab strip, the counts, the Toolset column and the MCP dispatchers all agree

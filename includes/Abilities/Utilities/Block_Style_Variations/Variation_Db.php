@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Block_Style_Variations;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Global_Styles\Global_Styles_Db;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Global_Styles\Global_Styles_Writer;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -207,21 +208,19 @@ final class Variation_Db {
 			return new \WP_Error( 'slug_conflict', __( 'A variation with this slug already exists for this theme. Use update instead.', 'acrossai-abilities-manager' ) );
 		}
 
-		$json = Global_Styles_Db::encode_json( $data );
-		if ( is_wp_error( $json ) ) {
-			return $json;
-		}
-
-		$post_id = wp_insert_post(
+		// Variations share the quoted-value defect the main record had: JSON handed to
+		// wp_insert_post() unslashed is wp_unslash()-ed on the way in, so a font stack containing
+		// escaped double quotes stored content that no longer parsed. Global_Styles_Writer slashes
+		// and then reads the row back to prove it decoded.
+		$post_id = Global_Styles_Writer::insert_raw(
 			array(
 				'post_type'    => self::POST_TYPE,
 				'post_status'  => 'publish',
 				'post_title'   => sanitize_text_field( (string) ( $extras['title'] ?? ucwords( str_replace( array( '-', '_' ), ' ', $slug ) ) ) ),
 				'post_name'    => $slug,
 				'post_excerpt' => sanitize_text_field( (string) ( $extras['description'] ?? '' ) ),
-				'post_content' => $json,
 			),
-			true
+			$data
 		);
 		if ( is_wp_error( $post_id ) ) {
 			return $post_id;
@@ -235,8 +234,17 @@ final class Variation_Db {
 	 * @return int|\WP_Error
 	 */
 	public static function update( \WP_Post $post, array $data, bool $merge = true, array $extras = array() ) {
-		$existing = self::decode_content( $post );
-		$new      = $merge ? Global_Styles_Db::deep_merge( $existing, $data ) : $data;
+		if ( $merge ) {
+			// Never merge into content that does not decode — that is how a single corrupt write
+			// silently discarded everything stored before it.
+			$existing = Global_Styles_Writer::decode( (string) $post->post_content );
+			if ( is_wp_error( $existing ) ) {
+				return $existing;
+			}
+			$new = Global_Styles_Db::deep_merge( $existing, $data );
+		} else {
+			$new = $data;
+		}
 
 		$valid = Global_Styles_Db::validate_data( $new );
 		if ( is_wp_error( $valid ) ) {
@@ -247,15 +255,7 @@ final class Variation_Db {
 			return $valid;
 		}
 
-		$json = Global_Styles_Db::encode_json( $new );
-		if ( is_wp_error( $json ) ) {
-			return $json;
-		}
-
-		$update = array(
-			'ID'           => (int) $post->ID,
-			'post_content' => $json,
-		);
+		$update = array();
 		if ( array_key_exists( 'title', $extras ) ) {
 			$update['post_title'] = sanitize_text_field( (string) $extras['title'] );
 		}
@@ -274,7 +274,7 @@ final class Variation_Db {
 			$update['post_name'] = $new_slug;
 		}
 
-		$result = wp_update_post( $update, true );
+		$result = Global_Styles_Writer::update_raw( (int) $post->ID, $new, $update );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
@@ -294,7 +294,11 @@ final class Variation_Db {
 			);
 		}
 
-		$existing = self::decode_content( $post );
+		$existing = Global_Styles_Writer::decode( (string) $post->post_content );
+		if ( is_wp_error( $existing ) ) {
+			return $existing;
+		}
+
 		foreach ( self::SECTION_PATHS[ $section ] as $path ) {
 			$value = Global_Styles_Db::path_get( $section_data, $path );
 			if ( null !== $value ) {

@@ -38,7 +38,7 @@ class Read_Global_Style extends Ability_Definition {
 			'name' => 'blocks/read-global-style',
 			'args' => array(
 				'label'               => __( 'Read Global Style', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Reads a Global Styles record (or one section of it) for a theme. Defaults to the database; falls back to theme.json defaults when no DB record exists. Pass "section" to return only colors / typography / spacing / layout / blockStyles / customCss.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Reads a Global Styles record (or one section of it) for a theme. Defaults to the database; falls back to theme.json defaults when no DB record exists. Pass "section" to return only colors / typography / spacing / layout / blockStyles / elements / customCss. origin reports "db" only when WordPress is actually applying the record; a stored-but-ignored record reads "db:ignored" and says why in warnings.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-block',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -68,7 +68,7 @@ class Read_Global_Style extends Ability_Definition {
 						),
 						'section'     => array(
 							'type'        => 'string',
-							'enum'        => array( '', 'colors', 'typography', 'spacing', 'layout', 'blockStyles', 'customCss' ),
+							'enum'        => array( '', 'colors', 'typography', 'spacing', 'layout', 'blockStyles', 'elements', 'customCss' ),
 							'default'     => '',
 							'description' => __( 'Return only this section instead of the full record.', 'acrossai-abilities-manager' ),
 						),
@@ -180,7 +180,7 @@ class Read_Global_Style extends Ability_Definition {
 		// Scenario 25 — return just the section, falling back to theme.json when missing.
 		if ( '' !== $section ) {
 			$slice  = $this->extract_section( $materialised['data'], $section );
-			$origin = $materialised['origin'];
+			$origin = (string) $materialised['origin'];
 			if ( empty( $slice ) ) {
 				$fallback = $this->read_theme_json_defaults();
 				$slice    = $this->extract_section( $fallback['data'], $section );
@@ -190,7 +190,10 @@ class Read_Global_Style extends Ability_Definition {
 			$materialised['origin'] = $origin;
 		}
 
-		$warnings = $this->collect_warnings( $locations, $selected );
+		$warnings = array_merge(
+			(array) ( $materialised['warnings'] ?? array() ),
+			$this->collect_warnings( $locations, $selected )
+		);
 
 		return array(
 			'success'   => true,
@@ -210,7 +213,7 @@ class Read_Global_Style extends Ability_Definition {
 	 * @return array
 	 */
 	private function summarise( array $loc ): array {
-		return array(
+		$summary = array(
 			'source'        => (string) ( $loc['source'] ?? '' ),
 			'theme'         => (string) ( $loc['theme'] ?? '' ),
 			'theme_type'    => (string) ( $loc['theme_type'] ?? '' ),
@@ -219,10 +222,16 @@ class Read_Global_Style extends Ability_Definition {
 			'post_id'       => (int) ( $loc['post_id'] ?? 0 ),
 			'path'          => (string) ( $loc['path'] ?? '' ),
 		);
+
+		if ( array_key_exists( 'applied_by_wordpress', $loc ) ) {
+			$summary['applied_by_wordpress'] = (bool) $loc['applied_by_wordpress'];
+		}
+
+		return $summary;
 	}
 
 	/**
-	 * @return array{data: array, origin: string}|\WP_Error
+	 * @return array{data: array, origin: string, warnings: array<int, string>}|\WP_Error
 	 */
 	private function materialise( array $loc ) {
 		$src = (string) ( $loc['source'] ?? '' );
@@ -231,9 +240,15 @@ class Read_Global_Style extends Ability_Definition {
 			if ( ! $post ) {
 				return new \WP_Error( 'db_post_missing', __( 'wp_global_styles post not found.', 'acrossai-abilities-manager' ) );
 			}
+
+			// `origin: "db"` is a claim about what WordPress is serving, so it is only made when the
+			// record actually qualifies — it decodes and carries isGlobalStylesUserThemeJSON. A
+			// record failing either is reported as "db:ignored", with the reason in warnings, rather
+			// than passed off as the live styles while the site renders theme.json defaults.
 			return array(
-				'data'   => Global_Styles_Db::decode_content( $post ),
-				'origin' => 'db',
+				'data'     => Global_Styles_Db::decode_content( $post ),
+				'origin'   => Global_Styles_Db::is_applied_by_wordpress( $post ) ? 'db' : 'db:ignored',
+				'warnings' => Global_Styles_Db::record_warnings( $post ),
 			);
 		}
 
@@ -242,8 +257,9 @@ class Read_Global_Style extends Ability_Definition {
 			return $data;
 		}
 		return array(
-			'data'   => $data,
-			'origin' => 'plugin' === $src ? 'plugin:theme.json' : 'theme:theme.json',
+			'data'     => $data,
+			'origin'   => 'plugin' === $src ? 'plugin:theme.json' : 'theme:theme.json',
+			'warnings' => array(),
 		);
 	}
 
@@ -312,6 +328,10 @@ class Read_Global_Style extends Ability_Definition {
 
 		if ( count( $locations ) > 1 ) {
 			$warnings[] = __( 'Multiple Global Styles locations exist. WordPress always serves the highest-priority copy: DB → child theme → parent theme → plugin.', 'acrossai-abilities-manager' );
+		}
+
+		if ( $effective && false === ( $effective['applied_by_wordpress'] ?? true ) ) {
+			$warnings[] = __( 'The DB record outranks the theme.json copies, but WordPress is ignoring it, so the theme.json values are what the site is rendering.', 'acrossai-abilities-manager' );
 		}
 
 		if ( $effective && ( $selected['source'] ?? '' ) !== ( $effective['source'] ?? '' ) ) {

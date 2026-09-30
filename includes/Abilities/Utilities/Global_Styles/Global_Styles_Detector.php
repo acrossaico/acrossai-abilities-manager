@@ -36,12 +36,22 @@ final class Global_Styles_Detector {
 		// 1. Database (always wins).
 		$post = Global_Styles_Db::find_by_theme( $theme );
 		if ( $post ) {
-			$locations[] = array(
-				'source'              => 'db',
-				'theme'               => $theme,
-				'post_id'             => (int) $post->ID,
-				'customized_sections' => Global_Styles_Db::get_customized_sections( $post ),
+			$location = array(
+				'source'               => 'db',
+				'theme'                => $theme,
+				'post_id'              => (int) $post->ID,
+				'customized_sections'  => Global_Styles_Db::get_customized_sections( $post ),
+				// The DB copy outranks every file, but only while WordPress is willing to use it.
+				// Callers that report what the site is serving need both facts, not just the rank.
+				'applied_by_wordpress' => Global_Styles_Db::is_applied_by_wordpress( $post ),
 			);
+
+			$record_warnings = Global_Styles_Db::record_warnings( $post );
+			if ( ! empty( $record_warnings ) ) {
+				$location['warnings'] = $record_warnings;
+			}
+
+			$locations[] = $location;
 		}
 
 		// 2. Child theme.
