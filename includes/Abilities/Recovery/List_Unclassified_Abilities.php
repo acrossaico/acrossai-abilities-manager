@@ -37,12 +37,10 @@ defined( 'ABSPATH' ) || exit;
  *    integration *should* have claimed.
  * 2. Which abilities an integration placed by its default rather than by a rule. Empty is healthy.
  *    A name here is a host plugin having shipped something nobody has classified yet.
- * 3. Whether anything is being shadowed by a name clash, which no prefix claim can fix. Reported as
- *    a lower bound on purpose: WP rejects a duplicate name at
- *    `WP_Abilities_Registry::register()` line 97 and only fires `wp_register_ability_args` at line
- *    139, so the registration a plugin actually lost never reaches the recorder. Elementor is the
- *    live example — it loses `elementor/create-page` and `elementor/update-page-settings` to this
- *    plugin on every request, logs two notices, and the recorder reports neither.
+ * 3. Whether anything is being shadowed by a name clash, which no prefix claim can fix. Elementor is
+ *    the live example — with its MCP exposure enabled it loses `elementor/create-page` and
+ *    `elementor/update-page-settings` to this plugin on every request. `Ability_Collision_Recorder`
+ *    could not see either until #260; it names the losing plugin now.
  *
  * Lives with the Recovery abilities for the reason `List_Ability_Collisions` gives: it shares their
  * category and their job, and a folder of its own would need its own category registrar.
@@ -102,7 +100,7 @@ class List_Unclassified_Abilities extends Ability_Definition {
 						),
 						'shadowed'       => array(
 							'type'        => 'integer',
-							'description' => __( 'A LOWER BOUND on ability names more than one plugin tried to register, not a total. WordPress rejects a duplicate name before it fires the filter the collision recorder listens on, so a plugin genuinely losing an ability to another plugin is invisible here and this number can be 0 while it is happening. -1 means the recorder was not attached at all. Use it as a hint, confirm in the debug log by searching for "is already registered", and see diagnostics/list-ability-collisions for the names it could see.', 'acrossai-abilities-manager' ),
+							'description' => __( 'Registrations WordPress refused because another plugin already held the name. Each one is a plugin that lost an ability, and which plugin wins is decided by load order alone, so another site with the same plugins can resolve the other way. -1 means the collision recorder was not attached, so no conclusion can be drawn. Call diagnostics/list-ability-collisions for the contested names and which plugin lost each one.', 'acrossai-abilities-manager' ),
 						),
 						'total_abilities' => array( 'type' => 'integer' ),
 						'message'        => array( 'type' => 'string' ),
@@ -220,7 +218,7 @@ class List_Unclassified_Abilities extends Ability_Definition {
 			'unclassified_total' => $unclassified_total,
 			'needs_attention'    => $needs_attention,
 			'placed_by_fallback' => $fallback,
-			'shadowed'           => Ability_Collision_Recorder::is_listening() ? count( Ability_Collision_Recorder::collisions() ) : -1,
+			'shadowed'           => Ability_Collision_Recorder::is_listening() ? Ability_Collision_Recorder::refused_count() : -1,
 			'total_abilities'    => $total,
 			'message'            => $this->summarise( $unclassified_total, $total, $needs_attention, $fallback ),
 		);

@@ -57,7 +57,7 @@ class List_Ability_Collisions extends Ability_Definition {
 						'collisions' => array(
 							'type'        => 'array',
 							'items'       => array( 'type' => 'object', 'additionalProperties' => true ),
-							'description' => __( 'One row per contested ability name: the ability, how many registrations were attempted, the label now live, and the labels discarded. A row carries a note instead of losers when the registrants used identical labels and cannot be told apart.', 'acrossai-abilities-manager' ),
+							'description' => __( 'One row per contested ability name: the ability, how many registrations were attempted, how many WordPress refused outright, the label now live, the labels discarded, and in "lost_by" the plugin directories whose registration was refused. Read lost_by first — two plugins implementing the same ability usually label it identically, so the labels often cannot tell them apart while lost_by always can. A refused count above zero means a plugin is losing this ability right now, decided by load order alone.', 'acrossai-abilities-manager' ),
 						),
 						'count'      => array( 'type' => 'integer' ),
 						'watched'    => array(
