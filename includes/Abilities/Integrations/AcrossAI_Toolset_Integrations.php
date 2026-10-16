@@ -185,6 +185,13 @@ class AcrossAI_Toolset_Integrations {
 			new Email_Delivery(),
 			new Anti_Spam(),
 			new WooCommerce(),
+			// These three have a hand-written dispatcher in `Toolset/` and are listed in the
+			// bootstrap's `$claimed` array, so no `Integration_Toolset` is generated for them. They
+			// are declared here purely to claim their ability-name prefix for the tagger — without
+			// that, a host plugin's own abilities fall through to the catch-all (issue #255).
+			new Elementor(),
+			new UpdraftPlus(),
+			new All_In_One(),
 			// Last: it claims no prefixes and only ever receives what nothing else wanted, so its
 			// position is immaterial — but reading it last matches how resolution actually works.
 			new AcrossAI_Catch_All_Integration(),
