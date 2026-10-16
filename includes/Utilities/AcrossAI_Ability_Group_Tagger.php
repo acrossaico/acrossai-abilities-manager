@@ -32,11 +32,12 @@ declare( strict_types = 1 );
 namespace AcrossAI_Abilities_Manager\Includes\Utilities;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\AcrossAI_Toolset_Integrations;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\AcrossAI_Toolset_Sub_Groups;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Assigns a `tab_group` to abilities that arrive without one.
+ * Assigns a `tab_group`, and where the integration declares how, a `sub_group`.
  */
 class AcrossAI_Ability_Group_Tagger {
 
@@ -81,7 +82,7 @@ class AcrossAI_Ability_Group_Tagger {
 
 		$name = (string) $name;
 
-		if ( '' === $name || '' !== self::declared_group( $args ) ) {
+		if ( '' === $name ) {
 			return $args;
 		}
 
@@ -95,17 +96,207 @@ class AcrossAI_Ability_Group_Tagger {
 			return $args;
 		}
 
-		$group = self::resolve( $name );
+		// Gap-fill is per key, not per ability. An ability that declares a group but no sub-group
+		// gets the half it is missing — returning early on a declared group, as this did before
+		// sub-groups existed, would leave such an ability unreachable by `sub_group` forever.
+		$declared = self::declared_group( $args );
+		$group    = '' !== $declared ? $declared : self::resolve( $name );
 
 		if ( '' === $group ) {
 			return $args;
 		}
 
-		$acrossai['tab_group']    = $group;
+		$changed = false;
+
+		if ( '' === $declared ) {
+			$acrossai['tab_group'] = $group;
+			$changed               = true;
+		}
+
+		if ( ! isset( $acrossai['sub_group'] ) || '' === (string) $acrossai['sub_group'] ) {
+			list( $sub_group, $label ) = self::resolve_sub_group( $name, $group, $args );
+
+			if ( '' !== $sub_group ) {
+				$acrossai['sub_group'] = $sub_group;
+				$changed               = true;
+
+				if ( '' !== $label && ( ! isset( $acrossai['sub_group_label'] ) || '' === (string) $acrossai['sub_group_label'] ) ) {
+					$acrossai['sub_group_label'] = $label;
+				}
+			}
+		}
+
+		if ( ! $changed ) {
+			return $args;
+		}
+
 		$args['meta']             = isset( $args['meta'] ) && is_array( $args['meta'] ) ? $args['meta'] : array();
 		$args['meta']['acrossai'] = $acrossai;
 
 		return $args;
+	}
+
+	/**
+	 * The sub-group an ability with none belongs to, and its label.
+	 *
+	 * Asks the integration that owns the group. Most do not implement
+	 * {@see AcrossAI_Toolset_Sub_Groups} — including the catch-all, which is why nothing in `other`
+	 * is ever given a sub-group — and those return no answer, leaving the key unset exactly as
+	 * before.
+	 *
+	 * @since  0.0.42
+	 * @param  string               $name  Ability name, namespaced.
+	 * @param  string               $group Resolved group key.
+	 * @param  array<string, mixed> $args  Registration args, for `meta.mcp.type`.
+	 * @return array{0: string, 1: string} Sub-group key and label; both '' when unplaced.
+	 */
+	private static function resolve_sub_group( string $name, string $group, array $args ): array {
+		$integration = AcrossAI_Toolset_Integrations::for_group( $group );
+		$sub_group   = '';
+
+		if ( $integration instanceof AcrossAI_Toolset_Sub_Groups ) {
+			$overrides = $integration->sub_group_overrides();
+			$suffix    = self::name_suffix( $name );
+
+			if ( isset( $overrides[ $name ] ) ) {
+				$sub_group = (string) $overrides[ $name ];
+			} else {
+				$sub_group = self::match_rules( $integration->sub_group_rules(), $suffix, $args );
+
+				if ( '' === $sub_group ) {
+					$sub_group = (string) $integration->default_sub_group();
+				}
+			}
+		}
+
+		/**
+		 * Filters the sub-group assigned to an ability that declared none.
+		 *
+		 * Prefer implementing {@see AcrossAI_Toolset_Sub_Groups} on the integration — it keeps the
+		 * rules next to the prefix claim and the labels. This exists for a sibling plugin that needs
+		 * to correct one placement without owning the descriptor.
+		 *
+		 * @since 0.0.42
+		 * @param string               $sub_group Sub-group key, or '' to leave unset.
+		 * @param string               $name      Ability name.
+		 * @param string               $group     Resolved group key.
+		 * @param array<string, mixed> $args      Registration args.
+		 */
+		$sub_group = (string) apply_filters( 'acrossai_ability_sub_group_tagger', $sub_group, $name, $group, $args );
+
+		if ( '' === $sub_group ) {
+			return array( '', '' );
+		}
+
+		$labels = $integration instanceof AcrossAI_Toolset_Sub_Groups ? $integration->sub_group_labels() : array();
+		$label  = isset( $labels[ $sub_group ] ) ? (string) $labels[ $sub_group ] : '';
+
+		return array( $sub_group, $label );
+	}
+
+	/**
+	 * First matching rule's sub-group, or ''.
+	 *
+	 * @since  0.0.42
+	 * @param  array<int, array<string, mixed>> $rules  Ordered rules.
+	 * @param  string                           $suffix Ability name after the namespace slash.
+	 * @param  array<string, mixed>             $args   Registration args.
+	 * @return string
+	 */
+	private static function match_rules( array $rules, string $suffix, array $args ): string {
+		$is_resource = 'resource' === ( $args['meta']['mcp']['type'] ?? '' );
+
+		foreach ( $rules as $rule ) {
+			if ( ! is_array( $rule ) || empty( $rule['sub_group'] ) ) {
+				continue;
+			}
+
+			if ( isset( $rule['resource'] ) && (bool) $rule['resource'] !== $is_resource ) {
+				continue;
+			}
+
+			if ( ! self::matches_keywords( $rule, $suffix ) || ! self::matches_patterns( $rule, $suffix ) ) {
+				continue;
+			}
+
+			return (string) $rule['sub_group'];
+		}
+
+		return '';
+	}
+
+	/**
+	 * Whether a rule's keywords allow this name. A rule with none allows every name.
+	 *
+	 * @since  0.0.42
+	 * @param  array<string, mixed> $rule   One rule.
+	 * @param  string               $suffix Ability name after the slash.
+	 * @return bool
+	 */
+	private static function matches_keywords( array $rule, string $suffix ): bool {
+		if ( empty( $rule['keywords'] ) || ! is_array( $rule['keywords'] ) ) {
+			return true;
+		}
+
+		foreach ( $rule['keywords'] as $keyword ) {
+			if ( '' !== (string) $keyword && false !== strpos( $suffix, (string) $keyword ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Whether a rule's patterns allow this name. A rule with none allows every name.
+	 *
+	 * @since  0.0.42
+	 * @param  array<string, mixed> $rule   One rule.
+	 * @param  string               $suffix Ability name after the slash.
+	 * @return bool
+	 */
+	private static function matches_patterns( array $rule, string $suffix ): bool {
+		if ( empty( $rule['patterns'] ) || ! is_array( $rule['patterns'] ) ) {
+			return true;
+		}
+
+		foreach ( $rule['patterns'] as $pattern ) {
+			$pattern = (string) $pattern;
+
+			if ( '' === $pattern ) {
+				continue;
+			}
+
+			if ( '*' === substr( $pattern, -1 ) ) {
+				if ( 0 === strpos( $suffix, substr( $pattern, 0, -1 ) ) ) {
+					return true;
+				}
+
+				continue;
+			}
+
+			if ( $pattern === $suffix ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * The part of an ability name after its namespace.
+	 *
+	 * Rules match on this rather than the full name so a rule reads the way the ability does —
+	 * `manage-classes`, not `elementor/manage-classes`.
+	 *
+	 * @since  0.0.42
+	 * @param  string $name Ability name.
+	 * @return string
+	 */
+	private static function name_suffix( string $name ): string {
+		$slash = strpos( $name, '/' );
+
+		return false !== $slash ? substr( $name, $slash + 1 ) : $name;
 	}
 
 	/**

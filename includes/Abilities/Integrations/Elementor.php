@@ -39,7 +39,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Groups Elementor's own abilities alongside this plugin's.
  */
-final class Elementor implements AcrossAI_Toolset_Integration {
+final class Elementor implements AcrossAI_Toolset_Integration, AcrossAI_Toolset_Sub_Groups {
 
 	/**
 	 * Toolset key.
@@ -110,5 +110,89 @@ final class Elementor implements AcrossAI_Toolset_Integration {
 	 */
 	public function is_active(): bool {
 		return class_exists( '\Elementor\Plugin' );
+	}
+
+	/**
+	 * How Elementor's own abilities divide up.
+	 *
+	 * Targets the three sub-groups this plugin's 81 Elementor abilities already use, so the two
+	 * halves of the group share one vocabulary and `Toolset\Elementor`'s description — which names
+	 * the sub-groups in prose and is the only place a model learns them — needs no change.
+	 *
+	 * The resource rule comes first on purpose. `global-classes-resource` and
+	 * `global-variables-resource` would both match the global-design keywords below, but they are
+	 * read-only context rather than the write path, and belong with the other resources.
+	 *
+	 * @since  0.0.42
+	 * @return array<int, array<string, mixed>>
+	 */
+	public function sub_group_rules(): array {
+		return array(
+			// Everything Elementor registers as an MCP resource is context or a guide.
+			array(
+				'sub_group' => 'elementor-guidance',
+				'resource'  => true,
+			),
+			// The V4 global design system: variables, global classes and site-wide default styles.
+			// These sit beside our own kit settings — the pairing issue #255 asked for.
+			array(
+				'sub_group' => 'elementor-kits',
+				'keywords'  => array( 'global-variable', 'classes', 'default-styles', 'variable' ),
+			),
+			// Authoring and the document lifecycle.
+			array(
+				'sub_group' => 'elementor-elements',
+				'keywords'  => array( 'composition', 'element', 'component', 'document', 'preview', 'structure' ),
+			),
+			// Catalogues, schemas and advice.
+			array(
+				'sub_group' => 'elementor-guidance',
+				'keywords'  => array( 'schema', 'best-practices', 'guide', 'asset', 'dynamic-tag' ),
+			),
+		);
+	}
+
+	/**
+	 * No exceptions yet.
+	 *
+	 * The rules place all 25 of Elementor's current abilities correctly. A long list here would
+	 * mean the rules are wrong; fix them instead.
+	 *
+	 * @since  0.0.42
+	 * @return array<string, string>
+	 */
+	public function sub_group_overrides(): array {
+		return array();
+	}
+
+	/**
+	 * Where an unrecognised Elementor ability lands.
+	 *
+	 * Guidance rather than elements: an ability nobody has written a rule for is more useful sitting
+	 * with the catalogues than implying it mutates a page. `elementor/list-posts` and
+	 * `elementor/list-assets` are the shape this catches today.
+	 *
+	 * @since  0.0.42
+	 * @return string
+	 */
+	public function default_sub_group(): string {
+		return 'elementor-guidance';
+	}
+
+	/**
+	 * Labels, matching what this plugin's own Elementor abilities declare.
+	 *
+	 * Declared rather than derived: `ucwords()` on the key would render "Elementor Kits" where the
+	 * rest of the group says "Kits & Global Styles".
+	 *
+	 * @since  0.0.42
+	 * @return array<string, string>
+	 */
+	public function sub_group_labels(): array {
+		return array(
+			'elementor-elements' => __( 'Elements & Widgets', 'acrossai-abilities-manager' ),
+			'elementor-kits'     => __( 'Kits & Global Styles', 'acrossai-abilities-manager' ),
+			'elementor-guidance' => __( 'Discovery & Guidance', 'acrossai-abilities-manager' ),
+		);
 	}
 }
