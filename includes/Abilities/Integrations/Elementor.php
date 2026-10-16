@@ -144,10 +144,14 @@ final class Elementor implements AcrossAI_Toolset_Integration, AcrossAI_Toolset_
 				'sub_group' => 'elementor-elements',
 				'keywords'  => array( 'composition', 'element', 'component', 'document', 'preview', 'structure' ),
 			),
-			// Catalogues, schemas and advice.
+			// Catalogues, schemas and advice. `resource` and `posts` are here because
+			// `list-resources`, `read-resource` and `list-posts` are tools that read the resource
+			// and content catalogues rather than resources themselves, so the first rule misses
+			// them — `diagnostics/list-unclassified-abilities` reported all three as placed by the
+			// fallback, which is what that report is for.
 			array(
 				'sub_group' => 'elementor-guidance',
-				'keywords'  => array( 'schema', 'best-practices', 'guide', 'asset', 'dynamic-tag' ),
+				'keywords'  => array( 'schema', 'best-practices', 'guide', 'asset', 'dynamic-tag', 'resource', 'posts' ),
 			),
 		);
 	}

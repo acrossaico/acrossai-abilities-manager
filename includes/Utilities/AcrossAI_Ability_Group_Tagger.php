@@ -64,6 +64,17 @@ class AcrossAI_Ability_Group_Tagger {
 	);
 
 	/**
+	 * Abilities whose sub-group came from `default_sub_group()` rather than a rule, keyed by name.
+	 *
+	 * Per request, like the rest of this class — registration happens once per request and the set
+	 * depends on which plugins are active.
+	 *
+	 * @since 0.0.42
+	 * @var   array<string, string> Ability name => group.
+	 */
+	private static $defaulted = array();
+
+	/**
 	 * Tag an ability's registration args when they carry no group.
 	 *
 	 * Hooked to `wp_register_ability_args` at priority 10 — long before
@@ -165,6 +176,14 @@ class AcrossAI_Ability_Group_Tagger {
 
 				if ( '' === $sub_group ) {
 					$sub_group = (string) $integration->default_sub_group();
+
+					// Recorded, not just assigned. A rule that matched is a decision someone made;
+					// the default is the absence of one, and the only signal that a host plugin has
+					// shipped an ability nobody has classified yet. Read by
+					// `diagnostics/list-unclassified-abilities`.
+					if ( '' !== $sub_group ) {
+						self::$defaulted[ $name ] = $group;
+					}
 				}
 			}
 		}
@@ -297,6 +316,30 @@ class AcrossAI_Ability_Group_Tagger {
 		$slash = strpos( $name, '/' );
 
 		return false !== $slash ? substr( $name, $slash + 1 ) : $name;
+	}
+
+	/**
+	 * Abilities placed by an integration's default rather than by one of its rules.
+	 *
+	 * An empty result is the healthy state: every foreign ability matched a rule someone wrote. A
+	 * non-empty one names the abilities a host plugin has shipped that nobody has classified — which
+	 * is the signal #184 and #255 both lacked.
+	 *
+	 * @since  0.0.42
+	 * @return array<string, string> Ability name => group.
+	 */
+	public static function defaulted(): array {
+		return self::$defaulted;
+	}
+
+	/**
+	 * Forget what was recorded. For tests; registration is once per request in production.
+	 *
+	 * @since  0.0.42
+	 * @return void
+	 */
+	public static function reset(): void {
+		self::$defaulted = array();
 	}
 
 	/**

@@ -69,6 +69,7 @@ class Test_Ability_Group_Tagger extends TestCase {
 	 */
 	protected function tearDown(): void {
 		AcrossAI_Toolset_Integrations::flush();
+		AcrossAI_Ability_Group_Tagger::reset();
 
 		unset(
 			$GLOBALS['acrossai_test_filter_values'],
@@ -424,5 +425,52 @@ class Test_Ability_Group_Tagger extends TestCase {
 		list( $sub ) = $this->tagged_sub( array(), 'elementor/manage-classes' );
 
 		$this->assertSame( 'elementor-system', $sub );
+	}
+
+	/**
+	 * An ability placed by the fallback is recorded; one placed by a rule is not.
+	 *
+	 * This is what `diagnostics/list-unclassified-abilities` reads, and the only signal that a host
+	 * plugin has shipped an ability no rule recognises. It earned itself immediately: on the first
+	 * run against Elementor 4.3 it named `list-resources`, `read-resource` and `list-posts`, which
+	 * the rules then grew to cover.
+	 *
+	 * @return void
+	 */
+	public function test_only_fallback_placements_are_recorded(): void {
+		AcrossAI_Ability_Group_Tagger::reset();
+
+		// Matches rule 2 on the `variable` keyword.
+		AcrossAI_Ability_Group_Tagger::tag( array(), 'elementor/manage-global-variable' );
+
+		$this->assertSame( array(), AcrossAI_Ability_Group_Tagger::defaulted(), 'A rule match must not be recorded as a fallback.' );
+
+		AcrossAI_Ability_Group_Tagger::tag( array(), 'elementor/zzz-not-written-yet' );
+
+		$this->assertSame(
+			array( 'elementor/zzz-not-written-yet' => 'elementor' ),
+			AcrossAI_Ability_Group_Tagger::defaulted()
+		);
+
+		AcrossAI_Ability_Group_Tagger::reset();
+
+		$this->assertSame( array(), AcrossAI_Ability_Group_Tagger::defaulted() );
+	}
+
+	/**
+	 * An ability left in the catch-all is not recorded as a fallback placement.
+	 *
+	 * The two are different findings: `other` is where a plugin with no toolset belongs, while a
+	 * fallback placement means an integration owns the ability but nobody classified it. Conflating
+	 * them would bury the second under 70 rows of the first.
+	 *
+	 * @return void
+	 */
+	public function test_a_catch_all_ability_is_not_recorded_as_a_fallback(): void {
+		AcrossAI_Ability_Group_Tagger::reset();
+
+		AcrossAI_Ability_Group_Tagger::tag( array(), 'some-unknown-plugin/do-a-thing' );
+
+		$this->assertSame( array(), AcrossAI_Ability_Group_Tagger::defaulted() );
 	}
 }
