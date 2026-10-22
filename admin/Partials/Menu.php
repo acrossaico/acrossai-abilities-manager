@@ -215,25 +215,58 @@ class Menu {
 			return;
 		}
 
-		$items       = array_values( $submenu[ self::PARENT_SLUG ] );
-		$quick_index = $this->find_submenu_index( $items, self::QUICK_CONNECT_SLUG );
+		$items = array_values( $submenu[ self::PARENT_SLUG ] );
 
-		if ( null === $quick_index ) {
+		// Onboarding first: WordPress repeats the parent as the group's own first row, so inserting
+		// after it makes Quick Connect the second entry however many plugins added pages.
+		$this->move_after( $items, self::QUICK_CONNECT_SLUG, self::PARENT_SLUG, true );
+
+		// Then Integrations, immediately below Abilities. The two are consecutive questions — what
+		// the site can do, and what else it could do — and the pair reads as one unit only while
+		// nothing from another plugin can land between them.
+		$this->move_after( $items, Integrations_Menu::MENU_SLUG, self::ABILITIES_SLUG );
+
+		$submenu[ self::PARENT_SLUG ] = $items; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- deliberate reordering of this plugin's own submenu entries.
+	}
+
+	/**
+	 * Move one submenu entry to sit directly after another.
+	 *
+	 * A no-op when either slug is absent, so a page this plugin did not register — or one suppressed
+	 * on this site, as Quick Connect is when MCP Manager is active — simply leaves the order alone.
+	 *
+	 * @since  0.0.42
+	 * @param  array<int, array<int, string>> $items     Submenu entries, modified in place.
+	 * @param  string                         $slug      Entry to move.
+	 * @param  string                         $anchor    Entry it should follow.
+	 * @param  bool                           $to_front  When the anchor is missing, move the entry
+	 *                                                   to the front instead of leaving it put.
+	 *                                                   Onboarding wants this; ordinary pages do not.
+	 * @return void
+	 */
+	private function move_after( array &$items, string $slug, string $anchor, bool $to_front = false ): void {
+		$index = $this->find_submenu_index( $items, $slug );
+
+		if ( null === $index ) {
 			return;
 		}
 
-		$quick_item = $items[ $quick_index ];
-		array_splice( $items, $quick_index, 1 );
+		$item = $items[ $index ];
+		array_splice( $items, $index, 1 );
 
 		// Located after the removal, so the index refers to the shortened array.
-		// Falling back to the front rather than bailing: a group without the
-		// parent row is not a reason to leave onboarding wherever it landed.
-		$parent_index = $this->find_submenu_index( $items, self::PARENT_SLUG );
-		$target       = null === $parent_index ? 0 : $parent_index + 1;
+		$anchor_index = $this->find_submenu_index( $items, $anchor );
 
-		array_splice( $items, $target, 0, array( $quick_item ) );
+		if ( null === $anchor_index ) {
+			// Without the anchor there is no "after". Onboarding still wants to be first — a group
+			// missing its parent row is not a reason to leave the wizard wherever it landed —
+			// while an ordinary page is better left where it was than moved somewhere arbitrary.
+			array_splice( $items, $to_front ? 0 : $index, 0, array( $item ) );
 
-		$submenu[ self::PARENT_SLUG ] = $items; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- deliberate reordering of this plugin's own submenu entries.
+			return;
+		}
+
+		array_splice( $items, $anchor_index + 1, 0, array( $item ) );
 	}
 
 	/**

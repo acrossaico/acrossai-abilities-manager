@@ -1953,3 +1953,103 @@ if ( ! defined( 'WP_PLUGIN_DIR' ) ) {
 	// theme.json, so Global Styles location detection sees only what a test actually created.
 	define( 'WP_PLUGIN_DIR', WP_CONTENT_DIR . '/plugins' );
 }
+
+if ( ! defined( 'MINUTE_IN_SECONDS' ) ) {
+	define( 'MINUTE_IN_SECONDS', 60 );
+}
+
+if ( ! function_exists( 'acrossai_test_transients' ) ) {
+	/**
+	 * Shared site-transient store for unit tests.
+	 *
+	 * Expiry is deliberately not modelled: no test here asserts that a transient aged out, and a
+	 * fake clock would be one more thing to keep honest. Tests that need the "cache is cold" state
+	 * clear the store instead.
+	 *
+	 * @param array<string, mixed>|null $write Replace the whole store when given.
+	 * @return array<string, mixed>
+	 */
+	function acrossai_test_transients( ?array $write = null ): array {
+		static $store = array();
+
+		if ( null !== $write ) {
+			$store = $write;
+		}
+
+		return $store;
+	}
+
+	/** Stub: reads from the shared transient store. */
+	function get_site_transient( string $transient ): mixed {
+		$store = acrossai_test_transients();
+
+		return array_key_exists( $transient, $store ) ? $store[ $transient ] : false;
+	}
+
+	/** Stub: writes to the shared transient store. */
+	function set_site_transient( string $transient, mixed $value, int $expiration = 0 ): bool {
+		$store               = acrossai_test_transients();
+		$store[ $transient ] = $value;
+
+		acrossai_test_transients( $store );
+
+		return true;
+	}
+
+	/** Stub: removes one entry from the shared transient store. */
+	function delete_site_transient( string $transient ): bool {
+		$store = acrossai_test_transients();
+
+		unset( $store[ $transient ] );
+
+		acrossai_test_transients( $store );
+
+		return true;
+	}
+}
+
+if ( ! function_exists( 'acrossai_test_http_response' ) ) {
+	/**
+	 * Canned reply for the next wp_safe_remote_get() call.
+	 *
+	 * Set it to a WP_Error to simulate an unreachable host, or to an array with `response.code` and
+	 * `body` to simulate a server answering. Set it to null to make a request fail the way a
+	 * misconfigured test would — loudly — rather than silently returning something plausible.
+	 *
+	 * @param mixed $write Response to queue, or no argument to read the current one.
+	 * @return mixed
+	 */
+	function acrossai_test_http_response( mixed ...$write ): mixed {
+		static $response = null;
+
+		if ( array() !== $write ) {
+			$response = $write[0];
+		}
+
+		return $response;
+	}
+
+	/** Stub: returns whatever acrossai_test_http_response() holds, and records the call. */
+	function wp_safe_remote_get( string $url, array $args = array() ): mixed {
+		$GLOBALS['acrossai_test_http_calls'][] = array(
+			'url'  => $url,
+			'args' => $args,
+		);
+
+		$response = acrossai_test_http_response();
+
+		return null === $response
+			? new WP_Error( 'http_request_failed', 'No canned response queued for ' . $url )
+			: $response;
+	}
+
+	/** Stub: mirrors WP's accessor for the status code. */
+	function wp_remote_retrieve_response_code( mixed $response ): mixed {
+		return is_array( $response ) ? ( $response['response']['code'] ?? 0 ) : 0;
+	}
+
+	/** Stub: mirrors WP's accessor for the body. */
+	function wp_remote_retrieve_body( mixed $response ): string {
+		return is_array( $response ) ? (string) ( $response['body'] ?? '' ) : '';
+	}
+}

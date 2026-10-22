@@ -101,6 +101,16 @@ module.exports = {
 			'src/scss/file-manager-settings',
 			'admin.scss'
 		),
+		'js/integrations': path.resolve(
+			process.cwd(),
+			'src/js/integrations',
+			'index.js'
+		),
+		'css/integrations': path.resolve(
+			process.cwd(),
+			'src/scss/integrations',
+			'admin.scss'
+		),
 		'js/quick-connect': path.resolve(
 			process.cwd(),
 			'src/js/quick-connect',

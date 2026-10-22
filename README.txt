@@ -208,7 +208,11 @@ If the MCP Adapter plugin is active on your site, AcrossAI Abilities Manager wil
 
 = Does this plugin make external HTTP requests? =
 
-The plugin's own code makes no external HTTP requests. Two admin-only surfaces trigger external connections on behalf of an authenticated administrator:
+One, and only when an administrator opens one specific screen.
+
+* **AcrossAI → Integrations** fetches the list of supported integrations from `https://acrossai.co/wp-json/acrossai/v1/integrations` so the list stays current between plugin releases. The request is made only while that screen is being rendered for a logged-in administrator, carries no site, user or ability data of any kind, and is cached for twelve hours. If acrossai.co cannot be reached the screen falls back to a copy of the list bundled inside the plugin and says so. Nothing on the screen loads a remote script, stylesheet or image — every asset ships with the plugin.
+
+Two further admin-only surfaces trigger external connections in the administrator's own browser, rather than from your server:
 
 * **AcrossAI → Consultations** submenu — renders a static call-to-action button that links to `https://calendly.com/acrossai/using-ai-in-wordpress` and opens in a new browser tab. The plugin does not load any Calendly script, iframe, or asset inside wp-admin. Calendly is only contacted if the administrator explicitly clicks the button — at which point their browser navigates directly to `calendly.com`, exactly as with any external hyperlink.
 * **AcrossAI → Add-ons** submenu — installs WordPress.org-hosted companion plugins in place through WordPress core's `plugins_api()` + `Plugin_Upgrader` (contacts `api.wordpress.org` + `downloads.wordpress.org`). Add-ons registered with any other source (e.g. GitHub, Freemius) render as external "Get add-on ↗" links that open the vendor's site in a new browser tab — the plugin does not download or install those add-ons itself. Users install off-directory add-ons via WP admin's standard **Plugins → Add New → Upload Plugin** flow (or via the vendor's own installer once the paid plugin is activated).
@@ -226,30 +230,38 @@ Full disclosure — including what data is transmitted, and links to each servic
 
 == External Services ==
 
-This plugin's own code makes no external HTTP requests. Each connection below is triggered by a specific admin-only action, and is disclosed per the WordPress.org plugin directory guidelines. In every case the plugin sends no site content, user data or ability data.
+Each connection below is triggered by a specific admin-only action, and is disclosed per the WordPress.org plugin directory guidelines. In every case the plugin sends no site content, user data or ability data. Service 1 is the only one the plugin's own code requests from your server; every other entry is reached by the administrator's browser following a link, or by WordPress core on the plugin's behalf.
 
-**1. Calendly (`calendly.com`)** — a third-party scheduling service.
+**1. AcrossAI integration catalogue (`acrossai.co`)** — the list of plugins AcrossAI provides abilities for.
+*When:* only while **AcrossAI → Integrations** is rendered for a logged-in administrator with `manage_options`. Never on a front-end request, never on cron, never on activation, and never for any other user. The result is cached for twelve hours, and a failed request is not retried for thirty minutes.
+*What is requested:* a single HTTP GET to `https://acrossai.co/wp-json/acrossai/v1/integrations`, with no query arguments, no cookies and no identifying headers.
+*Data sent:* none. The request contains no site URL, no licence key, no user identity and no ability data — the response is identical for every site, which is why it can be cached.
+*If it fails:* the screen renders a copy of the list bundled with the plugin (`assets/integrations.json`) and shows a notice saying the list may be out of date. No functionality is lost.
+*Assets:* none are loaded from acrossai.co. The screen's scripts, styles and icons all ship with the plugin.
+*Terms:* https://acrossai.co/terms/ · *Privacy:* https://acrossai.co/privacy-policy/
+
+**2. Calendly (`calendly.com`)** — a third-party scheduling service.
 *When:* never on render. The Consultations page loads no Calendly script, iframe, cookie or asset; Calendly is reached only if an administrator clicks "Book a Consultation", opening the booking page in a new tab.
 *Data:* only the browser's standard metadata (IP, User-Agent, referrer) on that click. Anything typed into Calendly's own form is processed by Calendly; this plugin never intercepts or stores it.
 *Note:* that page also references Google Fonts (`fonts.googleapis.com`), its only external asset.
 *Terms:* https://calendly.com/pages/terms · *Privacy:* https://calendly.com/pages/privacy
 
-**2. WordPress.org plugin directory (`api.wordpress.org`, `downloads.wordpress.org`)** — installs free companion plugins from the Add-ons page.
+**3. WordPress.org plugin directory (`api.wordpress.org`, `downloads.wordpress.org`)** — installs free companion plugins from the Add-ons page.
 *When:* only when an administrator with `install_plugins` clicks Install on a card sourced from WordPress.org, always through core's own `plugins_api()` and `Plugin_Upgrader`. Add-ons hosted elsewhere render as plain links; nothing is requested from those vendors.
 *Data:* core's standard plugin-API payload — site URL, WordPress version, PHP version, locale.
 *Terms:* https://wordpress.org/about/terms/ · *Privacy:* https://wordpress.org/about/privacy/
 
-**3. WordPress.org core version-check (`api.wordpress.org/core/version-check/1.7/`)**
+**4. WordPress.org core version-check (`api.wordpress.org/core/version-check/1.7/`)**
 *When:* only when an administrator invokes the `core/rollback-wp-core` ability and the local cache has expired — at most once per day, per locale, per site.
-*Data:* core's standard version-check payload. Same terms and privacy policy as service 2.
+*Data:* core's standard version-check payload. Same terms and privacy policy as service 3.
 
-**4. YouTube walkthrough videos (`youtube-nocookie.com`, `youtube.com`)** — short recordings embedded in the setup wizard, via YouTube's privacy-enhanced host.
+**5. YouTube walkthrough videos (`youtube-nocookie.com`, `youtube.com`)** — short recordings embedded in the setup wizard, via YouTube's privacy-enhanced host.
 *When:* only on the wizard's own screens, gated on the `quick-connect` parameter and loaded nowhere else in wp-admin. Two screens autoplay, so YouTube is contacted on render; the rest show a local placeholder and embed only when play is pressed.
 *Data:* the browser's standard metadata plus a `Referer` limited to the site's origin, because a `strict-origin-when-cross-origin` policy keeps the wp-admin path private. No tracking cookies unless playback begins.
 *Avoiding it:* every embed is paired with a plain link, and the wizard is optional — every screen offers Exit setup.
 *Terms:* https://www.youtube.com/t/terms · *Privacy:* https://policies.google.com/privacy
 
-**5. GitHub (`github.com`)** — the wizard links to MCP Adapter's latest release, which is distributed there rather than on WordPress.org.
+**6. GitHub (`github.com`)** — the wizard links to MCP Adapter's latest release, which is distributed there rather than on WordPress.org.
 *When:* never on render; only if an administrator clicks the link. The plugin makes no request to GitHub and downloads nothing.
 *Data:* standard browser metadata only, as with any external link.
 *Terms:* https://docs.github.com/site-policy/github-terms/github-terms-of-service · *Privacy:* https://docs.github.com/site-policy/privacy-policies/github-privacy-statement

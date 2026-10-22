@@ -85,6 +85,39 @@ class AcrossAI_Integration_Settings {
 	}
 
 	/**
+	 * Whether an integration has been deliberately switched off.
+	 *
+	 * The inverse of `is_enabled()` in result but not in meaning, and the difference is the entire
+	 * reason this exists. `is_enabled()` answers "is this switched on", and reads an absent key as
+	 * no — correct for a control that must not act until it has been told to. This answers "has
+	 * someone turned this off", and reads an absent key as no as well, which for a default-on
+	 * integration means yes-it-runs.
+	 *
+	 * That distinction only matters because of *when* the registration gate asks. Default-on is
+	 * expressed as a seeded stored `true` (Feature 117), and the seeding pass that writes it runs at
+	 * `init` P1 — while `wp_abilities_api_init` fires lazily, on whatever first touches the
+	 * registry, which can be earlier. A gate built on `is_enabled()` would therefore read "absent,
+	 * so off" on a fresh site and register no integration abilities at all, silently, with the
+	 * option filling in correctly a moment later. Asking for an explicit `false` cannot fail that
+	 * way: a stored `false` is a decision somebody made, and an unseeded key is not.
+	 *
+	 * Use this for registration. Use `is_enabled()` for everything else.
+	 *
+	 * @since  0.0.42
+	 * @param  string $slug Integration slug.
+	 * @return bool True only when a `false` is stored for this slug.
+	 */
+	public static function is_switched_off( string $slug ): bool {
+		$stored = get_site_option( self::OPTION_KEY, array() );
+
+		if ( ! is_array( $stored ) || ! array_key_exists( $slug, $stored ) ) {
+			return false;
+		}
+
+		return ! (bool) $stored[ $slug ];
+	}
+
+	/**
 	 * Integrations available on this site.
 	 *
 	 * Derived from the definitions registry rather than from the integration classes: their
