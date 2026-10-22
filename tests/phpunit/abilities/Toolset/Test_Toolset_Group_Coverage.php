@@ -162,10 +162,12 @@ class Test_Toolset_Group_Coverage extends TestCase {
 	public function test_integration_groups_are_named_after_their_plugin(): void {
 		$expected = array(
 			'ACF.php'                => 'acf',
+			'All_In_One.php'         => 'all-in-one-wp-migration',
 			'Anti_Spam.php'          => 'akismet',
 			'Classic_Editor.php'     => 'classic-editor',
 			'Consent_Banner.php'     => 'cookieyes',
 			'Contact_Form_7.php'     => 'contact-form-7',
+			'Elementor.php'          => 'elementor',
 			'Email_Delivery.php'     => 'wp-mail-smtp',
 			'Event_Tickets.php'      => 'event-tickets',
 			'Events_Calendar.php'    => 'events-calendar',
@@ -173,6 +175,7 @@ class Test_Toolset_Group_Coverage extends TestCase {
 			'Loco_Translate.php'     => 'loco-translate',
 			'Rank_Math.php'          => 'rank-math',
 			'Site_Kit.php'           => 'site-kit',
+			'UpdraftPlus.php'        => 'updraftplus',
 			'WPCode.php'             => 'wpcode',
 			'WPForms.php'            => 'wpforms',
 			'WooCommerce.php'        => 'woocommerce',
