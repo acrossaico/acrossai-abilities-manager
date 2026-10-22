@@ -152,13 +152,101 @@ defined( 'ABSPATH' ) || exit;
 abstract class AcrossAI_Integration_Ability_Base {
 
 	/**
-	 * Register the two hook callbacks the base class owns.
+	 * Register the hook callbacks the base class owns.
+	 *
+	 * The enable hook is asked for rather than hardcoded because hosts read their gate at different
+	 * times. ACF reads its setting at `acf/init`, well after `plugins_loaded`, so P20 is comfortable.
+	 * A host whose packages read the gate while they load needs the filter in place sooner — see
+	 * {@see self::enable_hook()}.
 	 *
 	 * @since 0.1.0
 	 */
 	public function __construct() {
-		add_action( 'plugins_loaded', array( $this, 'maybe_enable' ), 20 );
+		list( $hook, $priority ) = $this->enable_hook();
+
+		add_action( (string) $hook, array( $this, 'maybe_enable' ), (int) $priority );
 		add_filter( 'acrossai_abilities_api_init', array( $this, 'push_definition' ), 10 );
+
+		// Declared per integration rather than listed in a constant elsewhere, so an integration that
+		// must not start on says so in its own file. Read by
+		// `AcrossAI_Integration_Default_Opt_Ins`, which seeds a stored value — NOT by
+		// `AcrossAI_Integration_Settings::is_enabled()`, where absent still means off.
+		add_filter( 'acrossai_integration_seeds_enabled', array( $this, 'declare_seeds_enabled' ), 10, 2 );
+	}
+
+	/**
+	 * Hook and priority on which {@see self::maybe_enable()} runs.
+	 *
+	 * Override when the host reads its own gate earlier than `plugins_loaded` P20. The gate must be
+	 * in place before the host asks, and a host that asks during its own load will have asked
+	 * already by P20 — the switch then appears to work while doing nothing.
+	 *
+	 * @since  0.0.42
+	 * @return array{0: string, 1: int}
+	 */
+	protected function enable_hook(): array {
+		return array( 'plugins_loaded', 20 );
+	}
+
+	/**
+	 * Whether this integration should be seeded switched ON for a site that has never been asked.
+	 *
+	 * On by default: an integration's abilities are expected to work once its plugin is present, and
+	 * the switch exists so an operator can take them away rather than having to grant them.
+	 *
+	 * Return `false` where switching on also switches on a third-party feature the site owner has
+	 * not asked for. Our own abilities for a host are ours to enable; the host's own are not, and an
+	 * opt-in that seeds itself on is not an opt-in.
+	 *
+	 * This decides only the seed. Once a value is stored — by the seed or by someone using the
+	 * screen — it is what counts, and this is never consulted again for that slug.
+	 *
+	 * @since  0.0.42
+	 * @return bool
+	 */
+	protected function seeds_enabled(): bool {
+		return true;
+	}
+
+	/**
+	 * Filter callback publishing {@see self::seeds_enabled()} for this integration's slug.
+	 *
+	 * @since  0.0.42
+	 * @param  mixed  $seeds Decision so far.
+	 * @param  string $slug  Integration slug being asked about.
+	 * @return mixed
+	 */
+	public function declare_seeds_enabled( $seeds, $slug = '' ) {
+		if ( (string) $slug !== $this->slug() ) {
+			return $seeds;
+		}
+
+		return $this->seeds_enabled();
+	}
+
+	/**
+	 * Satisfy a host that gates on an option rather than on a filter.
+	 *
+	 * Short-circuits `get_option()` through `pre_option_{$option}` instead of writing the value.
+	 * Two reasons that matters: the host's own stored setting is left exactly as the site owner left
+	 * it, so switching our row back off restores their choice rather than ours; and nothing we do
+	 * here survives this plugin being deactivated.
+	 *
+	 * @since  0.0.42
+	 * @param  string $option Option name the host reads.
+	 * @return void
+	 */
+	protected function force_option_true( string $option ): void {
+		if ( '' === $option ) {
+			return;
+		}
+
+		add_filter(
+			'pre_option_' . $option,
+			static function () {
+				return true;
+			}
+		);
 	}
 
 	/**

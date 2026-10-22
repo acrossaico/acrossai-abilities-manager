@@ -12,9 +12,18 @@
  * entry that reads differently depending on the slug. Absent still means off; the seeded slug is
  * simply never absent.
  *
- * The seed runs ONCE, guarded by its own option, and only fills slugs that have no stored value.
- * That ordering is what lets an administrator switch WPForms writing off and have it stay off: the
- * slug then holds `false`, which is a stored value, so a later run skips it.
+ * The seed is idempotent PER SLUG, and only fills slugs that have no stored value. That ordering is
+ * what lets an administrator switch WPForms writing off and have it stay off: the slug then holds
+ * `false`, which is a stored value, so a later run skips it.
+ *
+ * Per slug rather than per site, because the default-on set is no longer one hardcoded slug — it is
+ * every integration the site can show, and that set grows whenever a plugin is activated. A single
+ * "already run" flag would leave anything activated later absent, and absent reads as off with no
+ * way to tell it from a deliberate opt-out.
+ *
+ * Which slugs seed ON is declared by the integration itself through
+ * `acrossai_integration_seeds_enabled`. Two decline: Elementor and Jetpack, because switching those
+ * on also switches on a third-party feature their own authors ship off.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
@@ -27,7 +36,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Modules\Library;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * One-time seeding of integration opt-ins whose default is ON.
+ * Seeds integration opt-ins whose default is ON, once per slug.
  *
  * @since 0.0.34
  */
@@ -56,6 +65,23 @@ final class AcrossAI_Integration_Default_Opt_Ins {
 	private const DEFAULT_ON = array( 'wpforms' );
 
 	/**
+	 * Option recording which slugs the seed has already considered.
+	 *
+	 * Replaces a single "the seed has run" flag. That flag was correct while the default-on set was
+	 * one hardcoded slug, but wrong the moment the set became every integration on the site: a
+	 * plugin activated after the first request would never be considered, so its integration would
+	 * sit absent — which reads as off — with no way to tell that from a deliberate opt-out.
+	 *
+	 * Recording per slug makes the seed idempotent per integration instead of per site. An operator
+	 * switching something off still survives, because a stored `false` is a value and the seed only
+	 * ever fills a hole.
+	 *
+	 * @since 0.0.42
+	 * @var   string
+	 */
+	public const SEEDED_OPTION = 'acrossai_integration_seeded_slugs';
+
+	/**
 	 * Private constructor — static utility (DEC-UTILITY-STATIC-ONLY).
 	 */
 	private function __construct() {}
@@ -71,30 +97,88 @@ final class AcrossAI_Integration_Default_Opt_Ins {
 	 * @return void
 	 */
 	public static function maybe_seed(): void {
-		if ( get_site_option( self::DONE_OPTION ) ) {
+		self::seed( self::DEFAULT_ON );
+	}
+
+	/**
+	 * Seed the integrations discovered from the registry.
+	 *
+	 * A separate pass on a later hook, because neither registry can be read at `plugins_loaded` P0:
+	 *
+	 * - A host's `is_active()` probe is false that early. `class_exists( '\RankMath\Helper' )` does
+	 *   not answer true until Rank Math has initialised, so discovery returns nothing.
+	 * - `AcrossAI_Toolset_Integrations::all()` memoises on first call, and ACF and WPForms add
+	 *   themselves to its filter from their own constructors — which run after P0. Reading it at P0
+	 *   caches a set with those missing for the rest of the request.
+	 *
+	 * So the early pass stays on {@see self::DEFAULT_ON} alone, which needs neither registry, and
+	 * this pass does the discovery once everything has loaded. Safe to run after the early one
+	 * because seeding is idempotent per slug.
+	 *
+	 * @since  0.0.42
+	 * @return void
+	 */
+	public static function maybe_seed_discovered(): void {
+		self::seed( AcrossAI_Integration_Settings::candidate_slugs() );
+	}
+
+	/**
+	 * Fill a stored `true` for any of the given slugs this site has not considered yet.
+	 *
+	 * @since  0.0.42
+	 * @param  string[] $candidates Slugs to consider.
+	 * @return void
+	 */
+	private static function seed( array $candidates ): void {
+		$seeded = get_site_option( self::SEEDED_OPTION, array() );
+		$seeded = is_array( $seeded ) ? $seeded : array();
+
+		// First run on a site that predates per-slug tracking: the old flag means the original
+		// hardcoded set was already considered, so record it rather than reconsidering it.
+		if ( array() === $seeded && get_site_option( self::DONE_OPTION ) ) {
+			$seeded = self::DEFAULT_ON;
+		}
+
+		$pending = array_values( array_diff( array_map( 'strval', $candidates ), $seeded ) );
+
+		if ( array() === $pending ) {
 			return;
 		}
 
-		update_site_option( self::DONE_OPTION, '1' );
-
 		$stored = get_site_option( AcrossAI_Integration_Settings::OPTION_KEY, array() );
-
-		if ( ! is_array( $stored ) ) {
-			$stored = array();
-		}
+		$stored = is_array( $stored ) ? $stored : array();
 
 		$changed = false;
 
-		foreach ( self::DEFAULT_ON as $slug ) {
+		foreach ( $pending as $slug ) {
+			$seeded[] = $slug;
+
 			// Only ever fills a HOLE. A slug already carrying false is a decision someone made, and
 			// overwriting it would turn a deliberate opt-out back on behind their back.
 			if ( array_key_exists( $slug, $stored ) ) {
 				continue;
 			}
 
+			/**
+			 * Filters whether an integration is seeded switched on.
+			 *
+			 * Consulted once per slug, the first time this site sees that integration, and never
+			 * again — a stored value always wins afterwards. `AcrossAI_Integration_Ability_Base`
+			 * publishes each subclass's `seeds_enabled()` here.
+			 *
+			 * @since 0.0.42
+			 * @param bool   $seeds Whether to seed this integration on. Default true.
+			 * @param string $slug  Integration slug.
+			 */
+			if ( ! (bool) apply_filters( 'acrossai_integration_seeds_enabled', true, $slug ) ) {
+				continue;
+			}
+
 			$stored[ $slug ] = true;
 			$changed         = true;
 		}
+
+		update_site_option( self::SEEDED_OPTION, array_values( array_unique( $seeded ) ) );
 
 		if ( $changed ) {
 			update_site_option( AcrossAI_Integration_Settings::OPTION_KEY, $stored );

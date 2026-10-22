@@ -536,9 +536,32 @@ final class Main {
 		// a default-on integration is correct on the very first request rather than the second.
 		\AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Integration_Default_Opt_Ins::maybe_seed();
 
+		// And again once every plugin has loaded. At P0 a host's `is_active()` probe cannot see it
+		// yet — `class_exists( '\RankMath\Helper' )` is false this early — so the pass above only
+		// ever covers the opt-in slugs it is timed for. The second pass is what seeds the
+		// integrations discovered from the registry, and it is safe to run because seeding is
+		// idempotent per slug: anything the first pass settled is skipped, and a stored `false` is a
+		// decision the seed never overwrites.
+		$this->loader->add_action(
+			'init',
+			\AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Integration_Default_Opt_Ins::class,
+			'maybe_seed_discovered',
+			1
+		);
+
 		new \AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\ACF();
 		new \AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\Yoast_Seo_Opt_In();
 		new \AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\WPForms();
+		// Both host their own gate: Elementor behind an option, Jetpack behind a filter its packages
+		// read while they load — which is why Jetpack asks for an earlier enable hook. Neither seeds
+		// on, because switching them on switches on a third-party feature as well as our grouping.
+		new \AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\Elementor_Opt_In();
+		new \AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\Jetpack_Opt_In();
+
+		// Feature 102 forbids an access control that stops the controlled object existing, so the
+		// Integrations switch cannot skip registration. This refuses instead, at the one gate every
+		// surface passes through, leaving a switched-off integration's abilities listed and visible.
+		\AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Integration_Access::instance()->boot();
 
 		// Issue #202 — start recording ability-name clashes before anything registers. Abilities
 		// register on wp_abilities_api_init (fired from init), so attaching here at plugins_loaded P0

@@ -60,6 +60,7 @@
 			<file>tests/phpunit/Utilities/Test_Ability_Group_Tagger.php</file>
 			<file>tests/phpunit/abilities/Toolset/Test_Toolset_Group_Coverage.php</file>
 			<file>tests/phpunit/Modules/Library/Test_Library_Processor_No_Gate.php</file>
+			<file>tests/phpunit/Modules/Library/Test_Integration_Access.php</file>
 		</testsuite>
 		<testsuite name="includes-unit">
 			<file>tests/phpunit/Includes/Test_Boot_Resilience.php</file>

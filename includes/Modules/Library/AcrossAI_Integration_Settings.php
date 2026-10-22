@@ -14,6 +14,10 @@
  * BUG-SPARSE-STORAGE-UNIFORM-DEFAULT-ASSUMPTION exists, and it is contained here: this class is the
  * only PHP code path that reads integration opt-in state.
  *
+ * An integration that should start switched ON does not change this rule. It is seeded with a stored
+ * `true` by {@see AcrossAI_Integration_Default_Opt_Ins} instead, so absent still means off and the
+ * slug is simply never absent — see that class for why a per-slug default here was rejected.
+ *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Modules/Library
  * @since      0.0.34
@@ -22,6 +26,9 @@
 declare( strict_types = 1 );
 
 namespace AcrossAI_Abilities_Manager\Includes\Modules\Library;
+
+use AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\AcrossAI_Toolset_Integrations;
+use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Group;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -90,7 +97,7 @@ class AcrossAI_Integration_Settings {
 	 * @return array<string, array{label: string, count: int}> Keyed by integration slug.
 	 */
 	public static function discover(): array {
-		$found = array();
+		$found = self::from_toolset_integrations();
 
 		foreach ( AcrossAI_Ability_Library_Registry::instance()->get_definitions() as $definition ) {
 			$variant = isset( $definition['card_variant'] ) ? (string) $definition['card_variant'] : '';
@@ -120,6 +127,81 @@ class AcrossAI_Integration_Settings {
 		ksort( $found );
 
 		return $found;
+	}
+
+	/**
+	 * Integration slugs this site could show a row for, without resolving ability counts.
+	 *
+	 * Deliberately separate from {@see self::discover()}, which counts. Counting resolves
+	 * `AcrossAI_Ability_Group`, and that memoises for the rest of the request — so asking for counts
+	 * before `wp_abilities_api_init` has fired caches an empty group map and takes the admin tab
+	 * strip's counts down with it. {@see AcrossAI_Integration_Default_Opt_Ins} runs at
+	 * `plugins_loaded` P0, long before any ability exists, and needs slugs only.
+	 *
+	 * Descriptors are safe to ask that early: the registry reads a filter and each integration's own
+	 * `is_active()` probe, neither of which touches the ability registry.
+	 *
+	 * @since  0.0.42
+	 * @return string[]
+	 */
+	public static function candidate_slugs(): array {
+		$slugs = array();
+
+		foreach ( AcrossAI_Toolset_Integrations::all() as $group => $integration ) {
+			if ( AcrossAI_Toolset_Integrations::CATCH_ALL_GROUP === $group || ! $integration->is_active() ) {
+				continue;
+			}
+
+			$slugs[] = (string) $group;
+		}
+
+		return $slugs;
+	}
+
+	/**
+	 * Rows for every integration whose plugin is active, from the toolset registry.
+	 *
+	 * The Library definitions this method supplements only describe opt-in integrations — the three
+	 * or four hosts that keep their own abilities switched off until asked. Every other integration
+	 * is ours and already registered, so it pushed no `card_variant => 'integration'` row and never
+	 * appeared on the screen. That is why the tab listed three of twenty-odd.
+	 *
+	 * Counts come from {@see AcrossAI_Ability_Group::counts()}, which resolves once per request and
+	 * is the same source the admin tab strip counts from, so the two cannot disagree. A group with no
+	 * registered abilities is skipped: an integration whose plugin is active but which contributes
+	 * nothing has nothing to switch.
+	 *
+	 * @since  0.0.42
+	 * @return array<string, array{label: string, count: int}>
+	 */
+	private static function from_toolset_integrations(): array {
+		$rows   = array();
+		$counts = AcrossAI_Ability_Group::counts();
+
+		foreach ( AcrossAI_Toolset_Integrations::all() as $group => $integration ) {
+			if ( AcrossAI_Toolset_Integrations::CATCH_ALL_GROUP === $group ) {
+				continue;
+			}
+
+			if ( ! $integration->is_active() ) {
+				continue;
+			}
+
+			$count = isset( $counts[ $group ] ) ? (int) $counts[ $group ] : 0;
+
+			if ( 0 === $count ) {
+				continue;
+			}
+
+			$label = $integration->toolset_label();
+
+			$rows[ $group ] = array(
+				'label' => '' !== $label ? $label : $group,
+				'count' => $count,
+			);
+		}
+
+		return $rows;
 	}
 
 	/**

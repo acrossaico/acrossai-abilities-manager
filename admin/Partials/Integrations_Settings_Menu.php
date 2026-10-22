@@ -181,7 +181,7 @@ class Integrations_Settings_Menu {
 		if ( array() === $integrations ) {
 			echo '<p class="description">';
 			esc_html_e(
-				'None of the active plugins on this site have their own ability switch, so there is nothing to enable here. This is not the list of supported plugins — see the toolsets on the Abilities screen for what is available.',
+				'None of the plugins this plugin integrates with are active on this site, so there is nothing to switch here. Activate one and its abilities appear, switched on.',
 				'acrossai-abilities-manager'
 			);
 			echo '</p>';
@@ -209,8 +209,8 @@ class Integrations_Settings_Menu {
 					sprintf(
 						/* translators: %d is a count of abilities. */
 						_n(
-							'Enables %d ability from this plugin.',
-							'Enables %d abilities from this plugin.',
+							'%d ability. Switched on by default; turning it off refuses the ability rather than hiding it, so it stays listed with its reason.',
+							'%d abilities. Switched on by default; turning them off refuses them rather than hiding them, so they stay listed with their reason.',
 							(int) $meta['count'],
 							'acrossai-abilities-manager'
 						),

@@ -44,14 +44,19 @@ class Test_WPForms_Integration extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Reset only the two keys this class writes.
+	 * Reset only the keys this class writes.
 	 *
 	 * The stub store is shared and static across the whole run, so clearing it wholesale would take
 	 * other suites' seeded site options with it. There is no delete_site_option() stub; an empty
 	 * value is equivalent here because both reads test for truthiness or for a present key.
+	 *
+	 * `SEEDED_OPTION` joined the list when seeding became idempotent per slug rather than per site.
+	 * It is the record of which slugs have been considered, so leaving it populated makes the seed a
+	 * no-op and every assertion about seeding fail for the wrong reason.
 	 */
 	protected function tearDown(): void {
 		update_site_option( AcrossAI_Integration_Default_Opt_Ins::DONE_OPTION, '' );
+		update_site_option( AcrossAI_Integration_Default_Opt_Ins::SEEDED_OPTION, array() );
 		update_site_option( AcrossAI_Integration_Settings::OPTION_KEY, array() );
 
 		parent::tearDown();
