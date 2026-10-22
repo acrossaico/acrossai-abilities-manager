@@ -528,6 +528,10 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Recovery\List_Paused_Plugins();
 		new Recovery\List_Paused_Themes();
 		new Recovery\List_Ability_Collisions();
+		// Issue #255 — the sibling report: names registered abilities that no Toolset claims, which
+		// is how an integrated plugin's own abilities go missing. Registered here rather than in a
+		// folder of its own so it shares the Recovery category; see its class docblock.
+		new Recovery\List_Unclassified_Abilities();
 		new Recovery\Get_Recovery_Exit_Url();
 		new Recovery\Unpause_Plugin();
 		new Recovery\Unpause_Theme();

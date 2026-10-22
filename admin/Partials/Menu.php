@@ -123,9 +123,12 @@ class Menu {
 		// so registering a second page would create a duplicate capability
 		// surface for one onboarding flow.
 		//
-		// The sidebar uses the short label. Every other surface says "Quick
-		// Connect via AcrossAI"; inside the AcrossAI menu that tail is redundant,
-		// which is the same call the sibling plugin made for its own entry.
+		// The sidebar label is "Connect" — just the verb. Every other surface says
+		// "Quick Connect via AcrossAI"; sitting under the AcrossAI parent, directly
+		// below its own name, both the "Quick" and the "via AcrossAI" are saying
+		// something the position already says. The page title keeps the full
+		// "Quick Connect" so the wizard is still named that wherever it is
+		// referred to from outside the menu.
 		//
 		// Skipped entirely on sites running AcrossAI MCP Manager: it registers its
 		// own "Quick Connect" under this same parent, and one sidebar does not
@@ -142,7 +145,7 @@ class Menu {
 		add_submenu_page(
 			self::PARENT_SLUG,
 			__( 'Quick Connect', 'acrossai-abilities-manager' ),
-			__( 'Quick Connect', 'acrossai-abilities-manager' ),
+			__( 'Connect', 'acrossai-abilities-manager' ),
 			'manage_options',
 			self::QUICK_CONNECT_SLUG,
 			''
@@ -182,7 +185,7 @@ class Menu {
 	}
 
 	/**
-	 * Move the Quick Connect link so it directly follows Abilities.
+	 * Move the Quick Connect link to the top of the group, directly below AcrossAI.
 	 *
 	 * Hooked to `admin_menu` at a late priority, after every plugin sharing the
 	 * `acrossai` parent has registered.
@@ -191,9 +194,16 @@ class Menu {
 	 * takes an absolute slot, and when that slot is taken WordPress nudges the
 	 * entry to a fractional key — so the rendered order depends on which plugins
 	 * are active and in what order they registered. Asking for a number that
-	 * happened to look right on one site is how the link ends up detached from
-	 * Abilities on the next one. Reordering the finished array is the only way to
-	 * state the actual requirement.
+	 * happened to look right on one site is how the link ends up somewhere else
+	 * on the next one. Reordering the finished array is the only way to state the
+	 * actual requirement.
+	 *
+	 * The anchor is the parent entry rather than Abilities. WordPress repeats the
+	 * parent as the group's first row ("AcrossAI" → `acrossai`), so inserting
+	 * after it makes Quick Connect the second item however many plugins have
+	 * added their own pages — which is the rule, onboarding first. Anchoring to
+	 * Abilities instead would push it down by one for every page that happened to
+	 * register above.
 	 *
 	 * @since  0.0.34
 	 * @return void
@@ -216,13 +226,12 @@ class Menu {
 		array_splice( $items, $quick_index, 1 );
 
 		// Located after the removal, so the index refers to the shortened array.
-		$abilities_index = $this->find_submenu_index( $items, self::ABILITIES_SLUG );
+		// Falling back to the front rather than bailing: a group without the
+		// parent row is not a reason to leave onboarding wherever it landed.
+		$parent_index = $this->find_submenu_index( $items, self::PARENT_SLUG );
+		$target       = null === $parent_index ? 0 : $parent_index + 1;
 
-		if ( null === $abilities_index ) {
-			return;
-		}
-
-		array_splice( $items, $abilities_index + 1, 0, array( $quick_item ) );
+		array_splice( $items, $target, 0, array( $quick_item ) );
 
 		$submenu[ self::PARENT_SLUG ] = $items; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- deliberate reordering of this plugin's own submenu entries.
 	}
