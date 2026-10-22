@@ -83,9 +83,9 @@ class Test_Quick_Connect_Submenu_Order extends TestCase {
 	}
 
 	/**
-	 * The common case: WordPress parked the link at the top of the group.
+	 * The common case: WordPress parked the link below the pages it must precede.
 	 */
-	public function test_link_moves_from_the_top_to_just_after_abilities(): void {
+	public function test_link_moves_up_to_second_place(): void {
 		$GLOBALS['submenu'][ Menu::PARENT_SLUG ] = array(
 			$this->row( 'AcrossAI', 'acrossai' ),
 			$this->row( 'Quick Connect', Menu::QUICK_CONNECT_SLUG ),
@@ -96,7 +96,7 @@ class Test_Quick_Connect_Submenu_Order extends TestCase {
 		$this->menu->reorder_submenu();
 
 		$this->assertSame(
-			array( 'acrossai', Menu::ABILITIES_SLUG, Menu::QUICK_CONNECT_SLUG, self::SIBLING_SLUG ),
+			array( 'acrossai', Menu::QUICK_CONNECT_SLUG, Menu::ABILITIES_SLUG, self::SIBLING_SLUG ),
 			$this->slugs()
 		);
 	}
@@ -104,7 +104,7 @@ class Test_Quick_Connect_Submenu_Order extends TestCase {
 	/**
 	 * The link also has to move backwards when it landed at the end.
 	 */
-	public function test_link_moves_from_the_end_to_just_after_abilities(): void {
+	public function test_link_moves_from_the_end_to_second_place(): void {
 		$GLOBALS['submenu'][ Menu::PARENT_SLUG ] = array(
 			$this->row( 'AcrossAI', 'acrossai' ),
 			$this->row( 'Abilities', Menu::ABILITIES_SLUG ),
@@ -116,7 +116,7 @@ class Test_Quick_Connect_Submenu_Order extends TestCase {
 		$this->menu->reorder_submenu();
 
 		$this->assertSame(
-			array( 'acrossai', Menu::ABILITIES_SLUG, Menu::QUICK_CONNECT_SLUG, self::SIBLING_SLUG, 'acrossai-settings' ),
+			array( 'acrossai', Menu::QUICK_CONNECT_SLUG, Menu::ABILITIES_SLUG, self::SIBLING_SLUG, 'acrossai-settings' ),
 			$this->slugs()
 		);
 	}
@@ -125,12 +125,12 @@ class Test_Quick_Connect_Submenu_Order extends TestCase {
 	 * Already correct is a no-op, not an off-by-one shuffle.
 	 */
 	public function test_correct_order_is_left_alone(): void {
-		$expected = array( 'acrossai', Menu::ABILITIES_SLUG, Menu::QUICK_CONNECT_SLUG, 'acrossai-settings' );
+		$expected = array( 'acrossai', Menu::QUICK_CONNECT_SLUG, Menu::ABILITIES_SLUG, 'acrossai-settings' );
 
 		$GLOBALS['submenu'][ Menu::PARENT_SLUG ] = array(
 			$this->row( 'AcrossAI', 'acrossai' ),
-			$this->row( 'Abilities', Menu::ABILITIES_SLUG ),
 			$this->row( 'Quick Connect', Menu::QUICK_CONNECT_SLUG ),
+			$this->row( 'Abilities', Menu::ABILITIES_SLUG ),
 			$this->row( 'Settings', 'acrossai-settings' ),
 		);
 
@@ -159,18 +159,46 @@ class Test_Quick_Connect_Submenu_Order extends TestCase {
 	}
 
 	/**
-	 * A missing Abilities entry means there is nothing to anchor to; the link is
-	 * left where it is rather than being dropped.
+	 * A group without the repeated parent row still places the link first.
+	 *
+	 * The anchor is the parent entry, so its absence used to be a reason to bail.
+	 * Front of the group is the closer answer to "second, below AcrossAI" than
+	 * wherever WordPress happened to park it.
 	 */
-	public function test_missing_anchor_preserves_the_link(): void {
+	public function test_a_missing_parent_row_puts_the_link_first(): void {
 		$GLOBALS['submenu'][ Menu::PARENT_SLUG ] = array(
-			$this->row( 'AcrossAI', 'acrossai' ),
+			$this->row( 'Abilities', Menu::ABILITIES_SLUG ),
+			$this->row( 'Settings', 'acrossai-settings' ),
 			$this->row( 'Quick Connect', Menu::QUICK_CONNECT_SLUG ),
 		);
 
 		$this->menu->reorder_submenu();
 
-		$this->assertContains( Menu::QUICK_CONNECT_SLUG, $this->slugs() );
+		$this->assertSame(
+			array( Menu::QUICK_CONNECT_SLUG, Menu::ABILITIES_SLUG, 'acrossai-settings' ),
+			$this->slugs()
+		);
+	}
+
+	/**
+	 * Placement does not depend on Abilities being present at all.
+	 *
+	 * Abilities was the old anchor. Asserting this keeps the new rule from
+	 * quietly regaining that dependency.
+	 */
+	public function test_placement_does_not_depend_on_abilities(): void {
+		$GLOBALS['submenu'][ Menu::PARENT_SLUG ] = array(
+			$this->row( 'AcrossAI', 'acrossai' ),
+			$this->row( 'Settings', 'acrossai-settings' ),
+			$this->row( 'Quick Connect', Menu::QUICK_CONNECT_SLUG ),
+		);
+
+		$this->menu->reorder_submenu();
+
+		$this->assertSame(
+			array( 'acrossai', Menu::QUICK_CONNECT_SLUG, 'acrossai-settings' ),
+			$this->slugs()
+		);
 	}
 
 	/**
