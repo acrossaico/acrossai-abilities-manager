@@ -143,7 +143,7 @@ abstract class Base_Toolset_Ability {
 			return $groups;
 		}
 
-		if ( $this->slug_taken_by_other || $this->is_server_type_default() ) {
+		if ( $this->slug_taken_by_other || $this->is_server_type_default() || $this->is_host_only() ) {
 			return $groups;
 		}
 
@@ -184,6 +184,10 @@ abstract class Base_Toolset_Ability {
 	 * @return string[]
 	 */
 	public function declare_tool_level_ability( $slugs ): array {
+		if ( $this->is_host_only() ) {
+			return is_array( $slugs ) ? $slugs : array();
+		}
+
 		return $this->contribute_own_slug( $slugs );
 	}
 
@@ -229,7 +233,7 @@ abstract class Base_Toolset_Ability {
 			return $types;
 		}
 
-		if ( $this->slug_taken_by_other ) {
+		if ( $this->slug_taken_by_other || $this->is_host_only() ) {
 			return $types;
 		}
 
@@ -352,6 +356,36 @@ abstract class Base_Toolset_Ability {
 	 * @return bool
 	 */
 	protected function is_volatile(): bool {
+		return false;
+	}
+
+	/**
+	 * Whether this Toolset exists for somebody else's MCP server rather than ours.
+	 *
+	 * False for every Toolset that describes this site to an AcrossAI server. True for one built to
+	 * be contributed to a third-party host — see
+	 * {@see \AcrossAI_Abilities_Manager\Includes\Abilities\Mcp\Host_Mcp_Server} — which must
+	 * stay out of three places a normal Toolset belongs in:
+	 *
+	 * - the `acrossai` server type's default set, so **Reset to Type Defaults** does not add a tool
+	 *   written for Elementor's audience to an AcrossAI server;
+	 * - the transport's Tools picker, where it would read as a curation choice an operator could
+	 *   usefully make, and is not;
+	 * - `toolset/integrations` and the server guide, both of which name tools for a client to call.
+	 *   Naming one that will never be in that client's tool list is the precise fault the guide
+	 *   exists to prevent.
+	 *
+	 * It stays PROTECTED either way, which is the one declaration a host-only Toolset keeps: it is
+	 * still a dispatcher, still not an ability anyone should override, and still must not show up at
+	 * `page=acrossai-abilities-manager`.
+	 *
+	 * Answered from the class, never from the registry, for the ordering reason recorded on
+	 * `declare_server_type_tool()`.
+	 *
+	 * @since  0.0.42
+	 * @return bool
+	 */
+	protected function is_host_only(): bool {
 		return false;
 	}
 
@@ -582,7 +616,12 @@ abstract class Base_Toolset_Ability {
 			'input_schema'        => self::input_schema(),
 			'output_schema'       => self::output_schema(),
 			'meta'                => array(
-				'acrossai'    => array( 'toolset' => true ),
+				// `host_only` is what lets `Toolset\Guide` leave a third-party host's Toolset out of
+				// the listing without knowing any host exists. Read there, set nowhere else.
+				'acrossai'    => array(
+					'toolset'   => true,
+					'host_only' => $this->is_host_only(),
+				),
 				// Never advertised on the vendor default server. A Toolset reaches
 				// a client because an operator adds it on the Tools screen, which
 				// reads the registry and ignores this flag.
@@ -641,6 +680,19 @@ abstract class Base_Toolset_Ability {
 					'type'        => 'string',
 					'maxLength'   => 64,
 					'description' => 'discover only, and only useful on a Toolset that spans several plugins. Restrict to one, as returned by a previous discover call.',
+				),
+				/*
+				 * The general form of `plugin`. Both narrow by GROUP and behave identically; they
+				 * differ only in what the groups ARE, and therefore in what a model should be told
+				 * to call them. `toolset/integrations` spans plugin groups, so `plugin` is the
+				 * honest word there. A Toolset spanning every group on the site also covers
+				 * `database`, `content` and `cron`, and telling a model to pass `plugin=database`
+				 * would be a lie it has to see through.
+				 */
+				'area'           => array(
+					'type'        => 'string',
+					'maxLength'   => 64,
+					'description' => 'discover only, and only useful on a Toolset that spans several areas. Restrict to one, as returned by a previous discover call. Same thing as `plugin`, named for the case where the areas are not plugins.',
 				),
 				'limit'          => array(
 					'type'        => 'integer',
@@ -793,6 +845,35 @@ abstract class Base_Toolset_Ability {
 					),
 				),
 				'total_plugins'   => array( 'type' => 'integer' ),
+				/*
+				 * The same answer as `plugins` above, for a Toolset that spans every group on the
+				 * site rather than only the plugin ones: a menu of AREAS with a count each, because
+				 * eight hundred rows is not a useful reply to "what is here?". Declared on the
+				 * shared schema for the reason recorded on `plugins` — `additionalProperties` is
+				 * false, so a key the response carries but the schema does not name fails the whole
+				 * call rather than being dropped. That has already cost one debugging session.
+				 *
+				 * Each row is keyed on `area`, which is the parameter that reaches it. NOT
+				 * `sub_group`: a sub-group is a division WITHIN a group and can never equal a group
+				 * name, so a menu offering `sub_group=database` sends the caller to an empty list
+				 * with nothing to explain why. `Integrations` carries that warning in a comment;
+				 * this row shape is what happens when you ignore it, which the first draft did.
+				 */
+				'areas'      => array(
+					'type'  => 'array',
+					'items' => array(
+						'type'                 => 'object',
+						'properties'           => array(
+							'area'      => array( 'type' => 'string' ),
+							'label'     => array( 'type' => 'string' ),
+							'covers'    => array( 'type' => 'string' ),
+							'abilities' => array( 'type' => 'integer' ),
+						),
+						'required'             => array( 'area' ),
+						'additionalProperties' => false,
+					),
+				),
+				'total_areas'     => array( 'type' => 'integer' ),
 				'total_abilities' => array( 'type' => 'integer' ),
 				'hint'       => array( 'type' => 'string' ),
 				'total'      => array( 'type' => 'integer' ),
@@ -1276,6 +1357,55 @@ abstract class Base_Toolset_Ability {
 	}
 
 	/**
+	 * How many dispatchable, visible members each group this Toolset spans actually holds.
+	 *
+	 * Exists because `AcrossAI_Ability_Group::counts()` answers a different question. It counts
+	 * everything tagged into a group, which includes abilities a Toolset can never dispatch to:
+	 * `mcp.type: resource` entries like Elementor's best-practice documents. On this site that made
+	 * a menu built from `counts()` advertise `elementor 106` while the drill returned 99 — the gap
+	 * was exactly the seven resources, and a caller has no way to tell which seven.
+	 *
+	 * Built from `members()` so the two cannot disagree by construction: whatever a drill would
+	 * return is what gets counted, including the `acrossai_toolset_member_visible` filter, and the
+	 * result is already memoised per context.
+	 *
+	 * Buckets by the ability's OWN group rather than this Toolset's identity, for the same reason
+	 * `members()` passes that group to the visibility filter — a multi-group dispatcher must report
+	 * each ability under the area a caller can narrow to.
+	 *
+	 * Ordered like `counts()`: largest first, ties alphabetical, so a menu built from either reads
+	 * the same way.
+	 *
+	 * @since  0.0.42
+	 * @param  string $context One of discover, info, execute.
+	 * @return array<string, int> Group slug => dispatchable member count.
+	 */
+	protected function member_counts( string $context = 'discover' ): array {
+		$counts = array();
+
+		foreach ( $this->members( $context ) as $ability ) {
+			$group = (string) AcrossAI_Ability_Group::of( $ability );
+
+			if ( '' === $group ) {
+				continue;
+			}
+
+			$counts[ $group ] = ( $counts[ $group ] ?? 0 ) + 1;
+		}
+
+		uksort(
+			$counts,
+			static function ( string $a, string $b ) use ( $counts ): int {
+				return $counts[ $b ] === $counts[ $a ]
+					? strcmp( $a, $b )
+					: $counts[ $b ] <=> $counts[ $a ];
+			}
+		);
+
+		return $counts;
+	}
+
+	/**
 	 * Whether an ability may be dispatched to at all.
 	 *
 	 * Excludes other Toolsets — a Toolset never dispatches to a Toolset, so no
@@ -1342,16 +1472,24 @@ abstract class Base_Toolset_Ability {
 		// Only meaningful on a Toolset spanning several groups; on any other it
 		// either matches everything or nothing, which is the honest answer.
 		$plugin    = isset( $input['plugin'] ) ? (string) $input['plugin'] : '';
+		// Same filter, different word — see the note on `area` in `input_schema()`. AND-ed with
+		// `plugin` rather than replacing it, so a caller passing both contradictory values gets an
+		// empty result instead of one of the two silently winning.
+		$area      = isset( $input['area'] ) ? (string) $input['area'] : '';
 
-		if ( '' === $search && '' === $card && '' === $sub_group && '' === $plugin ) {
+		if ( '' === $search && '' === $card && '' === $sub_group && '' === $plugin && '' === $area ) {
 			return $members;
 		}
 
 		return array_values(
 			array_filter(
 				$members,
-				function ( WP_Ability $ability ) use ( $search, $card, $sub_group, $plugin ): bool {
+				function ( WP_Ability $ability ) use ( $search, $card, $sub_group, $plugin, $area ): bool {
 					if ( '' !== $plugin && AcrossAI_Ability_Group::of( $ability ) !== $plugin ) {
+						return false;
+					}
+
+					if ( '' !== $area && AcrossAI_Ability_Group::of( $ability ) !== $area ) {
 						return false;
 					}
 

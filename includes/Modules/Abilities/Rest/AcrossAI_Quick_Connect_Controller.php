@@ -197,6 +197,11 @@ class AcrossAI_Quick_Connect_Controller {
 				'plugins'    => array(
 					'mcpManager'          => $plugins[ AcrossAI_Mcp_Transport_Detector::TRANSPORT_MCP_MANAGER ],
 					'mcpAdapter'          => $plugins[ AcrossAI_Mcp_Transport_Detector::TRANSPORT_MCP_ADAPTER ],
+					// Not something the wizard installs — it arrives with Elementor and is switched
+					// on at Elementor's own screen. Reported so the step can say the abilities are
+					// already reachable there rather than implying two destinations exist.
+					'elementorMcp'        => $plugins[ AcrossAI_Mcp_Transport_Detector::TRANSPORT_ELEMENTOR_MCP ],
+					'elementorMcpUrl'     => esc_url_raw( admin_url( 'admin.php?page=elementor-mcp' ) ),
 					'mcpManagerWizardUrl' => esc_url_raw(
 						admin_url( 'admin.php?page=acrossai_mcp_manager&quick-connect=1&step=1&server=1' )
 					),

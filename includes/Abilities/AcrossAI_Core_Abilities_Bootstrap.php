@@ -574,6 +574,22 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			if ( class_exists( '\ElementorPro\Plugin' ) || defined( 'ELEMENTOR_PRO_VERSION' ) ) {
 				$this->register_elementor_pro_abilities();
 			}
+
+			// Feature 122 — publish two Toolsets onto Elementor's own MCP server, so a client
+			// connected to /wp-json/elementor/mcp can reach this site's other abilities instead of
+			// seeing Elementor's twenty tools and no sign the rest exists.
+			//
+			// Inside THIS block on purpose. It is already gated on both conditions that matter —
+			// Elementor present, and the Integrations row not switched off — so switching Elementor
+			// off at admin.php?page=acrossai-integrations means these are never constructed, never
+			// registered and never contributed. A second gate elsewhere would be one more thing to
+			// keep in sync with this one.
+			//
+			// The two dispatchers register themselves the ordinary way, on wp_abilities_api_init.
+			// The Server only tells Elementor they exist.
+			new Elementor\Mcp\Site_Toolset();
+			new Elementor\Mcp\Site_Guide();
+			new Elementor\Mcp\Server();
 		}
 
 		// Feature 069 — Rank Math ability suite (up to 61 abilities under

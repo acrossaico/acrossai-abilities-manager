@@ -123,6 +123,10 @@ const Step5ConnectTransport = () => {
 
 	const managerState = state.plugins.mcpManager;
 	const adapterState = state.plugins.mcpAdapter;
+	// Elementor's server is not something this wizard installs — it arrives with Elementor and is
+	// switched on at Elementor's own screen. Reported, not offered.
+	const elementorState = state.plugins.elementorMcp;
+	const elementorUrl = state.plugins.elementorMcpUrl;
 	const managerActive = managerState === 'active';
 	const canInstall = !!state.canInstall;
 
@@ -216,7 +220,7 @@ const Step5ConnectTransport = () => {
 
 			<p className="qs__step-subtitle">
 				{__(
-					'AcrossAI Abilities Manager works with MCP Adapter and AcrossAI MCP Manager. Pick how this site should connect.',
+					'AcrossAI Abilities Manager works with AcrossAI MCP Manager, MCP Adapter and Elementor MCP. Pick how this site should connect.',
 					'acrossai-abilities-manager'
 				)}
 			</p>
@@ -230,7 +234,13 @@ const Step5ConnectTransport = () => {
 			<div
 				style={{
 					display: 'grid',
-					gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+					// One row, however many options this site has. `auto-fit` with a
+					// min width wrapped 2+1 inside the wizard's ~550px column,
+					// which read as two choices and an afterthought.
+					gridTemplateColumns:
+						'missing' === elementorState
+							? 'repeat(2, minmax(0, 1fr))'
+							: 'repeat(3, minmax(0, 1fr))',
 					gap: 12,
 				}}
 				role="radiogroup"
@@ -295,9 +305,96 @@ const Step5ConnectTransport = () => {
 						'acrossai-abilities-manager'
 					)}
 				/>
+
+				{/*
+				 * Elementor's server, when this site has one.
+				 *
+				 * Offered as a choice rather than a notice because it is one: an operator can
+				 * legitimately decide this is how the site connects. It differs from the other
+				 * two in that there is nothing for this wizard to install — Elementor ships the
+				 * server and owns its switch — so selecting it explains what to do next instead
+				 * of doing it. Hidden entirely when Elementor is absent; offering a destination
+				 * that does not exist is worse than offering two.
+				 */}
+				{'missing' !== elementorState && (
+					<RadioCard
+						name="qs-transport"
+						value="elementor-mcp"
+						selected={router.method === 'elementor-mcp'}
+						onSelect={() => router.setMethod('elementor-mcp')}
+						title={
+							<>
+								{__(
+									'Elementor MCP',
+									'acrossai-abilities-manager'
+								)}
+								{'active' === elementorState && (
+									<span className="qs-card__badge qs-card__badge--inactive">
+										{__(
+											'Already active',
+											'acrossai-abilities-manager'
+										)}
+									</span>
+								)}
+							</>
+						}
+						subtitle={__(
+							"Elementor's own server. Your AcrossAI abilities ride along with it — nothing to install.",
+							'acrossai-abilities-manager'
+						)}
+					/>
+				)}
 			</div>
 
-			{managerActive && (
+			{/*
+			 * Elementor's server, when this site has one.
+			 *
+			 * Deliberately a notice rather than a third card. The two above are choices the
+			 * operator makes and this wizard can act on; Elementor's server is a fact about the
+			 * site, switched on at Elementor's own screen. Rendering it as a selectable option
+			 * would offer an install path that does not exist and a decision already made
+			 * elsewhere.
+			 */}
+			{/*
+			 * Shown on selection, not always.
+			 *
+			 * The earlier version rendered this whenever Elementor was present, which put a green
+			 * "already reachable" banner under a screen where the operator had chosen something
+			 * else — two destinations claiming success at once. Tied to the selection it answers
+			 * one question: having picked Elementor, what now?
+			 */}
+			{'elementor-mcp' === router.method && (
+				<div style={{ marginTop: 24 }}>
+					<Notice
+						status={
+							'active' === elementorState ? 'success' : 'warning'
+						}
+					>
+						{'active' === elementorState
+							? __(
+									"Elementor MCP is running, and your AcrossAI abilities are available through it. In your AI client, connect to this site's Elementor MCP server — or reconnect if it is already set up, so it picks up the AcrossAI tools. Then continue to finish.",
+									'acrossai-abilities-manager'
+								)
+							: __(
+									"Elementor MCP is not switched on yet. Turn it on at Elementor → Elementor MCP, then connect your AI client to this site's Elementor MCP server — or reconnect an existing connection so it picks up the AcrossAI tools.",
+									'acrossai-abilities-manager'
+								)}
+						{!!elementorUrl && (
+							<>
+								{' '}
+								<a href={elementorUrl}>
+									{__(
+										'Open Elementor MCP settings',
+										'acrossai-abilities-manager'
+									)}
+								</a>
+							</>
+						)}
+					</Notice>
+				</div>
+			)}
+
+			{managerActive && 'mcp-manager' === router.method && (
 				<div style={{ marginTop: 24 }}>
 					<Notice status="success">
 						{__(

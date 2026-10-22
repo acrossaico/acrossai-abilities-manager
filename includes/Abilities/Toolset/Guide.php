@@ -37,8 +37,14 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * A one-call briefing for a client connected to an AcrossAI server.
+ *
+ * Not final since 0.0.42. A guide published onto a third-party MCP server needs the same four
+ * sections — the calling convention, what this site holds, the two unusual Toolsets, the error
+ * codes — and a different slug, label, description and connect message. Those five are the
+ * overridable surface; everything else is shared, so the two guides cannot drift about how a
+ * Toolset is called.
  */
-final class Guide {
+class Guide {
 
 	/**
 	 * This ability's slug.
@@ -102,16 +108,52 @@ final class Guide {
 	 * @return mixed
 	 */
 	public function declare_server_instructions( $instructions, $server_type ) {
-		if ( 'acrossai' !== $server_type ) {
+		if ( $this->is_host_only() || 'acrossai' !== $server_type ) {
 			return $instructions;
 		}
 
 		return sprintf(
 			/* translators: 1: the server guide's ability name, 2: the integrations toolset name. */
 			__( 'This server exposes Toolsets. Each one takes action=discover to list what it holds, action=info to read an ability\'s parameters, and action=execute to run it — the same three everywhere, so learn them once. Call %1$s first: it names every Toolset on this site with what it covers and how to reach it. Note that your tool list was fixed when you connected and cannot be refreshed, so a capability may exist here without a tool of its own in your list — %2$s reaches those.', 'acrossai-abilities-manager' ),
-			self::SLUG,
+			static::SLUG,
 			'toolset/integrations'
 		);
+	}
+
+	/**
+	 * Whether this guide belongs to somebody else's MCP server rather than ours.
+	 *
+	 * Same question and same three exclusions as
+	 * {@see Base_Toolset_Ability::is_host_only()}: a guide written for a third-party host's
+	 * audience must not join the `acrossai` server type, must not appear in the transport's Tools
+	 * picker, and must not supply the connect message for AcrossAI servers — which already have
+	 * this guide's first-party sibling. Its slug stays protected either way.
+	 *
+	 * @since  0.0.42
+	 * @return bool
+	 */
+	protected function is_host_only(): bool {
+		return false;
+	}
+
+	/**
+	 * This guide's tool label.
+	 *
+	 * @since  0.0.42
+	 * @return string
+	 */
+	protected function label(): string {
+		return __( 'Toolset Guide', 'acrossai-abilities-manager' );
+	}
+
+	/**
+	 * This guide's tool description.
+	 *
+	 * @since  0.0.42
+	 * @return string
+	 */
+	protected function description(): string {
+		return __( 'Read this first. Explains how every other tool on this server is called — the three actions, which parameters belong to which, and their real limits — then lists what this site holds, with an ability count per toolset. Also says what the two unusual toolsets are for: Other, which holds abilities that matched no group, and Integrations, which reaches plugin capability including plugins missing from your tool list. Takes no input and changes nothing.', 'acrossai-abilities-manager' );
 	}
 
 	/**
@@ -119,15 +161,15 @@ final class Guide {
 	 * @return void
 	 */
 	public function register(): void {
-		if ( ! function_exists( 'wp_register_ability' ) || wp_has_ability( self::SLUG ) ) {
+		if ( ! function_exists( 'wp_register_ability' ) || wp_has_ability( static::SLUG ) ) {
 			return;
 		}
 
 		wp_register_ability(
-			self::SLUG,
+			static::SLUG,
 			array(
-				'label'               => __( 'Toolset Guide', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Read this first. Explains how every other tool on this server is called — the three actions, which parameters belong to which, and their real limits — then lists what this site holds, with an ability count per toolset. Also says what the two unusual toolsets are for: Other, which holds abilities that matched no group, and Integrations, which reaches plugin capability including plugins missing from your tool list. Takes no input and changes nothing.', 'acrossai-abilities-manager' ),
+				'label'               => $this->label(),
+				'description'         => $this->description(),
 				'category'            => Base_Toolset_Ability::CATEGORY,
 				'meta'                => array(
 					'mcp' => array(
@@ -269,14 +311,7 @@ final class Guide {
 				// which route works depends on whether this client's tool list
 				// carries it, and only the client knows that. Naming one route
 				// would be a guess; naming both lets it pick.
-				'call'      => isset( $indirect[ (string) $group ] )
-					? sprintf(
-						/* translators: 1: toolset name, 2: plugin group slug. */
-						__( 'Call %1$s directly if it is in your tool list; if it is not, call toolset/integrations with plugin=%2$s.', 'acrossai-abilities-manager' ),
-						$name,
-						$group
-					)
-					: __( 'Call it directly — it is in the default set, so your tool list has it.', 'acrossai-abilities-manager' ),
+				'call'      => $this->call_route( $name, (string) $group, isset( $indirect[ (string) $group ] ), false ),
 			);
 		}
 
@@ -297,11 +332,44 @@ final class Guide {
 				'label'     => $ability->get_label(),
 				'covers'    => self::summarise( $ability->get_description() ),
 				'abilities' => 0,
-				'call'      => __( 'Call it directly — it is in the default set, so your tool list has it. It holds nothing at the moment, and that changes when a plugin or theme is activated, so call discover rather than ruling it out for the rest of this session.', 'acrossai-abilities-manager' ),
+				'call'      => $this->call_route( $name, $group, false, true ),
 			);
 		}
 
 		return $rows;
+	}
+
+	/**
+	 * How to reach one toolset from where the reader is sitting.
+	 *
+	 * Overridable because the honest answer depends on which server the client connected to, and
+	 * getting it wrong is the one fault this guide exists to prevent. On an AcrossAI server the
+	 * default set IS the client's tool list, so "call it directly" is true. On a third-party host
+	 * that contributes only a gateway, it is false for every row — the client has two tools, and
+	 * naming thirteen others as directly callable sends it at twelve that do not exist.
+	 *
+	 * @since  0.0.42
+	 * @param  string $name     The toolset's ability name.
+	 * @param  string $group    Its group slug.
+	 * @param  bool   $indirect Whether it is outside the server type's default set.
+	 * @param  bool   $empty    Whether its group currently holds nothing.
+	 * @return string
+	 */
+	protected function call_route( string $name, string $group, bool $indirect, bool $empty ): string {
+		if ( $indirect ) {
+			return sprintf(
+				/* translators: 1: toolset name, 2: plugin group slug. */
+				__( 'Call %1$s directly if it is in your tool list; if it is not, call toolset/integrations with plugin=%2$s.', 'acrossai-abilities-manager' ),
+				$name,
+				$group
+			);
+		}
+
+		if ( $empty ) {
+			return __( 'Call it directly — it is in the default set, so your tool list has it. It holds nothing at the moment, and that changes when a plugin or theme is activated, so call discover rather than ruling it out for the rest of this session.', 'acrossai-abilities-manager' );
+		}
+
+		return __( 'Call it directly — it is in the default set, so your tool list has it.', 'acrossai-abilities-manager' );
 	}
 
 	/**
@@ -348,6 +416,15 @@ final class Guide {
 			$meta = $ability->get_meta_item( 'acrossai' );
 
 			if ( ! is_array( $meta ) || empty( $meta['toolset'] ) ) {
+				continue;
+			}
+
+			// A dispatcher built for a third-party MCP server. It is registered, and it carries the
+			// Toolset marker, but no AcrossAI server advertises it — so a client reading this guide
+			// will never have the tool. Naming it is the fault this guide exists to prevent, and it
+			// reaches here because such a dispatcher spans every group and therefore has members
+			// while owning no group of its own, which is exactly the shape `$counted` misses.
+			if ( ! empty( $meta['host_only'] ) ) {
 				continue;
 			}
 
@@ -411,7 +488,7 @@ final class Guide {
 	 * @since  0.0.34
 	 * @return array<string, string>
 	 */
-	private function special(): array {
+	protected function special(): array {
 		$special = array();
 
 		// The catch-all is a default, so it registers even on a site where every
@@ -473,6 +550,10 @@ final class Guide {
 	 * @return mixed
 	 */
 	public function declare_tool_level_ability( $slugs ) {
+		if ( $this->is_host_only() ) {
+			return $slugs;
+		}
+
 		return $this->contribute_own_slug( $slugs );
 	}
 
@@ -498,7 +579,7 @@ final class Guide {
 	 */
 	private function contribute_own_slug( $slugs ): array {
 		$slugs   = is_array( $slugs ) ? $slugs : array();
-		$slugs[] = self::SLUG;
+		$slugs[] = static::SLUG;
 
 		return array_values( array_unique( $slugs ) );
 	}
@@ -516,6 +597,10 @@ final class Guide {
 	 * @return mixed
 	 */
 	public function declare_server_type_tool( $types ) {
+		if ( $this->is_host_only() ) {
+			return $types;
+		}
+
 		if ( ! is_array( $types ) || ! isset( $types['acrossai'] ) || ! is_array( $types['acrossai'] ) ) {
 			return $types;
 		}
@@ -523,7 +608,7 @@ final class Guide {
 		$tools   = isset( $types['acrossai']['tools'] ) && is_array( $types['acrossai']['tools'] )
 			? $types['acrossai']['tools']
 			: array();
-		$tools[] = self::SLUG;
+		$tools[] = static::SLUG;
 
 		$types['acrossai']['tools'] = array_values( array_unique( $tools ) );
 
