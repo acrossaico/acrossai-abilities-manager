@@ -30,9 +30,17 @@ class Test_Rank_Math_Bootstrap_Wiring extends WP_UnitTestCase {
 
 	/**
 	 * FR-003 — no ability class may be instantiated when Rank Math is absent.
+	 *
+	 * The host check now shares its `if` with the Integrations switch, which can also stop the
+	 * suite registering. Both halves are pinned: the switch must not have replaced the presence
+	 * test, because an operator switching the integration on cannot conjure the plugin, and
+	 * instantiating the suite without it is what FR-003 exists to prevent.
 	 */
 	public function test_ability_registration_is_gated_on_rank_math(): void {
-		$this->assertStringContainsString( "if ( class_exists( '\\RankMath\\Helper' ) ) {", $this->src );
+		$this->assertStringContainsString(
+			"if ( class_exists( '\\RankMath\\Helper' ) && \$this->integration_on( 'rank-math' ) ) {",
+			$this->src
+		);
 		$this->assertStringContainsString( '$this->register_rank_math_abilities();', $this->src );
 	}
 

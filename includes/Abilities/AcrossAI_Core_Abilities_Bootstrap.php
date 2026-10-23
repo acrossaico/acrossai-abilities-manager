@@ -20,6 +20,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities;
 
 use AcrossAI_Abilities_Manager\Includes\AcrossAI_Loader;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Cron_Helpers;
+use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Integration_Settings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -568,7 +569,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// elementor/*). Gated on Elementor presence; the Pro-only
 		// subset (Custom Code CRUD + Form Submissions) is additionally gated
 		// on Elementor Pro. See specs/067-elementor-abilities/plan.md.
-		if ( class_exists( '\Elementor\Plugin' ) ) {
+		if ( class_exists( '\Elementor\Plugin' ) && $this->integration_on( 'elementor' ) ) {
 			$this->register_elementor_free_abilities();
 			if ( class_exists( '\ElementorPro\Plugin' ) || defined( 'ELEMENTOR_PRO_VERSION' ) ) {
 				$this->register_elementor_pro_abilities();
@@ -589,7 +590,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// activation and cannot be decided at registration time.
 		// Do not "fix" this into the Elementor shape.
 		// See specs/069-rank-math-abilities/research.md F7.
-		if ( class_exists( '\RankMath\Helper' ) ) {
+		if ( class_exists( '\RankMath\Helper' ) && $this->integration_on( 'rank-math' ) ) {
 			$this->register_rank_math_abilities();
 		}
 
@@ -598,7 +599,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// request. Its Google CONNECTION can, but that is runtime state the guards already report per
 		// call, and it is deliberately not a registration gate — the abilities must exist on an
 		// unconnected site precisely so site-kit/get-status can say so.
-		if ( Utilities\SiteKit\Site_Kit_Context::available() ) {
+		if ( Utilities\SiteKit\Site_Kit_Context::available() && $this->integration_on( 'site-kit' ) ) {
 			$this->register_site_kit_abilities();
 		}
 
@@ -607,7 +608,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// modules or entitlements that could change within a request, so there is nothing to defer
 		// to runtime. The suite's guard still re-checks availability inside execute(), because CF7
 		// can be deactivated after the abilities were registered in the same request.
-		if ( class_exists( 'WPCF7_ContactForm' ) ) {
+		if ( class_exists( 'WPCF7_ContactForm' ) && $this->integration_on( 'contact-form-7' ) ) {
 			$this->register_contact_form_7_abilities();
 		}
 
@@ -616,7 +617,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// that could change within a request, so there is nothing to defer to runtime. The suite's
 		// guard still re-checks availability inside execute(), because the plugin can be deactivated
 		// after the abilities were registered in the same request.
-		if ( class_exists( '\\LiteSpeed\\Core' ) ) {
+		if ( class_exists( '\\LiteSpeed\\Core' ) && $this->integration_on( 'litespeed-cache' ) ) {
 			$this->register_litespeed_abilities();
 		}
 
@@ -625,7 +626,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// it and only one edition is ever active. The per-ability gate is the FIELD TYPE, not
 		// function_exists(): add_row()/update_row()/delete_row() ship in both editions, so a function
 		// check would register six abilities on free ACF that can never succeed.
-		if ( defined( 'ACF_VERSION' ) && function_exists( 'acf_get_setting' ) ) {
+		if ( defined( 'ACF_VERSION' ) && function_exists( 'acf_get_setting' ) && $this->integration_on( 'acf' ) ) {
 			$this->register_acf_abilities();
 		}
 
@@ -634,58 +635,58 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// because indexables store permalinks and building them on staging bakes in the wrong ones.
 		// That reasoning covers indexables and nothing else: settings, terms, sitemaps and tools are
 		// just as valid on staging, and inheriting the gate would make all 62 invisible there.
-		if ( defined( 'WPSEO_VERSION' ) && class_exists( '\\WPSEO_Options' ) ) {
+		if ( defined( 'WPSEO_VERSION' ) && class_exists( '\\WPSEO_Options' ) && $this->integration_on( 'yoast-seo' ) ) {
 			$this->register_yoast_abilities();
 		}
 
 		// Feature 107 — Classic Editor ability suite (4 abilities under editor/*). Gated on the
 		// plugin, so the group and its MCP tool exist only where they mean something.
-		if ( defined( 'CLASSIC_EDITOR_VERSION' ) && class_exists( 'Classic_Editor' ) ) {
+		if ( defined( 'CLASSIC_EDITOR_VERSION' ) && class_exists( 'Classic_Editor' ) && $this->integration_on( 'classic-editor' ) ) {
 			$this->register_classic_editor_abilities();
 		}
 
 		// Feature 109 — The Events Calendar ability suite (18 abilities under events/*). Gated on
 		// the plugin AND its ORM, because every write in the suite goes through tribe_events().
-		if ( class_exists( 'Tribe__Events__Main' ) && function_exists( 'tribe_events' ) ) {
+		if ( class_exists( 'Tribe__Events__Main' ) && function_exists( 'tribe_events' ) && $this->integration_on( 'events-calendar' ) ) {
 			$this->register_events_calendar_abilities();
 		}
 
 		// Feature 110 — Event Tickets ability suite (16 abilities under tickets/*). Gated on Event
 		// Tickets alone: it does NOT require The Events Calendar, and tickets attach to pages too.
-		if ( class_exists( 'Tribe__Tickets__Main' ) && class_exists( 'Tribe__Tickets__Tickets' ) ) {
+		if ( class_exists( 'Tribe__Tickets__Main' ) && class_exists( 'Tribe__Tickets__Tickets' ) && $this->integration_on( 'event-tickets' ) ) {
 			$this->register_event_tickets_abilities();
 		}
 		// Feature 112 — WPCode ability suite (24 abilities under snippets/*). Gated on the snippet
 		// class rather than a version constant: it is what the suite actually calls, so its absence
 		// is what would break. WPCode's own five under wpcode/* are adopted by the toolset, not
 		// re-registered here.
-		if ( class_exists( 'WPCode_Snippet' ) && function_exists( 'wpcode' ) ) {
+		if ( class_exists( 'WPCode_Snippet' ) && function_exists( 'wpcode' ) && $this->integration_on( 'wpcode' ) ) {
 			$this->register_wpcode_abilities();
 		}
 
 		// Feature 116 — Loco Translate ability suite (14 abilities under translations/*). Gated on
 		// the two classes the suite actually calls: the discovery root and the only sanctioned write
 		// path. Loco registers no abilities of its own, so nothing here is adopted.
-		if ( class_exists( 'Loco_package_Bundle' ) && class_exists( 'Loco_gettext_Compiler' ) ) {
+		if ( class_exists( 'Loco_package_Bundle' ) && class_exists( 'Loco_gettext_Compiler' ) && $this->integration_on( 'loco-translate' ) ) {
 			$this->register_loco_translate_abilities();
 		}
 
 		// Feature 118 — cookie consent suite (22 abilities under consent/*). Gated through the guard
 		// rather than on a class name here, so the two-symbol presence test lives in one place. The
 		// consent plugin registers no abilities of its own, so nothing here is adopted.
-		if ( Utilities\Consent\Consent_Guard::is_available() ) {
+		if ( Utilities\Consent\Consent_Guard::is_available() && $this->integration_on( 'cookieyes' ) ) {
 			$this->register_consent_abilities();
 		}
 
 		// Feature 119 — email delivery suite (4 abilities under email/*). The mail plugin's own
 		// abilities are adopted by prefix, not registered here.
-		if ( Utilities\Email\Email_Guard::is_available() ) {
+		if ( Utilities\Email\Email_Guard::is_available() && $this->integration_on( 'wp-mail-smtp' ) ) {
 			$this->register_email_abilities();
 		}
 
 		// Feature 121 — store suite. WooCommerce's own seven are adopted by prefix, not registered
 		// here: it reserves the whole `woocommerce/` namespace and takes back any name we shadow.
-		if ( Utilities\Store\Store_Guard::is_available() ) {
+		if ( Utilities\Store\Store_Guard::is_available() && $this->integration_on( 'woocommerce' ) ) {
 			$this->register_store_abilities();
 		}
 
@@ -694,8 +695,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// are still discoverable and are the thing that says it is missing. Gating registration on
 		// the plugin being installed would hide the answer exactly when "is this site backed up?"
 		// is answered no.
-		$this->register_updraftplus_abilities();
-		$this->register_all_in_one_abilities();
+		// Still gated on the switch, though: "no backup plugin installed" is an answer worth
+		// having, but an operator who turned the integration off has said they do not want it.
+		if ( $this->integration_on( 'updraftplus' ) ) {
+			$this->register_updraftplus_abilities();
+		}
+
+		if ( $this->integration_on( 'all-in-one-wp-migration' ) ) {
+			$this->register_all_in_one_abilities();
+		}
 
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
 		// so every group it may cover already exists. Each declines to register
@@ -807,6 +815,29 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new RankMath\Research_Keyword();
 		new RankMath\Get_Ai_Visibility_Brand();
 		new RankMath\Update_Ai_Visibility_Object();
+	}
+
+	/**
+	 * Whether an integration's abilities should be registered at all.
+	 *
+	 * The Integrations switch, applied where it is cheapest and most complete: an integration that
+	 * is off never registers, so there is nothing to refuse, nothing listed, and — because the
+	 * Toolset dispatchers register last and only when their group has members — no dead
+	 * `toolset/{group}` tool left fronting an empty group.
+	 *
+	 * Asks whether the integration was switched *off*, not whether it was switched *on*, and that
+	 * is load-bearing. Default-on is stored as a seeded `true` written at `init` P1, while
+	 * `wp_abilities_api_init` fires lazily on whatever first touches the registry — which can be
+	 * earlier. Testing for an explicit `true` would therefore read "absent, so off" on a fresh site
+	 * and silently register no integration abilities at all. A stored `false` is a decision; an
+	 * unseeded key is not. See AcrossAI_Integration_Settings::is_switched_off().
+	 *
+	 * @since  0.0.42
+	 * @param  string $group Integration group slug, as declared by its TAB_GROUP.
+	 * @return bool
+	 */
+	private function integration_on( string $group ): bool {
+		return ! AcrossAI_Integration_Settings::is_switched_off( $group );
 	}
 
 	/**

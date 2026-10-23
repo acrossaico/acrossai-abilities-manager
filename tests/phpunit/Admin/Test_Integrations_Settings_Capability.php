@@ -15,16 +15,16 @@
 declare( strict_types = 1 );
 
 use PHPUnit\Framework\TestCase;
-use AcrossAI_Abilities_Manager\Admin\Partials\Integrations_Settings_Menu;
+use AcrossAI_Abilities_Manager\Admin\Partials\Integrations_Menu;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Integration_Settings;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Ability_Library_Registry;
 
 require_once dirname( __DIR__, 3 ) . '/includes/Modules/Library/AcrossAI_Ability_Library_Registry.php';
 require_once dirname( __DIR__, 3 ) . '/includes/Modules/Library/AcrossAI_Integration_Settings.php';
-require_once dirname( __DIR__, 3 ) . '/admin/Partials/Integrations_Settings_Menu.php';
+require_once dirname( __DIR__, 3 ) . '/admin/Partials/Integrations_Menu.php';
 
 /**
- * Covers Integrations_Settings_Menu::sanitize_option() authorization.
+ * Covers Integrations_Menu::sanitize_option() authorization.
  */
 class Test_Integrations_Settings_Capability extends TestCase {
 
@@ -94,7 +94,7 @@ class Test_Integrations_Settings_Capability extends TestCase {
 	 * @return array<string, bool>
 	 */
 	private function save( array $submitted ): array {
-		return Integrations_Settings_Menu::instance()->sanitize_option( $submitted );
+		return Integrations_Menu::instance()->sanitize_option( $submitted );
 	}
 
 	/**

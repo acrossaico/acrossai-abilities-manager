@@ -351,12 +351,20 @@ final class Main {
 		$core_settings_menu = \AcrossAI_Abilities_Manager\Admin\Partials\Core_Settings_Menu::instance();
 		$this->loader->add_action( 'admin_init', $core_settings_menu, 'register_settings' );
 
-		// Feature 102 — third-party integration opt-ins, relocated from the retired Ability
-		// Integrations page. Renders inside the same Abilities tab as the section above; admin-only,
-		// so it belongs in define_admin_hooks() (Boot Flow Rule). Variable-first per AC-HOOKS-MAIN.
-		$integrations_settings_menu = \AcrossAI_Abilities_Manager\Admin\Partials\Integrations_Settings_Menu::instance();
-		$this->loader->add_filter( 'acrossai_settings_tabs', $integrations_settings_menu, 'register_tab' );
-		$this->loader->add_action( 'admin_init', $integrations_settings_menu, 'register_settings' );
+		// Feature 120 — the Integrations directory, a submenu of its own directly below Abilities.
+		// `register_submenu` runs at the default priority so it is in place before Menu's
+		// `reorder_submenu` at 999 moves it into position. Admin-only, so it belongs in
+		// define_admin_hooks() (Boot Flow Rule). Variable-first per AC-HOOKS-MAIN.
+		$integrations_menu = \AcrossAI_Abilities_Manager\Admin\Partials\Integrations_Menu::instance();
+		$this->loader->add_action( 'admin_menu', $integrations_menu, 'register_submenu' );
+		$this->loader->add_action( 'admin_init', $integrations_menu, 'register_settings' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $integrations_menu, 'enqueue_assets' );
+
+		// The routes behind that screen. Separate controller rather than more routes on the
+		// abilities one: this is the only place in the plugin that reaches acrossai.co, and keeping
+		// it in its own file keeps that fact findable.
+		$integrations_rest = \AcrossAI_Abilities_Manager\Includes\Abilities\Rest\Integrations_Directory_Controller::instance();
+		$this->loader->add_action( 'rest_api_init', $integrations_rest, 'register_routes' );
 
 		// Uninstall Settings section is wired LAST — priority 20 pushes it below
 		// every default-priority section (Display Settings above, plus
@@ -557,11 +565,6 @@ final class Main {
 		// on, because switching them on switches on a third-party feature as well as our grouping.
 		new \AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\Elementor_Opt_In();
 		new \AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\Jetpack_Opt_In();
-
-		// Feature 102 forbids an access control that stops the controlled object existing, so the
-		// Integrations switch cannot skip registration. This refuses instead, at the one gate every
-		// surface passes through, leaving a switched-off integration's abilities listed and visible.
-		\AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Integration_Access::instance()->boot();
 
 		// Issue #202 — start recording ability-name clashes before anything registers. Abilities
 		// register on wp_abilities_api_init (fired from init), so attaching here at plugins_loaded P0

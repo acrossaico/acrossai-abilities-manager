@@ -85,21 +85,27 @@ final class Elementor_Opt_In extends AcrossAI_Integration_Ability_Base {
 	}
 
 	/**
-	 * Not seeded on.
+	 * Seeded on, like every other integration.
 	 *
-	 * The exception to this plugin's on-by-default rule, and deliberate. Switching this on does not
-	 * just expose abilities we wrote — it turns on Elementor's own site-wide MCP exposure, a feature
-	 * its authors ship off and put behind their own admin screen. Defaulting it on would make that
-	 * decision for the site owner from inside an unrelated plugin's update.
+	 * This returned false until 0.0.42, on the argument that switching it on turns on Elementor's
+	 * own site-wide MCP exposure — a feature its authors ship off — and that making that decision
+	 * from inside an unrelated plugin's update was overreach.
 	 *
-	 * Our own 81 Elementor abilities are unaffected either way: they are registered by us, and this
-	 * switch does not reach them.
+	 * The counter-argument won, and it is about what the switch is for. Somebody who installs
+	 * Abilities Manager has asked for their site's abilities to be usable; an Elementor row that
+	 * reads "Enabled · 109 abilities" while quietly withholding 25 of them is not describing the
+	 * site. Worse, the two halves then had different defaults — ours on, Elementor's off — so one
+	 * switch produced two answers and the card could not honestly report either.
+	 *
+	 * The decision is still the site owner's, and still reversible in one click: switching this row
+	 * off restores Elementor's own setting untouched, because {@see force_option_true()} filters
+	 * the read rather than writing the option.
 	 *
 	 * @since  0.0.42
 	 * @return bool
 	 */
 	protected function seeds_enabled(): bool {
-		return false;
+		return true;
 	}
 
 	/**

@@ -59,10 +59,19 @@ final class AcrossAI_Integration_Default_Opt_Ins {
 	 * value of the toggle is its OFF position, which currently exists nowhere. See
 	 * {@see \AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\WPForms} and issue #210.
 	 *
+	 * `elementor` and `jetpack` are here rather than left to the discovery pass because of when each
+	 * runs. Discovery seeds at `init` P1, while the opt-in base reads its toggle at `plugins_loaded`
+	 * P20 — earlier — so an integration seeded only by discovery is correct from the *second*
+	 * request of a site's life, not the first. For most integrations that is invisible: the toggle
+	 * only decides whether we register our own abilities, and the gate treats an unseeded key as on.
+	 * For these two it is not, because their toggle also flips the host plugin's own setting, and a
+	 * site owner installing Abilities Manager would see 81 Elementor abilities on first load and 106
+	 * on the next with nothing explaining the difference. Seeded here, they are right immediately.
+	 *
 	 * @since 0.0.34
 	 * @var   string[]
 	 */
-	private const DEFAULT_ON = array( 'wpforms' );
+	private const DEFAULT_ON = array( 'wpforms', 'elementor', 'jetpack' );
 
 	/**
 	 * Option recording which slugs the seed has already considered.

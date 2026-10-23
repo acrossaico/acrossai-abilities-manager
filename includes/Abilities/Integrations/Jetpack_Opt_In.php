@@ -86,17 +86,21 @@ final class Jetpack_Opt_In extends AcrossAI_Integration_Ability_Base {
 	}
 
 	/**
-	 * Not seeded on.
+	 * Seeded on, for the same reason Elementor's is.
 	 *
-	 * Same reasoning as Elementor's: this switches on a third-party feature its authors ship off and
-	 * roll out deliberately, so defaulting it on would make that choice for the site owner. Their
-	 * comment above says as much.
+	 * Changed together with {@see Elementor_Opt_In::seeds_enabled()} and for the same argument: a
+	 * row that reports an integration as enabled must not be withholding part of it. Leaving this
+	 * one off while Elementor's went on would have made the two inconsistent on nothing more than
+	 * which was discussed first.
+	 *
+	 * Reversible in one click, and non-destructive: switching the row off leaves Jetpack's own
+	 * setting as its owner left it.
 	 *
 	 * @since  0.0.42
 	 * @return bool
 	 */
 	protected function seeds_enabled(): bool {
-		return false;
+		return true;
 	}
 
 	/**

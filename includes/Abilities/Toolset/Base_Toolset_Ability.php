@@ -29,6 +29,8 @@
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Toolset;
 
+use AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\AcrossAI_Toolset_Integrations;
+use AcrossAI_Abilities_Manager\Includes\Modules\Library\AcrossAI_Integration_Settings;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Group;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Input_Normalizer;
 use WP_Ability;
@@ -553,7 +555,11 @@ abstract class Base_Toolset_Ability {
 			return;
 		}
 
-		if ( ! $this->has_any_member() && ! $this->is_server_type_default() ) {
+		// A switched-off integration keeps its Toolset. Its abilities are gone, so `has_any_member()`
+		// is false and this would otherwise suppress itself — and an assistant would be told the tool
+		// does not exist, which is indistinguishable from "this site has no Elementor". It stays, and
+		// answers every action by saying it was switched off and where to switch it back on.
+		if ( ! $this->has_any_member() && ! $this->is_server_type_default() && '' === $this->switched_off_group() ) {
 			return;
 		}
 
@@ -710,6 +716,15 @@ abstract class Base_Toolset_Ability {
 				'error_message' => array( 'type' => 'string' ),
 				'error_code' => array( 'type' => 'string' ),
 				'message'    => array( 'type' => 'string' ),
+				/*
+				 * Something true about this answer that is not a failure of it. Currently one
+				 * case: the integration is switched off in Abilities Manager while its host plugin
+				 * still publishes abilities of its own, so the group is real but partial. Declared
+				 * here for the same reason as `plugins` below — the schema is
+				 * `additionalProperties: false`, so a key the response carries but the schema does
+				 * not name fails the entire call rather than being dropped.
+				 */
+				'notice'     => array( 'type' => 'string' ),
 				/*
 				 * discover only, and only on a Toolset whose membership tracks
 				 * what is installed. Declared here for the reason given on
@@ -923,20 +938,66 @@ abstract class Base_Toolset_Ability {
 		$input  = is_array( $input ) ? $input : array();
 		$action = (string) ( $input['action'] ?? '' );
 
+		$off = $this->switched_off_group();
+
+		/*
+		 * Switched off, and nothing left in the group — the usual case. Our abilities were never
+		 * registered and the host is not contributing any either, so there is nothing to dispatch
+		 * to and the only useful answer is why.
+		 */
+		if ( '' !== $off && array() === $this->members( 'discover' ) ) {
+			return $this->failure(
+				$action,
+				'integration_disabled',
+				sprintf(
+					/* translators: 1: integration name, 2: admin URL of the Integrations screen. */
+					__(
+						'The %1$s integration is switched off, so none of its abilities are available. Switch it back on at %2$s to use this tool.',
+						'acrossai-abilities-manager'
+					),
+					$this->toolset_label_for( $off ),
+					admin_url( 'admin.php?page=acrossai-integrations' )
+				)
+			);
+		}
+
 		switch ( $action ) {
 			case 'discover':
-				return $this->do_discover( $input );
+				$result = $this->do_discover( $input );
+				break;
 			case 'info':
-				return $this->do_info( $input );
+				$result = $this->do_info( $input );
+				break;
 			case 'execute':
-				return $this->do_execute( $input );
+				$result = $this->do_execute( $input );
+				break;
 			default:
-				return $this->failure(
+				$result = $this->failure(
 					$action,
 					'invalid_action',
 					__( 'Unknown action. Use discover, info or execute.', 'acrossai-abilities-manager' )
 				);
 		}
+
+		/*
+		 * Switched off, but the host plugin is publishing abilities of its own into this group —
+		 * someone enabled that on the host's own screen, which is not a decision this switch gets
+		 * to overrule. Those work normally. What is missing is our contribution, so the tool says
+		 * so on every answer rather than quietly serving a partial group as if it were whole.
+		 */
+		if ( '' !== $off ) {
+			$result['notice'] = sprintf(
+				/* translators: 1: integration name, 2: admin URL of the Integrations screen. */
+				__(
+					'The %1$s integration is switched off in Abilities Manager, so only %1$s\'s own abilities are listed here. Switch it on at %2$s to add this plugin\'s %1$s abilities as well.',
+					'acrossai-abilities-manager'
+				),
+				$this->toolset_label_for( $off ),
+				admin_url( 'admin.php?page=acrossai-integrations' )
+			);
+		}
+
+		return $result;
 	}
 
 	/**
@@ -1537,6 +1598,61 @@ abstract class Base_Toolset_Ability {
 			'error_message' => $message,
 			'error_code'    => $code,
 		);
+	}
+
+	/**
+	 * The integration group this Toolset fronts, when that integration is switched off.
+	 *
+	 * Only ever answers for a Toolset that fronts exactly one group. The multi-group dispatchers —
+	 * `toolset/integrations` most of all — serve many integrations at once, and one of them being
+	 * off is no reason to take the whole tool out of service.
+	 *
+	 * Asks `is_switched_off()` rather than `is_enabled()`, the same question the registration gate
+	 * asks and for the same reason: an unseeded key is not a decision, and reading it as "off" here
+	 * would replace every Toolset on a fresh site with a message telling the owner to switch on
+	 * something they never switched off.
+	 *
+	 * @since  0.0.42
+	 * @return string Group slug, or '' when this Toolset is not a switched-off integration's.
+	 */
+	private function switched_off_group(): string {
+		$groups = array_values( array_map( 'strval', (array) $this->groups() ) );
+
+		if ( 1 !== count( $groups ) || '' === $groups[0] ) {
+			return '';
+		}
+
+		$group = $groups[0];
+
+		/*
+		 * Only a group an integration actually owns. `content`, `blocks` and `appearance` have no
+		 * integration behind them and no switch, so nothing should ever store a decision for them —
+		 * but this reads a site option a filter can rewrite, and the failure mode if one did is
+		 * every first-party Toolset on the site replaced by a message telling the owner to switch
+		 * on something that was never switchable.
+		 */
+		if ( AcrossAI_Toolset_Integrations::CATCH_ALL_GROUP === $group
+			|| null === AcrossAI_Toolset_Integrations::for_group( $group ) ) {
+			return '';
+		}
+
+		return AcrossAI_Integration_Settings::is_switched_off( $group ) ? $group : '';
+	}
+
+	/**
+	 * A human name for a group, for the switched-off message.
+	 *
+	 * Prefers the Toolset's own declared label and falls back to the group key, so a group whose
+	 * integration declares no label still names something a reader recognises.
+	 *
+	 * @since  0.0.42
+	 * @param  string $group Group slug.
+	 * @return string
+	 */
+	private function toolset_label_for( string $group ): string {
+		$label = trim( (string) $this->toolset_label() );
+
+		return '' !== $label ? $label : $group;
 	}
 
 	/**
