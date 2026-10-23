@@ -26,9 +26,12 @@ export const STEP_ORDER = ['1', '2', '3', '4', '5', '6', '7', 'done'];
 /**
  * Transport identifiers accepted in the URL.
  *
+ * `setMethod` falls back to the default for anything not listed here, silently — so a card whose
+ * value is missing from this array renders, highlights on click, and never actually selects.
+ *
  * @type {string[]}
  */
-export const METHODS = ['mcp-manager', 'mcp-adapter'];
+export const METHODS = ['mcp-manager', 'mcp-adapter', 'elementor-mcp'];
 
 /**
  * Default transport — the recommended one, so its card is preselected (FR-020).

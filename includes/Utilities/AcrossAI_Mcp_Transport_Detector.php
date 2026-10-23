@@ -15,17 +15,17 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Reports the presence of the two supported MCP transports.
  *
- * Abilities registered by this plugin do nothing until a transport exposes them
- * to an AI client. Two transports are supported and they are detected
- * differently on purpose:
+ * Abilities registered by this plugin do nothing until a transport exposes them to an AI client.
+ * Three are reported, and the question each answers is the same: can the operator reach this site's
+ * abilities through it, and if not, what is the next action.
  *
- * - AcrossAI MCP Manager is a wordpress.org plugin, so a plugin-file check is
- *   authoritative.
- * - The WordPress MCP Adapter ships from GitHub and is frequently *bundled
- *   inside another plugin* rather than installed standalone. A plugin-file
- *   check therefore produces a false negative for a perfectly working install,
- *   which would strand an administrator on the wizard's instructions screen.
- *   Its class is probed first, and the plugin file only as a fallback.
+ * - **AcrossAI MCP Manager** and the **WordPress MCP Adapter** are plugins, so the plugin file is
+ *   authoritative for both. The adapter was once detected by probing for its class, on the
+ *   reasoning that it is often vendored inside another plugin — but a vendored copy is not an
+ *   install an operator can activate, and since Elementor began shipping one the probe reported
+ *   "already active" on sites where the plugin was switched off. See `detect_mcp_adapter()`.
+ * - **Elementor MCP** is not installed for us at all: it arrives with Elementor and is switched on
+ *   at Elementor's own screen, so it has no "install" state worth reporting, only on or off.
  *
  * @since 0.0.34
  */
@@ -46,6 +46,19 @@ class AcrossAI_Mcp_Transport_Detector {
 	 * @var   string
 	 */
 	public const TRANSPORT_MCP_ADAPTER = 'mcp-adapter';
+
+	/**
+	 * Identifier for Elementor's own MCP server.
+	 *
+	 * Unlike the other two this is not a transport an operator installs for us — it arrives with
+	 * Elementor and is switched on at Elementor's own screen. It is listed here because the
+	 * question this class answers is "where can this site's abilities already be reached from",
+	 * and since 0.0.42 that includes Elementor's server.
+	 *
+	 * @since 0.0.42
+	 * @var   string
+	 */
+	public const TRANSPORT_ELEMENTOR_MCP = 'elementor-mcp';
 
 	/**
 	 * Plugin basename of the recommended transport.
@@ -95,7 +108,38 @@ class AcrossAI_Mcp_Transport_Detector {
 			return self::detect_mcp_adapter();
 		}
 
+		if ( self::TRANSPORT_ELEMENTOR_MCP === $transport ) {
+			return self::detect_elementor_mcp();
+		}
+
 		return self::STATE_MISSING;
+	}
+
+	/**
+	 * Detect Elementor's own MCP server.
+	 *
+	 * Three states, and the middle one is the reason this is not a boolean. Elementor ships its
+	 * MCP module switched off and puts the switch on its own screen, so "Elementor is here but its
+	 * server is not running" is a real and common position — and it is the one an operator can fix
+	 * in a click, which is worth saying rather than reporting it as absent.
+	 *
+	 * Checks the module rather than just `\Elementor\Plugin`: an Elementor old enough to predate
+	 * `modules/mcp/` has no server to reach, and reporting one would be wrong.
+	 *
+	 * @since  0.0.42
+	 * @return string One of the STATE_* constants.
+	 */
+	private static function detect_elementor_mcp(): string {
+		if ( ! class_exists( '\Elementor\Plugin' ) || ! class_exists( '\Elementor\Modules\Mcp\Module' ) ) {
+			return self::STATE_MISSING;
+		}
+
+		// Asking Elementor rather than reading its option: the option is absent by default and the
+		// answer also depends on our own integration switch, which filters the read.
+		$enabled = is_callable( array( '\Elementor\Modules\Mcp\Module', 'is_site_mcp_exposure_enabled' ) )
+			&& \Elementor\Modules\Mcp\Module::is_site_mcp_exposure_enabled();
+
+		return $enabled ? self::STATE_ACTIVE : self::STATE_INACTIVE;
 	}
 
 	/**
@@ -106,8 +150,9 @@ class AcrossAI_Mcp_Transport_Detector {
 	 */
 	public static function detect_all(): array {
 		return array(
-			self::TRANSPORT_MCP_MANAGER => self::detect( self::TRANSPORT_MCP_MANAGER ),
-			self::TRANSPORT_MCP_ADAPTER => self::detect( self::TRANSPORT_MCP_ADAPTER ),
+			self::TRANSPORT_MCP_MANAGER   => self::detect( self::TRANSPORT_MCP_MANAGER ),
+			self::TRANSPORT_MCP_ADAPTER   => self::detect( self::TRANSPORT_MCP_ADAPTER ),
+			self::TRANSPORT_ELEMENTOR_MCP => self::detect( self::TRANSPORT_ELEMENTOR_MCP ),
 		);
 	}
 
@@ -136,58 +181,50 @@ class AcrossAI_Mcp_Transport_Detector {
 	}
 
 	/**
-	 * Detect the alternative transport, preferring a class probe.
+	 * Detect the standalone MCP Adapter plugin.
 	 *
-	 * The class probe is authoritative because it is true whether the adapter is
-	 * a standalone plugin or vendored inside another plugin. Only when no class
-	 * is loaded do we fall back to looking for a standalone plugin file, which
-	 * distinguishes "installed but switched off" from "not here at all".
+	 * The plugin file is authoritative. A loaded `WP\MCP\Core\*` class is NOT evidence of it —
+	 * see the note in the body for what that cost.
 	 *
 	 * @since  0.0.34
 	 * @return string One of the STATE_* constants.
 	 */
 	private static function detect_mcp_adapter(): string {
-		foreach ( self::mcp_adapter_class_candidates() as $class_name ) {
-			if ( class_exists( $class_name, false ) ) {
+		self::require_plugin_api();
+
+		$installed = function_exists( 'get_plugins' ) ? get_plugins() : array();
+		$found     = false;
+
+		foreach ( self::mcp_adapter_basename_candidates() as $basename ) {
+			if ( ! array_key_exists( $basename, $installed ) ) {
+				continue;
+			}
+
+			$found = true;
+
+			if ( function_exists( 'is_plugin_active' ) && is_plugin_active( $basename ) ) {
 				return self::STATE_ACTIVE;
 			}
 		}
 
-		self::require_plugin_api();
-
-		$installed = function_exists( 'get_plugins' ) ? get_plugins() : array();
-
-		foreach ( self::mcp_adapter_basename_candidates() as $basename ) {
-			if ( array_key_exists( $basename, $installed ) ) {
-				return self::STATE_INACTIVE;
-			}
+		if ( $found ) {
+			return self::STATE_INACTIVE;
 		}
 
-		return self::STATE_MISSING;
-	}
-
-	/**
-	 * Class names that indicate the MCP Adapter is loaded.
-	 *
-	 * @since  0.0.34
-	 * @return string[] Fully-qualified class names, filterable.
-	 */
-	private static function mcp_adapter_class_candidates(): array {
-		$candidates = array(
-			'WP\\MCP\\Core\\McpAdapter',
-			'WP\\MCP\\Core\\McpServer',
-		);
-
-		/**
-		 * Filters the class names used to detect a loaded MCP Adapter.
+		/*
+		 * The adapter LIBRARY may still be loaded at this point, and until 0.0.42 that was read as
+		 * "active". It is not the same thing, and the difference is now common rather than
+		 * theoretical: Elementor ships `wordpress/mcp-adapter` inside its own vendor directory, as
+		 * does AcrossAI MCP Manager. On this site `WP\MCP\Core\McpAdapter` resolved out of
+		 * Elementor while `mcp-adapter/mcp-adapter.php` sat installed and switched off — and the
+		 * Quick Connect card happily reported "Already active" for a plugin the operator had never
+		 * turned on, hiding the Activate button that would have fixed it.
 		 *
-		 * Allows sites that vendor the adapter under a different namespace to be
-		 * recognised without patching the plugin.
-		 *
-		 * @since 0.0.34
-		 * @param string[] $candidates Fully-qualified class names.
+		 * So the plugin is the authority here, because the plugin is what this answer is about: the
+		 * card offers to install or activate one, and neither action exists for a library vendored
+		 * inside somebody else's plugin.
 		 */
-		return (array) apply_filters( 'acrossai_mcp_adapter_class_candidates', $candidates );
+		return self::STATE_MISSING;
 	}
 
 	/**
