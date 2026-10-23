@@ -178,7 +178,30 @@ function IntegrationCard({ row, onToggle, onCategory, abilitiesUrl, busy }) {
 										row.host_n,
 										row.name
 									)
-								: __('Turned off', 'acrossai-abilities-manager')}
+								: __(
+										'Turned off',
+										'acrossai-abilities-manager'
+									)}
+						</span>
+					)}
+
+					{/*
+					 * Something the HOST plugin still gates, that we deliberately do not switch on.
+					 * Sits beside the "still provided by" line above because it answers the same
+					 * kind of question: true about this row, and not a failure of it.
+					 *
+					 * Only ever present on an enabled row — see `host_todo` in
+					 * Integrations_Directory_Controller.
+					 */}
+					{!blocked && !!row.host_todo && (
+						<span className="wpc-status">
+							{row.host_todo.label}{' '}
+							<a href={row.host_todo.url} className="wpc-link">
+								{__(
+									'Open the setting',
+									'acrossai-abilities-manager'
+								)}
+							</a>
 						</span>
 					)}
 				</div>

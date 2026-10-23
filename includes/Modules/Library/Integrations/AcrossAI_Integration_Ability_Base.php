@@ -232,6 +232,24 @@ abstract class AcrossAI_Integration_Ability_Base {
 	 * it, so switching our row back off restores their choice rather than ours; and nothing we do
 	 * here survives this plugin being deactivated.
 	 *
+	 * **Unused since 0.0.43, and think hard before reaching for it.** It is defensible for a host
+	 * option with no user interface — an internal flag, where no one has expressed a preference for
+	 * us to override. It is the wrong instrument for an option the host SURFACES IN ITS OWN
+	 * SETTINGS SCREEN, because that value is the site owner's saved answer rather than an extension
+	 * point.
+	 *
+	 * Elementor is the case that proved it. `elementor_mcp_enabled` is shown at
+	 * Elementor → Elementor MCP, and forcing it left that screen displaying a switch nobody had
+	 * set, turned on site-wide MCP exposure Elementor ships off, and made this plugin's own
+	 * transport detector report Elementor MCP "active" on the strength of our own filter — a
+	 * self-fulfilling answer. See
+	 * {@see \AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\Elementor_Opt_In},
+	 * which now calls the host's public registration method instead and leaves the option alone.
+	 *
+	 * Before using this, look for a public method or a published filter on the host. There usually
+	 * is one, and it is always the better answer: it asks for the behaviour you want rather than
+	 * lying to the host about its own configuration.
+	 *
 	 * @since  0.0.42
 	 * @param  string $option Option name the host reads.
 	 * @return void

@@ -266,7 +266,62 @@ final class Integrations_Directory_Controller {
 			 * Elementor" instead of implying the group is empty.
 			 */
 			'host_n'    => $enabled ? 0 : $this->live_count( $slug ),
+			/*
+			 * A setting in the HOST plugin that the site owner still has to turn on themselves,
+			 * and where to do it. Null for almost every row.
+			 *
+			 * Separate from `enabled`, which is our switch, and from `available`, which is whether
+			 * the host plugin is installed. This is the third state: the plugin is here, our row is
+			 * on, our abilities are working — and something the host gates separately is still off.
+			 *
+			 * Elementor is the case it exists for. Its MCP server is site-wide exposure it ships
+			 * off, and this plugin deliberately does not switch it on
+			 * ({@see \AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\Elementor_Opt_In}).
+			 * Without this the owner enables our row, gets the abilities, and has nothing on this
+			 * screen explaining why a client still cannot reach them over Elementor's own endpoint.
+			 *
+			 * Published through a filter rather than asked of the integration directly: the rows
+			 * here are built from `AcrossAI_Toolset_Integrations` descriptors, which are a
+			 * different registry from the opt-in classes that know about host settings. The filter
+			 * is the seam between them, and keeps this generic — a second host needs no change
+			 * here or in the UI.
+			 */
+			'host_todo' => $enabled ? $this->host_todo( $slug ) : null,
 			'block'     => $this->block( $slug, $name, $entry, $available, $product, $pro ),
+		);
+	}
+
+	/**
+	 * A host-side setting this integration still needs, or null.
+	 *
+	 * @since  0.0.43
+	 * @param  string $slug Integration slug.
+	 * @return array{label: string, url: string}|null
+	 */
+	private function host_todo( string $slug ): ?array {
+		/**
+		 * Filters the outstanding host-side setting for one integration.
+		 *
+		 * Return `array( 'label' => <what the owner still has to do>, 'url' => <where> )` when the
+		 * host plugin gates something behind its own setting and that setting is off. Return null
+		 * — the default — when there is nothing for the owner to do.
+		 *
+		 * Answered per request, because the whole point is that it changes the moment the owner
+		 * acts on it.
+		 *
+		 * @since 0.0.43
+		 * @param array|null $todo Outstanding setting, or null.
+		 * @param string     $slug The integration slug being described.
+		 */
+		$todo = apply_filters( 'acrossai_integration_host_todo', null, $slug );
+
+		if ( ! is_array( $todo ) || empty( $todo['label'] ) || empty( $todo['url'] ) ) {
+			return null;
+		}
+
+		return array(
+			'label' => sanitize_text_field( (string) $todo['label'] ),
+			'url'   => esc_url_raw( (string) $todo['url'] ),
 		);
 	}
 

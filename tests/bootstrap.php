@@ -93,8 +93,24 @@ if ( ! function_exists( 'is_wp_error' ) ) {
 }
 
 if ( ! function_exists( 'add_action' ) ) {
-	/** Stub: no-op hook registration for unit tests. */
+	/**
+	 * Stub: no-op hook registration for unit tests.
+	 *
+	 * Records the registration ONLY when a test opts in by seeding
+	 * `$GLOBALS['acrossai_test_recorded_actions']` to an array. Inert for every other test, which
+	 * is why this is opt-in rather than always-on: priority is sometimes the behaviour under test
+	 * (an ability registered after the Toolsets is invisible to all of them, because they memoise
+	 * group membership), and there is otherwise no way to observe it.
+	 */
 	function add_action( string $hook, mixed $callback, int $priority = 10, int $args = 1 ): bool {
+		if ( isset( $GLOBALS['acrossai_test_recorded_actions'] ) && is_array( $GLOBALS['acrossai_test_recorded_actions'] ) ) {
+			$GLOBALS['acrossai_test_recorded_actions'][] = array(
+				'hook'     => $hook,
+				'priority' => $priority,
+				'args'     => $args,
+			);
+		}
+
 		return true;
 	}
 }
@@ -102,6 +118,18 @@ if ( ! function_exists( 'add_action' ) ) {
 if ( ! function_exists( 'add_filter' ) ) {
 	/** Stub: no-op filter registration for unit tests. */
 	function add_filter( string $hook, mixed $callback, int $priority = 10, int $args = 1 ): bool {
+		// Recorded on the same opt-in terms as add_action() above. Needed where registering the
+		// filter IS the behaviour under test: a `pre_option_*` short-circuit changes what
+		// get_option() returns in production, but this harness's get_option() reads a global and
+		// runs no filters, so the override is invisible to any assertion on the value.
+		if ( isset( $GLOBALS['acrossai_test_recorded_filters'] ) && is_array( $GLOBALS['acrossai_test_recorded_filters'] ) ) {
+			$GLOBALS['acrossai_test_recorded_filters'][] = array(
+				'hook'     => $hook,
+				'priority' => $priority,
+				'args'     => $args,
+			);
+		}
+
 		return true;
 	}
 }

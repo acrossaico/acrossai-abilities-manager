@@ -338,6 +338,7 @@
 			<file>tests/phpunit/Rest/Test_Quick_Connect_Tab_Groups.php</file>
 		</testsuite>
 		<testsuite name="feature-122-unit">
+			<file>tests/phpunit/abilities/Integrations/Test_Elementor_Opt_In.php</file>
 			<file>tests/phpunit/abilities/Mcp/Test_Host_Mcp_Server.php</file>
 			<file>tests/phpunit/abilities/Elementor/Mcp/Test_Elementor_Site_Toolset.php</file>
 		</testsuite>
