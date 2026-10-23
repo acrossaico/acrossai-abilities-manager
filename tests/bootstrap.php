@@ -177,6 +177,32 @@ if ( ! function_exists( 'do_action' ) ) {
 	function do_action( string $hook, mixed ...$args ): void {}
 }
 
+if ( ! function_exists( 'did_action' ) ) {
+	/**
+	 * Stub: reports how many times a hook has fired.
+	 *
+	 * Reads `$GLOBALS['acrossai_test_did_action']` so a test can say "this is an admin request,
+	 * the menu is already built" or "this is REST, it is not" — the distinction some abilities
+	 * branch on. Zero unless a test seeds it.
+	 */
+	function did_action( string $hook ): int {
+		$fired = $GLOBALS['acrossai_test_did_action'] ?? array();
+
+		return is_array( $fired ) ? (int) ( $fired[ $hook ] ?? 0 ) : 0;
+	}
+}
+
+if ( ! function_exists( 'menu_page_url' ) ) {
+	/**
+	 * Stub: mirrors WP menu_page_url() closely enough to assert the emitted URL.
+	 */
+	function menu_page_url( string $plugin_page, bool $display = true ): string {
+		$url = admin_url( 'admin.php?page=' . $plugin_page );
+
+		return $display ? '' : $url;
+	}
+}
+
 if ( ! function_exists( 'wp_parse_url' ) ) {
 	/**
 	 * Stub: mirrors WP wp_parse_url() for unit tests.
