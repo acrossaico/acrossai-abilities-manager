@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Database;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Utilities\Database_Format_Validator;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -46,13 +47,8 @@ class Delete_Db_Rows extends Ability_Definition {
 							'type'        => 'object',
 							'description' => __( 'Column → value conditions (AND-joined). Must be non-empty.', 'acrossai-abilities-manager' ),
 						),
-						'where_format' => array(
-							'type'        => 'array',
-							'items'       => array(
-								'type' => 'string',
-								'enum' => array( '%s', '%d', '%f' ),
-							),
-							'description' => __( 'Optional format per where column.', 'acrossai-abilities-manager' ),
+						'where_format' => Database_Format_Validator::schema(
+							__( 'Optional format per where column. Arrays follow where key order; object keys name columns and omitted columns use the default string format. Numeric formats require compatible values.', 'acrossai-abilities-manager' )
 						),
 					),
 					'required'             => array( 'table', 'where' ),
@@ -115,6 +111,15 @@ class Delete_Db_Rows extends Ability_Definition {
 				'success'       => false,
 				'rows_affected' => 0,
 				'message'       => __( 'where must be a non-empty object to prevent full-table deletion.', 'acrossai-abilities-manager' ),
+			);
+		}
+
+		$where_format = Database_Format_Validator::normalize( $where, $where_format );
+		if ( false === $where_format ) {
+			return array(
+				'success'       => false,
+				'rows_affected' => 0,
+				'message'       => __( 'where_format keys must name where columns and numeric placeholders must match numeric values.', 'acrossai-abilities-manager' ),
 			);
 		}
 
