@@ -8,7 +8,8 @@
  * than entries in the client's tool list.
  *
  * **Deliberately host-neutral, and there is exactly one of these.** It was
- * `toolset/elementor-site` until 0.0.43, when a second host made the naming a lie. Nothing about
+ * `toolset/elementor-site` until 0.0.43, when a second host would have made the naming a lie. It
+ * only ever existed in development, so nothing shipped under it. Nothing about
  * dispatch was ever Elementor-specific — `groups()` spans every group on the site — so a per-host
  * copy would have duplicated the whole class to change a slug and three sentences. One ability slug
  * can be contributed to any number of servers: each host's filter appends it and the adapter builds
@@ -62,7 +63,8 @@ final class Site_Toolset extends Base_Toolset_Ability {
 	 * distinct from the first-party `toolset/server-guide` it would otherwise be confused with.
 	 *
 	 * @since 0.0.42
-	 * @since 0.0.43 Renamed from `toolset/elementor-site`; it was never Elementor-specific.
+	 * @since 0.0.43 Renamed from `toolset/elementor-site`, which only ever existed in development —
+	 *               nothing shipped under it. It was never Elementor-specific.
 	 * @var   string
 	 */
 	public const SLUG = 'toolset/wp-site';
