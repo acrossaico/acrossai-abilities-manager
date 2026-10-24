@@ -131,9 +131,19 @@ class Test_Category_Registrar_Wiring extends TestCase {
 		$missing    = array();
 
 		foreach ( $instantiated as $folder ) {
-			// Utilities and Integrations hold helpers and synthetic display
-			// rows respectively; neither registers abilities of its own.
-			if ( in_array( $folder, array( 'Utilities', 'Integrations' ), true ) ) {
+			/*
+			 * Folders that legitimately have no registrar of their own.
+			 *
+			 * - Utilities holds helpers and Integrations holds synthetic display rows; neither
+			 *   registers abilities.
+			 * - Mcp holds the two host-published Toolset dispatchers (`Site_Toolset`,
+			 *   `Site_Guide`). They claim `Base_Toolset_Ability::CATEGORY` — the single
+			 *   `acrossai-toolset` category registered by `Toolset\Category_Registrar` — so a
+			 *   registrar here would create a second, redundant category. The rule this test
+			 *   enforces is "every category claimed is registered somewhere", not "every folder
+			 *   owns a category".
+			 */
+			if ( in_array( $folder, array( 'Utilities', 'Integrations', 'Mcp' ), true ) ) {
 				continue;
 			}
 			if ( ! in_array( $folder, $registrars, true ) ) {
