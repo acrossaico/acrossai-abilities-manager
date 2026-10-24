@@ -575,20 +575,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 				$this->register_elementor_pro_abilities();
 			}
 
-			// Feature 122 — publish two Toolsets onto Elementor's own MCP server, so a client
-			// connected to /wp-json/elementor/mcp can reach this site's other abilities instead of
-			// seeing Elementor's twenty tools and no sign the rest exists.
+			// Feature 122 — tell Elementor's own MCP server that this site's Toolsets exist, so a
+			// client connected to /wp-json/elementor/mcp can reach the rest of the site instead of
+			// seeing Elementor's twenty tools and no sign anything else is here.
 			//
-			// Inside THIS block on purpose. It is already gated on both conditions that matter —
-			// Elementor present, and the Integrations row not switched off — so switching Elementor
-			// off at admin.php?page=acrossai-integrations means these are never constructed, never
-			// registered and never contributed. A second gate elsewhere would be one more thing to
-			// keep in sync with this one.
-			//
-			// The two dispatchers register themselves the ordinary way, on wp_abilities_api_init.
-			// The Server only tells Elementor they exist.
-			new Elementor\Mcp\Site_Toolset();
-			new Elementor\Mcp\Site_Guide();
+			// Only the host declaration is gated here. It belongs in this block because the block
+			// already checks both conditions that matter — Elementor present, and the Integrations
+			// row not switched off — so switching Elementor off at
+			// admin.php?page=acrossai-integrations stops every contribution. The two Toolsets it
+			// publishes are NOT constructed here; see register_toolsets().
 			new Elementor\Mcp\Server();
 		}
 
@@ -1030,6 +1025,28 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// Not a dispatcher — it explains how the dispatchers are called, and is
 		// registered here because it is advertised to the transport the same way.
 		new Toolset\Guide();
+
+		/*
+		 * Feature 122 — the pair published onto MCP servers this plugin does not own.
+		 *
+		 * Constructed UNCONDITIONALLY, which is the whole point of them being generic. They were
+		 * built inside the Elementor block, and on a site where Elementor is deactivated that meant
+		 * neither registered: not merely unadvertised, but absent from the protected-slug list too.
+		 * A second host would then have had to construct them itself and the two hosts would race
+		 * to be first.
+		 *
+		 * Registration here is cheap and inert on a site with no host server. Both declare
+		 * `is_host_only()`, so they are withheld from the `acrossai` server type, the transport's
+		 * Tools picker, `toolset/integrations` and `toolset/server-guide` — while staying protected,
+		 * so they never appear at page=acrossai-abilities-manager either. Nothing can reach them
+		 * until a `Host_Mcp_Server` subclass contributes them to a host that is actually present,
+		 * and that subclass carries its own gate.
+		 *
+		 * So: registration is unconditional, advertising is gated. Adding a second host touches
+		 * only its own subclass.
+		 */
+		new Mcp\Site_Toolset();
+		new Mcp\Site_Guide();
 
 		$this->register_integration_toolsets( array(
 			'content',

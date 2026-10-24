@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests: the gateway published onto Elementor's MCP server.
+ * Tests: the host-neutral gateway published onto another plugin's MCP server.
  *
  * Driven through `execute()` and read from the response, never asserted against the source. Two
  * bugs in this feature's own work passed a source-assertion test while the behaviour was wrong.
@@ -14,8 +14,8 @@
  * - **`info` keeps its schemas.** The lean-by-default override has to apply to `discover` alone.
  *   Applied to `info` as well it strips the input and output schemas off every call, leaving a
  *   model guessing at parameters — the one thing `info` exists to prevent.
- * - **Nothing here reaches an AcrossAI server.** This Toolset is written for Elementor's audience
- *   and must not be offered to ours.
+ * - **Nothing here reaches an AcrossAI server.** This Toolset exists for servers this plugin does
+ *   not own and must not be offered to ours.
  *
  * @package AcrossAI_Abilities_Manager
  * @since   0.0.42
@@ -23,10 +23,10 @@
 
 declare( strict_types = 1 );
 
-namespace AcrossAI_Abilities_Manager\Tests\Abilities\Elementor\Mcp;
+namespace AcrossAI_Abilities_Manager\Tests\Abilities\Mcp;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Elementor\Mcp\Site_Guide;
-use AcrossAI_Abilities_Manager\Includes\Abilities\Elementor\Mcp\Site_Toolset;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Mcp\Site_Guide;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Mcp\Site_Toolset;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Toolset\Database;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Group;
 use PHPUnit\Framework\TestCase;
@@ -57,7 +57,7 @@ final class Fixture_Site_Ability extends WP_Ability {
 /**
  * Gateway behaviour.
  */
-class Test_Elementor_Site_Toolset extends TestCase {
+class Test_Site_Toolset extends TestCase {
 
 	/**
 	 * @return void
@@ -468,6 +468,56 @@ class Test_Elementor_Site_Toolset extends TestCase {
 
 		$this->assertSame( 1, $out['total'] );
 		$this->assertSame( 'database/audit-health', $out['abilities'][0]['name'] );
+	}
+
+	/* ---------------------------------------------------------------------
+	 * Not tied to any one host.
+	 * ------------------------------------------------------------------ */
+
+	/**
+	 * The pair is constructed outside the Elementor gate.
+	 *
+	 * A source assertion, deliberately, because the behaviour under test is bootstrap wiring that a
+	 * unit run cannot reach — the same reason `Test_Category_Registrar_Wiring` scans the bootstrap.
+	 *
+	 * The regression it guards actually happened. Both were originally built inside
+	 * `if ( class_exists( '\Elementor\Plugin' ) && $this->integration_on( 'elementor' ) )`, so on a
+	 * site with Elementor deactivated neither registered — not merely unadvertised, but missing from
+	 * the protected-slug list too, and unavailable to any second host. Verified live after the fix:
+	 * with Elementor off, both register, stay protected, and the gateway serves 12 areas.
+	 *
+	 * Registration is unconditional and advertising is gated, which is what lets one pair serve
+	 * every host. Only `Elementor\Mcp\Server` belongs inside that block.
+	 *
+	 * @return void
+	 */
+	public function test_the_pair_is_not_constructed_inside_a_host_specific_gate(): void {
+		$src = (string) file_get_contents(
+			dirname( __DIR__, 4 ) . '/includes/Abilities/AcrossAI_Core_Abilities_Bootstrap.php'
+		);
+
+		$this->assertNotSame( '', $src, 'Could not read the bootstrap.' );
+
+		// The Elementor-gated block, from its condition to the closing brace of that if.
+		$start = strpos( $src, "class_exists( '\\Elementor\\Plugin' ) && \$this->integration_on( 'elementor' )" );
+
+		$this->assertNotFalse( $start, 'The Elementor gate moved; this test needs updating.' );
+
+		$end   = strpos( $src, "
+		}", $start );
+		$block = substr( $src, $start, false === $end ? 400 : $end - $start );
+
+		foreach ( array( 'Site_Toolset', 'Site_Guide' ) as $class ) {
+			$this->assertStringNotContainsString(
+				'new Mcp\\' . $class . '(',
+				$block,
+				$class . ' must not be constructed inside the Elementor gate, or it vanishes on a site without Elementor.'
+			);
+		}
+
+		// …and they ARE constructed somewhere.
+		$this->assertStringContainsString( 'new Mcp\\Site_Toolset(', $src );
+		$this->assertStringContainsString( 'new Mcp\\Site_Guide(', $src );
 	}
 
 	/* ---------------------------------------------------------------------

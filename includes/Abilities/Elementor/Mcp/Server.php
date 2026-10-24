@@ -15,6 +15,8 @@ declare( strict_types = 1 );
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Elementor\Mcp;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Mcp\Host_Mcp_Server;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Mcp\Site_Guide;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Mcp\Site_Toolset;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -69,6 +71,10 @@ final class Server extends Host_Mcp_Server {
 	/**
 	 * The gateway, then the guide that explains it.
 	 *
+	 * Both are the shared, host-neutral pair under `Abilities\Mcp` — not Elementor's own. One
+	 * ability slug can be contributed to any number of servers, so a second host declares the same
+	 * two here rather than duplicating them. See {@see Site_Toolset} for why there is one pair.
+	 *
 	 * @since  0.0.42
 	 * @return string[]
 	 */
@@ -85,6 +91,12 @@ final class Server extends Host_Mcp_Server {
 	 * Appended to Elementor's own sentence, which stays first. Names both tools explicitly: the
 	 * alternative is a client that reads "Read and modify Elementor Editor abilities", concludes
 	 * this site does pages and nothing else, and never calls either.
+	 *
+	 * **This is the only place Elementor is named.** The two toolsets are shared across hosts, so
+	 * their descriptions became host-neutral in 0.0.43 — which means the useful routing hint
+	 * ("use the elementor-* tools for editor work") lives here or nowhere. That is the right home
+	 * for it: `initialize` is per server, so each host can say how the pair relates to its own
+	 * tools without being wrong on anybody else's.
 	 *
 	 * @since  0.0.42
 	 * @return string
