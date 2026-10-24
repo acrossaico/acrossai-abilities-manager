@@ -345,6 +345,9 @@
 		<testsuite name="issue-268-unit">
 			<file>tests/phpunit/abilities/AdminMenu/Test_List_Admin_Menu_Pages.php</file>
 		</testsuite>
+		<testsuite name="issue-275-unit">
+			<file>tests/phpunit/abilities/Test_Database_Row_Formats.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
