@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Database;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Utilities\Database_Format_Validator;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -54,21 +55,11 @@ class Update_Db_Rows extends Ability_Definition {
 							'type'        => 'object',
 							'description' => __( 'Column → value conditions (AND-joined). Must be non-empty.', 'acrossai-abilities-manager' ),
 						),
-						'data_format'  => array(
-							'type'        => 'array',
-							'items'       => array(
-								'type' => 'string',
-								'enum' => array( '%s', '%d', '%f' ),
-							),
-							'description' => __( 'Optional format per data column.', 'acrossai-abilities-manager' ),
+						'data_format'  => Database_Format_Validator::schema(
+							__( 'Optional format per data column. Arrays follow data key order; object keys name columns and omitted columns use the default string format. Numeric formats require compatible values.', 'acrossai-abilities-manager' )
 						),
-						'where_format' => array(
-							'type'        => 'array',
-							'items'       => array(
-								'type' => 'string',
-								'enum' => array( '%s', '%d', '%f' ),
-							),
-							'description' => __( 'Optional format per where column.', 'acrossai-abilities-manager' ),
+						'where_format' => Database_Format_Validator::schema(
+							__( 'Optional format per where column. Arrays follow where key order; object keys name columns and omitted columns use the default string format. Numeric formats require compatible values.', 'acrossai-abilities-manager' )
 						),
 					),
 					'allOf'                => array(
@@ -150,6 +141,16 @@ class Update_Db_Rows extends Ability_Definition {
 				'success'       => false,
 				'rows_affected' => 0,
 				'message'       => __( 'where must be a non-empty object to prevent full-table updates.', 'acrossai-abilities-manager' ),
+			);
+		}
+
+		$data_format  = Database_Format_Validator::normalize( $data, $data_format );
+		$where_format = Database_Format_Validator::normalize( $where, $where_format );
+		if ( false === $data_format || false === $where_format ) {
+			return array(
+				'success'       => false,
+				'rows_affected' => 0,
+				'message'       => __( 'Format keys must name existing columns and numeric placeholders must match numeric values.', 'acrossai-abilities-manager' ),
 			);
 		}
 

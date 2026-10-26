@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Database;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Utilities\Database_Format_Validator;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -50,14 +51,8 @@ class Insert_Db_Row extends Ability_Definition {
 							'type'        => 'object',
 							'description' => __( 'Alias for "data". If both are provided, "data" wins.', 'acrossai-abilities-manager' ),
 						),
-						'format' => array(
-							'type'        => 'array',
-							'items'       => array(
-								'type' => 'string',
-								'enum' => array( '%s', '%d', '%f' ),
-							),
-							// phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- %s/%d/%f are wpdb::prepare format specifiers, not printf substitutions.
-							'description' => __( 'Optional format per column (%s string, %d integer, %f float). Defaults to %s for each column.', 'acrossai-abilities-manager' ),
+						'format' => Database_Format_Validator::schema(
+							__( 'Optional format per column. Arrays follow data key order; object keys name columns and omitted columns use the default string format. Numeric formats require compatible values.', 'acrossai-abilities-manager' )
 						),
 					),
 					'allOf'                => array(
@@ -131,6 +126,16 @@ class Insert_Db_Row extends Ability_Definition {
 				'insert_id'     => 0,
 				'rows_affected' => 0,
 				'message'       => __( 'data (or its alias "values") must be a non-empty object.', 'acrossai-abilities-manager' ),
+			);
+		}
+
+		$format = Database_Format_Validator::normalize( $data, $format );
+		if ( false === $format ) {
+			return array(
+				'success'       => false,
+				'insert_id'     => 0,
+				'rows_affected' => 0,
+				'message'       => __( 'format keys must name data columns and numeric placeholders must match numeric values.', 'acrossai-abilities-manager' ),
 			);
 		}
 

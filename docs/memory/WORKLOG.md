@@ -5,6 +5,11 @@ This is not a changelog. Do not record routine releases, version bumps, or imple
 
 ---
 
+### 2026-10-25 — Issue 275: Prevent silent data corruption from positional database formats
+
+- **Why durable**: `$wpdb` format arrays follow PHP key order, so a reordered input can report success while coercing the value for a different column. Preserve positional callers, validate numeric formats before writes, and offer column-keyed overrides for order-independent calls.
+- **Evidence**: Issue https://github.com/acrossaico/acrossai-abilities-manager/issues/275; `BUG-WPDB-POSITIONAL-FORMAT-COERCION` in `docs/memory/BUGS.md`; regression suite `issue-275-unit`.
+
 ### 2026-07-25 — Feature 058: Ability-slug convention standardised — namespace `acrossai-abilities-manager/` → `acrossai/`, all suffixes flipped to verb-first, 162 class files renamed, no data migration
 
 - **Why durable**: First feature to establish a controlled verb-first vocabulary for ability slugs (`DEC-SLUG-CONVENTION-VERB-FIRST`) matching the WordPress core MCP adapter's own built-ins (`mcp-adapter/discover-abilities` / `execute-ability` / `get-ability-info`). Sets the convention every future ability-registration in this plugin MUST follow. Also establishes the "namespace = short plugin-owned word" pattern (`acrossai/` — 9 chars) that aligns with WP core's block namespaces (`core/paragraph`, `woocommerce/product`) and shaves ~18 chars per slug off every LLM tool manifest. Class file names + PHP class names also flip to match slugs — internal-only quality-of-life, but it means grep-by-slug now finds the registering class immediately.

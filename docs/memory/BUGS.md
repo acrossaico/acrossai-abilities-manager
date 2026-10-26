@@ -1,5 +1,23 @@
 # Bug Patterns
 
+### 2026-10-25 — Positional wpdb formats can silently corrupt database values (BUG-WPDB-POSITIONAL-FORMAT-COERCION)
+
+**Status**: Active
+
+**Symptoms**
+`$wpdb->insert()` can return success after a positional format is applied to the wrong column. In Issue #275, `%d` was paired with the `meta_key` string `rank_math_title`, which WordPress coerced to `0`.
+
+**Root Cause**
+WordPress applies `$wpdb` format arrays in the insertion order of the data keys. The formats carry no column names, so a reordered JSON object can silently change which value receives `%d`, `%f`, or `%s`.
+
+**Prevention**
+- Keep positional arrays for compatibility, but validate numeric placeholders against their values before calling `$wpdb`.
+- When callers need order independence, accept a column-keyed map and normalize it to the data/where key order; default unspecified columns to the string format.
+- Cover insert, update data/where, and delete where paths so the same conversion hazard cannot mutate or remove the wrong row.
+
+**Evidence**
+Issue https://github.com/acrossaico/acrossai-abilities-manager/issues/275; regression tests in `tests/phpunit/abilities/Test_Database_Row_Formats.php`.
+
 
 ---
 
