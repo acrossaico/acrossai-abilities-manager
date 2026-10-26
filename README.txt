@@ -41,7 +41,7 @@ So your MCP server groups them into **toolsets**, and a toolset is a **single to
 
 = Plugins You Already Run Get Their Own Toolset =
 
-Nineteen integrations ship with the plugin, each with its own page under https://acrossai.co/integrations/ — and each registers **only when that plugin is active**, so nothing appears for software you do not have, and each becomes one more dispatcher tool rather than a pile of loose ones.
+Nineteen integrations ship with the plugin, each with its own page under https://acrossai.co/integrations/ — and each registers **only when that plugin is active**, so nothing appears for software you do not have, and each becomes one more dispatcher tool rather than a pile of loose ones. They are listed on the plugin's own **Integrations** screen (under AcrossAI), where a single switch turns any one's abilities on or off.
 
 * **[Elementor](https://acrossai.co/integrations/elementor/)** (89 abilities) — pages, templates, kits, global widgets, form submissions and its cache. A Pro subset needs Elementor Pro.
 * **[Yoast SEO](https://acrossai.co/integrations/yoast-seo/)** (64) — titles and meta, indexing, breadcrumbs, the knowledge graph, social defaults and schema.
@@ -97,6 +97,7 @@ Every ability runs WordPress's own capability check for the calling user, so rea
 * **Toggle allow/disallow** — enable or disable any ability site-wide with a single click, saved instantly without a page reload.
 * **Edit ability metadata** — override `readonly`, `destructive`, `idempotent`, `show_in_rest`, `show_in_mcp`, `mcp_type` and `mcp_servers` per ability with a tri-state Yes / No / Inherit control, and reset any of it to registry defaults in one click.
 * **Bulk actions** — allow, disallow or reset up to 50 abilities at once.
+* **Integrations** — a dedicated screen listing every integration this site has, each with a single on/off switch. Turning an integration off withdraws this plugin's abilities for it; a row shows how many abilities it contributes and, when switched off, how many the host plugin still provides on its own.
 * **Ability Library** — enable or disable add-on ability groups from a dedicated page, with All/Specific mode per group.
 * **Add-ons page** — browse companion plugins from wp-admin; WordPress.org-hosted ones install and activate in place.
 
