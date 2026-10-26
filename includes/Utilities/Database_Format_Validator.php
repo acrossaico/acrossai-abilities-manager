@@ -19,6 +19,52 @@ class Database_Format_Validator {
 	private const FORMATS = array( '%s', '%d', '%f' );
 
 	/**
+	 * The only characters a column name may contain to be used unquoted-into-SQL safely.
+	 *
+	 * `$wpdb->insert()`, `->update()` and `->delete()` interpolate `array_keys()` into the query
+	 * inside backticks WITHOUT escaping them (class-wpdb.php: `'`' . implode('`, `', …) . '`'`), so
+	 * a key containing a backtick breaks out of the quoting. A caller-supplied `where` key such as
+	 *
+	 *     owner` = 1 OR `owner` > 0 --
+	 *
+	 * produces `WHERE `owner` = 1 OR `owner` > 0 -- ` = 1`, turning a targeted delete into a
+	 * full-table one. These abilities take column names straight from the caller, so the names are
+	 * an injection surface the format validation does not touch.
+	 *
+	 * A real MySQL identifier allows more than this, but every column WordPress and its ecosystem
+	 * actually create matches `[A-Za-z0-9_]+`, and these are AI-driven writes to arbitrary tables —
+	 * so an allowlist is the right trade: it rejects the exploit and every legitimate column passes.
+	 *
+	 * @since 0.0.43
+	 * @var   string
+	 */
+	private const COLUMN_PATTERN = '/^[A-Za-z0-9_]+$/';
+
+	/**
+	 * The first column name that could break out of `$wpdb`'s backtick quoting, or null.
+	 *
+	 * Checks the KEYS of a column→value map. Call it on `data` (insert/update) and on `where`
+	 * (update/delete) before handing either to `$wpdb`; a non-null return must abort the write.
+	 *
+	 * Rejecting by name rather than escaping is deliberate: `$wpdb` has no API to escape an
+	 * identifier for these helpers, and a legitimate caller never needs a backtick, a space or a
+	 * dash in a column name.
+	 *
+	 * @since  0.0.43
+	 * @param  array<string|int, mixed> $values Column → value map.
+	 * @return string|null The offending column name, or null when every key is safe.
+	 */
+	public static function unsafe_column( array $values ): ?string {
+		foreach ( array_keys( $values ) as $column ) {
+			if ( ! is_string( $column ) || 1 !== preg_match( self::COLUMN_PATTERN, $column ) ) {
+				return (string) $column;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Schema for legacy positional formats and column-keyed format overrides.
 	 *
 	 * @param string $description Schema description.
