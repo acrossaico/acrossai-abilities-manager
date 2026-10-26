@@ -69,6 +69,7 @@ package_hierarchy:
 - [ ] No deprecated functions
 - [ ] Package validation pass (npm run validate-packages)
 - [ ] Plugin Check pass (WordPress/plugin-check-action)
+- [ ] README.txt `== Description ==` under WordPress.org's 2,500-word cap (see Plugin Check & Code Quality Rules)
 
 ## Plugin Check & Code Quality Rules
 
@@ -77,6 +78,7 @@ package_hierarchy:
 - WordPress forbidden-function findings must be fixed by replacement/removal, not suppressed. `eval()`, `extract()`, and shell/process functions are not allowed in production plugin code.
 - Plugin Check suppressions must be local and exact, and only for cases with no safe WordPress API replacement. Never use workflow-level ignore codes for one-line production-code findings.
 - PHPCS is already configured through Composer (`composer run phpcs`) with WPCS, WordPress-Docs, and PHPCompatibility. Do not make repo-wide PHPCS a required PR gate until the existing baseline is fixed or the PHPCS config is scoped to the production plugin surface.
+- **README.txt `== Description ==` has a hard WordPress.org limit of 2,500 words, or the directory truncates it on import** (warning: "The Description section is too long and was truncated"). The count is run by WordPress.org with `str_word_count()` on the *rendered HTML*, not the raw markdown — so every HTML tag name, link `href`, `rel="nofollow ugc"` attribute, and every word of a bare (auto-linked) URL counts, inflating a plain `wc -w` by ~20–30%. Keep bare URLs out of the Description (use `[short anchor](url)` instead of pasting the URL, since an auto-linked URL counts twice), avoid redundant per-item links when one hub link covers them, and keep a buffer below 2,500. A plain `wc -w` of roughly ≤ 1,700 on the Description body is a safe target.
 
 ## Ability Library
 
