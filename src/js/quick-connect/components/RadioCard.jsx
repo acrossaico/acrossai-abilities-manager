@@ -27,6 +27,7 @@ const RadioCard = ({
 	children = null,
 	name = 'qs-card',
 	value = '',
+	className = '',
 }) => {
 	// Explicit id/htmlFor pairing. The input is already nested inside the label,
 	// which is a valid association on its own, but an explicit pair is what
@@ -35,7 +36,9 @@ const RadioCard = ({
 
 	return (
 		<label
-			className={`qs-card${selected ? ' qs-card--selected' : ''}`}
+			className={`qs-card${selected ? ' qs-card--selected' : ''}${
+				className ? ` ${className}` : ''
+			}`}
 			htmlFor={inputId}
 		>
 			{/*

@@ -234,13 +234,12 @@ const Step5ConnectTransport = () => {
 			<div
 				style={{
 					display: 'grid',
-					// One row, however many options this site has. `auto-fit` with a
-					// min width wrapped 2+1 inside the wizard's ~550px column,
-					// which read as two choices and an afterthought.
-					gridTemplateColumns:
-						'missing' === elementorState
-							? 'repeat(2, minmax(0, 1fr))'
-							: 'repeat(3, minmax(0, 1fr))',
+					// Two columns. The recommended option (AcrossAI MCP Manager)
+					// spans the full first row via `qs-card--full`; the remaining
+					// options fall into the second row, one per column. With
+					// Elementor absent there is a single remaining option, which
+					// also spans full-width so it does not sit as a lone half.
+					gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
 					gap: 12,
 				}}
 				role="radiogroup"
@@ -252,6 +251,7 @@ const Step5ConnectTransport = () => {
 				<RadioCard
 					name="qs-transport"
 					value="mcp-manager"
+					className="qs-card--full"
 					selected={router.method === 'mcp-manager'}
 					onSelect={() => router.setMethod('mcp-manager')}
 					title={
@@ -285,6 +285,9 @@ const Step5ConnectTransport = () => {
 				<RadioCard
 					name="qs-transport"
 					value="mcp-adapter"
+					className={
+						'missing' === elementorState ? 'qs-card--full' : ''
+					}
 					selected={router.method === 'mcp-adapter'}
 					onSelect={() => router.setMethod('mcp-adapter')}
 					title={
