@@ -254,7 +254,7 @@ The WordPress ability registry is never modified, so deactivating returns it exa
 <details>
 <summary><strong>Does this plugin make external HTTP requests?</strong></summary>
 
-The plugin's own code makes no external HTTP requests. A few admin-only surfaces trigger external connections on behalf of an authenticated administrator — the Add-ons installer (`api.wordpress.org` / `downloads.wordpress.org` via WordPress core), the `core/rollback-wp-core` version check, a Calendly link on the Consultations page, and YouTube walkthroughs in the setup wizard. Full disclosure, including what data is transmitted, is in the **External Services** section of [`readme.txt`](readme.txt).
+The plugin's own code makes one external request: on the **AcrossAI → Integrations** screen it fetches the supported-integrations list from `acrossai.co` (no site, user or ability data is sent; cached, with a bundled fallback). A few admin screens also load Google Fonts and images from `acrossai.co`, the optional setup wizard embeds YouTube walkthroughs, and some buttons link out to `acrossai.co` and the WordPress.org directory — all contacted by the administrator's browser. Full disclosure is in the **External Services** section of [`readme.txt`](readme.txt).
 </details>
 
 ---
