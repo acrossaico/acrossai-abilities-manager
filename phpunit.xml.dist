@@ -348,6 +348,9 @@
 		<testsuite name="issue-275-unit">
 			<file>tests/phpunit/abilities/Test_Database_Row_Formats.php</file>
 		</testsuite>
+		<testsuite name="issue-275-column-safety-unit">
+			<file>tests/phpunit/abilities/Database/Test_Database_Column_Name_Safety.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

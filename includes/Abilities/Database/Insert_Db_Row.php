@@ -129,6 +129,20 @@ class Insert_Db_Row extends Ability_Definition {
 			);
 		}
 
+		$unsafe_column = Database_Format_Validator::unsafe_column( $data );
+		if ( null !== $unsafe_column ) {
+			return array(
+				'success'       => false,
+				'insert_id'     => 0,
+				'rows_affected' => 0,
+				'message'       => sprintf(
+					/* translators: %s: the rejected column name. */
+					__( 'Column name "%s" is not allowed: column names may contain only letters, numbers and underscores. This prevents a crafted name from altering the SQL $wpdb builds.', 'acrossai-abilities-manager' ),
+					$unsafe_column
+				),
+			);
+		}
+
 		$format = Database_Format_Validator::normalize( $data, $format );
 		if ( false === $format ) {
 			return array(

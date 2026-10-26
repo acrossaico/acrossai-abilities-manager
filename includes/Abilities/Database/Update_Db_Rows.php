@@ -144,6 +144,19 @@ class Update_Db_Rows extends Ability_Definition {
 			);
 		}
 
+		$unsafe_column = Database_Format_Validator::unsafe_column( $data ) ?? Database_Format_Validator::unsafe_column( $where );
+		if ( null !== $unsafe_column ) {
+			return array(
+				'success'       => false,
+				'rows_affected' => 0,
+				'message'       => sprintf(
+					/* translators: %s: the rejected column name. */
+					__( 'Column name "%s" is not allowed: column names may contain only letters, numbers and underscores. This prevents a crafted name from altering the SQL $wpdb builds.', 'acrossai-abilities-manager' ),
+					$unsafe_column
+				),
+			);
+		}
+
 		$data_format  = Database_Format_Validator::normalize( $data, $data_format );
 		$where_format = Database_Format_Validator::normalize( $where, $where_format );
 		if ( false === $data_format || false === $where_format ) {
