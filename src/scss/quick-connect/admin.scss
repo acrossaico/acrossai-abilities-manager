@@ -443,6 +443,13 @@ html.wp-toolbar:has(body.acrossai-quick-connect-fullpage) {
 			border: 4px solid $qs-primary;
 		}
 	}
+
+	// Step 5 layout: a card that spans the full width of the method grid.
+	// The recommended option sits on its own first row; with Elementor absent
+	// the single remaining option uses this too, rather than a lone half.
+	&--full {
+		grid-column: 1 / -1;
+	}
 }
 
 .qs-card__radio {
