@@ -229,7 +229,7 @@ Full disclosure — including what data is transmitted, and links to each servic
 
 == External Services ==
 
-Each connection below is triggered by a specific admin-only action, and is disclosed per the WordPress.org plugin directory guidelines. In every case the plugin sends no site content, user data or ability data. Service 1 is the only one the plugin's own code requests from your server; every other entry is reached by the administrator's browser following a link, or by WordPress core on the plugin's behalf.
+Each connection below is triggered by a specific admin-only action, and is disclosed per the WordPress.org plugin directory guidelines. In every case the plugin sends no site content, user data or ability data. Services 1 and 4 are the only ones the plugin's own code requests from a server; service 3 is carried out by WordPress core on the plugin's behalf; the rest are reached by the administrator's browser following a link or rendering a page.
 
 **1. AcrossAI integration catalogue (`acrossai.co`)** — the list of plugins AcrossAI provides abilities for.
 *When:* only while **AcrossAI → Integrations** is rendered for a logged-in administrator with `manage_options`. Never on a front-end request, never on cron, never on activation, and never for any other user. The result is cached for twelve hours, and a failed request is not retried for thirty minutes.
@@ -240,9 +240,9 @@ Each connection below is triggered by a specific admin-only action, and is discl
 *Terms:* https://acrossai.co/terms/ · *Privacy:* https://acrossai.co/privacy-policy/
 
 **2. Calendly (`calendly.com`)** — a third-party scheduling service.
-*When:* never on render. The Consultations page loads no Calendly script, iframe, cookie or asset; Calendly is reached only if an administrator clicks "Book a Consultation", opening the booking page in a new tab.
+*When:* never on render. The Consultations page loads no Calendly script, iframe, cookie or asset; Calendly is reached only if an administrator clicks "Book on Calendly", opening the booking page in a new tab.
 *Data:* only the browser's standard metadata (IP, User-Agent, referrer) on that click. Anything typed into Calendly's own form is processed by Calendly; this plugin never intercepts or stores it.
-*Note:* that page also references Google Fonts (`fonts.googleapis.com`), its only external asset.
+*Note:* on render that admin page itself loads two external assets of its own — Google Fonts (`fonts.googleapis.com`, which in turn fetches font files from `fonts.gstatic.com`) and a presenter photo served from `acrossai.co`. Neither involves Calendly, and no site or user data is sent with them.
 *Terms:* https://calendly.com/pages/terms · *Privacy:* https://calendly.com/pages/privacy
 
 **3. WordPress.org plugin directory (`api.wordpress.org`, `downloads.wordpress.org`)** — installs free companion plugins from the Add-ons page.
@@ -250,9 +250,9 @@ Each connection below is triggered by a specific admin-only action, and is discl
 *Data:* core's standard plugin-API payload — site URL, WordPress version, PHP version, locale.
 *Terms:* https://wordpress.org/about/terms/ · *Privacy:* https://wordpress.org/about/privacy/
 
-**4. WordPress.org core version-check (`api.wordpress.org/core/version-check/1.7/`)**
-*When:* only when an administrator invokes the `core/rollback-wp-core` ability and the local cache has expired — at most once per day, per locale, per site.
-*Data:* core's standard version-check payload. Same terms and privacy policy as service 3.
+**4. WordPress.org core version-check (`api.wordpress.org/core/version-check/1.7/`)** — looks up the official build to roll back to.
+*When:* only when an administrator with `update_core` invokes the `core/rollback-wp-core` ability and the local cache has expired — at most once per day, per locale, per site. The plugin makes this request itself, with a standard WordPress HTTP call.
+*Data:* a GET carrying a single `?locale=<locale>` query argument and a User-Agent header identifying the WordPress version and the site address. It deliberately does *not* send the fuller environment payload (PHP and MySQL versions, plugin and theme lists) that core's own update check includes, and sends no user or ability data. Same terms and privacy policy as service 3.
 
 **5. YouTube walkthrough videos (`youtube-nocookie.com`, `youtube.com`)** — short recordings embedded in the setup wizard, via YouTube's privacy-enhanced host.
 *When:* only on the wizard's own screens, gated on the `quick-connect` parameter and loaded nowhere else in wp-admin. Two screens autoplay, so YouTube is contacted on render; the rest show a local placeholder and embed only when play is pressed.
@@ -271,11 +271,11 @@ This plugin does not itself collect, store, or transmit any user data to any thi
 
 Several admin-only actions can cause external services to receive data — all are described in the External Services section above and are triggered only by an authenticated administrator:
 
-* The AcrossAI → Consultations admin page displays a static call-to-action button. Merely loading the Consultations page sends no data to Calendly — no Calendly script, iframe, or asset is loaded inside wp-admin. If the administrator clicks the CTA button, their browser opens `calendly.com/acrossai/using-ai-in-wordpress` in a new tab, at which point standard browser metadata (IP, User-Agent, referrer) is sent to Calendly and Calendly's own privacy policy applies. If they then book a consultation on Calendly's site, information they enter into Calendly's form (name, email, meeting details) is transmitted to Calendly.
+* The AcrossAI → Consultations admin page displays a static call-to-action button. Merely loading the Consultations page sends no data to Calendly — no Calendly script, iframe, or asset is loaded inside wp-admin. If the administrator clicks the CTA button, their browser opens `calendly.com/acrossai/using-ai-in-wordpress` in a new tab, at which point standard browser metadata (IP, User-Agent, referrer) is sent to Calendly and Calendly's own privacy policy applies. If they then book a consultation on Calendly's site, information they enter into Calendly's form (name, email, meeting details) is transmitted to Calendly. Loading the page does, however, cause the browser to fetch two of the page's own assets from outside the site — Google Fonts (`fonts.googleapis.com` / `fonts.gstatic.com`) and a presenter photo from `acrossai.co` — which receive standard browser metadata but no site, user or ability data.
 * Installing a WordPress.org-hosted add-on from the AcrossAI → Add-ons page contacts the WordPress.org plugin directory via WordPress core's own `plugins_api()` and `Plugin_Upgrader` (`api.wordpress.org` + `downloads.wordpress.org`). Add-ons distributed elsewhere (e.g. GitHub, Freemius) are rendered as external "Get add-on ↗" links that open the vendor's site in a new browser tab — the plugin itself does not download or install those add-ons, so no request is sent to the vendor's servers from wp-admin. If the administrator clicks the external link, their browser navigates directly to the vendor and standard browser metadata (IP, User-Agent, referrer) is sent to the vendor as with any external hyperlink.
-* Invoking the `core/rollback-wp-core` ability contacts the WordPress.org core version-check API (a WordPress-core-hosted service) via the standard WordPress update API.
+* Invoking the `core/rollback-wp-core` ability contacts the WordPress.org core version-check API (a WordPress-core-hosted service) with a direct WordPress HTTP request to `api.wordpress.org/core/version-check/1.7/` — carrying only a `locale` query argument and a User-Agent header (WordPress version and site address), not core's fuller update payload.
 
-No data is sent to any external server without an explicit administrator action.
+No data is sent to any external server without an administrator action — whether opening one of these AcrossAI admin pages (which may load the page's own external assets, as noted above) or clicking an external link.
 
 == Changelog ==
 
