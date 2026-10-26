@@ -93,7 +93,7 @@ final class Server extends Host_Mcp_Server {
 	 * this site does pages and nothing else, and never calls either.
 	 *
 	 * **This is the only place Elementor is named.** The two toolsets are shared across hosts, so
-	 * their descriptions became host-neutral in 0.0.43 — which means the useful routing hint
+	 * their descriptions became host-neutral in 0.0.42 — which means the useful routing hint
 	 * ("use the elementor-* tools for editor work") lives here or nowhere. That is the right home
 	 * for it: `initialize` is per server, so each host can say how the pair relates to its own
 	 * tools without being wrong on anybody else's.

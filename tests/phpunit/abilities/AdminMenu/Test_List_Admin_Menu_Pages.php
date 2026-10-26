@@ -3,7 +3,7 @@
  * Tests: listing admin menu pages from outside an admin request.
  *
  * `$menu` and `$submenu` only exist in an admin request. Every REST call — and therefore every MCP
- * call — has neither, and until 0.0.43 this ability tried to fix that by `require_once`-ing
+ * call — has neither, and until 0.0.42 this ability tried to fix that by `require_once`-ing
  * `wp-admin/includes/menu.php`. That is a procedural script, not a library, and outside the admin
  * it threw from inside core:
  *
@@ -22,7 +22,7 @@
  *    decoration.
  *
  * @package AcrossAI_Abilities_Manager
- * @since   0.0.43
+ * @since   0.0.42
  */
 
 declare( strict_types = 1 );

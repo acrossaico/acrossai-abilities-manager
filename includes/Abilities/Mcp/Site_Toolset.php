@@ -8,7 +8,7 @@
  * than entries in the client's tool list.
  *
  * **Deliberately host-neutral, and there is exactly one of these.** It was
- * `toolset/elementor-site` until 0.0.43, when a second host would have made the naming a lie. It
+ * `toolset/elementor-site` until 0.0.42, when a second host would have made the naming a lie. It
  * only ever existed in development, so nothing shipped under it. Nothing about
  * dispatch was ever Elementor-specific — `groups()` spans every group on the site — so a per-host
  * copy would have duplicated the whole class to change a slug and three sentences. One ability slug
@@ -63,7 +63,7 @@ final class Site_Toolset extends Base_Toolset_Ability {
 	 * distinct from the first-party `toolset/server-guide` it would otherwise be confused with.
 	 *
 	 * @since 0.0.42
-	 * @since 0.0.43 Renamed from `toolset/elementor-site`, which only ever existed in development —
+	 * @since 0.0.42 Renamed from `toolset/elementor-site`, which only ever existed in development —
 	 *               nothing shipped under it. It was never Elementor-specific.
 	 * @var   string
 	 */
@@ -112,7 +112,7 @@ final class Site_Toolset extends Base_Toolset_Ability {
 	 * {@see Host_Mcp_Server::instructions()} — read at `initialize`, where host context lives,
 	 * whereas this description is cached by the client the moment it connects.
 	 *
-	 * Until 0.0.43 this named Elementor and told the caller to prefer `elementor-*` for editor
+	 * Until 0.0.42 this named Elementor and told the caller to prefer `elementor-*` for editor
 	 * work. That was useful and is not lost: it moved to Elementor's own `instructions()`, the one
 	 * place it can be said without being wrong on every other host.
 	 *

@@ -8,7 +8,7 @@
  * its job is to say that the gateway exists and what is behind it.
  *
  * Host-neutral, and there is one of these rather than one per host — see {@see Site_Toolset} for
- * why. It was `toolset/elementor-site-guide` until 0.0.43, in development only.
+ * why. It was `toolset/elementor-site-guide` until 0.0.42, in development only.
  *
  * The four sections — the calling convention, what this site holds, the unusual Toolsets, the error
  * codes — are inherited rather than restated, so the two guides cannot drift about how a Toolset is
@@ -44,7 +44,7 @@ final class Site_Guide extends Guide {
 	 * for here.
 	 *
 	 * @since 0.0.42
-	 * @since 0.0.43 Renamed from `toolset/elementor-site-guide`, which only ever existed in
+	 * @since 0.0.42 Renamed from `toolset/elementor-site-guide`, which only ever existed in
 	 *               development — nothing shipped under it.
 	 * @var   string
 	 */

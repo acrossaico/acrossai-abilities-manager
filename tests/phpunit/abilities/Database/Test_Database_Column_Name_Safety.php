@@ -18,7 +18,7 @@
  * non-empty and the test fails.
  *
  * @package AcrossAI_Abilities_Manager
- * @since   0.0.43
+ * @since   0.0.42
  */
 
 declare( strict_types = 1 );

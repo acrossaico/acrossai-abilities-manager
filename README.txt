@@ -5,7 +5,7 @@ Tags: abilities, ai assistant, chatgpt, claude, mcp
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.0.41
+Stable tag: 0.0.42
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -280,6 +280,17 @@ No data is sent to any external server without an explicit administrator action.
 
 == Changelog ==
 
+= 0.0.42 - 2026-10-26 =
+
+* **Security: database write abilities can no longer be tricked into altering their own SQL.** `database/insert-db-row`, `database/update-db-rows` and `database/delete-db-rows` pass column names to `$wpdb`, which wraps them in backticks without escaping. A crafted column name containing a backtick could break out of that quoting — turning, for example, a targeted delete into a full-table one — and the call still reported success. Column names are now checked against an allowlist (`[A-Za-z0-9_]`) before any write, and a name outside it is refused with a clear message. Legitimate writes are unaffected.
+* **Fixed: database row writes could corrupt a value and still report success.** `$wpdb` matches format specifiers (`%s`/`%d`/`%f`) to columns by position, in the order the data object's keys happen to arrive — and that order is not dependable once a request has crossed an AI client and the transport. A misaligned `%d` cast a non-numeric value to `0`, wrote it, and returned success. Formats are now validated against their values before the write (a numeric specifier on a non-numeric value is refused), and a column-keyed object form is accepted that cannot misalign.
+* **Fixed: `content/update-post` silently dropped plugin meta such as Rank Math's SEO fields.** Updating a post with meta like `rank_math_title` or `rank_math_description` discarded it while reporting success, even though `content/create-post` and `content/update-post-meta` both write it. Update now writes those keys, refusing only genuinely-internal underscore-prefixed keys — and when it does refuse one, it says so in a per-key warning naming the key and the ability to use instead, instead of an empty warnings list beside a successful response.
+* **Fixed: `admin-menu/list-admin-menu-pages` threw on every REST and MCP call.** It tried to build the admin menu by loading a core admin script that assumes the admin request lifecycle, which raised a fatal outside it. It now assembles the menu safely and reports when the result is partial (plugin and theme pages only, since WordPress's own entries are declared by a file that cannot be loaded here) rather than erroring.
+* **Added: Integrations screen.** A dedicated screen under AcrossAI listing every integration this site has, each with a single on/off switch. Turning an integration off withdraws this plugin's abilities for it; a row shows how many abilities it contributes and, when switched off, how many the host plugin still provides on its own.
+* **Added: use this site's abilities from Elementor's MCP server.** When Elementor's MCP server is enabled, a client connected to it can now reach the rest of the site — content, media, the database, files, users and every installed plugin's capability — through two tools (`toolset-wp-site` and a guide), without leaving Elementor's editor tools. The pair is host-neutral, built to extend to other hosts' MCP servers in future.
+* **Added: Elementor's own abilities without switching on its MCP server.** Enabling the Elementor integration registers Elementor's 27 MCP abilities so they are usable through AcrossAI's servers, without turning on Elementor's site-wide MCP exposure — that switch stays the site owner's to set on Elementor's own screen.
+* **Added: diagnostics for ability coverage.** New diagnostics report abilities that no toolset lists and abilities that match no grouping rule, and name the plugin that lost a slug collision — so a capability that has quietly fallen out of reach can be found.
+
 = 0.0.41 - 2026-09-30 =
 
 * **Fixed: Global Styles saved through the abilities were stored but never applied.** Every write to the database record (`blocks/create-global-style`, `blocks/update-global-style` with `source: "db"`) saved `settings` and `styles` and nothing else. WordPress only uses that record when it also carries `"isGlobalStylesUserThemeJSON": true` — `WP_Theme_JSON_Resolver::get_user_data()` discards the whole thing otherwise and falls back to the theme's `theme.json`, without logging anything. So a palette, a font, a layout width would be written, read back correctly, reported as `origin: "db"` and `effective: true`, and the site would go on rendering theme defaults. Adding the key by hand did not help either: it was rejected as an unknown top-level key, because the record was being validated against the list of keys a `theme.json` *file* may carry. Both flags — the marker and `version`, set to `WP_Theme_JSON::LATEST_SCHEMA` — are now stamped on the server for every DB write, including section writes, merges, replaces and migrations, so nothing has to be passed by the caller. The DB source is validated against the shape core actually reads from it (`version`, `isGlobalStylesUserThemeJSON`, `settings`, `styles`, `title`); `templateParts`, `customTemplates` and `patterns` are refused there by name, with the message saying they belong in a `theme.json` file and which ability writes one.
@@ -349,6 +360,9 @@ Verified against Site Kit by Google 1.188.0 on a live site with Search Console, 
 Every release before 0.0.36 is recorded in full at https://acrossai.co/changelog/acrossai-abilities-manager/ and in changelog.txt, shipped inside the plugin.
 
 == Upgrade Notice ==
+
+= 0.0.42 =
+Security and data-integrity fixes for the database write and post-update abilities, plus the Integrations screen and Elementor MCP support. Recommended for all sites.
 
 = 0.0.41 =
 Worth reading before you update if this site's Global Styles were ever set through the abilities rather than the Site Editor. Those records were being saved without the key WordPress requires before it will use them, so the styles were stored, reported back as active, and never applied - the site went on rendering theme defaults. This release adds the key, and a one-time routine on upgrade adds it to records written by earlier versions. The effect is that colours, fonts, spacing and layout widths that were saved months ago and never took effect will start rendering the moment you update. Nothing is changed in those records beyond the two keys, and records whose content is not valid JSON are left untouched for hand-recovery. Also fixes a font stack containing double quotes destroying the whole record while reporting success. No breaking changes to any ability's input.
