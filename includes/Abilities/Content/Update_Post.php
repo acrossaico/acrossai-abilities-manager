@@ -13,6 +13,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\Content;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Slash_Input;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Protected_Post_Types;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Post_Meta_Policy;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -227,23 +228,26 @@ class Update_Post extends Ability_Definition {
 			$args['post_date'] = (string) $input['date'];
 		}
 
-		// Protected-meta filter. Strip keys that begin with `_` or are reported
-		// by is_protected_meta() unless allow-listed via acrossai_allowed_protected_meta.
+		/*
+		 * #274 — write caller meta, refusing only genuinely-internal `_`-prefixed keys.
+		 *
+		 * This replaced a broader strip that also dropped every protected-meta key (the WP custom-
+		 * fields guard), which caught writable plugin meta like `rank_math_*` and lost it silently
+		 * while reporting success. See Post_Meta_Policy for why that rule was wrong and why
+		 * `rank_math_*` now writes. Anything still refused is reported in BOTH `dropped_meta_keys`
+		 * and `warnings`, so a caller that only reads `success` still sees the reason.
+		 */
 		$dropped_meta_keys = array();
 		if ( ! empty( $input['meta'] ) && is_array( $input['meta'] ) ) {
-			$allowed  = (array) apply_filters( 'acrossai_allowed_protected_meta', array() );
-			$filtered = array();
-			foreach ( $input['meta'] as $meta_key => $meta_value ) {
-				$key_str = (string) $meta_key;
-				$is_prot = str_starts_with( $key_str, '_' ) || is_protected_meta( $key_str, 'post' );
-				if ( $is_prot && ! in_array( $key_str, $allowed, true ) ) {
-					$dropped_meta_keys[] = $key_str;
-					continue;
-				}
-				$filtered[ $key_str ] = $meta_value;
+			$partition         = Post_Meta_Policy::partition( $input['meta'] );
+			$dropped_meta_keys = $partition['dropped'];
+
+			if ( array() !== $partition['write'] ) {
+				$args['meta_input'] = $partition['write'];
 			}
-			if ( ! empty( $filtered ) ) {
-				$args['meta_input'] = $filtered;
+
+			foreach ( $dropped_meta_keys as $dropped_key ) {
+				$warnings[] = Post_Meta_Policy::drop_warning( $dropped_key );
 			}
 		}
 

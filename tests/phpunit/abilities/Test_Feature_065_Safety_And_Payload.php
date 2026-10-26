@@ -244,22 +244,33 @@ class Test_Feature_065_Safety_And_Payload extends WP_UnitTestCase {
 	}
 
 	/**
-	 * FR-009: update-post filters protected meta keys via the
-	 * acrossai_allowed_protected_meta filter and reports dropped_meta_keys.
+	 * FR-009: update-post refuses genuinely-internal meta through the shared Post_Meta_Policy, and
+	 * reports every refused key in BOTH dropped_meta_keys and warnings.
+	 *
+	 * Changed for #274. The original requirement stripped every is_protected_meta() key, which
+	 * also dropped writable plugin meta like rank_math_* and lost it silently. The policy now lives
+	 * in Post_Meta_Policy and refuses only `_`-prefixed keys (minus the allowlist). Behavioural
+	 * coverage is in Test_Update_Post_Meta_Parity.
 	 *
 	 * @return void
 	 */
-	public function test_fr009_update_post_filters_protected_meta(): void {
-		$src = $this->sources['update_post'];
-		$this->assertStringContainsString( "apply_filters( 'acrossai_allowed_protected_meta', array() )", $src );
-		$this->assertStringContainsString( 'is_protected_meta(', $src );
-		$this->assertStringContainsString( "str_starts_with( \$key_str, '_' )", $src );
-		$this->assertMatchesRegularExpression(
-			"/in_array\(\s*\\\$key_str,\s*\\\$allowed,\s*true\s*\)/",
-			$src,
-			'Meta allow-list check must use in_array strict mode.'
+	public function test_fr009_update_post_refuses_only_internal_meta_honestly(): void {
+		$src    = $this->sources['update_post'];
+		$policy = (string) file_get_contents(
+			dirname( __DIR__, 3 ) . '/includes/Abilities/Utilities/Post_Meta_Policy.php'
 		);
+
+		// update-post delegates to the shared policy rather than stripping inline.
+		$this->assertStringContainsString( 'Post_Meta_Policy::partition(', $src );
+		$this->assertStringContainsString( 'Post_Meta_Policy::drop_warning(', $src, 'A refused key must be warned about, not just listed.' );
 		$this->assertStringContainsString( "'dropped_meta_keys'", $src );
+
+		// The over-broad rule that lost rank_math_* is gone from update-post.
+		$this->assertStringNotContainsString( 'is_protected_meta(', $src, 'The is_protected_meta strip dropped writable plugin meta; #274 removed it.' );
+
+		// The policy keeps the genuine `_`-prefix guard and the allow-list escape hatch.
+		$this->assertStringContainsString( "str_starts_with( \$key_str, '_' )", $policy );
+		$this->assertStringContainsString( "apply_filters( 'acrossai_allowed_protected_meta', array() )", $policy );
 	}
 
 	/**

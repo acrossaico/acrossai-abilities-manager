@@ -1042,6 +1042,41 @@ if ( ! function_exists( 'get_post_meta' ) ) {
 	}
 }
 
+if ( ! defined( 'ARRAY_A' ) ) {
+	define( 'ARRAY_A', 'ARRAY_A' );
+}
+
+if ( ! function_exists( 'get_post_type_object' ) ) {
+	/**
+	 * Stub: a writable, public post type with permissive caps.
+	 *
+	 * Enough for the generic post writers' gates (writable check, publish/author caps). A test that
+	 * needs a non-writable type can seed $GLOBALS['acrossai_test_post_type_objects'][ $type ].
+	 */
+	function get_post_type_object( string $post_type ) {
+		if ( isset( $GLOBALS['acrossai_test_post_type_objects'][ $post_type ] ) ) {
+			return $GLOBALS['acrossai_test_post_type_objects'][ $post_type ];
+		}
+		return (object) array(
+			'public'       => true,
+			'show_in_rest' => true,
+			'cap'          => (object) array(
+				'publish_posts'     => 'manage_options',
+				'edit_others_posts' => 'manage_options',
+			),
+		);
+	}
+}
+
+if ( ! function_exists( 'get_post_status_object' ) ) {
+	/**
+	 * Stub: a status object whose `public` flag is true only for `publish`.
+	 */
+	function get_post_status_object( string $status ) {
+		return (object) array( 'public' => 'publish' === $status );
+	}
+}
+
 if ( ! function_exists( 'update_post_meta' ) ) {
 	/**
 	 * Stub: write into the same $__acrossai_test_post_meta store get_post_meta() reads.
