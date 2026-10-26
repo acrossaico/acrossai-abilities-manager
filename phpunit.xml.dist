@@ -351,6 +351,10 @@
 		<testsuite name="issue-275-column-safety-unit">
 			<file>tests/phpunit/abilities/Database/Test_Database_Column_Name_Safety.php</file>
 		</testsuite>
+		<testsuite name="issue-274-unit">
+			<file>tests/phpunit/abilities/Content/Test_Post_Meta_Policy.php</file>
+			<file>tests/phpunit/abilities/Content/Test_Update_Post_Meta_Parity.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
