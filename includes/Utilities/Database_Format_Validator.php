@@ -35,7 +35,7 @@ class Database_Format_Validator {
 	 * actually create matches `[A-Za-z0-9_]+`, and these are AI-driven writes to arbitrary tables —
 	 * so an allowlist is the right trade: it rejects the exploit and every legitimate column passes.
 	 *
-	 * @since 0.0.43
+	 * @since 0.0.42
 	 * @var   string
 	 */
 	private const COLUMN_PATTERN = '/^[A-Za-z0-9_]+$/';
@@ -50,7 +50,7 @@ class Database_Format_Validator {
 	 * identifier for these helpers, and a legitimate caller never needs a backtick, a space or a
 	 * dash in a column name.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.42
 	 * @param  array<string|int, mixed> $values Column → value map.
 	 * @return string|null The offending column name, or null when every key is safe.
 	 */

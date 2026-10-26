@@ -31,7 +31,7 @@
  *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Utilities
- * @since      0.0.43
+ * @since      0.0.42
  */
 
 declare( strict_types = 1 );
@@ -53,7 +53,7 @@ final class Post_Meta_Policy {
 	 * keys like `rank_math_*` — is returned as writable, because `update_post_meta()` handles it
 	 * and the caller is already capability-gated by the ability.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.42
 	 * @param  array<string, mixed> $meta Column/key → value map from the caller.
 	 * @return array{write: array<string, mixed>, dropped: array<int, string>}
 	 */
@@ -64,7 +64,7 @@ final class Post_Meta_Policy {
 		 * Published since Feature 065 and shared with `content/get-post`'s read filter. A site that
 		 * deliberately manages a `_`-prefixed key through these abilities adds it here.
 		 *
-		 * @since 0.0.43 (behaviour since Feature 065)
+		 * @since 0.0.42 (behaviour since Feature 065)
 		 * @param string[] $allowed Allow-listed protected keys.
 		 */
 		$allowed = (array) apply_filters( 'acrossai_allowed_protected_meta', array() );
@@ -95,7 +95,7 @@ final class Post_Meta_Policy {
 	 * The honest-reporting half of #274: a caller that only checks `success` must still have a
 	 * reason in `warnings`, not an empty array beside a populated `dropped_meta_keys`.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.42
 	 * @param  string $key The refused meta key.
 	 * @return string
 	 */

@@ -13,7 +13,7 @@
  * was verified live against a real site on the PR.)
  *
  * @package AcrossAI_Abilities_Manager
- * @since   0.0.43
+ * @since   0.0.42
  */
 
 declare( strict_types = 1 );

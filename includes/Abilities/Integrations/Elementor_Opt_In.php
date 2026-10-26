@@ -28,7 +28,7 @@
  * and switching it on is the site owner's call to make on Elementor's own screen — not a side
  * effect of installing this plugin.
  *
- * So this row does **not** touch the option. Until 0.0.43 it called
+ * So this row does **not** touch the option. Until 0.0.42 it called
  * {@see AcrossAI_Integration_Ability_Base::force_option_true()} to short-circuit the read, which
  * got the abilities and the server together. Three things were wrong with that, and the first is
  * the one that matters: an option a host stores and surfaces in its own settings UI is the site
@@ -123,7 +123,7 @@ class Elementor_Opt_In extends AcrossAI_Integration_Ability_Base {
 	 * from inside an unrelated plugin's update was overreach. That argument was right about the
 	 * overreach; it was aimed at the implementation rather than the switch.
 	 *
-	 * Since 0.0.43 the objection no longer applies: this row registers abilities Elementor already
+	 * Since 0.0.42 the objection no longer applies: this row registers abilities Elementor already
 	 * ships and does not enable its server or write its option, so switching on grants nothing the
 	 * site owner has not already installed. The exposure decision stayed with them.
 	 *
@@ -166,7 +166,7 @@ class Elementor_Opt_In extends AcrossAI_Integration_Ability_Base {
 	 * this plugin is for, while the server is site-wide exposure the owner should switch on
 	 * themselves at Elementor → Elementor MCP.
 	 *
-	 * Until 0.0.43 this called `force_option_true( self::HOST_OPTION )`, which got both. See the
+	 * Until 0.0.42 this called `force_option_true( self::HOST_OPTION )`, which got both. See the
 	 * class docblock for why overriding that particular option was the wrong instrument.
 	 *
 	 * **Priority 15, and it is pinned between two things.**
@@ -192,7 +192,7 @@ class Elementor_Opt_In extends AcrossAI_Integration_Ability_Base {
 	 * change degrades into a wasted rebuild instead of a silent miss.
 	 *
 	 * @since  0.0.42
-	 * @since  0.0.43 Registers the host's abilities directly instead of forcing its option.
+	 * @since  0.0.42 Registers the host's abilities directly instead of forcing its option.
 	 * @return void
 	 */
 	protected function enable_filter(): void {
@@ -210,7 +210,7 @@ class Elementor_Opt_In extends AcrossAI_Integration_Ability_Base {
 	 *
 	 * Only when it is actually off, so a site that has enabled it sees nothing.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.42
 	 * @param  mixed $todo Outstanding setting collected so far.
 	 * @param  mixed $slug The integration slug being described.
 	 * @return mixed
@@ -251,7 +251,7 @@ class Elementor_Opt_In extends AcrossAI_Integration_Ability_Base {
 	 * internals, so the failure mode must be "Elementor's abilities are absent", never a fatal on
 	 * a site that updated Elementor.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.42
 	 * @return void
 	 */
 	public function register_host_abilities(): void {
@@ -297,7 +297,7 @@ class Elementor_Opt_In extends AcrossAI_Integration_Ability_Base {
 	 * whatever Elementor decides the option means — its own settings controller treats an absent
 	 * value as off, despite a docblock there claiming the opposite.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.42
 	 * @return bool
 	 */
 	protected function host_mcp_enabled(): bool {
@@ -317,7 +317,7 @@ class Elementor_Opt_In extends AcrossAI_Integration_Ability_Base {
 	 * Every dereference is guarded. This walks another plugin's object graph, so the failure mode
 	 * must be "Elementor's abilities are absent", never a fatal on a site that updated Elementor.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.42
 	 * @return object|null
 	 */
 	protected function host_module(): ?object {

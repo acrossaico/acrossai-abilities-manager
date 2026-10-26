@@ -232,7 +232,7 @@ abstract class AcrossAI_Integration_Ability_Base {
 	 * it, so switching our row back off restores their choice rather than ours; and nothing we do
 	 * here survives this plugin being deactivated.
 	 *
-	 * **Unused since 0.0.43, and think hard before reaching for it.** It is defensible for a host
+	 * **Unused since 0.0.42, and think hard before reaching for it.** It is defensible for a host
 	 * option with no user interface — an internal flag, where no one has expressed a preference for
 	 * us to override. It is the wrong instrument for an option the host SURFACES IN ITS OWN
 	 * SETTINGS SCREEN, because that value is the site owner's saved answer rather than an extension

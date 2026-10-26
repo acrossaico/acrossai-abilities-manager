@@ -7,7 +7,7 @@
  * the first and not the second — the server is site-wide exposure Elementor ships off, and that
  * decision belongs to the site owner.
  *
- * Until 0.0.43 this row called `force_option_true( 'elementor_mcp_enabled' )` and got both. The
+ * Until 0.0.42 this row called `force_option_true( 'elementor_mcp_enabled' )` and got both. The
  * regression guarded hardest below is that it never does so again: the option is a stored setting
  * Elementor surfaces in its own UI, and overriding it left that screen showing a switch nobody
  * had set, turned on exposure silently, and made our own transport detector report Elementor MCP
@@ -22,7 +22,7 @@
  * shared test process would convince unrelated suites that Elementor is installed.
  *
  * @package AcrossAI_Abilities_Manager
- * @since   0.0.43
+ * @since   0.0.42
  */
 
 declare( strict_types = 1 );

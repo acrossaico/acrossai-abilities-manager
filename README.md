@@ -8,7 +8,7 @@
 
 [![WordPress](https://img.shields.io/badge/WordPress-6.9%2B-21759b?logo=wordpress&logoColor=white)](https://wordpress.org/)
 [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777bb4?logo=php&logoColor=white)](https://www.php.net/)
-[![Version](https://img.shields.io/badge/stable-0.0.41-2ea44f)](https://acrossai.co/changelog/acrossai-abilities-manager/)
+[![Version](https://img.shields.io/badge/stable-0.0.42-2ea44f)](https://acrossai.co/changelog/acrossai-abilities-manager/)
 [![License](https://img.shields.io/badge/license-GPLv2%2B-blue)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![Abilities](https://img.shields.io/badge/abilities-357%20→%20800%2B-ff6b35)](https://acrossai.co/abilities/)
 

@@ -294,7 +294,7 @@ final class Integrations_Directory_Controller {
 	/**
 	 * A host-side setting this integration still needs, or null.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.42
 	 * @param  string $slug Integration slug.
 	 * @return array{label: string, url: string}|null
 	 */
@@ -309,7 +309,7 @@ final class Integrations_Directory_Controller {
 		 * Answered per request, because the whole point is that it changes the moment the owner
 		 * acts on it.
 		 *
-		 * @since 0.0.43
+		 * @since 0.0.42
 		 * @param array|null $todo Outstanding setting, or null.
 		 * @param string     $slug The integration slug being described.
 		 */

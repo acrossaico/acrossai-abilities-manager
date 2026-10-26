@@ -20,7 +20,7 @@ defined( 'ABSPATH' ) || exit;
  * Those globals only exist in an admin request. Outside one — which is every REST and therefore
  * every MCP call — they are null, and the menu has to be assembled before it can be read. How, and
  * why not by loading WordPress's own admin menu script, is the whole story of
- * {@see ensure_menu_built()}: that script crashed here on every call until 0.0.43, and repairing
+ * {@see ensure_menu_built()}: that script crashed here on every call until 0.0.42, and repairing
  * the crash would have traded it for a `wp_die()` mid-request.
  *
  * Reassembly cannot recover WordPress's built-in entries, so a response says which kind of answer
@@ -189,7 +189,7 @@ class List_Admin_Menu_Pages extends Ability_Definition {
 	/**
 	 * Make sure `$menu` / `$submenu` hold something, and say whether we had to build them.
 	 *
-	 * **Does not load WordPress's admin menu scripts, and must not start.** Until 0.0.43 this
+	 * **Does not load WordPress's admin menu scripts, and must not start.** Until 0.0.42 this
 	 * `require_once`-ed `wp-admin/includes/menu.php`, which is a procedural script titled "Build
 	 * Administration Menu", not an include-safe helper. Outside an admin request that threw from
 	 * inside core — `array_keys(): Argument #1 ($array) must be of type array, null given` at
@@ -215,7 +215,7 @@ class List_Admin_Menu_Pages extends Ability_Definition {
 	 * file is loaded — which is the thing that is unsafe. The caller is told through `complete:
 	 * false` and a notice rather than being handed a short list that looks whole.
 	 *
-	 * @since  0.0.43
+	 * @since  0.0.42
 	 * @return bool True when the menu was rebuilt here, so the result is plugin pages only.
 	 */
 	private function ensure_menu_built(): bool {

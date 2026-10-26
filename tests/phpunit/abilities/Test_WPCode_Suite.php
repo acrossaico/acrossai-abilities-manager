@@ -6,7 +6,7 @@
  * must not be edited away. The behavioural half runs live against a real WPCode install.
  *
  * @package AcrossAI_Abilities_Manager
- * @since   0.0.43
+ * @since   0.0.42
  */
 
 namespace AcrossAI_Abilities_Manager\Tests\PHPUnit\Abilities;
