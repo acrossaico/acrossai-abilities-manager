@@ -1,26 +1,38 @@
 <?php
 /**
- * One gateway to the whole site, for a client connected to Elementor's MCP server.
+ * One gateway to the whole site, for a client connected to an MCP server this plugin does not own.
  *
- * Every other Toolset covers one area. This one covers all of them, because of where it is used: a
- * client on `/wp-json/elementor/mcp` has Elementor's twenty tools and whatever we contribute
- * beside them, and contributing fifteen dispatchers to somebody else's server would bury the
- * twenty they shipped. So the areas become a menu this tool returns, rather than entries in the
- * client's tool list.
+ * Every other Toolset covers one area. This one covers all of them, because of where it is used. A
+ * client on somebody else's server already has their tools, and contributing fifteen dispatchers
+ * beside them would bury what they shipped. So the areas become a menu this tool returns rather
+ * than entries in the client's tool list.
+ *
+ * **Deliberately host-neutral, and there is exactly one of these.** It was
+ * `toolset/elementor-site` until 0.0.43, when a second host would have made the naming a lie. It
+ * only ever existed in development, so nothing shipped under it. Nothing about
+ * dispatch was ever Elementor-specific — `groups()` spans every group on the site — so a per-host
+ * copy would have duplicated the whole class to change a slug and three sentences. One ability slug
+ * can be contributed to any number of servers: each host's filter appends it and the adapter builds
+ * that server's tool list from slugs, so a new host is one
+ * {@see Host_Mcp_Server} subclass and no new Toolset.
+ *
+ * Host-specific wording therefore lives in `Host_Mcp_Server::instructions()`, which is read at
+ * `initialize` and is per host. That is the right split: this description says what the tool
+ * reaches, the connect message says how it relates to the tools it is sitting among.
  *
  * The shape is `toolset/integrations`' — answer a bare `discover` with the map, not the contents —
- * applied to every group instead of the plugin ones. Measured on this site: the menu is ~456
- * tokens for fourteen rows against ~6,752 to list the same catalogue flat, and it is also what
- * lets a model route to `database` or `mailerpress` instead of guessing.
+ * applied to every group instead of the plugin ones. Measured on a 447-ability site: the menu is
+ * ~751 tokens for thirteen rows against ~6,752 to list the same catalogue flat, and it is what lets
+ * a model route to `database` or `files` instead of guessing.
  *
  * @package    AcrossAI_Abilities_Manager
- * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Elementor/Mcp
+ * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Mcp
  * @since      0.0.42
  */
 
 declare( strict_types = 1 );
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Elementor\Mcp;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\Mcp;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Toolset\Base_Toolset_Ability;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Group;
@@ -36,36 +48,43 @@ final class Site_Toolset extends Base_Toolset_Ability {
 	/**
 	 * This Toolset's slug.
 	 *
-	 * Under `toolset/`, not `elementor/`, and both halves of that matter.
+	 * Under `toolset/`, and never under a host's own namespace. Both halves matter.
 	 *
 	 * `toolset/` is not decoration: `AcrossAI_Ability_Override_Processor::ROUTER_PREFIXES` lists it
 	 * as a prefix whose permission callback may never be replaced by an operator override, which a
-	 * dispatcher routing to eight hundred abilities needs, and `protect_own_slug()` keys on it too.
+	 * dispatcher routing to hundreds of abilities needs, and `protect_own_slug()` keys on it too.
 	 * Under another prefix this would silently lose both.
 	 *
-	 * `elementor/` is Elementor's namespace. Registering there would squat it, and this tool is not
-	 * Elementor's — it is ours, published onto their server.
+	 * Registering under `elementor/` — or any host's prefix — would squat a namespace that is not
+	 * ours, and would be wrong the moment the same tool appears on a second host's server, which is
+	 * the whole point of it being one tool.
+	 *
+	 * `wp-site` rather than `site`: short enough to read well beside a host's own tools, and
+	 * distinct from the first-party `toolset/server-guide` it would otherwise be confused with.
 	 *
 	 * @since 0.0.42
+	 * @since 0.0.43 Renamed from `toolset/elementor-site`, which only ever existed in development —
+	 *               nothing shipped under it. It was never Elementor-specific.
 	 * @var   string
 	 */
-	public const SLUG = 'toolset/elementor-site';
+	public const SLUG = 'toolset/wp-site';
 
 	/**
 	 * Identity, not membership.
 	 *
-	 * No ability carries `elementor-site` as its group — membership comes from `groups()`, which is
+	 * No ability carries `wp-site` as its group — membership comes from `groups()`, which is
 	 * every group on the site. This is what the Toolset reports as itself and what a slug collision
 	 * would be logged against.
 	 *
-	 * Deliberately not `elementor`: that group is the real Elementor ability suite, fronted by
-	 * `toolset/elementor`. Claiming it here would collide with a live dispatcher.
+	 * Deliberately not a host's own group name — `elementor`, say, is the real Elementor ability
+	 * suite fronted by `toolset/elementor`, and claiming it here would collide with a live
+	 * dispatcher.
 	 *
 	 * @since  0.0.42
 	 * @return string
 	 */
 	protected function group(): string {
-		return 'elementor-site';
+		return 'wp-site';
 	}
 
 	/**
@@ -85,18 +104,23 @@ final class Site_Toolset extends Base_Toolset_Ability {
 	}
 
 	/**
-	 * Written for an Elementor audience, which is the point of a dedicated Toolset.
+	 * Written for a reader who came to this server for something else.
 	 *
-	 * A client here came to edit pages. It does not know this site also exposes the database, cron,
-	 * the filesystem, users, updates and every installed plugin's capability, and nothing in
-	 * Elementor's twenty tools suggests it. So the description leads with the boundary — everything
-	 * beyond the Elementor editor — and says `discover` returns a menu rather than a wall.
+	 * Host-neutral on purpose. What a client here does not know is that the rest of WordPress is
+	 * reachable at all, and that holds whichever server it connected to. What differs per host is
+	 * which tools this sits beside, and naming those belongs to
+	 * {@see Host_Mcp_Server::instructions()} — read at `initialize`, where host context lives,
+	 * whereas this description is cached by the client the moment it connects.
+	 *
+	 * Until 0.0.43 this named Elementor and told the caller to prefer `elementor-*` for editor
+	 * work. That was useful and is not lost: it moved to Elementor's own `instructions()`, the one
+	 * place it can be said without being wrong on every other host.
 	 *
 	 * @since  0.0.42
 	 * @return string
 	 */
 	protected function toolset_description(): string {
-		return __( 'Everything this WordPress site can do beyond the Elementor editor: posts and pages, media, blocks and templates, themes and appearance, settings, users, the database, files, cron, caching, updates and diagnostics — plus the capability of every other plugin installed here, from SEO and forms to ecommerce and email. Hundreds of abilities, so this does not list them: call action=discover with no arguments and it returns a short menu of areas with a count for each. Then call discover again with area=<area> for one area\'s abilities, or search to match by name across all of them. action=info returns one ability\'s parameters; action=execute runs it. Use this for anything outside the Elementor editor — Elementor\'s own tools are the ones named elementor-*.', 'acrossai-abilities-manager' );
+		return __( 'Everything this WordPress site can do, beyond whatever this server\'s own tools cover: posts and pages, media, blocks and templates, themes and appearance, settings, users, the database, files, cron, caching, updates and diagnostics — plus the capability of every other plugin installed here, from page builders and SEO to forms, ecommerce and email. Hundreds of abilities, so this does not list them: call action=discover with no arguments and it returns a short menu of areas with a count for each. Then call discover again with area=<area> for one area\'s abilities, or search to match by name across all of them. action=info returns one ability\'s parameters; action=execute runs it. Reach for this whenever the job is not covered by the other tools you were given.', 'acrossai-abilities-manager' );
 	}
 
 	/**
@@ -115,9 +139,9 @@ final class Site_Toolset extends Base_Toolset_Ability {
 	/**
 	 * Never part of the AcrossAI server type's default set.
 	 *
-	 * AcrossAI's own servers already serve the fourteen Toolsets directly, each with its own
-	 * description, which is a better answer than one gateway in front of all of them. This exists
-	 * for servers that cannot do that.
+	 * AcrossAI's own servers already serve the Toolsets directly, each with its own description,
+	 * which is a better answer than one gateway in front of all of them. This exists for servers
+	 * that cannot do that — ones this plugin does not own.
 	 *
 	 * @since  0.0.42
 	 * @return bool
@@ -215,7 +239,7 @@ final class Site_Toolset extends Base_Toolset_Ability {
 		}
 
 		// `member_counts()`, not `AcrossAI_Ability_Group::counts()`: the latter includes abilities
-		// this gateway cannot dispatch to, so the menu promised `elementor 106` while the drill
+		// this gateway cannot dispatch to. Measured, the `elementor` area advertised 106 while the
 		// returned 99. A menu that overstates is worse than a smaller one — a caller cannot tell
 		// which rows are real.
 		$counts = $this->member_counts( 'discover' );

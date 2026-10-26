@@ -340,7 +340,7 @@
 		<testsuite name="feature-122-unit">
 			<file>tests/phpunit/abilities/Integrations/Test_Elementor_Opt_In.php</file>
 			<file>tests/phpunit/abilities/Mcp/Test_Host_Mcp_Server.php</file>
-			<file>tests/phpunit/abilities/Elementor/Mcp/Test_Elementor_Site_Toolset.php</file>
+			<file>tests/phpunit/abilities/Mcp/Test_Site_Toolset.php</file>
 		</testsuite>
 		<testsuite name="issue-268-unit">
 			<file>tests/phpunit/abilities/AdminMenu/Test_List_Admin_Menu_Pages.php</file>

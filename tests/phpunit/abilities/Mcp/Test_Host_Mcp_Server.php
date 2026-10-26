@@ -72,6 +72,45 @@ final class Fixture_Host extends Host_Mcp_Server {
 }
 
 /**
+ * A second host publisher, sharing the first one's toolsets.
+ *
+ * Exists to pin the one-pair-many-hosts property; see
+ * `test_two_hosts_contribute_the_same_toolsets()`.
+ */
+final class Fixture_Second_Host extends Host_Mcp_Server {
+
+	/** @return string */
+	protected function integration_slug(): string {
+		return 'rank-math';
+	}
+
+	/** @return bool */
+	protected function host_available(): bool {
+		return true;
+	}
+
+	/** @return string */
+	protected function tools_filter(): string {
+		return 'fixture/second-host/tools';
+	}
+
+	/** @return string */
+	protected function server_id(): string {
+		return 'second-host-server';
+	}
+
+	/** @return string[] */
+	protected function toolsets(): array {
+		return Fixture_Host::$contribute;
+	}
+
+	/** @return string */
+	protected function instructions(): string {
+		return 'Second briefing.';
+	}
+}
+
+/**
  * A registered ability, so a contributed slug resolves.
  */
 final class Fixture_Toolset_Ability extends WP_Ability {
@@ -348,6 +387,49 @@ class Test_Host_Mcp_Server extends TestCase {
 	 */
 	public function test_a_non_array_filter_value_is_returned_untouched(): void {
 		$this->assertSame( 'junk', ( new Fixture_Host() )->contribute_tools( 'junk' ) );
+	}
+
+	/**
+	 * Two hosts contribute the SAME pair of slugs, and that is the design.
+	 *
+	 * The reason there is one `Site_Toolset` and one `Site_Guide` rather than a pair per host. An
+	 * ability slug is not owned by a server: each host's filter appends it and the adapter builds
+	 * that server's tool list from slugs, so contributing one ability to N servers costs N filter
+	 * callbacks and no duplication. On this machine nine installed plugins create their own MCP
+	 * servers — a pair each would have been nine copies of one class to change a slug and three
+	 * sentences.
+	 *
+	 * This asserts the property directly, because it is the thing a future "let's give each host its
+	 * own toolset" refactor would quietly break.
+	 *
+	 * @return void
+	 */
+	public function test_two_hosts_contribute_the_same_toolsets(): void {
+		$first  = new Fixture_Host();
+		$second = new Fixture_Second_Host();
+
+		$this->assertSame(
+			array( 'toolset/fixture-site', 'toolset/fixture-guide' ),
+			$first->contribute_tools( array() )
+		);
+		$this->assertSame(
+			array( 'toolset/fixture-site', 'toolset/fixture-guide' ),
+			$second->contribute_tools( array() ),
+			'A second host reuses the shared pair rather than declaring its own.'
+		);
+
+		// And each still scopes its connect message to its own server.
+		$result = new Fixture_Record_Result( array( 'instructions' => 'Host.' ) );
+
+		$this->assertStringContainsString(
+			'Second briefing.',
+			$second->contribute_instructions( $result, new Fixture_Server( 'second-host-server' ), new Fixture_Schema() )->jsonSerialize()['instructions']
+		);
+		$this->assertSame(
+			$result,
+			$first->contribute_instructions( $result, new Fixture_Server( 'second-host-server' ), new Fixture_Schema() ),
+			"The first host must not describe itself on the second host's server."
+		);
 	}
 
 	/* ---------------------------------------------------------------------

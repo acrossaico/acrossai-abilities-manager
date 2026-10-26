@@ -1,32 +1,34 @@
 <?php
 /**
- * The site guide, for a client connected to Elementor's MCP server.
+ * The site guide, for a client connected to an MCP server this plugin does not own.
  *
  * {@see \AcrossAI_Abilities_Manager\Includes\Abilities\Toolset\Guide} written for a different
- * reader. The first-party guide addresses a client holding fifteen dispatchers and explains how to
- * choose between them. This one addresses a client holding Elementor's twenty tools plus one
- * gateway, and its job is to say that the gateway exists, what is behind it, and when to prefer it
- * over the elementor-* tools it arrived with.
+ * reader. The first-party guide addresses a client holding every dispatcher and explains how to
+ * choose between them. This one addresses a client holding a host's own tools plus one gateway, and
+ * its job is to say that the gateway exists and what is behind it.
  *
- * The four sections — the calling convention, what this site holds, the two unusual Toolsets, the
- * error codes — are inherited rather than restated, so the two guides cannot drift about how a
- * Toolset is called. Only the slug, label, description and connect-time copy differ.
+ * Host-neutral, and there is one of these rather than one per host — see {@see Site_Toolset} for
+ * why. It was `toolset/elementor-site-guide` until 0.0.43, in development only.
+ *
+ * The four sections — the calling convention, what this site holds, the unusual Toolsets, the error
+ * codes — are inherited rather than restated, so the two guides cannot drift about how a Toolset is
+ * called. Only the slug, label, description and routing differ.
  *
  * @package    AcrossAI_Abilities_Manager
- * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Elementor/Mcp
+ * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Mcp
  * @since      0.0.42
  */
 
 declare( strict_types = 1 );
 
-namespace AcrossAI_Abilities_Manager\Includes\Abilities\Elementor\Mcp;
+namespace AcrossAI_Abilities_Manager\Includes\Abilities\Mcp;
 
 use AcrossAI_Abilities_Manager\Includes\Abilities\Toolset\Guide;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * A one-call briefing for a client that reached this site through Elementor.
+ * A one-call briefing for a client that reached this site through somebody else's MCP server.
  */
 final class Site_Guide extends Guide {
 
@@ -34,17 +36,19 @@ final class Site_Guide extends Guide {
 	 * This guide's slug.
 	 *
 	 * Under `toolset/` for the two reasons given on {@see Site_Toolset::SLUG}: the prefix is what
-	 * `ROUTER_PREFIXES` and `protect_own_slug()` key on, and `elementor/` is Elementor's namespace
-	 * to register in, not ours.
+	 * `ROUTER_PREFIXES` and `protect_own_slug()` key on, and a host's own namespace is not ours to
+	 * register in.
 	 *
 	 * Shaped `<family>/<something>-guide` like its two siblings — `toolset/server-guide` and the
 	 * transport's `mcp-adapter/server-guide` — so an assistant that has met one knows what to look
 	 * for here.
 	 *
 	 * @since 0.0.42
+	 * @since 0.0.43 Renamed from `toolset/elementor-site-guide`, which only ever existed in
+	 *               development — nothing shipped under it.
 	 * @var   string
 	 */
-	public const SLUG = 'toolset/elementor-site-guide';
+	public const SLUG = 'toolset/wp-site-guide';
 
 	/**
 	 * Built for a third-party host, so kept out of our own surfaces.
@@ -64,9 +68,9 @@ final class Site_Guide extends Guide {
 	 * Every area is reached through the gateway, because that is all this client has.
 	 *
 	 * The inherited answer is "call it directly — it is in the default set, so your tool list has
-	 * it", which is true on an AcrossAI server and false here. A client on Elementor's server holds
-	 * Elementor's twenty tools plus these two; told to call `toolset/database` directly it would
-	 * reach for a tool that is not there, which is exactly the fault the guide exists to prevent.
+	 * it", which is true on an AcrossAI server and false here. A client on a host's server holds
+	 * that host's tools plus these two; told to call `toolset/database` directly it would reach for a
+	 * tool that is not there, which is exactly the fault the guide exists to prevent.
 	 *
 	 * @since  0.0.42
 	 * @param  string $name     The toolset's ability name.
@@ -103,7 +107,7 @@ final class Site_Guide extends Guide {
 	 */
 	protected function special(): array {
 		return array(
-			Site_Toolset::SLUG => __( 'The one way to anything outside the Elementor editor. Call it with action=discover and no arguments for a menu of areas with a count each, then discover again with area=<area>. Two areas are worth knowing about: "other" holds abilities that matched no area, by fallthrough rather than assignment, so it is often empty; and the plugin areas appear and disappear as plugins are activated. Your tool list was fixed when you connected and cannot be refreshed, so call discover again rather than reusing an earlier answer.', 'acrossai-abilities-manager' ),
+			Site_Toolset::SLUG => __( 'The one way to anything this server\'s own tools do not cover. Call it with action=discover and no arguments for a menu of areas with a count each, then discover again with area=<area>. Two areas are worth knowing about: "other" holds abilities that matched no area, by fallthrough rather than assignment, so it is often empty; and the plugin areas appear and disappear as plugins are activated. Your tool list was fixed when you connected and cannot be refreshed, so call discover again rather than reusing an earlier answer.', 'acrossai-abilities-manager' ),
 		);
 	}
 
@@ -125,6 +129,6 @@ final class Site_Guide extends Guide {
 	 * @return string
 	 */
 	protected function description(): string {
-		return __( 'Read this first if you need anything outside the Elementor editor. This site also exposes the rest of WordPress through one tool — posts and media, themes, settings, users, the database, files, cron, updates, and every other plugin installed here. This guide lists what is available with a count per area, explains the three actions that reach it, gives the real limits, and names the error codes worth recognising. Takes no input and changes nothing.', 'acrossai-abilities-manager' );
+		return __( 'Read this first if you need anything the other tools on this server do not cover. This site also exposes the rest of WordPress through one tool — posts and media, themes, settings, users, the database, files, cron, updates, and every other plugin installed here. This guide lists what is available with a count per area, explains the three actions that reach it, gives the real limits, and names the error codes worth recognising. Takes no input and changes nothing.', 'acrossai-abilities-manager' );
 	}
 }
