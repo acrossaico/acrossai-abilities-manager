@@ -547,6 +547,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Debugging\Remove_Mu_Plugin();
 		new Debugging\Bulk_Set_Overrides();
 
+		// Feature 129 — Query Monitor abilities. Self-guard on the QM plugin at
+		// execute time; the loopback profiler's dispatcher is registered here so
+		// it is present on the flagged loopback request too.
+		new Debugging\Get_Environment();
+		new Debugging\Get_Object_Cache_Status();
+		new Debugging\Toggle_Query_Monitor();
+		new Debugging\Profile_Url();
+		Utilities\QueryMonitor\Url_Profiler::register();
+
 		// Feature 055 — register the option-backed lifecycle event log.
 		Utilities\Lifecycle_Event_Log::register_hooks();
 
