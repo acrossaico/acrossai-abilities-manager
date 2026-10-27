@@ -132,8 +132,16 @@ final class Url_Profiler {
 			$target,
 			array(
 				'timeout'     => 20,
-				'redirection' => 2,
-				'sslverify'   => false,
+				// No redirects. The loopback must hit exactly the same-host URL we
+				// validated; following a redirect (a canonical rule, a shortener,
+				// a misconfigured http→external hop) could carry the minted admin
+				// cookie to another host. A redirecting target is reported as its
+				// own 3xx status instead.
+				'redirection' => 0,
+				// Verify TLS everywhere except local/development, where the site
+				// certificate is typically self-signed. The request is same-host
+				// only and never redirects, so the cookie cannot leave this server.
+				'sslverify'   => ! in_array( wp_get_environment_type(), array( 'local', 'development' ), true ),
 				'blocking'    => true,
 				'cookies'     => null !== $auth ? $auth['cookies'] : array(),
 				'headers'     => array( 'X-AcrossAI-QM-Loopback' => '1' ),
