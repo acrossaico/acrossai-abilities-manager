@@ -204,19 +204,6 @@ final class Ai_Image_Generator {
 				$builder = $builder->as_output_media_aspect_ratio( (string) $opts['aspect_ratio'] );
 			}
 
-			// Reference images (image-to-image / edit / composition). Each is an
-			// http(s) image URL or a data: URI; URLs are fetched to inline bytes so
-			// the model always receives the image, whatever the provider.
-			if ( ! empty( $opts['references'] ) && is_array( $opts['references'] ) ) {
-				foreach ( $opts['references'] as $reference ) {
-					$file = self::reference_file( (string) $reference );
-					if ( is_wp_error( $file ) ) {
-						return $file;
-					}
-					$builder = $builder->with_file( $file );
-				}
-			}
-
 			$provider = isset( $opts['provider'] ) ? (string) $opts['provider'] : '';
 			$model    = isset( $opts['model'] ) ? (string) $opts['model'] : '';
 
@@ -231,15 +218,7 @@ final class Ai_Image_Generator {
 				$builder = $builder->using_model_preference( ...self::preferred_models() );
 			}
 
-			$has_references = ! empty( $opts['references'] ) && is_array( $opts['references'] );
-
 			if ( ! $builder->is_supported_for_image_generation() ) {
-				if ( $has_references ) {
-					return new WP_Error(
-						'unsupported_image_edit',
-						__( 'The configured AI model can create images from text but cannot edit or combine reference images. Switch to a connector whose model supports image editing — for example Google (Gemini image) or OpenAI (gpt-image) — under Settings → Connectors. Dropping the reference images will let a text-only model generate from the prompt alone.', 'acrossai-abilities-manager' )
-					);
-				}
 				return new WP_Error( 'unsupported_model', self::unavailable_message() );
 			}
 
@@ -265,74 +244,6 @@ final class Ai_Image_Generator {
 			);
 		} catch ( \Throwable $e ) {
 			return new WP_Error( 'image_generation_failed', $e->getMessage() );
-		}
-	}
-
-	/**
-	 * Resolve a reference image (URL or data URI) into an SDK File.
-	 *
-	 * A data: URI is used as-is. An http(s) URL is fetched SSRF-safely, checked to
-	 * be an image, and inlined as a data URI, so the model receives the bytes
-	 * regardless of whether the provider fetches remote URLs itself.
-	 *
-	 * @param string $reference The reference, an http(s) image URL or a data: URI.
-	 * @return \WordPress\AiClient\Files\DTO\File|WP_Error
-	 */
-	private static function reference_file( string $reference ) {
-		$reference = trim( $reference );
-		if ( '' === $reference ) {
-			return new WP_Error( 'invalid_reference', __( 'A reference image cannot be empty.', 'acrossai-abilities-manager' ) );
-		}
-
-		if ( 0 === stripos( $reference, 'data:' ) ) {
-			try {
-				return new \WordPress\AiClient\Files\DTO\File( $reference );
-			} catch ( \Throwable $e ) {
-				return new WP_Error( 'invalid_reference', __( 'A reference data URI could not be read.', 'acrossai-abilities-manager' ) );
-			}
-		}
-
-		if ( ! preg_match( '#^https?://#i', $reference ) ) {
-			return new WP_Error( 'invalid_reference', __( 'A reference image must be an http(s) image URL or a data: URI.', 'acrossai-abilities-manager' ) );
-		}
-
-		$response = wp_safe_remote_get( $reference, array( 'timeout' => 20, 'redirection' => 2 ) );
-		if ( is_wp_error( $response ) ) {
-			return new WP_Error(
-				'reference_fetch_failed',
-				/* translators: %s: reference URL */
-				sprintf( __( 'Could not fetch the reference image at %s.', 'acrossai-abilities-manager' ), $reference )
-			);
-		}
-
-		$code = (int) wp_remote_retrieve_response_code( $response );
-		if ( 200 !== $code ) {
-			return new WP_Error(
-				'reference_fetch_failed',
-				/* translators: 1: reference URL, 2: HTTP status code */
-				sprintf( __( 'The reference URL %1$s returned HTTP %2$d.', 'acrossai-abilities-manager' ), $reference, $code )
-			);
-		}
-
-		$mime = strtolower( trim( (string) wp_remote_retrieve_header( $response, 'content-type' ) ) );
-		$mime = trim( explode( ';', $mime )[0] );
-		if ( 0 !== strpos( $mime, 'image/' ) ) {
-			return new WP_Error(
-				'reference_not_image',
-				/* translators: 1: reference URL, 2: content type returned */
-				sprintf( __( 'The reference URL %1$s is not an image (it returned %2$s). Pass a direct link to an image file.', 'acrossai-abilities-manager' ), $reference, '' !== $mime ? $mime : __( 'an unknown type', 'acrossai-abilities-manager' ) )
-			);
-		}
-
-		$body = (string) wp_remote_retrieve_body( $response );
-		if ( '' === $body ) {
-			return new WP_Error( 'reference_fetch_failed', __( 'The reference image was empty.', 'acrossai-abilities-manager' ) );
-		}
-
-		try {
-			return new \WordPress\AiClient\Files\DTO\File( 'data:' . $mime . ';base64,' . base64_encode( $body ) );
-		} catch ( \Throwable $e ) {
-			return new WP_Error( 'invalid_reference', __( 'The reference image could not be prepared.', 'acrossai-abilities-manager' ) );
 		}
 	}
 
