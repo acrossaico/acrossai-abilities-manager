@@ -347,6 +347,10 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Taxonomies\Delete_Term();
 		new Taxonomies\Assign_Cpt_Terms();
 		new Media\Upload_Media();
+		// Feature 131 — generate an image via WordPress 7.0's bundled AI client and
+		// sideload it. Self-guards on the client + an image-capable connector at
+		// execute time, so it is registered everywhere and reports when it cannot run.
+		new Media\Generate_Image();
 		new Media\Get_Media();
 		new Media\List_Media();
 		new Media\Update_Media();

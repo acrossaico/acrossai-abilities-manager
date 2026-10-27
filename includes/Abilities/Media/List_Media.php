@@ -100,6 +100,10 @@ class List_Media extends Ability_Definition {
 				'reason' => __( 'If you already know the attachment ID, a targeted get-media read is far cheaper than paging through the media library.', 'acrossai-abilities-manager' ),
 				'saves'  => __( '~10-15x fewer tokens for known-ID reads', 'acrossai-abilities-manager' ),
 			),
+			array(
+				'slug'   => 'media/generate-image',
+				'reason' => __( 'Need an image the library does not have yet? Generate one from a text prompt and add it to the library in a single call.', 'acrossai-abilities-manager' ),
+			),
 		);
 	}
 

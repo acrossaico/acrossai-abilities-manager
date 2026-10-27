@@ -201,6 +201,13 @@ final class Core_Settings_Menu {
 		echo '<p>';
 		esc_html_e( 'Controls the file types the upload-media ability will accept. Entries here are merged into WordPress\'s allowlist only during upload-media calls — regular Media Library uploads via wp-admin are NOT affected. Add-only for core defaults; entries you add here can be removed from the same list.', 'acrossai-abilities-manager' );
 		echo '</p>';
+		echo '<p class="description">';
+		printf(
+			/* translators: %s: the ability slug, wrapped in a <code> tag. */
+			esc_html__( 'Tip: you do not always need an image to hand. The %s ability can generate one from a text prompt and add it to the Media Library in a single call — handy for featured images and placeholders. It uses WordPress 7.0\'s built-in AI client and needs an AI connector that supports image generation.', 'acrossai-abilities-manager' ),
+			'<code>media/generate-image</code>'
+		);
+		echo '</p>';
 	}
 
 	/**

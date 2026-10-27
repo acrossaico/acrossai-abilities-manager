@@ -153,6 +153,20 @@ class Upload_Media extends Ability_Definition {
 	}
 
 	/**
+	 * Point callers who have no image yet at the generator.
+	 *
+	 * @return array<int,array<string,string>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'   => 'media/generate-image',
+				'reason' => __( 'No image yet? Generate one from a text prompt and add it to the Media Library in a single call, then optionally set it as a post\'s featured image.', 'acrossai-abilities-manager' ),
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.
