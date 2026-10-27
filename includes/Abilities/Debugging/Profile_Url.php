@@ -88,7 +88,7 @@ class Profile_Url extends Ability_Definition {
 				),
 				'meta'                => array(
 					'acrossai'     => array(
-						'tab_group'       => 'diagnostics',
+						'tab_group'       => 'query-monitor',
 						'sub_group'       => 'query-monitor',
 						'sub_group_label' => __( 'Query Monitor', 'acrossai-abilities-manager' ),
 					),

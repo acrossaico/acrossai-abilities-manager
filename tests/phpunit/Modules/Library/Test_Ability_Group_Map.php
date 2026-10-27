@@ -90,6 +90,13 @@ class Test_Ability_Group_Map extends TestCase {
 		'cache/flush-rewrite-rules'       => 'configuration',
 		// Duplicate of cache/delete-expired-transients.
 		'database/cleanup-expired-transients' => 'cache',
+		// Feature 130 — the Query Monitor abilities share the Debugging/ folder
+		// with the conflict-testing set but are their own toolset, so their group
+		// is not the folder's 'diagnostics'.
+		'debugging/profile-url'               => 'query-monitor',
+		'debugging/get-environment'           => 'query-monitor',
+		'debugging/get-object-cache-status'   => 'query-monitor',
+		'debugging/toggle-query-monitor'      => 'query-monitor',
 	);
 
 	/**
@@ -104,7 +111,8 @@ class Test_Ability_Group_Map extends TestCase {
 		'blocks'        => 52,
 		'files'         => 23,
 		'updates'       => 23,
-		'diagnostics'   => 26,
+		'diagnostics'   => 22,
+		'query-monitor' => 4,
 		'configuration' => 19,
 		'database'      => 17,
 		'cron'          => 16,

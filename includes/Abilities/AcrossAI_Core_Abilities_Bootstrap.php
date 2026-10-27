@@ -551,12 +551,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Debugging\Bulk_Set_Overrides();
 
 		// Feature 129 — Query Monitor abilities. Self-guard on the QM plugin at
-		// execute time; the loopback profiler's dispatcher is registered here so
-		// it is present on the flagged loopback request too.
-		new Debugging\Get_Environment();
-		new Debugging\Get_Object_Cache_Status();
-		new Debugging\Toggle_Query_Monitor();
-		new Debugging\Profile_Url();
+		// execute time, so they are registered whether or not Query Monitor is
+		// installed — on a site without it they are the thing that says so. Gated
+		// only on the integration switch (Feature 130): an operator who turned the
+		// Query Monitor integration off has said they do not want it. The loopback
+		// profiler's dispatcher is registered unconditionally so it is present on
+		// the flagged loopback request even when the abilities are later gated.
+		if ( $this->integration_on( 'query-monitor' ) ) {
+			$this->register_query_monitor_abilities();
+		}
 		Utilities\QueryMonitor\Url_Profiler::register();
 
 		// Feature 055 — register the option-backed lifecycle event log.
@@ -998,6 +1001,21 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Elementor\List_Form_Submissions();
 		new Elementor\Get_Form_Submission();
 		new Elementor\Delete_Form_Submission();
+	}
+
+	/**
+	 * Feature 129/130 — instantiate the Query Monitor ability classes.
+	 *
+	 * The files live under Debugging/ beside the conflict-testing set but declare
+	 * their own `query-monitor` tab_group, so they form their own toolset.
+	 *
+	 * @return void
+	 */
+	private function register_query_monitor_abilities(): void {
+		new Debugging\Get_Environment();
+		new Debugging\Get_Object_Cache_Status();
+		new Debugging\Toggle_Query_Monitor();
+		new Debugging\Profile_Url();
 	}
 
 	/**
