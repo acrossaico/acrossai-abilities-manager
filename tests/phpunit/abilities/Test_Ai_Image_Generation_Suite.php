@@ -126,6 +126,21 @@ class Test_Ai_Image_Generation_Suite extends WP_UnitTestCase {
 		$this->assertStringContainsString( '_wp_connectors_get_api_key_source', $gen, 'The key check should prefer core\'s own resolver.' );
 	}
 
+	/**
+	 * Reference images: accepted as URL(s)/data URIs, fetched SSRF-safely, and
+	 * image-validated, with an edit-specific error when the model can't do it.
+	 */
+	public function test_reference_images_are_supported_and_fetched_safely(): void {
+		$ability = self::read( self::ABILITY );
+		$this->assertStringContainsString( "'reference'", $ability, 'The ability must declare a reference input.' );
+
+		$gen = self::code_only( self::read( self::GEN ) );
+		$this->assertStringContainsString( 'wp_safe_remote_get', $gen, 'Reference URLs must be fetched SSRF-safely.' );
+		$this->assertStringContainsString( "0 !== strpos( \$mime, 'image/' )", $gen, 'A reference URL must be validated as an image.' );
+		$this->assertStringContainsString( 'unsupported_image_edit', $gen, 'A model that cannot edit must return a reference-specific error.' );
+		$this->assertStringContainsString( 'with_file', $gen, 'References must be attached to the prompt.' );
+	}
+
 	public function test_bootstrap_instantiates_the_ability(): void {
 		$this->assertStringContainsString(
 			'new Media\\Generate_Image();',

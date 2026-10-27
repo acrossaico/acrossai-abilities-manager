@@ -41,7 +41,7 @@ class Generate_Image extends Ability_Definition {
 			'name' => 'media/generate-image',
 			'args' => array(
 				'label'               => __( 'Generate Image', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Generate an image from a text prompt and add it to the Media Library in one call, using WordPress\'s built-in AI client and whichever connector the site has configured for image generation. Optionally attach it to a post and set it as the featured image. Each call makes a paid AI request, so confirm:true is required. Requires WordPress 7.0+ and an image-capable AI connector; without one it returns a clear message rather than an error.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Generate an image from a text prompt and add it to the Media Library in one call, using WordPress\'s built-in AI client and whichever connector the site has configured for image generation. You can also pass one or more reference image URLs (or data: URIs) to edit or combine existing images — for example two logos into one graphic — when the connector\'s model supports image editing. Optionally attach the result to a post and set it as the featured image. Each call makes a paid AI request, so confirm:true is required. Requires WordPress 7.0+ and an image-capable AI connector; without one it returns a clear message rather than an error.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-media',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -63,6 +63,13 @@ class Generate_Image extends Ability_Definition {
 							'type'        => 'string',
 							'enum'        => array( '1:1', '16:9', '4:3', '3:2', '9:16', '2:3' ),
 							'description' => __( 'Optional output aspect ratio. Model support varies.', 'acrossai-abilities-manager' ),
+						),
+						'reference'       => array(
+							'type'        => 'array',
+							'items'       => array( 'type' => 'string' ),
+							'minItems'    => 1,
+							'maxItems'    => 4,
+							'description' => __( 'Optional reference image(s) to generate from, edit, or combine — each a direct http(s) image URL or a data: URI. Pass more than one to compose from several (for example two logos). Requires an AI connector/model that can edit from input images; not all image models do.', 'acrossai-abilities-manager' ),
 						),
 						'post_id'         => array(
 							'type'        => 'integer',
@@ -186,12 +193,23 @@ class Generate_Image extends Ability_Definition {
 			);
 		}
 
+		$references = array();
+		if ( isset( $input['reference'] ) && is_array( $input['reference'] ) ) {
+			foreach ( $input['reference'] as $reference ) {
+				$reference = trim( (string) $reference );
+				if ( '' !== $reference ) {
+					$references[] = $reference;
+				}
+			}
+		}
+
 		$generated = Ai_Image_Generator::generate(
 			$prompt,
 			array(
 				'aspect_ratio' => isset( $input['aspect_ratio'] ) ? (string) $input['aspect_ratio'] : '',
 				'provider'     => isset( $input['provider'] ) ? (string) $input['provider'] : '',
 				'model'        => isset( $input['model'] ) ? (string) $input['model'] : '',
+				'references'   => $references,
 			)
 		);
 		if ( is_wp_error( $generated ) ) {
