@@ -112,6 +112,7 @@ class AcrossAI_Category_Slug_Migration {
 		'plugins',
 		'rank-math',
 		'recovery',
+		'redirects',
 		'settings',
 		'site-health',
 		'site-kit',

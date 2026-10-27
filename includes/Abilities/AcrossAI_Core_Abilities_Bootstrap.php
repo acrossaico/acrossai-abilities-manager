@@ -139,6 +139,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// _doing_it_wrong. Registering the abilities is not enough; a category
 		// must be registered before any ability may claim it.
 		$loader->add_action( 'wp_abilities_api_categories_init', Debugging\Category_Registrar::instance(), 'register' );
+		// Feature 130 — Redirection category. Guarded on the plugin so it is
+		// absent on sites without Redirection.
+		$loader->add_action( 'wp_abilities_api_categories_init', Redirection\Category_Registrar::instance(), 'register' );
 	}
 
 	/**
@@ -725,6 +728,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_all_in_one_abilities();
 		}
 
+		// Feature 130 — Redirection suite (8 abilities under redirects/*). The Contact Form 7 shape:
+		// Redirection has no modules or entitlements that could change within a request, so the gate
+		// is at boot. The suite's guard re-checks availability inside execute(), because the plugin
+		// can be deactivated after the abilities were registered in the same request. Redirection
+		// registers no abilities of its own, so nothing here is adopted.
+		if ( class_exists( '\Red_Item' ) && $this->integration_on( 'redirection' ) ) {
+			$this->register_redirection_abilities();
+		}
+
 		// Feature 100 — one Toolset dispatcher per ability group. Registered last
 		// so every group it may cover already exists. Each declines to register
 		// itself when its group has no registered abilities, which is why the two
@@ -986,6 +998,24 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Elementor\List_Form_Submissions();
 		new Elementor\Get_Form_Submission();
 		new Elementor\Delete_Form_Submission();
+	}
+
+	/**
+	 * Feature 130 — instantiate the Redirection ability classes.
+	 *
+	 * @return void
+	 */
+	private function register_redirection_abilities(): void {
+		// Reads first, then writes; the destructive delete is separate from the
+		// reversible update so each declares its annotations honestly.
+		new Redirection\List_Redirects();
+		new Redirection\List_Groups();
+		new Redirection\List_404_Errors();
+		new Redirection\List_Hit_Log();
+		new Redirection\Get_Settings();
+		new Redirection\Create_Redirect();
+		new Redirection\Update_Redirect();
+		new Redirection\Delete_Redirects();
 	}
 
 	/**

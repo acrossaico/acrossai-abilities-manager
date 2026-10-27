@@ -181,6 +181,7 @@ class AcrossAI_Toolset_Integrations {
 			new Event_Tickets(),
 			new WPCode(),
 			new Loco_Translate(),
+			new Redirection(),
 			new Consent_Banner(),
 			new Email_Delivery(),
 			new Anti_Spam(),
