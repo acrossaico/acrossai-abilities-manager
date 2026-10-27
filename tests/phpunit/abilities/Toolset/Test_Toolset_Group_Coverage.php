@@ -35,6 +35,7 @@ require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Events_Ca
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Event_Tickets.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/WPCode.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Loco_Translate.php';
+require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Redirection.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/AcrossAI_Toolset_Integrations.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Utilities/AcrossAI_Ability_Group_Tagger.php';
 
@@ -176,6 +177,7 @@ class Test_Toolset_Group_Coverage extends TestCase {
 			'LiteSpeed_Cache.php'    => 'litespeed-cache',
 			'Loco_Translate.php'     => 'loco-translate',
 			'Rank_Math.php'          => 'rank-math',
+			'Redirection.php'        => 'redirection',
 			'Site_Kit.php'           => 'site-kit',
 			'UpdraftPlus.php'        => 'updraftplus',
 			'WPCode.php'             => 'wpcode',

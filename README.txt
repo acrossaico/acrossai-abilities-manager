@@ -279,6 +279,10 @@ No data is sent to any external server without an explicit administrator action.
 
 == Changelog ==
 
+= 0.0.43 - 2026-10-27 =
+
+* **Added: manage URL redirects and triage 404s with the Redirection plugin.** When the Redirection plugin is active, eight new abilities let an AI assistant create, list, update and delete redirects, read the 404 error log to find the URLs a site is missing redirects for, read the redirect hit log, list redirect groups, and read Redirection's settings. Every redirect is created through Redirection's own model — with its URL matching, flags and cache flush — rather than a raw database write that would store a redirect that never fires. Deleting a redirect is irreversible and asks for confirmation, and the REST API token is never returned. It also closes a loop the plugin already opened: deleting a published post hands back a suggested redirect, and there is now an ability that creates it.
+
 = 0.0.42 - 2026-10-26 =
 
 * **Security: database write abilities can no longer be tricked into altering their own SQL.** `database/insert-db-row`, `database/update-db-rows` and `database/delete-db-rows` pass column names to `$wpdb`, which wraps them in backticks without escaping. A crafted column name containing a backtick could break out of that quoting — turning, for example, a targeted delete into a full-table one — and the call still reported success. Column names are now checked against an allowlist (`[A-Za-z0-9_]`) before any write, and a name outside it is refused with a clear message. Legitimate writes are unaffected.
