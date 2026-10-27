@@ -198,15 +198,58 @@ final class Core_Settings_Menu {
 	 * @return void
 	 */
 	public function render_upload_media_section(): void {
+		$connectors_url = admin_url( 'options-connectors.php' );
+
+		echo '<div class="acrossai-generate-image-info" style="margin:0 0 1.25em;padding:12px 16px;background:#f6f7f7;border-left:4px solid #2271b1;max-width:780px;">';
+
+		echo '<p style="margin-top:0;"><strong>';
+		esc_html_e( 'Generate images with AI', 'acrossai-abilities-manager' );
+		echo '</strong></p>';
+
 		echo '<p>';
-		esc_html_e( 'Controls the file types the upload-media ability will accept. Entries here are merged into WordPress\'s allowlist only during upload-media calls — regular Media Library uploads via wp-admin are NOT affected. Add-only for core defaults; entries you add here can be removed from the same list.', 'acrossai-abilities-manager' );
-		echo '</p>';
-		echo '<p class="description">';
 		printf(
 			/* translators: %s: the ability slug, wrapped in a <code> tag. */
-			esc_html__( 'Tip: you do not always need an image to hand. The %s ability can generate one from a text prompt and add it to the Media Library in a single call — handy for featured images and placeholders. It uses WordPress 7.0\'s built-in AI client and needs an AI connector that supports image generation.', 'acrossai-abilities-manager' ),
-			'<code>media/generate-image</code>'
+			wp_kses( __( 'The <code>%s</code> ability turns a text prompt into a real image and adds it to the Media Library in one step — processed exactly like an uploaded file, so all the standard image sizes (thumbnail, medium, large and any your theme or plugins register) are generated too. It can also attach the image to a post and set it as the post\'s featured image.', 'acrossai-abilities-manager' ), array( 'code' => array() ) ),
+			'media/generate-image'
 		);
+		echo '</p>';
+
+		echo '<p style="margin-bottom:4px;"><strong>';
+		esc_html_e( 'What it needs', 'acrossai-abilities-manager' );
+		echo '</strong></p>';
+
+		echo '<ul class="ul-disc" style="margin-top:0;">';
+
+		echo '<li>';
+		esc_html_e( 'WordPress 7.0 or newer — it uses the AI client that ships inside WordPress, so no additional plugin is required.', 'acrossai-abilities-manager' );
+		echo '</li>';
+
+		echo '<li>';
+		printf(
+			/* translators: %s: URL of the Connectors settings screen. */
+			wp_kses( __( 'An AI connector with an API key, set up under <a href="%s">Settings &rarr; Connectors</a>. It works with whichever provider you have a key for — the built-in connectors include Anthropic, Google, OpenAI and Cloudflare Workers AI (which has a free daily allowance), and more can be added — so you are not tied to any single provider or key.', 'acrossai-abilities-manager' ), array( 'a' => array( 'href' => array() ) ) ),
+			esc_url( $connectors_url )
+		);
+		echo '</li>';
+
+		echo '<li>';
+		esc_html_e( 'A connector that actually offers image generation. Not every provider or model can create images — text-only ones (for example a chat-only model such as Anthropic / Claude) cannot — so pick one with image models, such as Google, OpenAI or Cloudflare Workers AI. The ability picks a configured image-capable model for you, or you can name a provider and model yourself.', 'acrossai-abilities-manager' );
+		echo '</li>';
+
+		echo '</ul>';
+
+		echo '<p style="margin-bottom:0;">';
+		printf(
+			/* translators: %s: URL of the Connectors settings screen. */
+			wp_kses( __( 'Each run makes a paid request to your connector, so the ability asks for a confirmation (<code>confirm: true</code>) before it generates. If no image-capable connector is set up, it returns a clear message pointing to <a href="%s">Settings &rarr; Connectors</a> instead of failing — nothing is charged.', 'acrossai-abilities-manager' ), array( 'code' => array(), 'a' => array( 'href' => array() ) ) ),
+			esc_url( $connectors_url )
+		);
+		echo '</p>';
+
+		echo '</div>';
+
+		echo '<p>';
+		esc_html_e( 'The settings below control the file types the upload-media ability will accept. Entries here are merged into WordPress\'s allowlist only during upload-media calls — regular Media Library uploads via wp-admin are NOT affected. Add-only for core defaults; entries you add here can be removed from the same list.', 'acrossai-abilities-manager' );
 		echo '</p>';
 	}
 
