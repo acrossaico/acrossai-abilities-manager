@@ -115,6 +115,17 @@ class Test_Ai_Image_Generation_Suite extends WP_UnitTestCase {
 		$this->assertStringNotContainsString( 'WordPress\\AI\\', self::code_only( $gen ), 'The generator must not depend on the AI plugin namespace.' );
 	}
 
+	/**
+	 * When nothing is configured, the message must say how to fix it, and the
+	 * key check must go through WordPress core's own resolver.
+	 */
+	public function test_unavailable_message_is_actionable(): void {
+		$gen = self::read( self::GEN );
+		$this->assertStringContainsString( 'options-connectors.php', $gen, 'The message should point to the Connectors settings screen.' );
+		$this->assertStringContainsString( 'API key', $gen, 'The message should name the missing API key.' );
+		$this->assertStringContainsString( '_wp_connectors_get_api_key_source', $gen, 'The key check should prefer core\'s own resolver.' );
+	}
+
 	public function test_bootstrap_instantiates_the_ability(): void {
 		$this->assertStringContainsString(
 			'new Media\\Generate_Image();',

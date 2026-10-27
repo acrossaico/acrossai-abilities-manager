@@ -66,9 +66,40 @@ final class Ai_Image_Generator {
 	 */
 	public static function unavailable_message(): string {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
-			return __( 'Image generation needs WordPress 7.0 or newer, which bundles the AI client this ability uses.', 'acrossai-abilities-manager' );
+			return __( 'Image generation needs WordPress 7.0 or newer, which bundles the AI client this ability uses. No extra plugin is required.', 'acrossai-abilities-manager' );
 		}
-		return __( 'No AI connector that supports image generation is configured. Add one under Settings → AI (the Connectors API) and set its API key.', 'acrossai-abilities-manager' );
+
+		// Distinguish "no API key yet" from "a key is set but the provider has no
+		// image model", so the message tells the owner exactly what to do.
+		$has_connector = false;
+		$has_key       = false;
+		if ( function_exists( 'wp_get_connectors' ) ) {
+			foreach ( (array) wp_get_connectors() as $data ) {
+				if ( ! is_array( $data ) || 'ai_provider' !== ( $data['type'] ?? '' ) ) {
+					continue;
+				}
+				$has_connector = true;
+				if ( self::connector_authenticated( $data ) ) {
+					$has_key = true;
+					break;
+				}
+			}
+		}
+
+		if ( ! $has_key ) {
+			$message = $has_connector
+				? __( 'This ability needs an AI connector with an API key, and none is set yet. Open Settings → Connectors, pick a provider that generates images — Cloudflare Workers AI (free daily allowance), Google (Gemini/Imagen) or OpenAI — and add its API key. No extra plugin is required.', 'acrossai-abilities-manager' )
+				: __( 'This ability needs an AI connector, and none is configured. Open Settings → Connectors and connect a provider that generates images, such as Cloudflare Workers AI (free daily allowance), Google or OpenAI, then add its API key. No extra plugin is required.', 'acrossai-abilities-manager' );
+		} else {
+			$message = __( 'An AI connector is configured, but it does not offer image generation. Connect a provider that does — Cloudflare Workers AI, Google (Imagen/Gemini) or OpenAI — under Settings → Connectors.', 'acrossai-abilities-manager' );
+		}
+
+		if ( function_exists( 'admin_url' ) ) {
+			/* translators: %s: URL of the WordPress Connectors settings screen. */
+			$message .= ' ' . sprintf( __( 'Set it up here: %s', 'acrossai-abilities-manager' ), admin_url( 'options-connectors.php' ) );
+		}
+
+		return $message;
 	}
 
 	/**
@@ -260,17 +291,23 @@ final class Ai_Image_Generator {
 			return false;
 		}
 
-		$env = (string) ( $auth['env_var_name'] ?? '' );
+		$setting = (string) ( $auth['setting_name'] ?? '' );
+		$env     = (string) ( $auth['env_var_name'] ?? '' );
+		$const   = (string) ( $auth['constant_name'] ?? '' );
+
+		// Prefer WordPress core's own resolver, which checks env var → constant →
+		// stored option and returns the source (or 'none'). Reimplement only when
+		// an older core lacks it.
+		if ( function_exists( '_wp_connectors_get_api_key_source' ) ) {
+			return 'none' !== _wp_connectors_get_api_key_source( $setting, $env, $const );
+		}
+
 		if ( '' !== $env && '' !== (string) getenv( $env ) ) {
 			return true;
 		}
-
-		$const = (string) ( $auth['constant_name'] ?? '' );
 		if ( '' !== $const && defined( $const ) && '' !== (string) constant( $const ) ) {
 			return true;
 		}
-
-		$setting = (string) ( $auth['setting_name'] ?? '' );
 		return '' !== $setting && '' !== (string) get_option( $setting, '' );
 	}
 }
