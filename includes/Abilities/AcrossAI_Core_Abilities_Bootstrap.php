@@ -669,6 +669,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_yoast_abilities();
 		}
 
+
 		// Feature 107 — Classic Editor ability suite (4 abilities under editor/*). Gated on the
 		// plugin, so the group and its MCP tool exist only where they mean something.
 		if ( defined( 'CLASSIC_EDITOR_VERSION' ) && class_exists( 'Classic_Editor' ) && $this->integration_on( 'classic-editor' ) ) {
@@ -767,7 +768,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 
 		// Batch 2 — typed settings. One reader for all 20 panels, one writer per
 		// Rank Math option blob, plus the two blobs that need their own ability.
-		new RankMath\Get_Settings();
+		new RankMath\Get_Settings_Panel();
 		new RankMath\Update_General_Settings();
 		new RankMath\Update_Title_Settings();
 		new RankMath\Update_Sitemap_Settings();
@@ -782,10 +783,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 
 		// Batch 3 — module state.
 		new RankMath\List_Modules();
-		new RankMath\Set_Module_State();
 
 		// Batch 3 — sitemap operations.
-		new RankMath\Get_Sitemap_Status();
+		new RankMath\Get_Sitemap_Health();
 		new RankMath\List_Sitemap_Urls();
 		new RankMath\Invalidate_Sitemap_Cache();
 
@@ -824,7 +824,6 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new RankMath\Create_Backup();
 		new RankMath\Manage_Backup();
 		new RankMath\Detect_Seo_Plugins();
-		new RankMath\Get_Seo_Analysis_Results();
 
 		// Batch 6 — analytics.
 		new RankMath\Get_Analytics_Summary();

@@ -39,9 +39,16 @@ Applies to every ability; not repeated per entry.
 
 ## `rank-math-settings` (6)
 
+> **#1 and #57 were renamed.** They shipped as `get-settings` and `get-sitemap-status`.
+> Rank Math 1.0.277 claimed both names for abilities of its own, and the Abilities API gives
+> the name to whichever plugin registers first — so one side silently lost its ability and
+> callers got the other side's schema. The host plugin owns its namespace, so ours moved to
+> `get-settings-panel` and `get-sitemap-health`, which is also what each actually returns:
+> one panel with its field specification, and a live sitemap health check.
+
 | # | Slug | Input | Output payload |
 |---|---|---|---|
-| 1 | `get-settings` | `panel` (enum, 20 values, required), `object` (string — post type or taxonomy, required when the panel is dynamic) | `panel`, `object`, `fields[]` of `{id, type, enum, min, max, default, current, readonly}`, `state` (robots-txt panel only) |
+| 1 | `get-settings-panel` | `panel` (enum, 20 values, required), `object` (string — post type or taxonomy, required when the panel is dynamic) | `panel`, `object`, `fields[]` of `{id, type, enum, min, max, default, current, readonly}`, `state` (robots-txt panel only) |
 | 2 | `update-general-settings` | `section` (enum: links, breadcrumbs, webmaster, image-seo, 404-monitor, redirections, robots-txt, others), `settings` (object), | `section`, `updated{}` (only the fields written), `notifications[]` from Rank Math |
 | 3 | `update-title-settings` | `scope` (enum: post-type, taxonomy, homepage, author, misc, global, social, local-seo), `object` (required for post-type/taxonomy), `settings` (object) | `scope`, `object`, `updated{}`, `notifications[]` |
 | 4 | `update-sitemap-settings` | `scope` (enum: general, post-type, taxonomy), `object`, `settings` (object) | `scope`, `object`, `updated{}`, `notifications[]` |
@@ -142,7 +149,7 @@ is inactive return `tool_unavailable` naming the module.
 | # | Slug | Input | Output payload |
 |---|---|---|---|
 | 27 | `invalidate-sitemap-cache` | `scope` (enum: all, type, post — default all), `type`, `post_id` | `scope`, `invalidated`, `cache_enabled` |
-| 57 | `get-sitemap-status` | — | `module_active`, `object_types[]`, `rewrite{}`, `index_check{}` |
+| 57 | `get-sitemap-health` | — | `module_active`, `object_types[]`, `rewrite{}`, `index_check{}` |
 | 58 | `list-sitemap-urls` | `include_children` (bool, default true), `limit` (default 250, max 1000) | `sitemaps[]`, `urls[]`, `count` |
 
 **#27**: `scope=post` uses `Cache_Watcher::invalidate_post()` followed by `clear_queued()`, because
@@ -154,7 +161,7 @@ the watcher otherwise defers the work to `shutdown`. `cache_enabled: false` mean
 
 | # | Slug | Input | Output payload |
 |---|---|---|---|
-| 28 | `set-module-state` | `module` (string, required), `state` (enum: on, off) | `module`, `state`, `rewrite_flushed` |
+| 28 | ~~`set-module-state`~~ | *Retired.* Rank Math's own `set-module-status` does the same work and more (several modules per call, dependency and PRO-availability checks), including the rewrite-rule refresh and `rank_math/module_changed` action this row existed to guarantee. |
 | 63 | `list-modules` | — | `modules[]` of `{id, label, active, disabled, pro}` |
 
 **#28** replicates `Admin_Rest::save_module()` in full, including the rewrite-rule refresh and the
@@ -215,15 +222,15 @@ these abilities pre-compute `processed[]` / `skipped[]` with reasons via
 | 62 | `get-schema-status` | — | `publisher_type`, `publisher_id`, `publisher_name`, `website_name`, `logo{}`, `same_as[]`, `local_seo{}` |
 
 Returns the **effective computed** publisher output, not raw stored fields — that is what
-distinguishes it from #1 `get-settings(panel=titles-local-seo)`.
+distinguishes it from #1 `get-settings-panel(panel=titles-local-seo)`.
 
 ---
 
-## `rank-math-seo-analysis` (1)
+## `rank-math-seo-analysis` (0 — retired)
 
 | # | Slug | Input | Output payload |
 |---|---|---|---|
-| 38 | `get-seo-analysis-results` | — | `has_results`, `last_checked`, `results[]` |
+| 38 | ~~`get-seo-analysis-results`~~ | *Retired.* Rank Math's own `audit-site-seo` with `refresh: false` reads the stored run, and can also re-run it or audit a single URL. |
 
 Reads stored results only; never re-runs the analyzer, because Rank Math core already ships
 `rank-math/audit-site-seo`. No stored run → `success: true, has_results: false` (not an error).

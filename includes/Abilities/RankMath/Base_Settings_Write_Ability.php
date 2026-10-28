@@ -101,7 +101,7 @@ abstract class Base_Settings_Write_Ability extends Base_Rank_Math_Ability {
 			),
 			'settings'         => array(
 				'type'                 => 'object',
-				'description'          => __( 'Field id => value. Read the matching panel with rank-math/get-settings first: it returns each field id, its type, allowed values and bounds. Any field not belonging to the scope rejects the whole write.', 'acrossai-abilities-manager' ),
+				'description'          => __( 'Field id => value. Read the matching panel with rank-math/get-settings-panel first: it returns each field id, its type, allowed values and bounds. Any field not belonging to the scope rejects the whole write.', 'acrossai-abilities-manager' ),
 				'additionalProperties' => true,
 			),
 		);

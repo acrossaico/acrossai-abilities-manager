@@ -86,7 +86,7 @@ class Get_Llms_Status extends Base_Rank_Math_Ability {
 		$status = Routes_Repository::llms_status( $lines );
 
 		if ( ! $status['module_active'] ) {
-			$status['message'] = __( 'The Rank Math llms.txt module is inactive, so /llms.txt is not served. Enable it with rank-math/set-module-state.', 'acrossai-abilities-manager' );
+			$status['message'] = __( 'The Rank Math llms.txt module is inactive, so /llms.txt is not served. Enable it with rank-math/set-module-status.', 'acrossai-abilities-manager' );
 		} elseif ( empty( $status['rewrite']['present'] ) ) {
 			$status['message'] = __( 'The llms.txt module is active but its rewrite rule is not persisted, so the route will 404. Run rank-math/refresh-llms-route.', 'acrossai-abilities-manager' );
 		} else {

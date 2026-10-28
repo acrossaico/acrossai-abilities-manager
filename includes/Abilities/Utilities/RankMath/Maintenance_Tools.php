@@ -164,7 +164,7 @@ final class Maintenance_Tools {
 				'tool_unavailable',
 				sprintf(
 					/* translators: 1: tool id, 2: Rank Math module slug */
-					__( 'The "%1$s" tool needs the Rank Math "%2$s" module, which is not active. Enable it with rank-math/set-module-state.', 'acrossai-abilities-manager' ),
+					__( 'The "%1$s" tool needs the Rank Math "%2$s" module, which is not active. Enable it with rank-math/set-module-status.', 'acrossai-abilities-manager' ),
 					$tool,
 					$module
 				)

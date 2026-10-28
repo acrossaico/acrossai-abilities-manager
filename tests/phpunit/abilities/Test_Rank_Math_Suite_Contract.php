@@ -2,7 +2,7 @@
 /**
  * Feature 069 — the whole-suite contract.
  *
- * Verifies the 61 abilities as a SET rather than individually: the complete slug list,
+ * Verifies the 59 abilities as a SET rather than individually: the complete slug list,
  * the capability map, the destructive set, and the invariants that only make sense
  * across the suite. A per-ability test cannot catch a missing ability, a duplicated
  * slug, or a capability that drifted from the documented map.
@@ -26,7 +26,7 @@ class Test_Rank_Math_Suite_Contract extends WP_UnitTestCase {
 	private static function inventory(): array {
 		return array(
 			// Settings (6).
-			'Get_Settings'                     => 'get-settings',
+			'Get_Settings_Panel'               => 'get-settings-panel',
 			'Update_General_Settings'          => 'update-general-settings',
 			'Update_Title_Settings'            => 'update-title-settings',
 			'Update_Sitemap_Settings'          => 'update-sitemap-settings',
@@ -63,12 +63,11 @@ class Test_Rank_Math_Suite_Contract extends WP_UnitTestCase {
 			'Manage_Backup'                    => 'manage-backup',
 			'Detect_Seo_Plugins'               => 'detect-seo-plugins',
 			// Sitemap (3).
-			'Get_Sitemap_Status'               => 'get-sitemap-status',
+			'Get_Sitemap_Health'               => 'get-sitemap-health',
 			'List_Sitemap_Urls'                => 'list-sitemap-urls',
 			'Invalidate_Sitemap_Cache'         => 'invalidate-sitemap-cache',
 			// Modules (2).
 			'List_Modules'                     => 'list-modules',
-			'Set_Module_State'                 => 'set-module-state',
 			// Routes (2).
 			'Get_Llms_Status'                  => 'get-llms-status',
 			'Refresh_Llms_Route'               => 'refresh-llms-route',
@@ -92,7 +91,6 @@ class Test_Rank_Math_Suite_Contract extends WP_UnitTestCase {
 			'Delete_Post_Schemas'              => 'delete-post-schemas',
 			'Get_Schema_Status'                => 'get-schema-status',
 			// SEO analysis (1).
-			'Get_Seo_Analysis_Results'         => 'get-seo-analysis-results',
 			// Content AI (4).
 			'Get_Content_Ai_Status'            => 'get-content-ai-status',
 			'Manage_Content_Ai_Prompts'        => 'manage-content-ai-prompts',
@@ -159,7 +157,7 @@ class Test_Rank_Math_Suite_Contract extends WP_UnitTestCase {
 			'Get_Schema_Status'                => 'titles',
 			'Update_Sitemap_Settings'          => 'sitemap',
 			'Invalidate_Sitemap_Cache'         => 'sitemap',
-			'Get_Sitemap_Status'               => 'sitemap',
+			'Get_Sitemap_Health'               => 'sitemap',
 			'List_Sitemap_Urls'                => 'sitemap',
 			'List_Redirections'                => 'redirections',
 			'Find_Redirection'                 => 'redirections',
@@ -177,7 +175,6 @@ class Test_Rank_Math_Suite_Contract extends WP_UnitTestCase {
 			'Get_Analytics_Rows'               => 'analytics',
 			'Get_Index_Status'                 => 'analytics',
 			'Inspect_Url'                      => 'analytics',
-			'Get_Seo_Analysis_Results'         => 'site_analysis',
 			'Update_Seo_Meta'                  => 'onpage_general',
 			'Bulk_Update_Meta'                 => 'onpage_general',
 			'Get_Primary_Term'                 => 'onpage_general',
@@ -196,12 +193,11 @@ class Test_Rank_Math_Suite_Contract extends WP_UnitTestCase {
 			'Run_Maintenance_Tool'             => '',
 			'Detect_Seo_Plugins'               => '',
 			'List_Modules'                     => '',
-			'Set_Module_State'                 => '',
 			'Update_Seo_Scores'                => '',
 			'Get_Ai_Visibility_Brand'          => '',
 			'Update_Ai_Visibility_Object'      => '',
 			// Dynamic — resolved per panel inside run().
-			'Get_Settings'                     => 'general',
+			'Get_Settings_Panel'               => 'general',
 		);
 	}
 
@@ -211,8 +207,8 @@ class Test_Rank_Math_Suite_Contract extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_suite_has_exactly_sixty_one_abilities(): void {
-		$this->assertCount( 61, self::inventory() );
+	public function test_suite_has_exactly_fifty_nine_abilities(): void {
+		$this->assertCount( 59, self::inventory() );
 	}
 
 	/**

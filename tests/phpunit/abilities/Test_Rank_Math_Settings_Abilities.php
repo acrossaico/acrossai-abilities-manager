@@ -24,7 +24,7 @@ class Test_Rank_Math_Settings_Abilities extends WP_UnitTestCase {
 	 */
 	public static function provide_abilities(): array {
 		return array(
-			'get-settings'                     => array( 'Get_Settings', 'get-settings', 'general' ),
+			'get-settings-panel'               => array( 'Get_Settings_Panel', 'get-settings-panel', 'general' ),
 			'update-general-settings'          => array( 'Update_General_Settings', 'update-general-settings', 'general' ),
 			'update-title-settings'            => array( 'Update_Title_Settings', 'update-title-settings', 'titles' ),
 			'update-sitemap-settings'          => array( 'Update_Sitemap_Settings', 'update-sitemap-settings', 'sitemap' ),
@@ -64,7 +64,7 @@ class Test_Rank_Math_Settings_Abilities extends WP_UnitTestCase {
 	}
 
 	// -----------------------------------------------------------------
-	// Get_Settings — the runtime capability re-check.
+	// Get_Settings_Panel — the runtime capability re-check.
 	// -----------------------------------------------------------------
 
 	/**
@@ -73,7 +73,7 @@ class Test_Rank_Math_Settings_Abilities extends WP_UnitTestCase {
 	 * This is the only runtime capability check in the suite and is deliberate.
 	 */
 	public function test_get_settings_rechecks_the_panel_capability(): void {
-		$src = self::src( 'Get_Settings' );
+		$src = self::src( 'Get_Settings_Panel' );
 		$this->assertStringContainsString( 'Rank_Math_Guard::has_cap( $cap )', $src );
 		$this->assertStringContainsString( "'insufficient_capability'", $src );
 		$this->assertStringContainsString( "\$cap = (string) \$definition['cap'];", $src );
@@ -82,13 +82,13 @@ class Test_Rank_Math_Settings_Abilities extends WP_UnitTestCase {
 	}
 
 	public function test_get_settings_enum_is_sourced_from_the_registry(): void {
-		$src = self::src( 'Get_Settings' );
+		$src = self::src( 'Get_Settings_Panel' );
 		$this->assertStringContainsString( "'enum'        => Settings_Registry::panel_slugs()", $src );
 		$this->assertCount( 20, Settings_Registry::panel_slugs() );
 	}
 
 	public function test_get_settings_reports_robots_txt_state(): void {
-		$src = self::src( 'Get_Settings' );
+		$src = self::src( 'Get_Settings_Panel' );
 		$this->assertStringContainsString( "'general-robots-txt' === \$panel", $src );
 		$this->assertStringContainsString( 'physical_file_exists', $src );
 		$this->assertStringContainsString( 'site_not_public', $src );
