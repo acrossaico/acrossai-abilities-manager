@@ -10,8 +10,6 @@
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\AllInOne;
 
-use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\AllInOne\All_In_One_Guard;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -47,14 +45,22 @@ final class Category_Registrar {
 	}
 
 	/**
+	 * Registered unconditionally, with no All-in-One WP Migration presence check.
+	 *
+	 * Feature 127 registers this suite's abilities whether or not the plugin is active, so that
+	 * on a site with no backup plugin the abilities are still discoverable and are the thing
+	 * that answers "is this site backed up?" with no. A guard here broke exactly that: WP core
+	 * silently drops every ability whose category is unregistered, so the whole suite vanished
+	 * on the sites it was written for, leaving only a _doing_it_wrong notice per ability.
+	 *
+	 * Keep this in step with the registration gate in
+	 * AcrossAI_Core_Abilities_Bootstrap::register_abilities(). A category costs one array entry
+	 * and is never surfaced on its own, so erring towards registering it is the cheap side.
+	 *
 	 * @since  0.0.35
 	 * @return void
 	 */
 	public function register(): void {
-		if ( ! All_In_One_Guard::is_available() ) {
-			return;
-		}
-
 		wp_register_ability_category(
 			'acrossai-all-in-one',
 			array(
