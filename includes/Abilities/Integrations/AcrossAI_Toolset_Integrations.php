@@ -176,6 +176,7 @@ class AcrossAI_Toolset_Integrations {
 			new Contact_Form_7(),
 			new LiteSpeed_Cache(),
 			new Yoast_Seo(),
+			new All_In_One_Seo(),
 			new Classic_Editor(),
 			new Events_Calendar(),
 			new Event_Tickets(),

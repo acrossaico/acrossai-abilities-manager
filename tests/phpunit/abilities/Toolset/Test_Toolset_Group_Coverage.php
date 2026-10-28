@@ -30,6 +30,7 @@ require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Rank_Math
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Contact_Form_7.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/LiteSpeed_Cache.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Yoast_Seo.php';
+require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/All_In_One_Seo.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Classic_Editor.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Events_Calendar.php';
 require_once dirname( __DIR__, 4 ) . '/includes/Abilities/Integrations/Event_Tickets.php';
@@ -165,6 +166,7 @@ class Test_Toolset_Group_Coverage extends TestCase {
 		$expected = array(
 			'ACF.php'                => 'acf',
 			'All_In_One.php'         => 'all-in-one-wp-migration',
+			'All_In_One_Seo.php'     => 'all-in-one-seo',
 			'Anti_Spam.php'          => 'akismet',
 			'Classic_Editor.php'     => 'classic-editor',
 			'Consent_Banner.php'     => 'cookieyes',

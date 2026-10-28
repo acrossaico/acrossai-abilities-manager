@@ -106,6 +106,7 @@ class AcrossAI_Category_Slug_Migration {
 		'store',
 		'updraftplus',
 		'all-in-one',
+		'all-in-one-seo',
 		'media',
 		'menus',
 		'options',

@@ -357,6 +357,15 @@
 			<file>tests/phpunit/abilities/Content/Test_Post_Meta_Policy.php</file>
 			<file>tests/phpunit/abilities/Content/Test_Update_Post_Meta_Parity.php</file>
 		</testsuite>
+		<testsuite name="aioseo-integration-unit">
+			<file>tests/phpunit/abilities/Integrations/Test_All_In_One_Seo_Integration.php</file>
+		</testsuite>
+		<testsuite name="feature-132-unit">
+			<file>tests/phpunit/abilities/Aioseo/Test_Aioseo_Suite_Contract.php</file>
+			<file>tests/phpunit/abilities/Aioseo/Test_Aioseo_Settings_Registry.php</file>
+			<file>tests/phpunit/abilities/Aioseo/Test_Aioseo_Settings_Writer.php</file>
+			<file>tests/phpunit/abilities/Aioseo/Test_Aioseo_Post_Seo_Repository.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

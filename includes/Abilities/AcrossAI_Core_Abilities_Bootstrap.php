@@ -110,6 +110,10 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 
 		// Feature 106 — Yoast SEO category (self-guards on the host probe inside register()).
 		$loader->add_action( 'wp_abilities_api_categories_init', Yoast\Category_Registrar::instance(), 'register' );
+		// Feature 132 — All in One SEO category. Registered unconditionally, matching the 0.0.44
+		// backup-suite fix: a guarded registrar in front of a gated registration is how a whole
+		// suite gets dropped with only a _doing_it_wrong notice to show for it.
+		$loader->add_action( 'wp_abilities_api_categories_init', Aioseo\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Settings\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Fonts\Category_Registrar::instance(), 'register' );
 		$loader->add_action( 'wp_abilities_api_categories_init', Content\Category_Registrar::instance(), 'register' );
@@ -669,6 +673,15 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_yoast_abilities();
 		}
 
+		// Feature 132 — All in One SEO suite. The Contact Form 7 shape: AIOSEO has no modules or
+		// entitlements that could change within a request, so the gate is at boot. Two symbols rather
+		// than one, matching Aioseo_Guard and Integrations\All_In_One_Seo — the version constant is
+		// defined before the aioseo() container is built, so it alone would report the plugin usable
+		// while every read in the suite hit a null container. The guard re-checks inside execute(),
+		// because AIOSEO can be deactivated after the abilities were registered in the same request.
+		if ( defined( 'AIOSEO_VERSION' ) && function_exists( 'aioseo' ) && $this->integration_on( 'all-in-one-seo' ) ) {
+			$this->register_aioseo_abilities();
+		}
 
 		// Feature 107 — Classic Editor ability suite (4 abilities under editor/*). Gated on the
 		// plugin, so the group and its MCP tool exist only where they mean something.
@@ -1403,6 +1416,38 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Yoast\Get_Seo_Status();
 		new Yoast\List_Conflicting_Plugins();
 		new Yoast\Update_Robots_Settings();
+	}
+
+	/**
+	 * Feature 132 — instantiate the All in One SEO ability classes.
+	 *
+	 * Twelve abilities, and the set is defined by subtraction: AIOSEO ships thirteen of its own, so
+	 * nothing here reads or writes one post's SEO, lists posts by missing field or TruSEO score,
+	 * touches robots.txt rules, lists notifications, or reads the raw settings tree. What is left is
+	 * the typed settings layer AIOSEO documents as having no writer, the per-object search appearance
+	 * in its second option store, sitemap health and regeneration, settings backups, and the batch
+	 * post write.
+	 *
+	 * @since  0.0.44
+	 * @return void
+	 */
+	private function register_aioseo_abilities(): void {
+		// Settings — the documented gap.
+		new Aioseo\Get_Settings_Panel();
+		new Aioseo\Update_Settings_Panel();
+		new Aioseo\Get_Object_Settings();
+		new Aioseo\Update_Object_Settings();
+		// Sitemaps — AIOSEO ships none.
+		new Aioseo\Get_Sitemap_Health();
+		new Aioseo\Regenerate_Sitemap();
+		// Status and backups.
+		new Aioseo\Get_Status();
+		new Aioseo\List_Backups();
+		new Aioseo\Create_Backup();
+		new Aioseo\Manage_Backup();
+		new Aioseo\Dismiss_Notification();
+		// Content.
+		new Aioseo\Bulk_Update_Post_Seo();
 	}
 
 	/**
