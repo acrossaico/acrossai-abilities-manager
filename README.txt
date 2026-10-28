@@ -5,7 +5,7 @@ Tags: abilities, ai assistant, chatgpt, claude, mcp
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.0.42
+Stable tag: 0.0.43
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,7 +21,7 @@ It is free, GPL, and works on its own. Pair it with an MCP server and your site 
 
 = What Your Site Can Do, Out of the Box =
 
-* **Content** — posts, pages and any custom post type with meta and revisions; comments; media, categories and tags; and semantic search that proposes, reviews and applies internal links.
+* **Content** — posts, pages and any custom post type with meta and revisions; comments; media, categories and tags; generating an image from a prompt straight into the Media Library (when an AI connector is configured); and semantic search that proposes, reviews and applies internal links.
 * **Blocks** — edit a page's block tree without rewriting the page, build from patterns, generate sections and landing pages, and audit copy and design.
 * **Appearance** — theme.json and global styles, site-editor templates and parts, menus, widget areas, fonts, and site title, logo and icon.
 * **Users** — create and edit users, reset passwords, create roles, and grant or revoke individual capabilities.
@@ -41,7 +41,7 @@ So your MCP server groups them into **toolsets**, and a toolset is a **single to
 
 = Plugins You Already Run Get Their Own Toolset =
 
-Nineteen integrations ship with the plugin, each with its own page in the [integrations directory](https://acrossai.co/integrations/) — and each registers **only when that plugin is active**, so nothing appears for software you do not have, and each becomes one more dispatcher tool rather than a pile of loose ones. They are listed on the plugin's own **Integrations** screen (under AcrossAI), where a single switch turns any one's abilities on or off.
+Twenty-one integrations ship with the plugin, each with its own page in the [integrations directory](https://acrossai.co/integrations/) — and each registers **only when that plugin is active**, so nothing appears for software you do not have, and each becomes one more dispatcher tool rather than a pile of loose ones. They are listed on the plugin's own **Integrations** screen (under AcrossAI), where a single switch turns any one's abilities on or off.
 
 * **Elementor** (89 abilities) — pages, templates, kits, widgets, form submissions and cache; a subset needs Elementor Pro.
 * **Yoast SEO** (64) — titles and meta, indexing, breadcrumbs, schema and social defaults.
@@ -58,8 +58,10 @@ Nineteen integrations ship with the plugin, each with its own page in the [integ
 * **Loco Translate** (14) — what is untranslated, and writing translations.
 * **All-in-One WP Migration** (9) — what archives exist, how recent, and exporting or removing them.
 * **UpdraftPlus** (8) — when a backup last ran, whether it worked, and its contents.
+* **Redirection** (8) — create, list, update and delete redirects; the 404 error log that shows which URLs need one; redirect groups; and Redirection's settings.
 * **WP Mail SMTP** (4) — how the site sends mail, and a real test send.
 * **Classic Editor** (4) — the effective editor per post type, and whether users may choose.
+* **Query Monitor** (4) — profile a URL's slow and duplicated queries, outbound HTTP calls and PHP errors; the PHP, MySQL and WordPress environment; object-cache status; and turning Query Monitor on or off.
 * **Akismet** — spam figures and checking a comment, from Akismet itself.
 * **WPForms** — read forms and stats, create forms, change settings; writes behind an admin switch, off by default.
 
@@ -243,10 +245,11 @@ A few admin-only actions can cause an external service to receive data — all d
 No data is sent to any external server without an administrator action, and the plugin loads no external script into wp-admin.
 == Changelog ==
 
-= 0.0.43 - 2026-10-27 =
+= 0.0.43 - 2026-10-28 =
 
 * **Added: generate an image from a prompt and add it straight to the Media Library.** The new `media/generate-image` ability takes a text prompt, generates an image through WordPress 7.0's built-in AI client — using whichever connector the site has configured for image generation — and adds the result to the Media Library in a single call, optionally attaching it to a post and setting it as the featured image. Until now an assistant could store an image it already had, but not make one. Because each call makes a paid AI request, it is gated behind a confirmation; it respects the Upload Media Abilities file-type allowlist, and on a site with no image-capable connector it returns a clear message rather than failing. The Upload Media Abilities settings section and the media abilities now point to it.
 * **Added: manage URL redirects and triage 404s with the Redirection plugin.** When the Redirection plugin is active, eight new abilities let an AI assistant create, list, update and delete redirects, read the 404 error log to find the URLs a site is missing redirects for, read the redirect hit log, list redirect groups, and read Redirection's settings. Every redirect is created through Redirection's own model — with its URL matching, flags and cache flush — rather than a raw database write that would store a redirect that never fires. Deleting a redirect is irreversible and asks for confirmation, and the REST API token is never returned. It also closes a loop the plugin already opened: deleting a published post hands back a suggested redirect, and there is now an ability that creates it.
+* **Added: profile any page with Query Monitor, in its own toolset.** Four new abilities let an AI assistant profile one URL and read what it actually did — its slow and duplicated database queries, outbound HTTP calls, PHP errors and the template that rendered it — plus the PHP, MySQL and WordPress environment, whether a persistent object cache is connected and its hit ratio, and turning Query Monitor's own output on or off. They form a dedicated Query Monitor toolset and Integrations row rather than being folded into Diagnostics. Requires the Query Monitor plugin; without it each ability returns a clear "not active" message rather than failing.
 
 = 0.0.42 - 2026-10-26 =
 
@@ -328,6 +331,9 @@ Verified against Site Kit by Google 1.188.0 on a live site with Search Console, 
 Every release before 0.0.36 is recorded in full at https://acrossai.co/changelog/acrossai-abilities-manager/ and in changelog.txt, shipped inside the plugin.
 
 == Upgrade Notice ==
+
+= 0.0.43 =
+Adds a Redirection toolset (create and manage redirects and triage 404s), gives Query Monitor its own toolset for profiling a page's queries, HTTP calls and environment, and a new ability that generates an image from a text prompt straight into the Media Library using WordPress's built-in AI client. No breaking changes.
 
 = 0.0.42 =
 Security and data-integrity fixes for the database write and post-update abilities, plus the Integrations screen and Elementor MCP support. Recommended for all sites.
