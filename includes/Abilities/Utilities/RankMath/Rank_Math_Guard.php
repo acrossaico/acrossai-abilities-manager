@@ -77,7 +77,7 @@ final class Rank_Math_Guard {
 				'rank_math_module_inactive',
 				sprintf(
 					/* translators: %s: Rank Math module id */
-					__( 'The Rank Math "%s" module is not active. Enable it with rank-math/set-module-state.', 'acrossai-abilities-manager' ),
+					__( 'The Rank Math "%s" module is not active. Enable it with rank-math/set-module-status.', 'acrossai-abilities-manager' ),
 					$module
 				)
 			);

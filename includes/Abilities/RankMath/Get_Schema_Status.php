@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Ability #62 — rank-math/get-schema-status.
  *
- * Distinct from rank-math/get-settings panel=titles-local-seo, which returns
+ * Distinct from rank-math/get-settings-panel panel=titles-local-seo, which returns
  * the RAW stored fields. This returns the RESOLVED output: which schema type will
  * actually be emitted, the @id it carries, and the sameAs list assembled from the
  * separate social fields — all computed at render time and therefore unreadable from

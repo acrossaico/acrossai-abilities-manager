@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Ability #4 — rank-math/update-sitemap-settings.
  *
- * Complements rank-math/get-sitemap-status, which reports live state:
+ * Complements rank-math/get-sitemap-health, which reports live state:
  * this ability changes configuration. Sitemap exclusions (exclude_posts,
  * exclude_terms) are only reachable here — nothing else can exclude a post from
  * the sitemap.

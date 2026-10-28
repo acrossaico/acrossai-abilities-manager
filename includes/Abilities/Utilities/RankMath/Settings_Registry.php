@@ -654,7 +654,7 @@ final class Settings_Registry {
 					'unknown_field',
 					sprintf(
 						/* translators: 1: field id, 2: panel slug */
-						__( 'The field "%1$s" does not belong to panel "%2$s". Read the panel with rank-math/get-settings to see its fields.', 'acrossai-abilities-manager' ),
+						__( 'The field "%1$s" does not belong to panel "%2$s". Read the panel with rank-math/get-settings-panel to see its fields.', 'acrossai-abilities-manager' ),
 						$id,
 						$panel
 					)

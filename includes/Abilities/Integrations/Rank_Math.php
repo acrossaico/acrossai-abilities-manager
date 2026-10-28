@@ -2,10 +2,11 @@
 /**
  * Rank Math's toolset declaration.
  *
- * The mixed case, and the one that made issue #184 visible: this plugin declares 61 `rank-math/*`
- * abilities and Rank Math itself declares 27 more. Ours carry `meta.acrossai.tab_group` and always
- * grouped correctly; theirs carry nothing and grouped nowhere, so the Rank Math tab showed 61 of 87 and
- * an assistant reaching for `toolset-rank-math` could not see the other 26 at all.
+ * The mixed case, and the one that made issue #184 visible: this plugin declares 59 `rank-math/*`
+ * abilities and Rank Math itself declares 29 more (as of 1.0.280; it was 27 when this was written,
+ * and the number grows with ordinary Rank Math releases). Ours carry `meta.acrossai.tab_group` and
+ * always grouped correctly; theirs carry nothing and grouped nowhere, so the Rank Math tab showed
+ * 59 of 88 and an assistant reaching for `toolset-rank-math` could not see the rest at all.
  *
  * Declaring the `rank-math` prefix here closes that: both halves land in one group, and neither half
  * needs to know the other exists. The tagger never overwrites a declared group, so ours are untouched.

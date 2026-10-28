@@ -18,7 +18,15 @@ use WP_Error;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Ability #1 — rank-math/get-settings.
+ * Ability #1 — rank-math/get-settings-panel.
+ *
+ * NOT `rank-math/get-settings`. Rank Math itself claimed that name in 1.0.277 for a
+ * whole-site snapshot taking a `sections` array. Both registered it, the first registrant
+ * won by hook order alone, and a caller following Rank Math's documented input hit this
+ * ability's `panel` schema instead. The host plugin owns its own namespace, so this moved
+ * (PATTERN-NEVER-SHADOW-A-HOST-ABILITY) and both now coexist: theirs for the snapshot,
+ * this one for a single panel WITH its field specification, which is the part their
+ * snapshot does not carry and which every writer in this suite depends on.
  *
  * One reader for all 20 panels. Reads carry no validation risk, and returning the
  * field specification alongside the values is what makes each writer's accepted
@@ -39,27 +47,27 @@ defined( 'ABSPATH' ) || exit;
  *
  * Read-only, idempotent.
  */
-class Get_Settings extends Base_Rank_Math_Ability {
+class Get_Settings_Panel extends Base_Rank_Math_Ability {
 
 	/**
 	 * @return string
 	 */
 	protected function slug(): string {
-		return 'get-settings';
+		return 'get-settings-panel';
 	}
 
 	/**
 	 * @return string
 	 */
 	protected function ability_label(): string {
-		return __( 'Get Rank Math Settings', 'acrossai-abilities-manager' );
+		return __( 'Get Rank Math Settings Panel', 'acrossai-abilities-manager' );
 	}
 
 	/**
 	 * @return string
 	 */
 	protected function ability_description(): string {
-		return __( 'Read one Rank Math settings panel: every field with its id, type, allowed values, bounds, whether it is read-only, and its current value. Call this before any of the update-*-settings abilities to discover exactly which field ids that panel accepts — submitting a field that does not belong to the panel rejects the whole write.', 'acrossai-abilities-manager' );
+		return __( 'Read one Rank Math settings panel: every field with its id, type, allowed values, bounds, whether it is read-only, and its current value. Call this before any of the update-*-settings abilities to discover exactly which field ids that panel accepts — submitting a field that does not belong to the panel rejects the whole write. For a whole-site settings snapshot with no field specification, use Rank Math\'s own rank-math/get-settings instead.', 'acrossai-abilities-manager' );
 	}
 
 	/**

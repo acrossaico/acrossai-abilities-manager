@@ -6,7 +6,7 @@
 php scripts/generate-abilities-inventory.php
 ```
 
-Snapshot taken 2026-09-21. **Total abilities:** 798 across 41 topic namespaces.
+Snapshot taken 2026-10-28. **Total abilities:** 837 across 45 topic namespaces.
 
 Conditional integrations (Elementor, Rank Math, ACF) are listed here whether or not their
 host plugin is active on any given site — this is a source inventory, not a runtime one.
@@ -18,32 +18,36 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 
 | Group | Abilities |
 |---|---:|
+| `content` — Content | 74 |
 | `appearance` — Appearance | 73 |
-| `content` — Content | 73 |
 | `yoast-seo` — Yoast Seo | 64 |
 | `elementor` — Elementor | 62 |
 | `litespeed-cache` — Litespeed Cache | 61 |
-| `rank-math` — Rank Math | 61 |
+| `rank-math` — Rank Math | 59 |
 | `blocks` — Blocks | 52 |
 | `woocommerce` — Woocommerce | 34 |
 | `contact-form-7` — Contact Form 7 | 25 |
 | `wpcode` — Wpcode | 24 |
 | `updates` — Updates | 23 |
 | `files` — Files | 23 |
+| `diagnostics` — Diagnostics | 22 |
 | `cookieyes` — Cookieyes | 22 |
-| `diagnostics` — Diagnostics | 21 |
 | `configuration` — Configuration | 19 |
 | `events-calendar` — Events Calendar | 18 |
 | `database` — Database | 17 |
+| `` —  | 17 |
 | `acf` — Acf | 16 |
 | `cron` — Cron | 16 |
 | `event-tickets` — Event Tickets | 16 |
-| `` —  | 16 |
 | `users` — Users | 16 |
+| `site-kit` — Site Kit | 14 |
 | `loco-translate` — Loco Translate | 14 |
+| `all-in-one-seo` — All In One Seo | 12 |
 | `all-in-one-wp-migration` — All In One Wp Migration | 9 |
+| `redirection` — Redirection | 8 |
 | `updraftplus` — Updraftplus | 8 |
 | `cache` — Cache | 7 |
+| `query-monitor` — Query Monitor | 4 |
 | `classic-editor` — Classic Editor | 4 |
 | `wp-mail-smtp` — Wp Mail Smtp | 4 |
 
@@ -53,6 +57,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 |---|---:|---|
 | `acrossai/` | 7 | `acrossai-debugging` |
 | `admin-menu/` | 5 | `acrossai-admin-menu` |
+| `aioseo/` | 12 | `acrossai-all-in-one-seo` |
 | `all-in-one/` | 9 | `acrossai-all-in-one` |
 | `blocks/` | 92 | `acrossai-block`, `acrossai-acf` |
 | `cache/` | 7 | `acrossai-cache` |
@@ -65,7 +70,8 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `cron/` | 16 | `acrossai-cron` |
 | `custom-fields/` | 11 | `acrossai-acf` |
 | `database/` | 18 | `acrossai-database` |
-| `diagnostics/` | 1 | `acrossai-recovery` |
+| `debugging/` | 4 | `acrossai-debugging` |
+| `diagnostics/` | 2 | `acrossai-recovery` |
 | `editor/` | 4 | `acrossai-classic-editor` |
 | `elementor/` | 62 | `acrossai-elementor` |
 | `email/` | 4 | `acrossai-email` |
@@ -73,21 +79,23 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `file-manager/` | 23 | `acrossai-file-manager` |
 | `fonts/` | 8 | `acrossai-fonts` |
 | `litespeed/` | 61 | `acrossai-litespeed-cache`, `cache-exc_cat` |
-| `media/` | 11 | `acrossai-media` |
+| `media/` | 12 | `acrossai-media` |
 | `menus/` | 12 | `acrossai-menus` |
 | `options/` | 7 | `acrossai-options` |
 | `plugins/` | 10 | `acrossai-plugins` |
-| `rank-math/` | 61 | `acrossai-rank-math` |
+| `rank-math/` | 59 | `acrossai-rank-math` |
 | `recovery/` | 7 | `acrossai-recovery` |
+| `redirects/` | 8 | `acrossai-redirects` |
 | `seo/` | 58 | `acrossai-yoast-seo` |
 | `settings/` | 11 | `acrossai-settings` |
 | `site-health/` | 6 | `acrossai-site-health` |
+| `site-kit/` | 14 | `acrossai-site-kit` |
 | `snippets/` | 24 | `acrossai-wpcode` |
 | `store/` | 34 | `acrossai-store` |
 | `taxonomies/` | 16 | `acrossai-taxonomies`, `acrossai-yoast-seo` |
 | `themes/` | 7 | `acrossai-themes` |
 | `tickets/` | 16 | `acrossai-event-tickets` |
-| `toolset/` | 16 | `acrossai-toolset` |
+| `toolset/` | 17 | `acrossai-toolset` |
 | `translations/` | 14 | `acrossai-loco-translate` |
 | `updraftplus/` | 8 | `acrossai-updraftplus` |
 | `users/` | 16 | `acrossai-users` |
@@ -109,6 +117,18 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `admin-menu/` | `admin-menu/list-admin-menu-pages` | configuration | admin-menu | List Admin Menu Pages |
 | `admin-menu/` | `admin-menu/list-admin-settings` | configuration | admin-menu | List Admin Settings |
 | `admin-menu/` | `admin-menu/refresh-admin-menu-context` | configuration | admin-menu | Refresh Admin Menu Context |
+| `aioseo/` | `aioseo/bulk-update-post-seo` | all-in-one-seo |  |  |
+| `aioseo/` | `aioseo/create-backup` | all-in-one-seo |  |  |
+| `aioseo/` | `aioseo/dismiss-notification` | all-in-one-seo |  |  |
+| `aioseo/` | `aioseo/get-object-settings` | all-in-one-seo |  |  |
+| `aioseo/` | `aioseo/get-settings-panel` | all-in-one-seo |  |  |
+| `aioseo/` | `aioseo/get-sitemap-health` | all-in-one-seo |  |  |
+| `aioseo/` | `aioseo/get-status` | all-in-one-seo |  |  |
+| `aioseo/` | `aioseo/list-backups` | all-in-one-seo |  |  |
+| `aioseo/` | `aioseo/manage-backup` | all-in-one-seo |  |  |
+| `aioseo/` | `aioseo/regenerate-sitemap` | all-in-one-seo |  |  |
+| `aioseo/` | `aioseo/update-object-settings` | all-in-one-seo |  |  |
+| `aioseo/` | `aioseo/update-settings-panel` | all-in-one-seo |  |  |
 | `all-in-one/` | `all-in-one/check-exposure` | all-in-one-wp-migration |  |  |
 | `all-in-one/` | `all-in-one/delete-backup` | all-in-one-wp-migration |  |  |
 | `all-in-one/` | `all-in-one/get-backup` | all-in-one-wp-migration |  |  |
@@ -369,7 +389,12 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `database/` | `database/search-replace` | database | queries | Search Replace |
 | `database/` | `database/set-option-autoload` | database | safe-writes | Set Option Autoload |
 | `database/` | `database/update-db-rows` | database | queries | Update Rows |
+| `debugging/` | `debugging/get-environment` | query-monitor | query-monitor | Get Environment (Query Monitor) |
+| `debugging/` | `debugging/get-object-cache-status` | query-monitor | query-monitor | Get Object Cache Status (Query Monitor) |
+| `debugging/` | `debugging/profile-url` | query-monitor | query-monitor | Profile URL (Query Monitor) |
+| `debugging/` | `debugging/toggle-query-monitor` | query-monitor | query-monitor | Toggle Query Monitor |
 | `diagnostics/` | `diagnostics/list-ability-collisions` | diagnostics | recovery | List Ability Name Collisions |
+| `diagnostics/` | `diagnostics/list-unclassified-abilities` | diagnostics | recovery | List Unclassified Abilities |
 | `editor/` | `editor/get-editor-settings` | classic-editor |  |  |
 | `editor/` | `editor/get-post-editor` | classic-editor |  |  |
 | `editor/` | `editor/get-post-type-editor-support` | classic-editor |  |  |
@@ -551,6 +576,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `litespeed/` | `litespeed/update-tuning-settings` | litespeed-cache |  |  |
 | `litespeed/` | `litespeed/update-viewport-settings` | litespeed-cache |  |  |
 | `media/` | `media/delete-media` | content | manage | Delete Media |
+| `media/` | `media/generate-image` | content | manage | Generate Image |
 | `media/` | `media/get-media` | content | manage | Get Media |
 | `media/` | `media/get-media-meta` | content | meta | Get Media Meta |
 | `media/` | `media/list-image-sizes` | content | introspection | List Image Sizes |
@@ -618,9 +644,8 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `rank-math/` | `rank-math/get-rendered-head` | rank-math |  |  |
 | `rank-math/` | `rank-math/get-role-capabilities` | rank-math |  |  |
 | `rank-math/` | `rank-math/get-schema-status` | rank-math |  |  |
-| `rank-math/` | `rank-math/get-seo-analysis-results` | rank-math |  |  |
-| `rank-math/` | `rank-math/get-settings` | rank-math |  |  |
-| `rank-math/` | `rank-math/get-sitemap-status` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-settings-panel` | rank-math |  |  |
+| `rank-math/` | `rank-math/get-sitemap-health` | rank-math |  |  |
 | `rank-math/` | `rank-math/get-status` | rank-math |  |  |
 | `rank-math/` | `rank-math/import-settings` | rank-math |  |  |
 | `rank-math/` | `rank-math/inspect-url` | rank-math |  |  |
@@ -638,7 +663,6 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `rank-math/` | `rank-math/reset-indexing-key` | rank-math |  |  |
 | `rank-math/` | `rank-math/reset-role-capabilities` | rank-math |  |  |
 | `rank-math/` | `rank-math/run-maintenance-tool` | rank-math |  |  |
-| `rank-math/` | `rank-math/set-module-state` | rank-math |  |  |
 | `rank-math/` | `rank-math/submit-urls` | rank-math |  |  |
 | `rank-math/` | `rank-math/update-ai-visibility-object` | rank-math |  |  |
 | `rank-math/` | `rank-math/update-general-settings` | rank-math |  |  |
@@ -658,6 +682,14 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `recovery/` | `recovery/list-recent-fatal-errors` | diagnostics | recovery | List Recent Fatal Errors |
 | `recovery/` | `recovery/unpause-plugin` | diagnostics | recovery | Unpause Plugin |
 | `recovery/` | `recovery/unpause-theme` | diagnostics | recovery | Unpause Theme |
+| `redirects/` | `redirects/create-redirect` | redirection |  |  |
+| `redirects/` | `redirects/delete-redirects` | redirection |  |  |
+| `redirects/` | `redirects/get-settings` | redirection |  |  |
+| `redirects/` | `redirects/list-404-errors` | redirection |  |  |
+| `redirects/` | `redirects/list-groups` | redirection |  |  |
+| `redirects/` | `redirects/list-hit-log` | redirection |  |  |
+| `redirects/` | `redirects/list-redirects` | redirection |  |  |
+| `redirects/` | `redirects/update-redirect` | redirection |  |  |
 | `seo/` | `seo/cleanup-indexables` | yoast-seo |  |  |
 | `seo/` | `seo/export-settings` | yoast-seo |  |  |
 | `seo/` | `seo/get-author-archive-seo` | yoast-seo |  |  |
@@ -733,6 +765,20 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `site-health/` | `site-health/get-site-maintenance-report` | diagnostics | site-health | Site Maintenance Report |
 | `site-health/` | `site-health/set-site-maintenance-mode` | diagnostics | maintenance | Set Site Maintenance Mode |
 | `site-health/` | `site-health/unset-site-maintenance-mode` | diagnostics | maintenance | Unset Site Maintenance Mode |
+| `site-kit/` | `site-kit/get-adsense-report` | site-kit |  |  |
+| `site-kit/` | `site-kit/get-analytics-report` | site-kit |  |  |
+| `site-kit/` | `site-kit/get-key-metrics` | site-kit |  |  |
+| `site-kit/` | `site-kit/get-module-data` | site-kit |  |  |
+| `site-kit/` | `site-kit/get-module-settings` | site-kit |  |  |
+| `site-kit/` | `site-kit/get-pagespeed-insights` | site-kit |  |  |
+| `site-kit/` | `site-kit/get-search-analytics` | site-kit |  |  |
+| `site-kit/` | `site-kit/get-sharing-settings` | site-kit |  |  |
+| `site-kit/` | `site-kit/get-status` | site-kit |  |  |
+| `site-kit/` | `site-kit/list-module-datapoints` | site-kit |  |  |
+| `site-kit/` | `site-kit/list-modules` | site-kit |  |  |
+| `site-kit/` | `site-kit/set-module-state` | site-kit |  |  |
+| `site-kit/` | `site-kit/update-key-metrics` | site-kit |  |  |
+| `site-kit/` | `site-kit/update-module-settings` | site-kit |  |  |
 | `snippets/` | `snippets/activate-snippet` | wpcode |  |  |
 | `snippets/` | `snippets/apply-pack` | wpcode |  |  |
 | `snippets/` | `snippets/clear-snippet-errors` | wpcode |  |  |
@@ -843,6 +889,7 @@ may legitimately span two groups (Feature 101, `DEC-ABILITY-GROUP-TAXONOMY`).
 | `toolset/` | `toolset/files` |  |  |  |
 | `toolset/` | `toolset/integrations` |  |  |  |
 | `toolset/` | `toolset/rank-math` |  |  |  |
+| `toolset/` | `toolset/site-kit` |  |  |  |
 | `toolset/` | `toolset/updates` |  |  |  |
 | `toolset/` | `toolset/updraftplus` |  |  |  |
 | `toolset/` | `toolset/users` |  |  |  |

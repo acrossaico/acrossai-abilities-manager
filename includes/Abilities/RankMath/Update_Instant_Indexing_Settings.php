@@ -79,7 +79,7 @@ class Update_Instant_Indexing_Settings extends Base_Rank_Math_Ability {
 		return array(
 			'settings' => array(
 				'type'                 => 'object',
-				'description'          => __( 'Field id => value. Writable fields are bing_post_types (a list of post type names) and indexnow_api_key (a string). Read the current values with rank-math/get-settings panel=general-instant-indexing.', 'acrossai-abilities-manager' ),
+				'description'          => __( 'Field id => value. Writable fields are bing_post_types (a list of post type names) and indexnow_api_key (a string). Read the current values with rank-math/get-settings-panel panel=general-instant-indexing.', 'acrossai-abilities-manager' ),
 				'additionalProperties' => true,
 			),
 		);

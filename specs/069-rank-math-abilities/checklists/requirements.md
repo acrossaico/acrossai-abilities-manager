@@ -50,7 +50,7 @@ Tick as each batch lands. A batch is not done until its rows are ticked.
 - [ ] Every `permission_callback` composes the house floor with the mapped `rank_math_*` cap (FR-012)
 - [ ] The capability map in `contracts/abilities.md` matches the code
 - [ ] `acrossai_abilities_manager_rank_math_permission` is evaluated inside `Rank_Math_Guard::can()` so all abilities honour it (FR-012)
-- [ ] `get-settings` re-checks the panel-specific cap inside `run()` and this is documented as deliberate
+- [ ] `get-settings-panel` re-checks the panel-specific cap inside `run()` and this is documented as deliberate
 - [ ] The four post-scoped abilities perform a per-object `current_user_can( 'edit_post', $id )` inside `run()`
 - [ ] Credit-consuming abilities verify balance before any remote request (FR-014)
 - [ ] All input is sanitized before reaching Rank Math; no unsanitized value is passed through
@@ -68,7 +68,7 @@ Tick as each batch lands. A batch is not done until its rows are ticked.
 - [ ] `get-rendered-head` uses an HTTP loopback, never in-process (FR-016, research F4)
 - [ ] `Analytics_Repository` calls `set_date_range()` explicitly and never caches the `Stats` instance
 - [ ] `list-redirections` supports `status=trashed` (FR-017)
-- [ ] `set-module-state` refreshes rewrite rules and fires `rank_math/module_changed` (FR-018)
+- [ ] module state changes refresh rewrite rules and fire `rank_math/module_changed` (FR-018) — satisfied by Rank Math's own `set-module-status` since 1.0.277; ours was retired
 
 ## Quality gates
 

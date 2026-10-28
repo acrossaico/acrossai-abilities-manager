@@ -85,7 +85,7 @@ class Refresh_Llms_Route extends Base_Rank_Math_Ability {
 		} elseif ( $result['rule_present_after'] ) {
 			$result['message'] = __( 'The llms.txt rewrite rule was missing and has been restored.', 'acrossai-abilities-manager' );
 		} elseif ( ! $active ) {
-			$result['message'] = __( 'Rewrite rules were flushed but the llms.txt rule is still absent because the module is inactive. Enable it with rank-math/set-module-state, then run this again.', 'acrossai-abilities-manager' );
+			$result['message'] = __( 'Rewrite rules were flushed but the llms.txt rule is still absent because the module is inactive. Enable it with rank-math/set-module-status, then run this again.', 'acrossai-abilities-manager' );
 		} else {
 			$result['message'] = __( 'Rewrite rules were flushed but the llms.txt rule is still absent even though the module is active. Rules may regenerate on the next front-end request; re-check with rank-math/get-llms-status.', 'acrossai-abilities-manager' );
 		}

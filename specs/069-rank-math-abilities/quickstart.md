@@ -94,7 +94,7 @@ falls through to the lossy `default` branch unless the registry maps it to `text
     section: "links",
     settings: { nofollow_domains: "example.com\nexample.org\nexample.net" }
   }
-→ rank-math/get-settings { panel: "general-links" }
+→ rank-math/get-settings-panel { panel: "general-links" }
 ```
 
 Assert the two `\n` characters survived. If the value comes back as
@@ -119,7 +119,7 @@ actual `/toolsAction` REST request.
 
 ```
 → rank-math/get-rendered-head { url: "<any post permalink>" }
-→ rank-math/get-settings { panel: "general-links" }
+→ rank-math/get-settings-panel { panel: "general-links" }
 ```
 
 Both in the same PHP request. Assert the second still succeeds. If it fails, the head was fetched
@@ -161,9 +161,9 @@ not `array_values()`-reindexed before reaching `Sanitize_Settings::sanitize_grou
 ### 8. Module state leaves no stale rewrite rules
 
 ```
-→ rank-math/set-module-state { module: "llms-txt", state: "off" }
+→ rank-math/set-module-status { modules: { "llms-txt": false } }
 → rank-math/get-llms-status
-→ rank-math/set-module-state { module: "llms-txt", state: "on" }
+→ rank-math/set-module-status { modules: { "llms-txt": true } }
 → rank-math/get-llms-status
 ```
 

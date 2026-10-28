@@ -79,7 +79,7 @@ class Get_Content_Ai_Status extends Base_Rank_Math_Ability {
 		}
 
 		if ( ! $status['module_active'] ) {
-			$status['message'] = __( 'The Content AI module is inactive. Enable it with rank-math/set-module-state.', 'acrossai-abilities-manager' );
+			$status['message'] = __( 'The Content AI module is inactive. Enable it with rank-math/set-module-status.', 'acrossai-abilities-manager' );
 		} elseif ( ! $status['connected'] ) {
 			$status['message'] = __( 'Content AI needs a connected Rank Math account. Connect the site at Rank Math → Dashboard.', 'acrossai-abilities-manager' );
 		} elseif ( 0 === (int) $status['credits'] ) {
