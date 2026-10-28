@@ -242,7 +242,14 @@ final class Sitemap_Repository {
 		}
 
 		if ( array() === $payload['post_types'] && array() === $payload['taxonomies'] ) {
-			return __( 'The sitemap is switched on and reachable, but no post types or taxonomies are included in it, so it advertises nothing. Set postTypes.all=true, or list the ones you want in postTypes.included, on the sitemap-general panel.', 'acrossai-abilities-manager' );
+			return __( 'The sitemap is switched on, but no post types or taxonomies are included in it, so it advertises nothing. Set postTypes.all=true, or list the ones you want in postTypes.included, on the sitemap-general panel.', 'acrossai-abilities-manager' );
+		}
+
+		// Never claim reachability that was not measured. With fetch_index=false there is no
+		// index_check, and an earlier version still reported "reachable and serving XML" — an
+		// assertion about the one thing the caller had just asked us not to test.
+		if ( null === $check ) {
+			return __( 'The sitemap is switched on and configured to include content. Whether it is actually served was not checked — call again with fetch_index=true to confirm the index responds.', 'acrossai-abilities-manager' );
 		}
 
 		return __( 'The sitemap is switched on, reachable and serving XML.', 'acrossai-abilities-manager' );

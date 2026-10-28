@@ -188,6 +188,25 @@ abstract class Base_Aioseo_Ability extends Ability_Definition {
 	}
 
 	/**
+	 * One caller value, coerced to a string without PHP raising a notice about it.
+	 *
+	 * `(string) $input['panel']` is the obvious spelling and it is wrong: an array arrives here when
+	 * something calls `execute()` without going through core's schema validation, and casting one
+	 * emits "Array to string conversion" before the ability gets to refuse it politely. Found by an
+	 * adversarial pass — the refusal was already correct, the warning beside it was not.
+	 *
+	 * A non-scalar becomes '', which every caller of this already treats as "not given" and reports
+	 * with the list of what IS valid.
+	 *
+	 * @since  0.0.44
+	 * @param  mixed $value Caller value.
+	 * @return string
+	 */
+	final protected static function scalar( $value ): string {
+		return is_scalar( $value ) ? (string) $value : '';
+	}
+
+	/**
 	 * @since  0.0.44
 	 * @return array<string, mixed>
 	 */

@@ -135,7 +135,7 @@ class Get_Settings_Panel extends Base_Aioseo_Ability {
 	 * @return array<string, mixed>|WP_Error
 	 */
 	protected function run( array $input ) {
-		$panel = isset( $input['panel'] ) ? (string) $input['panel'] : '';
+		$panel = self::scalar( $input['panel'] ?? '' );
 
 		if ( '' === $panel ) {
 			return array(

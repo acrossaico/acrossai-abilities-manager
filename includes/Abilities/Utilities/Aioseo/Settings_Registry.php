@@ -54,6 +54,28 @@ final class Settings_Registry {
 	private const EXCLUDED_GROUPS = array( 'internal', 'deprecated' );
 
 	/**
+	 * Fields this suite refuses to write, as `panel` => field ids.
+	 *
+	 * The registry's premise is that AIOSEO's declared types ARE the specification. This is the one
+	 * field in AIOSEO 5.0.3 where that is not true. `advanced.emailSummary.recipients` is declared
+	 * `type: array`, but `Options::sanitizeEmailSummary()` reads `$recipient['email']` and
+	 * `$recipient['frequency']` off every entry unconditionally (`Options.php:817,831`) — so each
+	 * member is a structured record with required sub-keys that appear nowhere in the type, and an
+	 * entry missing one raises an undefined-key warning inside AIOSEO on save. An adversarial pass
+	 * wrote `[ { email: … } ]` through here and tripped exactly that.
+	 *
+	 * Validating a shape the plugin does not declare would mean hand-maintaining the one thing this
+	 * class exists to avoid, so the field is refused and the caller is sent to the screen that owns
+	 * it. It stays readable.
+	 *
+	 * @since 0.0.44
+	 * @var   array<string, string[]>
+	 */
+	private const REFUSED_FIELDS = array(
+		'advanced' => array( 'emailSummary.recipients' ),
+	);
+
+	/**
 	 * Private constructor — static utility (DEC-UTILITY-STATIC-ONLY).
 	 */
 	private function __construct() {}
@@ -304,6 +326,22 @@ final class Settings_Registry {
 			);
 		}
 
+		// Before the spec read, because an unconditionally-refused field is refused whether or not
+		// AIOSEO is readable, and "you can never write this" is the more useful answer than "the
+		// panel could not be loaded".
+		foreach ( array_keys( $fields ) as $id ) {
+			if ( in_array( (string) $id, self::REFUSED_FIELDS[ $panel ] ?? array(), true ) ) {
+				return new WP_Error(
+					'field_not_writable',
+					sprintf(
+						/* translators: %s: field id */
+						__( 'The field "%s" cannot be written through this suite, so nothing was written. Each of its entries is a structured record whose required keys AIOSEO does not declare in the field\'s type, and an incomplete one makes AIOSEO fail on save. Set it on the All in One SEO settings screen that owns it. It remains readable here.', 'acrossai-abilities-manager' ),
+						$id
+					)
+				);
+			}
+		}
+
 		$spec = self::fields( $panel );
 		if ( is_wp_error( $spec ) ) {
 			return $spec;
@@ -332,7 +370,7 @@ final class Settings_Registry {
 				);
 			}
 
-			$shape = self::assert_shape( $id, $value, (string) $spec[ $id ]['type'] );
+			$shape = self::assert_shape( $id, $value, $spec[ $id ] );
 			if ( is_wp_error( $shape ) ) {
 				return $shape;
 			}
@@ -344,13 +382,31 @@ final class Settings_Registry {
 	/**
 	 * Whether a value's shape can survive AIOSEO's cast for its declared type.
 	 *
+	 * Type coercion is deliberately NOT done here. AIOSEO's `sanitizeField()` casts on save and is
+	 * the authority; duplicating it would mean two sanitisers that can disagree. What this does is
+	 * refuse a value whose shape cannot survive that cast MEANINGFULLY — the cases where the cast
+	 * silently produces nonsense and reports success.
+	 *
+	 * Three of the four rules below were added after an adversarial pass got nonsense past the first
+	 * version:
+	 *
+	 * - `linksPerIndex: null` was accepted and stored as 0 — a sitemap with zero links per index —
+	 *   because `intval( null )` is 0 and null was waved through. Null is refused for a number, and
+	 *   still allowed for a string or boolean, where AIOSEO's cast means "clear it" and "off".
+	 * - `postTypes.included: [["post"]]` was accepted and stored nested, because `sanitizeField()`
+	 *   recurses into arrays. A nested member is refused for an array field whose own default is a
+	 *   flat list. It is ALLOWED where the default is nested: `advanced.emailSummary.recipients` is
+	 *   genuinely a list of objects, and it is the only one in AIOSEO 5.0.3, which is why this asks
+	 *   the declared default rather than banning nesting outright.
+	 *
 	 * @since  0.0.44
-	 * @param  string $id    Field id, for the message.
-	 * @param  mixed  $value Caller's value.
-	 * @param  string $type  AIOSEO type: boolean, string, number, array or html.
+	 * @param  string                    $id    Field id, for the message.
+	 * @param  mixed                     $value Caller's value.
+	 * @param  array<string, mixed>      $spec  The field's specification entry.
 	 * @return true|WP_Error
 	 */
-	private static function assert_shape( string $id, $value, string $type ) {
+	private static function assert_shape( string $id, $value, array $spec ) {
+		$type     = (string) $spec['type'];
 		$is_array = is_array( $value );
 
 		if ( 'array' === $type && ! $is_array ) {
@@ -376,7 +432,33 @@ final class Settings_Registry {
 			);
 		}
 
-		if ( 'number' === $type && null !== $value && ! is_numeric( $value ) ) {
+		if ( 'array' === $type && empty( $spec['nested'] ) ) {
+			foreach ( $value as $member ) {
+				if ( is_array( $member ) || is_object( $member ) ) {
+					return new WP_Error(
+						'invalid_field_value',
+						sprintf(
+							/* translators: %s: field id */
+							__( 'The field "%s" takes a flat list of values, and one of the entries is itself a list. AIOSEO would store the nesting as given and then fail to read it back.', 'acrossai-abilities-manager' ),
+							$id
+						)
+					);
+				}
+			}
+		}
+
+		if ( 'number' === $type && null === $value ) {
+			return new WP_Error(
+				'invalid_field_value',
+				sprintf(
+					/* translators: %s: field id */
+					__( 'The field "%s" takes a number, and null was given. AIOSEO would store it as 0, which is a value rather than a cleared field — pass the number you want.', 'acrossai-abilities-manager' ),
+					$id
+				)
+			);
+		}
+
+		if ( 'number' === $type && ! is_numeric( $value ) ) {
 			return new WP_Error(
 				'invalid_field_value',
 				sprintf(
@@ -389,6 +471,27 @@ final class Settings_Registry {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Whether a declared default is a list containing further lists.
+	 *
+	 * @since  0.0.44
+	 * @param  mixed $default Declared default.
+	 * @return bool
+	 */
+	private static function default_is_nested( $default ): bool {
+		if ( ! is_array( $default ) ) {
+			return false;
+		}
+
+		foreach ( $default as $member ) {
+			if ( is_array( $member ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -551,6 +654,7 @@ final class Settings_Registry {
 					'current'       => array_key_exists( $key, $values ) ? $values[ $key ] : ( $node['default'] ?? null ),
 					'localized'     => ! empty( $node['localized'] ),
 					'preserve_html' => ! empty( $node['preserveHtml'] ),
+					'nested'        => self::default_is_nested( $node['default'] ?? null ),
 				);
 
 				continue;

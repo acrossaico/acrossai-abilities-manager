@@ -141,8 +141,8 @@ class Update_Object_Settings extends Base_Aioseo_Ability {
 		}
 
 		return Settings_Writer::write_object(
-			(string) ( $input['scope'] ?? '' ),
-			(string) ( $input['object'] ?? '' ),
+			self::scalar( $input['scope'] ?? '' ),
+			self::scalar( $input['object'] ?? '' ),
 			$settings
 		);
 	}

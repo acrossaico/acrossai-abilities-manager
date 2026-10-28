@@ -142,6 +142,6 @@ class Update_Settings_Panel extends Base_Aioseo_Ability {
 			);
 		}
 
-		return Settings_Writer::write( (string) ( $input['panel'] ?? '' ), $settings );
+		return Settings_Writer::write( self::scalar( $input['panel'] ?? '' ), $settings );
 	}
 }

@@ -130,8 +130,8 @@ class Get_Object_Settings extends Base_Aioseo_Ability {
 	 * @return array<string, mixed>|WP_Error
 	 */
 	protected function run( array $input ) {
-		$scope  = (string) ( $input['scope'] ?? '' );
-		$object = isset( $input['object'] ) ? (string) $input['object'] : '';
+		$scope  = self::scalar( $input['scope'] ?? '' );
+		$object = self::scalar( $input['object'] ?? '' );
 
 		if ( ! in_array( $scope, Object_Settings_Registry::scopes(), true ) ) {
 			return new WP_Error(

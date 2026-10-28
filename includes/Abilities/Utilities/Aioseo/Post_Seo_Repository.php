@@ -82,6 +82,28 @@ final class Post_Seo_Repository {
 	);
 
 	/**
+	 * The shape each accepted field takes.
+	 *
+	 * AIOSEO's service assigns most of these straight into the save array and lets the model cast
+	 * later, so an array handed to `title` is stored as an array and reported as a success. An
+	 * adversarial pass did exactly that. 'scalar' means a string, number or boolean, or null to
+	 * clear; 'list' means an array.
+	 *
+	 * @since 0.0.44
+	 * @var   array<string, string>
+	 */
+	private const SHAPES = array(
+		'title'                 => 'scalar',
+		'description'           => 'scalar',
+		'canonical_url'         => 'scalar',
+		'pillar_content'        => 'scalar',
+		'focus_keyphrase'       => 'scalar',
+		'additional_keyphrases' => 'list',
+		'robots'                => 'list',
+		'social'                => 'list',
+	);
+
+	/**
 	 * Private constructor — static utility (DEC-UTILITY-STATIC-ONLY).
 	 */
 	private function __construct() {}
@@ -136,6 +158,11 @@ final class Post_Seo_Repository {
 			);
 		}
 
+		$shapes = self::assert_shapes( $fields );
+		if ( is_wp_error( $shapes ) ) {
+			return $shapes;
+		}
+
 		$robots = self::reconcile_robots( $fields );
 		if ( is_wp_error( $robots ) ) {
 			return $robots;
@@ -149,8 +176,21 @@ final class Post_Seo_Repository {
 		$updated   = 0;
 		$failed    = 0;
 
-		foreach ( $post_ids as $post_id ) {
-			$post_id = (int) $post_id;
+		foreach ( $post_ids as $given ) {
+			$post_id = self::post_id( $given );
+
+			if ( null === $post_id ) {
+				++$failed;
+
+				$results[] = array(
+					'post_id' => null,
+					'updated' => false,
+					'reason'  => __( 'Not a post id. Casting it would have silently resolved to post 1 and written there.', 'acrossai-abilities-manager' ),
+					'code'    => 'invalid_post_id',
+				);
+
+				continue;
+			}
 
 			$outcome = $service->updateSeoData( $post_id, $fields );
 
@@ -279,5 +319,75 @@ final class Post_Seo_Repository {
 			'fields' => $fields,
 			'notes'  => $notes,
 		);
+	}
+
+	/**
+	 * One caller value as a usable post id, or null.
+	 *
+	 * `(int) $value` is the obvious spelling and it is dangerous: PHP casts an array or an object to
+	 * 1, so `post_ids: [[1]]` or a stray object wrote SEO fields to post 1 and reported success. Found
+	 * by an adversarial pass. Only an integer or an integer-valued numeric string above zero counts;
+	 * everything else is reported per post as `invalid_post_id` and touches nothing.
+	 *
+	 * @since  0.0.44
+	 * @param  mixed $value Caller value.
+	 * @return int|null
+	 */
+	private static function post_id( $value ): ?int {
+		if ( is_int( $value ) ) {
+			return $value > 0 ? $value : null;
+		}
+
+		if ( is_string( $value ) && 1 === preg_match( '/^[1-9][0-9]*$/', $value ) ) {
+			return (int) $value;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Whether each field's value has a shape AIOSEO will store meaningfully.
+	 *
+	 * Separate from `bulk_update()` so it can be tested without AIOSEO installed — the availability
+	 * guard correctly runs first in the real path, which would otherwise make this unreachable in a
+	 * host-free test.
+	 *
+	 * The reason it exists: AIOSEO's service assigns most of these straight into the save array and
+	 * lets the model cast later, so `title: ["a"]` was stored as an array and reported as a success.
+	 * Found by an adversarial pass. Rejects the WHOLE call rather than skipping the bad field — a
+	 * partially-applied batch beside a success report is the worst outcome available.
+	 *
+	 * @since  0.0.44
+	 * @param  array<string, mixed> $fields Caller's fields.
+	 * @return true|WP_Error
+	 */
+	private static function assert_shapes( array $fields ) {
+		foreach ( $fields as $name => $value ) {
+			$shape = self::SHAPES[ (string) $name ] ?? 'scalar';
+
+			if ( 'list' === $shape && ! is_array( $value ) ) {
+				return new WP_Error(
+					'invalid_field_value',
+					sprintf(
+						/* translators: %s: field name */
+						__( 'The field "%s" takes an object or list, and a single value was given. Nothing was written to any post.', 'acrossai-abilities-manager' ),
+						$name
+					)
+				);
+			}
+
+			if ( 'scalar' === $shape && null !== $value && ! is_scalar( $value ) ) {
+				return new WP_Error(
+					'invalid_field_value',
+					sprintf(
+						/* translators: %s: field name */
+						__( 'The field "%s" takes a single value, or null to clear it, and a list was given. AIOSEO would store the list as-is and report success. Nothing was written to any post.', 'acrossai-abilities-manager' ),
+						$name
+					)
+				);
+			}
+		}
+
+		return true;
 	}
 }

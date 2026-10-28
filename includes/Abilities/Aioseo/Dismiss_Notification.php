@@ -120,6 +120,6 @@ class Dismiss_Notification extends Base_Aioseo_Ability {
 	 * @return array<string, mixed>|WP_Error
 	 */
 	protected function run( array $input ) {
-		return Status_Repository::dismiss_notification( (string) ( $input['name'] ?? '' ) );
+		return Status_Repository::dismiss_notification( self::scalar( $input['name'] ?? '' ) );
 	}
 }

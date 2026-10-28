@@ -139,8 +139,8 @@ class Manage_Backup extends Base_Aioseo_Ability {
 	 */
 	protected function run( array $input ) {
 		return Status_Repository::manage_backup(
-			(string) ( $input['key'] ?? '' ),
-			(string) ( $input['action'] ?? '' )
+			self::scalar( $input['key'] ?? '' ),
+			self::scalar( $input['action'] ?? '' )
 		);
 	}
 }

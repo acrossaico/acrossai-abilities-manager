@@ -107,3 +107,63 @@ taxonomies (proving the `type` fix); backup create / list / delete; a batch post
 `unknown_panel`, `unknown_object`, `panel_not_writable`, `invalid_field_value` for a non-numeric
 number and for a list given to a boolean, and `confirmation_required`. All test writes were reverted
 through the suite itself.
+
+## Adversarial pass — five defects, all in input handling
+
+Run after the suite was already working, executing every ability with hostile input at two layers:
+through `wp_get_ability()->execute()` (where core validates `input_schema` first) and straight into
+our own `execute()` with the schema bypassed. The second layer is where everything below was found —
+core's enum and type checks caught all of it at layer one, so none of these were reachable from a
+normal MCP or REST caller, but an ability must not rely on its caller having validated.
+
+Every one shared a cause: **a value whose shape is wrong survives a PHP cast and becomes a
+plausible-looking wrong answer, and AIOSEO's sanitiser casts rather than refuses.**
+
+| # | Hostile input | Was | Now |
+|---|---|---|---|
+| 1 | `linksPerIndex: null` | stored 0 — a sitemap with zero links per index | `invalid_field_value`; null still clears a string and switches off a boolean |
+| 2 | `postTypes.included: [["post"]]` | stored nested; `sanitizeField()` recurses | refused where the field's own default is a flat list, allowed where it is nested |
+| 3 | `emailSummary.recipients: [{email}]` | written, and raised an undefined-key warning inside AIOSEO | `field_not_writable` — see below |
+| 4 | `post_ids: [[1]]` or `[object]` | **wrote SEO fields to post 1** and reported success | per-post `invalid_post_id`, nothing touched |
+| 5 | `fields: { title: ["a"] }` | stored the array, reported success | `invalid_field_value`, whole call refused |
+
+Plus two smaller ones: `(string) $input['panel']` raised "Array to string conversion" before refusing
+a non-scalar (now `scalar()` in the base class), and `get-sitemap-health` with `fetch_index: false`
+reported "reachable and serving XML" — an assertion about the one thing the caller had just asked us
+not to test.
+
+**#3 is the interesting one.** `advanced.emailSummary.recipients` is declared `type: array`, but
+`Options::sanitizeEmailSummary()` reads `email` and `frequency` off every entry unconditionally
+(`Options.php:817,831`), so each member is a record with required keys that appear nowhere in the
+declared type. This registry's entire premise is that AIOSEO's declared types ARE the specification,
+and this is the one field in 5.0.3 where that is false. Validating a shape the plugin does not
+declare would mean hand-maintaining exactly what this class exists to avoid, so the field is refused
+on write and stays readable.
+
+#4 is the one that mattered most: `(int)` casts an array or object to `1` in PHP, so any malformed
+entry in a batch resolved to the first post and was written.
+
+### What held
+
+- **Path traversal and injection in every string input.** Backup keys (`../../wp-config`, `siteurl`,
+  `1'; DROP TABLE …`) are resolved against the stored index before reaching AIOSEO, so an arbitrary
+  key is `aioseo_backup_not_found`. Notification names go through AIOSEO's prepared queries.
+- **No escape from a panel via a crafted field id.** `../../social.profiles`, `postTypes..all`,
+  `.enable`, `postTypes.all.x.y.z` all fail the spec lookup before `expand()` ever runs — validation
+  precedes nesting, which is the ordering that makes this safe.
+- **`internal` and `deprecated` unreachable** as panels at both layers.
+- **The permission filter tightens and cannot widen.** An editor, and a logged-out request, are both
+  denied with the filter forced to `true`.
+- **Defence in depth on the settings writer**: an editor bypassing `permission_callback` entirely and
+  calling `execute()` is still refused with `aioseo_insufficient_capability`, because
+  `Settings_Writer` re-checks AIOSEO's own capability.
+- **The `manage_options` floor holds on every real entry point.** Core's REST and MCP paths call
+  `check_permissions()`, and so does our own Toolset dispatcher
+  (`Base_Toolset_Ability.php:986`) before it calls `execute()`.
+- **Zero PHP diagnostics** raised inside our code or AIOSEO on the final pass, and `aioseo_options`,
+  `aioseo_options_dynamic` and post 1 all byte-identical afterwards.
+
+Ten regression tests in `Test_Aioseo_Hostile_Input`. Shape validation was extracted to
+`Post_Seo_Repository::assert_shapes()` so it is testable without AIOSEO installed — the availability
+guard correctly runs first in the real path, which would otherwise make it unreachable in a host-free
+test.

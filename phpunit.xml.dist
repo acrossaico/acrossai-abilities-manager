@@ -365,6 +365,7 @@
 			<file>tests/phpunit/abilities/Aioseo/Test_Aioseo_Settings_Registry.php</file>
 			<file>tests/phpunit/abilities/Aioseo/Test_Aioseo_Settings_Writer.php</file>
 			<file>tests/phpunit/abilities/Aioseo/Test_Aioseo_Post_Seo_Repository.php</file>
+			<file>tests/phpunit/abilities/Aioseo/Test_Aioseo_Hostile_Input.php</file>
 		</testsuite>
 	</testsuites>
 	<source>
