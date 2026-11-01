@@ -17,6 +17,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Fs_Roots;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
@@ -116,21 +117,18 @@ class File_Info extends Ability_Definition {
 		}
 		$fs = Wp_Filesystem_Init::get();
 
-		$rel_path  = sanitize_text_field( $input['path'] ?? '' );
-		$base      = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
-		$candidate = $base . '/' . ltrim( $rel_path, '/' );
+		$rel_path = sanitize_text_field( $input['path'] ?? '' );
 
-		// Scope check: parent must resolve inside ABSPATH. This mirrors the
-		// pattern used by Read_File and lets us handle broken symlinks (where
-		// realpath($candidate) itself is false but the parent resolves).
-		$parent = realpath( dirname( $candidate ) );
-		if ( false === $parent || ( $parent !== $base && 0 !== strpos( $parent, $base . '/' ) ) ) {
-			return array(
-				'success'        => false,
-				'blocked_reason' => 'invalid_path',
-				'message'        => __( 'Invalid or disallowed path.', 'acrossai-abilities-manager' ),
-			);
+		// Feature 135: resolve against every WordPress root. Passing must_exist=false keeps the
+		// broken-symlink case working -- the resolver falls back to containing the parent, which is
+		// exactly what this ability needs when realpath() of the target itself fails.
+		$resolved = Fs_Roots::resolve( $rel_path );
+
+		if ( is_wp_error( $resolved ) ) {
+			return Fs_Roots::blocked_response( $resolved );
 		}
+
+		$candidate = $resolved['path'];
 
 		// WP_Filesystem_Direct has no is_link(); the base class doesn't define one either.
 		// Use PHP's native check — file-info operates on local paths under ABSPATH.

@@ -66,14 +66,76 @@ class Test_Uninstall_Plugin extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'is_plugin_active(', $this->src );
 	}
 
-	public function test_calls_wp_core_uninstall_plugin(): void {
-		$this->assertStringContainsString( 'uninstall_plugin(', $this->src );
+	/**
+	 * `delete_plugins()`, not `uninstall_plugin()`.
+	 *
+	 * This previously asserted `uninstall_plugin(` and passed for as long as
+	 * the ability was broken: core's `uninstall_plugin()` only fires the
+	 * uninstall hook and removes no files, so a plugin with no uninstall hook
+	 * (most of them) "uninstalled" with nothing happening and stayed listed in
+	 * wp-admin. A test that greps for a call pins the implementation, not the
+	 * behaviour — which is exactly why it could not notice.
+	 */
+	public function test_calls_wp_core_delete_plugins(): void {
+		$this->assertStringContainsString( 'delete_plugins( array( $plugin_file ) )', $this->src );
+		$this->assertDoesNotMatchRegularExpression(
+			'/\$result\s*=\s*uninstall_plugin\(/',
+			$this->src,
+			'uninstall_plugin() alone removes no files; it must not be what this ability relies on.'
+		);
 	}
 
-	public function test_declares_all_three_blocked_reasons(): void {
+	/**
+	 * A symlinked plugin must be refused, and refused FIRST.
+	 *
+	 * `WP_Filesystem_Direct::delete()` recursive calls `dirlist()`, and PHP's
+	 * directory functions follow symlinks — so deleting a linked plugin walks
+	 * into the TARGET and empties it, leaving the link behind. Where several
+	 * sites link one checkout, that destroys the plugin everywhere at once and
+	 * takes its `.git` with it.
+	 *
+	 * Learned the hard way: one fleet-wide call across four symlinked sites
+	 * emptied the shared working tree, and only committed work survived.
+	 */
+	public function test_refuses_to_delete_a_symlinked_plugin(): void {
+		$this->assertStringContainsString( 'is_link( $plugin_dir )', $this->src );
+		$this->assertStringContainsString( "'blocked_reason' => 'plugin_is_symlinked'", $this->src );
+		$this->assertLessThan(
+			strpos( $this->src, 'delete_plugins(' ),
+			strpos( $this->src, "'plugin_is_symlinked'" ),
+			'The symlink check must precede the delete, or it guards nothing.'
+		);
+	}
+
+	/** The removal is verified against the disk, not merely reported. */
+	public function test_verifies_the_files_are_actually_gone(): void {
+		$this->assertStringContainsString( "file_exists( WP_PLUGIN_DIR . '/' . \$plugin_file )", $this->src );
+		$this->assertStringContainsString( "'blocked_reason' => 'files_remain'", $this->src );
+		// PHP can answer file_exists() from its stat cache; a check that may
+		// read a stale answer is not a check.
+		$this->assertStringContainsString( 'clearstatcache( true, WP_PLUGIN_DIR', $this->src );
+	}
+
+	/**
+	 * A non-direct filesystem is refused before core can print at us.
+	 *
+	 * `delete_plugins()` calls `request_filesystem_credentials()`, which
+	 * echoes an HTML form when it cannot proceed. This ability answers in JSON.
+	 */
+	public function test_refuses_when_the_filesystem_is_not_direct(): void {
+		$this->assertStringContainsString( "'direct' !== get_filesystem_method()", $this->src );
+		$this->assertStringContainsString( "'blocked_reason' => 'filesystem_not_direct'", $this->src );
+	}
+
+	public function test_declares_every_blocked_reason(): void {
 		$this->assertStringContainsString( "'blocked_reason' => 'file_mods_disallowed'", $this->src );
 		$this->assertStringContainsString( "'blocked_reason' => 'plugin_not_found'", $this->src );
 		$this->assertStringContainsString( "'blocked_reason' => 'plugin_active'", $this->src );
+		// Three more since the deletion fix: a symlinked plugin, a host that
+		// needs FTP, and a deletion that reported success and left files.
+		$this->assertStringContainsString( "'blocked_reason' => 'plugin_is_symlinked'", $this->src );
+		$this->assertStringContainsString( "'blocked_reason' => 'filesystem_not_direct'", $this->src );
+		$this->assertStringContainsString( "'blocked_reason' => 'files_remain'", $this->src );
 	}
 
 	public function test_guard_order_matches_plan(): void {

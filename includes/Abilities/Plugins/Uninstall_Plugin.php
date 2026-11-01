@@ -153,7 +153,66 @@ class Uninstall_Plugin extends Ability_Definition {
 			);
 		}
 
-		$result = uninstall_plugin( $plugin_file );
+		// A SYMLINKED plugin is refused outright.
+		//
+		// `WP_Filesystem_Direct::delete()` in recursive mode calls
+		// `dirlist()`, and PHP's directory functions follow symlinks — so
+		// deleting a linked plugin walks into the TARGET and removes its
+		// contents, leaving an empty link behind. On the development layout
+		// this project uses, where several sites symlink one checkout, that
+		// destroys the plugin for every site at once and takes its `.git`
+		// with it.
+		//
+		// Not hypothetical: one fleet-wide `uninstall-plugin` across four
+		// symlinked sites emptied the shared acrossai-abilities-manager
+		// working tree, and only the committed work was recoverable. Deleting
+		// through a link is never what the operator means — they asked to
+		// remove a plugin from THIS site, not to destroy what it points at.
+		$plugin_dir = WP_PLUGIN_DIR . '/' . dirname( $plugin_file );
+
+		if ( is_link( $plugin_dir ) ) {
+			return array(
+				'success'        => false,
+				'uninstalled'    => false,
+				'blocked_reason' => 'plugin_is_symlinked',
+				'plugin_file'    => $plugin_file,
+				'plugin_name'    => $plugin_name,
+				'message'        => sprintf(
+					/* translators: 1: plugin name, 2: the link target. */
+					__( '"%1$s" is a symlink to %2$s. Deleting it would erase that directory for every site linking to it, so this refuses. Remove the symlink by hand if that is what you want.', 'acrossai-abilities-manager' ),
+					$plugin_name,
+					(string) readlink( $plugin_dir )
+				),
+			);
+		}
+
+		// `delete_plugins()`, not `uninstall_plugin()`.
+		//
+		// Core's `uninstall_plugin()` fires the plugin's uninstall hook or
+		// includes its `uninstall.php` — and that is ALL it does. It never
+		// removes a file. `delete_plugins()` calls it internally and then
+		// deletes the directory, which is what this ability has always said
+		// it does. The old call left every file in place and reported
+		// success, so a plugin with no uninstall hook — most of them —
+		// "uninstalled" with nothing happening and stayed listed in wp-admin.
+		//
+		// The filesystem method is checked first rather than left to
+		// `delete_plugins()`, which calls `request_filesystem_credentials()`
+		// and ECHOES an HTML form when it cannot proceed. This ability answers
+		// in JSON, so an FTP-credentialled host would have produced markup in
+		// the middle of a response.
+		if ( 'direct' !== get_filesystem_method() ) {
+			return array(
+				'success'        => false,
+				'uninstalled'    => false,
+				'blocked_reason' => 'filesystem_not_direct',
+				'plugin_file'    => $plugin_file,
+				'plugin_name'    => $plugin_name,
+				'message'        => __( 'This site cannot write to its own plugin directory without FTP credentials, so a plugin cannot be removed programmatically. Remove it from wp-admin instead.', 'acrossai-abilities-manager' ),
+			);
+		}
+
+		$result = delete_plugins( array( $plugin_file ) );
 
 		if ( is_wp_error( $result ) ) {
 			return array(
@@ -170,8 +229,30 @@ class Uninstall_Plugin extends Ability_Definition {
 			);
 		}
 
-		// uninstall_plugin() returns true on hook-based path, void on the
-		// uninstall.php-file path. Both count as success.
+		// VERIFIED, not reported. The defect being fixed here was a success
+		// message nobody checked against the filesystem, so taking
+		// `delete_plugins()` at its word would repeat the mistake one level up.
+		//
+		// `clearstatcache()` first: PHP can answer `file_exists()` from its
+		// stat cache, and a check that might be reading a stale answer is not
+		// a check.
+		clearstatcache( true, WP_PLUGIN_DIR . '/' . $plugin_file );
+
+		if ( true !== $result || file_exists( WP_PLUGIN_DIR . '/' . $plugin_file ) ) {
+			return array(
+				'success'        => false,
+				'uninstalled'    => false,
+				'blocked_reason' => 'files_remain',
+				'plugin_file'    => $plugin_file,
+				'plugin_name'    => $plugin_name,
+				'message'        => sprintf(
+					/* translators: %s: plugin name */
+					__( 'WordPress reported no error removing "%s", but its files are still on disk. Check the plugin directory\'s permissions.', 'acrossai-abilities-manager' ),
+					$plugin_name
+				),
+			);
+		}
+
 		return array(
 			'success'     => true,
 			'uninstalled' => true,
@@ -179,7 +260,7 @@ class Uninstall_Plugin extends Ability_Definition {
 			'plugin_name' => $plugin_name,
 			'message'     => sprintf(
 				/* translators: %s: plugin name */
-				__( 'Uninstalled plugin "%s".', 'acrossai-abilities-manager' ),
+				__( 'Uninstalled plugin "%s" and removed its files.', 'acrossai-abilities-manager' ),
 				$plugin_name
 			),
 		);

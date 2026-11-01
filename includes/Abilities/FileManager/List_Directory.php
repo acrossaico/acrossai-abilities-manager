@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Fs_Roots;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
 
 defined( 'ABSPATH' ) || exit;
@@ -149,16 +150,16 @@ class List_Directory extends Ability_Definition {
 			$max_entries = self::HARD_CAP_MAX_ENTRIES;
 		}
 
-		$base = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
-		$real = realpath( $base . '/' . ltrim( $rel_path, '/' ) );
+		// Feature 135: resolve against every WordPress root. $base is the prefix that makes the
+		// reported entry paths round-trip back through the resolver -- see Fs_Roots::display_base().
+		$resolved = Fs_Roots::resolve( $rel_path, true );
 
-		if ( false === $real || ( $real !== $base && 0 !== strpos( $real, $base . '/' ) ) ) {
-			return array(
-				'success'        => false,
-				'blocked_reason' => 'invalid_path',
-				'message'        => __( 'Invalid or disallowed directory path.', 'acrossai-abilities-manager' ),
-			);
+		if ( is_wp_error( $resolved ) ) {
+			return Fs_Roots::blocked_response( $resolved );
 		}
+
+		$real = $resolved['path'];
+		$base = Fs_Roots::display_base( $real );
 
 		if ( ! $fs->is_dir( $real ) ) {
 			return array(
@@ -200,7 +201,7 @@ class List_Directory extends Ability_Definition {
 	 *
 	 * @param \WP_Filesystem_Base  $fs           Initialised filesystem transport.
 	 * @param string               $dir_abs      Absolute directory path being walked.
-	 * @param string               $base         ABSPATH root (rtrimmed).
+	 * @param string               $base         Display base from Fs_Roots::display_base() (rtrimmed).
 	 * @param int                  $current_depth Current walk depth (1-indexed).
 	 * @param int                  $max_depth    Maximum walk depth.
 	 * @param int                  $max_entries  Maximum entries to collect.

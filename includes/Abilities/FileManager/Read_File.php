@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Enforcer;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Fs_Roots;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Secret_Redactor;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Wp_Filesystem_Init;
@@ -48,7 +49,7 @@ class Read_File extends Ability_Definition {
 			'name' => 'file-manager/read-file',
 			'args' => array(
 				'label'               => __( 'Read File', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Reads the contents of a file within the WordPress installation. Path must be relative to ABSPATH. Refuses files larger than 5 MB and reports binary content without returning raw bytes. Text content is scrubbed through the configurable secret redactor before return; response includes redacted:bool and redaction_count:int. When a read allowlist is configured, reads outside it return blocked_reason:"path_not_allowed_for_read".', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Reads the contents of a file within the WordPress installation. Path is relative to the WordPress directories -- a leading wp-content/ resolves against WP_CONTENT_DIR, so it reaches the live content directory on hosts that place it outside ABSPATH. The response reports which root answered in root. Refuses files larger than 5 MB and reports binary content without returning raw bytes. Text content is scrubbed through the configurable secret redactor before return; response includes redacted:bool and redaction_count:int. When a read allowlist is configured, reads outside it return blocked_reason:"path_not_allowed_for_read".', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -59,7 +60,7 @@ class Read_File extends Ability_Definition {
 					'properties'           => array(
 						'path' => array(
 							'type'        => 'string',
-							'description' => __( 'File path relative to ABSPATH (e.g. wp-content/uploads/test.txt).', 'acrossai-abilities-manager' ),
+							'description' => __( 'File path relative to a WordPress directory (e.g. wp-content/uploads/test.txt).', 'acrossai-abilities-manager' ),
 						),
 					),
 					'required'             => array( 'path' ),
@@ -71,6 +72,7 @@ class Read_File extends Ability_Definition {
 						'success'         => array( 'type' => 'boolean' ),
 						'content'         => array( 'type' => 'string' ),
 						'path'            => array( 'type' => 'string' ),
+						'root'            => array( 'type' => 'string' ),
 						'size'            => array( 'type' => 'integer' ),
 						'binary'          => array( 'type' => 'boolean' ),
 						'redacted'        => array( 'type' => 'boolean' ),
@@ -121,16 +123,17 @@ class Read_File extends Ability_Definition {
 		$fs = Wp_Filesystem_Init::get();
 
 		$rel_path = sanitize_text_field( $input['path'] ?? '' );
-		$base     = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
-		$abs_path = $base . '/' . ltrim( $rel_path, '/' );
-		$parent   = realpath( dirname( $abs_path ) );
 
-		if ( false === $parent || ( $parent !== $base && 0 !== strpos( $parent, $base . '/' ) ) ) {
-			return array(
-				'success' => false,
-				'message' => __( 'Invalid or disallowed file path.', 'acrossai-abilities-manager' ),
-			);
+		// Feature 135: resolved against every root WordPress uses, not just ABSPATH. A path that
+		// lands in an ABSPATH/wp-content which is not this site's content directory is refused
+		// rather than served -- see Fs_Roots for the measurement that prompted this.
+		$resolved = Fs_Roots::resolve( $rel_path );
+
+		if ( is_wp_error( $resolved ) ) {
+			return Fs_Roots::blocked_response( $resolved );
 		}
+
+		$abs_path = $resolved['path'];
 
 		// Feature 092: admin-controlled read allowlist gate. Resolves against
 		// the (possibly not-yet-existent) target — pass the composed absolute
@@ -187,6 +190,7 @@ class Read_File extends Ability_Definition {
 				'success' => true,
 				'binary'  => true,
 				'path'    => $real_path,
+				'root'    => $resolved['root'],
 				'size'    => $size,
 				'message' => __( 'Binary file; contents not returned as text.', 'acrossai-abilities-manager' ),
 			);
@@ -199,6 +203,7 @@ class Read_File extends Ability_Definition {
 			'success'         => true,
 			'content'         => $scrubbed['text'],
 			'path'            => $real_path,
+			'root'            => $resolved['root'],
 			'size'            => $size,
 			'binary'          => false,
 			'redacted'        => $scrubbed['redacted'],
