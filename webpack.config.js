@@ -101,6 +101,16 @@ module.exports = {
 			'src/scss/file-manager-settings',
 			'admin.scss'
 		),
+		'js/database-settings': path.resolve(
+			process.cwd(),
+			'src/js/database-settings',
+			'index.js'
+		),
+		'css/database-settings': path.resolve(
+			process.cwd(),
+			'src/scss/database-settings',
+			'admin.scss'
+		),
 		'js/integrations': path.resolve(
 			process.cwd(),
 			'src/js/integrations',

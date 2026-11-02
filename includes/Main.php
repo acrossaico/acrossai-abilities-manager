@@ -385,6 +385,24 @@ final class Main {
 		$file_manager_rest = \AcrossAI_Abilities_Manager\Includes\Abilities\Rest\File_Manager_Settings_Controller::instance();
 		$this->loader->add_action( 'rest_api_init', $file_manager_rest, 'register_routes' );
 
+		// Feature 134 — Database settings tab (access mode + table denylist + row/time caps +
+		// redaction and mutation logging). Same wiring as the File Manager tab above, deliberately:
+		// both tabs register through `acrossai_settings_tabs`, host a React mount in a placeholder
+		// Settings API section, and save over REST rather than through the vendor form.
+		$database_settings = \AcrossAI_Abilities_Manager\Admin\Partials\Database_Settings_Menu::instance();
+		$this->loader->add_filter( 'acrossai_settings_tabs', $database_settings, 'register_tab' );
+		$this->loader->add_action( 'admin_init', $database_settings, 'register_settings' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $database_settings, 'enqueue_assets' );
+
+		// Feature 134 — REST endpoints backing the Database settings tab.
+		$database_rest = \AcrossAI_Abilities_Manager\Includes\Abilities\Rest\Database_Settings_Controller::instance();
+		$this->loader->add_action( 'rest_api_init', $database_rest, 'register_routes' );
+
+		// Feature 134 — apply the database policy to every `acrossai-database` ability. Hooked here
+		// rather than added to nineteen separate execute() methods, so the policy has one enforcement
+		// point and a future database ability inherits it instead of shipping ungoverned.
+		\AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Db_Policy_Enforcer::register();
+
 		// Add-ons submenu page (Feature 026 → 030 → 039 → 053).
 		// As of acrossai-co/main-menu 0.0.21 the `\AcrossAI_Addon\AddonsPage`
 		// entry-class is removed and the Add-ons submenu is registered
