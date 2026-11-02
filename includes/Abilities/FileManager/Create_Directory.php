@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Fs_Roots;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
@@ -37,7 +38,7 @@ class Create_Directory extends Ability_Definition {
 			'name' => 'file-manager/create-directory',
 			'args' => array(
 				'label'               => __( 'Create Directory', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Create a directory inside the WordPress installation. Path must be relative to ABSPATH. Default recursive:true uses wp_mkdir_p (creates any missing parents); recursive:false requires the parent to exist. Idempotent — returns success with created:false when the target already exists as a directory. Refuses when the target exists as a file.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Create a directory inside the WordPress installation. Path is relative to the WordPress directories: a leading wp-content/ resolves against WP_CONTENT_DIR, so it reaches the live content directory even on hosts that place it outside ABSPATH. Default recursive:true uses wp_mkdir_p (creates any missing parents); recursive:false requires the parent to exist. Idempotent — returns success with created:false when the target already exists as a directory. Refuses when the target exists as a file.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -48,7 +49,7 @@ class Create_Directory extends Ability_Definition {
 					'properties'           => array(
 						'path'      => array(
 							'type'        => 'string',
-							'description' => __( 'Directory path relative to ABSPATH.', 'acrossai-abilities-manager' ),
+							'description' => __( 'Directory path relative to a WordPress directory.', 'acrossai-abilities-manager' ),
 						),
 						'recursive' => array(
 							'type'        => 'boolean',
@@ -118,13 +119,21 @@ class Create_Directory extends Ability_Definition {
 		$rel_path  = sanitize_text_field( $input['path'] ?? '' );
 		$recursive = array_key_exists( 'recursive', $input ) ? (bool) $input['recursive'] : true;
 
-		$base = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
-		$abs  = $base . '/' . ltrim( $rel_path, '/' );
+		// Feature 135: resolve_deep() so a recursive create may legitimately name a path whose
+		// intermediate levels do not exist yet; containment is decided against the nearest real
+		// ancestor rather than against an unresolved string.
+		$resolved = Fs_Roots::resolve_deep( $rel_path );
+
+		if ( is_wp_error( $resolved ) ) {
+			return Fs_Roots::blocked_response( $resolved );
+		}
+
+		$abs = $resolved['path'];
 
 		// If the target already exists as a directory, treat as idempotent success.
 		if ( $fs->is_dir( $abs ) ) {
 			$real = realpath( $abs );
-			if ( false === $real || ( $real !== $base && 0 !== strpos( $real, $base . '/' ) ) ) {
+			if ( false === $real || null === Fs_Roots::match( $real ) ) {
 				return array(
 					'success'        => false,
 					'blocked_reason' => 'invalid_path',
@@ -155,15 +164,8 @@ class Create_Directory extends Ability_Definition {
 
 		// Parent-scope check for the (not-yet-created) target.
 		if ( $recursive ) {
-			// wp_mkdir_p handles missing parents; we still need to bound the
-			// requested path itself to ABSPATH before calling it.
-			if ( 0 !== strpos( $abs, $base . '/' ) ) {
-				return array(
-					'success'        => false,
-					'blocked_reason' => 'invalid_path',
-					'message'        => __( 'Invalid or disallowed directory path.', 'acrossai-abilities-manager' ),
-				);
-			}
+			// wp_mkdir_p handles missing parents; resolve_deep() has already bounded the requested
+			// path against a real ancestor inside a WordPress root.
 			if ( ! wp_mkdir_p( $abs ) ) {
 				return array(
 					'success' => false,
@@ -179,7 +181,7 @@ class Create_Directory extends Ability_Definition {
 					'message'        => __( 'Parent directory does not exist. Pass recursive:true to create it.', 'acrossai-abilities-manager' ),
 				);
 			}
-			if ( $parent !== $base && 0 !== strpos( $parent, $base . '/' ) ) {
+			if ( null === Fs_Roots::match( $parent ) ) {
 				return array(
 					'success'        => false,
 					'blocked_reason' => 'invalid_path',

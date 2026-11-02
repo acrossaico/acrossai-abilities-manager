@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Fs_Roots;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Enforcer;
@@ -56,7 +57,7 @@ class Append_File extends Ability_Definition {
 			'name' => 'file-manager/append-file',
 			'args' => array(
 				'label'               => __( 'Append to File', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Append (default) or prepend caller-supplied bytes to an existing file inside the WordPress installation. Path must be relative to ABSPATH. Refuses missing files (use create-file instead) and refuses wp-config.php or .htaccess at ABSPATH root. Both append and prepend read the current contents and rewrite the file via WP_Filesystem (not atomic — a concurrent writer may win; avoid on very-high-throughput logs).', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Append (default) or prepend caller-supplied bytes to an existing file inside the WordPress installation. Path is relative to the WordPress directories: a leading wp-content/ resolves against WP_CONTENT_DIR, so it reaches the live content directory even on hosts that place it outside ABSPATH. Refuses missing files (use create-file instead) and refuses wp-config.php or .htaccess at ABSPATH root. Both append and prepend read the current contents and rewrite the file via WP_Filesystem (not atomic — a concurrent writer may win; avoid on very-high-throughput logs).', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -67,7 +68,7 @@ class Append_File extends Ability_Definition {
 					'properties'           => array(
 						'path'    => array(
 							'type'        => 'string',
-							'description' => __( 'File path relative to ABSPATH. Must exist.', 'acrossai-abilities-manager' ),
+							'description' => __( 'File path relative to a WordPress directory. Must exist.', 'acrossai-abilities-manager' ),
 						),
 						'content' => array(
 							'type'        => 'string',
@@ -155,16 +156,17 @@ class Append_File extends Ability_Definition {
 		$content  = isset( $input['content'] ) ? (string) $input['content'] : '';
 		$prepend  = ! empty( $input['prepend'] );
 
-		$base   = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
-		$real   = realpath( $base . '/' . ltrim( $rel_path, '/' ) );
+		// Feature 135: resolve against every root WordPress uses, not just ABSPATH. $base stays
+		// ABSPATH because the protected-file guard below is specifically about wp-config.php and
+		// .htaccess sitting at the install root.
+		$resolved = Fs_Roots::resolve( $rel_path, true );
 
-		if ( false === $real || 0 !== strpos( $real, $base . '/' ) ) {
-			return array(
-				'success'        => false,
-				'blocked_reason' => 'invalid_path',
-				'message'        => __( 'Invalid or disallowed file path.', 'acrossai-abilities-manager' ),
-			);
+		if ( is_wp_error( $resolved ) ) {
+			return Fs_Roots::blocked_response( $resolved );
 		}
+
+		$real = $resolved['path'];
+		$base = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
 
 		// Protected-file guard: refuse to write secret-holding files at
 		// ABSPATH root. Same guard as Read_File / Delete_File / Create_File /

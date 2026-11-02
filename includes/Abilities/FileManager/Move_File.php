@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Fs_Roots;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Enforcer;
@@ -50,7 +51,7 @@ class Move_File extends Ability_Definition {
 			'name' => 'file-manager/move-file',
 			'args' => array(
 				'label'               => __( 'Move File', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Move a file from a source path to a destination path within the WordPress installation. Both paths must remain inside ABSPATH. Default refuses when the destination exists; pass overwrite:true to replace it. Refuses when either source or destination resolves to wp-config.php or .htaccess even with overwrite:true.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Move a file from a source path to a destination path within the WordPress installation. Both paths must remain inside a WordPress directory (the content directory, plugins, mu-plugins, a theme root, uploads, or ABSPATH). Default refuses when the destination exists; pass overwrite:true to replace it. Refuses when either source or destination resolves to wp-config.php or .htaccess even with overwrite:true.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -61,11 +62,11 @@ class Move_File extends Ability_Definition {
 					'properties'           => array(
 						'source'      => array(
 							'type'        => 'string',
-							'description' => __( 'Source file path relative to ABSPATH. Must exist.', 'acrossai-abilities-manager' ),
+							'description' => __( 'Source file path relative to a WordPress directory. Must exist.', 'acrossai-abilities-manager' ),
 						),
 						'destination' => array(
 							'type'        => 'string',
-							'description' => __( 'Destination file path relative to ABSPATH.', 'acrossai-abilities-manager' ),
+							'description' => __( 'Destination file path relative to a WordPress directory.', 'acrossai-abilities-manager' ),
 						),
 						'overwrite'   => array(
 							'type'        => 'boolean',
@@ -149,18 +150,26 @@ class Move_File extends Ability_Definition {
 		$rel_dest    = sanitize_text_field( $input['destination'] ?? '' );
 		$overwrite   = ! empty( $input['overwrite'] );
 
-		$base        = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
-		$src_real    = realpath( $base . '/' . ltrim( $rel_source, '/' ) );
-		$dest_abs    = $base . '/' . ltrim( $rel_dest, '/' );
-		$dest_parent = realpath( dirname( $dest_abs ) );
+		// Feature 135: both paths resolve against every WordPress root. $base stays ABSPATH for the
+		// protected-file guards below, which are about wp-config.php at the install root.
+		$base = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
 
-		if ( false === $src_real || 0 !== strpos( $src_real, $base . '/' ) ) {
-			return array(
-				'success'        => false,
-				'blocked_reason' => 'invalid_path',
-				'message'        => __( 'Source path is invalid or outside ABSPATH.', 'acrossai-abilities-manager' ),
-			);
+		$src_resolved = Fs_Roots::resolve( $rel_source, true );
+
+		if ( is_wp_error( $src_resolved ) ) {
+			return Fs_Roots::blocked_response( $src_resolved );
 		}
+
+		$src_real = $src_resolved['path'];
+
+		$dest_resolved = Fs_Roots::resolve( $rel_dest );
+
+		if ( is_wp_error( $dest_resolved ) ) {
+			return Fs_Roots::blocked_response( $dest_resolved );
+		}
+
+		$dest_abs    = $dest_resolved['path'];
+		$dest_parent = dirname( $dest_abs );
 
 		if ( ! $fs->is_file( $src_real ) ) {
 			return array(
@@ -178,14 +187,6 @@ class Move_File extends Ability_Definition {
 				'blocked_reason' => 'protected_write',
 				/* translators: %s: filename */
 				'message'        => sprintf( __( 'File "%s" is protected and cannot be moved.', 'acrossai-abilities-manager' ), $src_basename ),
-			);
-		}
-
-		if ( false === $dest_parent || ( $dest_parent !== $base && 0 !== strpos( $dest_parent, $base . '/' ) ) ) {
-			return array(
-				'success'        => false,
-				'blocked_reason' => 'invalid_path',
-				'message'        => __( 'Destination path is invalid or outside ABSPATH.', 'acrossai-abilities-manager' ),
 			);
 		}
 
