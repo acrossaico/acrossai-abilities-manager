@@ -379,6 +379,9 @@
 		<testsuite name="issue-296-unit">
 			<file>tests/phpunit/abilities/Test_Plugin_Lifecycle_Context_Resolution.php</file>
 		</testsuite>
+		<testsuite name="release-markers-unit">
+			<file>tests/phpunit/Includes/Test_Version_Markers_Agree.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
