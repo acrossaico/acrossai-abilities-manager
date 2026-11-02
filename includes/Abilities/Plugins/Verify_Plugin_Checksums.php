@@ -19,15 +19,26 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Verify a plugin's files against the WordPress.org checksums manifest.
  *
- * Fetches the expected manifest via wp_remote_get() against
- * https://api.wordpress.org/plugins/checksums/1.0/. For each entry in the
- * manifest, md5_file() the on-disk path and compare. Emits per-file
- * status: 'ok' | 'modified' | 'missing' | 'added' (added only when
- * strict:true and the file is present on disk but absent from the manifest).
+ * Fetches the manifest from
+ * https://downloads.wordpress.org/plugin-checksums/{slug}/{version}.json — the endpoint WP-CLI's
+ * `wp plugin verify-checksums` uses. For each entry, md5_file() the on-disk path and compare.
+ * Emits per-file status: 'ok' | 'modified' | 'missing' | 'added' (added only when strict:true and
+ * the file is on disk but absent from the manifest).
  *
- * Plugins not hosted on WordPress.org will return an empty manifest — the
- * ability then reports success:true, results:[], message:'no_manifest' so
- * the caller learns the check cannot be performed.
+ * The manifest also carries a sha256 per file. md5 is used to stay aligned with WP-CLI and because
+ * hashing every file twice doubles the cost on a large plugin for no gain against a published
+ * reference.
+ *
+ * Three distinct outcomes, which an earlier version collapsed into one:
+ *
+ *   - 404 from the endpoint     -> success:true,  error_code:'no_manifest'
+ *                                  WP.org genuinely publishes no manifest for that slug+version
+ *                                  (not hosted there, or that version was never released).
+ *   - any other fetch failure   -> success:false, error_code:'manifest_fetch_failed'
+ *   - 200 with unusable body    -> success:false, error_code:'manifest_unreadable'
+ *
+ * Reporting a network failure as 'no manifest available' tells the caller something about the
+ * plugin when the truth is about the request. See the endpoint note in the git history.
  */
 class Verify_Plugin_Checksums extends Ability_Definition {
 
@@ -41,7 +52,7 @@ class Verify_Plugin_Checksums extends Ability_Definition {
 			'name' => 'plugins/verify-plugin-checksums',
 			'args' => array(
 				'label'               => __( 'Verify Plugin Checksums', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Verify an installed plugin\'s on-disk files against the official WordPress.org checksums manifest. Per-file status: ok / modified / missing / added (added only when strict:true). Plugins without a WP.org manifest report success:true with results:[] and message:"no_manifest".', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Verify an installed plugin\'s on-disk files against the official WordPress.org checksums manifest. Per-file status: ok / modified / missing / added (added only when strict:true), plus a summary. By default results lists only files needing attention — the summary carries the counts — and include_ok:true lists the matching files too. A plugin WordPress.org publishes no manifest for returns success:true with error_code "no_manifest"; a request that failed returns success:false with "manifest_fetch_failed", so a network problem is never reported as a fact about the plugin.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-plugins',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -58,6 +69,11 @@ class Verify_Plugin_Checksums extends Ability_Definition {
 							'type'    => 'boolean',
 							'default' => false,
 						),
+						'include_ok' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Include every file that matched. Off by default: the summary already carries the counts, and a clean 166-file plugin would otherwise return 166 identical rows.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'required'             => array( 'plugin' ),
 					'additionalProperties' => false,
@@ -71,6 +87,9 @@ class Verify_Plugin_Checksums extends Ability_Definition {
 						'results' => array( 'type' => 'array' ),
 						'summary' => array( 'type' => 'object' ),
 						'message' => array( 'type' => 'string' ),
+						// additionalProperties is false here, so a returned key that is not listed
+						// is stripped by output validation and the caller silently loses it.
+						'error_code' => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -110,7 +129,8 @@ class Verify_Plugin_Checksums extends Ability_Definition {
 				'message' => __( 'plugin is required.', 'acrossai-abilities-manager' ),
 			);
 		}
-		$strict = ! empty( $input['strict'] );
+		$strict     = ! empty( $input['strict'] );
+		$include_ok = ! empty( $input['include_ok'] );
 
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 
@@ -142,14 +162,18 @@ class Verify_Plugin_Checksums extends Ability_Definition {
 					'missing'  => 0,
 					'added'    => 0,
 				),
-				'message' => 'no_manifest',
+				'error_code' => 'no_manifest',
+				'message'    => __( 'A single-file plugin at the plugins-directory root has no WordPress.org manifest.', 'acrossai-abilities-manager' ),
 			);
 		}
 
 		$plugin_data = Plugin_Helpers::get_plugin_by_slug( $plugin_file );
 		$version     = null !== $plugin_data && isset( $plugin_data['version'] ) ? (string) $plugin_data['version'] : '';
 
-		$manifest_url = 'https://api.wordpress.org/plugins/checksums/1.0/?plugin=' . rawurlencode( $slug ) . '&version=' . rawurlencode( $version );
+		// The api.wordpress.org/plugins/checksums/1.0/ path this used to call returns 404 for every
+		// plugin and every version; it is not a WordPress.org endpoint. Measured against akismet
+		// 5.7.2 and query-monitor 4.1.1, both of which return a full manifest from the URL below.
+		$manifest_url = self::manifest_url( $slug, $version );
 		$response     = wp_remote_get( $manifest_url, array( 'timeout' => 15 ) );
 
 		$empty_summary = array(
@@ -160,14 +184,17 @@ class Verify_Plugin_Checksums extends Ability_Definition {
 			'added'    => 0,
 		);
 
-		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-			return array(
-				'success' => true,
-				'plugin'  => $slug,
-				'version' => $version,
-				'results' => array(),
-				'summary' => $empty_summary,
-				'message' => 'no_manifest',
+		$failure = self::manifest_failure( $response, $slug, $version );
+
+		if ( null !== $failure ) {
+			return array_merge(
+				array(
+					'plugin'  => $slug,
+					'version' => $version,
+					'results' => array(),
+					'summary' => $empty_summary,
+				),
+				$failure
 			);
 		}
 
@@ -175,12 +202,13 @@ class Verify_Plugin_Checksums extends Ability_Definition {
 		$manifest = json_decode( $body, true );
 		if ( ! is_array( $manifest ) || empty( $manifest['files'] ) || ! is_array( $manifest['files'] ) ) {
 			return array(
-				'success' => true,
-				'plugin'  => $slug,
-				'version' => $version,
-				'results' => array(),
-				'summary' => $empty_summary,
-				'message' => 'no_manifest',
+				'success'    => false,
+				'plugin'     => $slug,
+				'version'    => $version,
+				'results'    => array(),
+				'summary'    => $empty_summary,
+				'error_code' => 'manifest_unreadable',
+				'message'    => __( 'The checksums manifest responded but carried no readable file list.', 'acrossai-abilities-manager' ),
 			);
 		}
 
@@ -233,19 +261,131 @@ class Verify_Plugin_Checksums extends Ability_Definition {
 
 		$summary['total'] = count( $results );
 
+		// The summary is counted across every file; `results` is what gets read. Returning 166
+		// identical 'ok' rows costs the caller its context window and tells it nothing the summary
+		// has not already said, so by default only the files that need attention are listed.
+		$omitted = 0;
+
+		if ( ! $include_ok ) {
+			$before  = count( $results );
+			$results = array_values(
+				array_filter(
+					$results,
+					static function ( array $row ): bool {
+						return 'ok' !== ( $row['status'] ?? '' );
+					}
+				)
+			);
+			$omitted = $before - count( $results );
+		}
+
 		return array(
 			'success' => true,
 			'plugin'  => $slug,
 			'version' => $version,
 			'results' => $results,
 			'summary' => $summary,
-			'message' => sprintf(
-				/* translators: 1: slug, 2: total */
-				__( 'Verified %2$d file(s) for plugin "%1$s".', 'acrossai-abilities-manager' ),
-				$slug,
-				$summary['total']
-			),
+			'message' => $omitted > 0
+				? sprintf(
+					/* translators: 1: slug, 2: total files, 3: omitted count */
+					__( 'Verified %2$d file(s) for plugin "%1$s". %3$d matched and are omitted from results; pass include_ok:true to list them.', 'acrossai-abilities-manager' ),
+					$slug,
+					$summary['total'],
+					$omitted
+				)
+				: sprintf(
+					/* translators: 1: slug, 2: total */
+					__( 'Verified %2$d file(s) for plugin "%1$s".', 'acrossai-abilities-manager' ),
+					$slug,
+					$summary['total']
+				),
 		);
+	}
+
+	/**
+	 * The WordPress.org checksums manifest URL for one plugin version.
+	 *
+	 * Extracted and public so the URL can be asserted directly. The bug this replaces was a single
+	 * wrong URL buried behind a `wp_remote_get()` inside a method that also `require_once`s
+	 * `wp-admin/includes/plugin.php` — unreachable from the stub test harness, so nothing could
+	 * catch it. Every call 404'd and the ability reported "no manifest available" for every plugin
+	 * on every site, with `success: true`.
+	 *
+	 * The old path was `api.wordpress.org/plugins/checksums/1.0/?plugin=X&version=Y`, which is not a
+	 * WordPress.org endpoint. This is the one `wp plugin verify-checksums` uses.
+	 *
+	 * @since  0.0.45
+	 * @param  string $slug    Plugin directory slug.
+	 * @param  string $version Installed version.
+	 * @return string
+	 */
+	public static function manifest_url( string $slug, string $version ): string {
+		return sprintf(
+			'https://downloads.wordpress.org/plugin-checksums/%s/%s.json',
+			rawurlencode( $slug ),
+			rawurlencode( $version )
+		);
+	}
+
+	/**
+	 * Classify a manifest response: which outcome, and whether it is the plugin's fault or ours.
+	 *
+	 * Returns null when the response is usable and verification should proceed.
+	 *
+	 * The distinction is the point. A 404 is a fact about the plugin — WordPress.org publishes no
+	 * manifest for it. Anything else is a fact about the request, and reporting a timeout or a 503
+	 * as "this plugin has no manifest" tells the caller something untrue about their site. The
+	 * earlier version collapsed both into `success: true, message: 'no_manifest'`.
+	 *
+	 * @since  0.0.45
+	 * @param  mixed  $response Result of wp_remote_get().
+	 * @param  string $slug     Plugin slug, for the message.
+	 * @param  string $version  Version, for the message.
+	 * @return array{success:bool,error_code:string,message:string}|null
+	 */
+	public static function manifest_failure( $response, string $slug = '', string $version = '' ): ?array {
+		if ( is_wp_error( $response ) ) {
+			return array(
+				'success'    => false,
+				'error_code' => 'manifest_fetch_failed',
+				'message'    => sprintf(
+					/* translators: %s: transport error message */
+					__( 'Could not reach the checksums manifest: %s', 'acrossai-abilities-manager' ),
+					$response->get_error_message()
+				),
+			);
+		}
+
+		$status = (int) wp_remote_retrieve_response_code( $response );
+
+		if ( 404 === $status ) {
+			return array(
+				'success'    => true,
+				'error_code' => 'no_manifest',
+				'message'    => '' !== $slug
+					? sprintf(
+						/* translators: 1: plugin slug, 2: version */
+						__( 'WordPress.org publishes no checksums manifest for "%1$s" %2$s, so its files cannot be verified against a published release.', 'acrossai-abilities-manager' ),
+						$slug,
+						$version
+					)
+					: __( 'WordPress.org publishes no checksums manifest for this plugin version, so its files cannot be verified against a published release.', 'acrossai-abilities-manager' ),
+			);
+		}
+
+		if ( 200 !== $status ) {
+			return array(
+				'success'    => false,
+				'error_code' => 'manifest_fetch_failed',
+				'message'    => sprintf(
+					/* translators: %d: HTTP status code */
+					__( 'The checksums manifest request returned HTTP %d.', 'acrossai-abilities-manager' ),
+					$status
+				),
+			);
+		}
+
+		return null;
 	}
 
 	/**
