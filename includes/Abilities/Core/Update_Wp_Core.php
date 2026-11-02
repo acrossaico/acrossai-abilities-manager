@@ -91,6 +91,34 @@ class Update_Wp_Core extends Ability_Definition {
 	}
 
 	/**
+	 * WP Downgrade pins a core version; this ability does not.
+	 *
+	 * Feature 136. This ability pins one upgrade to a specific offer, but only to a version the Core API offers, and only for that one run.
+	 *
+	 * WP Downgrade does not itself move core. It filters `site_transient_update_core` so WordPress
+	 * offers the pinned version, and the move happens on the next core update run — which is why
+	 * the suggestion is about persistence, not about downgrading.
+	 *
+	 * `plugin_provides_abilities` is false: it is a settings-page plugin and defines no classes at
+	 * all, so installing it gives an agent nothing until this plugin's own pinning abilities exist.
+	 *
+	 * @since  0.0.45
+	 * @return array<int,array<string,scalar>>
+	 */
+	protected function suggested_plugins(): array {
+		return array(
+			array(
+				'slug'                          => 'wp-downgrade',
+				'name'                          => 'WP Downgrade | Specific Core Version',
+				'reason'                        => __( 'This can pin a single upgrade to a specific offer, but only to a version the Core API offers and only for that run. WP Downgrade holds core on a chosen version across update checks.', 'acrossai-abilities-manager' ),
+				'covers'                        => __( 'Pinning WordPress core to a chosen version so update checks keep offering it. Core only; it does not touch plugins or themes.', 'acrossai-abilities-manager' ),
+				'plugin_provides_abilities'     => false,
+				'acrossai_provides_integration' => false,
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.

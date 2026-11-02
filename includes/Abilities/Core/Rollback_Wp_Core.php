@@ -117,6 +117,34 @@ class Rollback_Wp_Core extends Ability_Definition {
 	}
 
 	/**
+	 * WP Downgrade pins a core version; this ability does not.
+	 *
+	 * Feature 136. This ability rolls core back once; WordPress then re-offers the newer version on the next update check, and an auto-update can undo the rollback silently.
+	 *
+	 * WP Downgrade does not itself move core. It filters `site_transient_update_core` so WordPress
+	 * offers the pinned version, and the move happens on the next core update run — which is why
+	 * the suggestion is about persistence, not about downgrading.
+	 *
+	 * `plugin_provides_abilities` is false: it is a settings-page plugin and defines no classes at
+	 * all, so installing it gives an agent nothing until this plugin's own pinning abilities exist.
+	 *
+	 * @since  0.0.45
+	 * @return array<int,array<string,scalar>>
+	 */
+	protected function suggested_plugins(): array {
+		return array(
+			array(
+				'slug'                          => 'wp-downgrade',
+				'name'                          => 'WP Downgrade | Specific Core Version',
+				'reason'                        => __( 'This rolls core back once. WordPress will offer the newer version again at the next update check, so an auto-update can undo it. WP Downgrade pins a chosen version until you clear it.', 'acrossai-abilities-manager' ),
+				'covers'                        => __( 'Pinning WordPress core to a chosen version so update checks keep offering it. Core only; it does not touch plugins or themes.', 'acrossai-abilities-manager' ),
+				'plugin_provides_abilities'     => false,
+				'acrossai_provides_integration' => false,
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.

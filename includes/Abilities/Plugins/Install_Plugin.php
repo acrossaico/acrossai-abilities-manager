@@ -92,6 +92,33 @@ class Install_Plugin extends Ability_Definition {
 	}
 
 	/**
+	 * WP Rollback covers what this ability cannot: a chosen version.
+	 *
+	 * Feature 136. This ability always installs the latest release — it takes no version parameter.
+	 *
+	 * `plugin_provides_abilities` is false and that is worth stating rather than omitting: WP
+	 * Rollback registers no abilities of its own — verified by activating it and watching the
+	 * registry stay at 388 — so installing it does nothing for an agent until this plugin's own
+	 * WP Rollback suite is present. A caller told only "install WP Rollback" would otherwise expect
+	 * new tools to appear.
+	 *
+	 * @since  0.0.45
+	 * @return array<int,array<string,scalar>>
+	 */
+	protected function suggested_plugins(): array {
+		return array(
+			array(
+				'slug'                          => 'wp-rollback',
+				'name'                          => 'WP Rollback',
+				'reason'                        => __( 'This installs the latest release only. To install or return a plugin to a specific earlier version, WP Rollback is the plugin that does it.', 'acrossai-abilities-manager' ),
+				'covers'                        => __( 'Re-versioning an installed plugin or theme to any release WordPress.org publishes. Not core, and not assets hosted elsewhere.', 'acrossai-abilities-manager' ),
+				'plugin_provides_abilities'     => false,
+				'acrossai_provides_integration' => false,
+			),
+		);
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.
