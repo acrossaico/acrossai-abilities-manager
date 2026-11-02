@@ -381,9 +381,10 @@
 		</testsuite>
 		<testsuite name="release-markers-unit">
 			<file>tests/phpunit/Includes/Test_Version_Markers_Agree.php</file>
+			<file>tests/phpunit/Includes/Test_Phpunit_Config_Integrity.php</file>
 		</testsuite>
 		<testsuite name="issue-302-unit">
-			<file>tests/phpunit/abilities/Debugging/Test_Url_Profiler_Asset_Counts.php</file>
+			<file>tests/phpunit/abilities/debugging/Test_Url_Profiler_Asset_Counts.php</file>
 		</testsuite>
 	</testsuites>
 	<source>
