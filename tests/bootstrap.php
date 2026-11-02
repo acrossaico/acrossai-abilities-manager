@@ -1407,6 +1407,13 @@ if ( ! function_exists( 'get_plugins' ) ) {
 	}
 }
 
+if ( ! function_exists( 'get_plugin_updates' ) ) {
+	/** Stub: pending plugin updates, keyed by plugin file. */
+	function get_plugin_updates(): array {
+		return (array) ( $GLOBALS['acrossai_test_plugin_updates'] ?? array() );
+	}
+}
+
 if ( ! function_exists( 'is_plugin_active' ) ) {
 	/**
 	 * Stub of is_plugin_active().

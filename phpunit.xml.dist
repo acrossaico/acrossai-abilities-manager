@@ -370,6 +370,9 @@
 		<testsuite name="feature-135-unit">
 			<file>tests/phpunit/Utilities/Test_Fs_Roots.php</file>
 		</testsuite>
+		<testsuite name="issue-296-unit">
+			<file>tests/phpunit/abilities/Test_Plugin_Lifecycle_Context_Resolution.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
