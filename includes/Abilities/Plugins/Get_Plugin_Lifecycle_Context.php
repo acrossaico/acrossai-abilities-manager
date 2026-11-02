@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\Plugins;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Lifecycle_Event_Log;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Plugin_Helpers;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -32,7 +33,7 @@ class Get_Plugin_Lifecycle_Context extends Ability_Definition {
 			'name' => 'plugins/get-plugin-lifecycle-context',
 			'args' => array(
 				'label'               => __( 'Get Plugin Lifecycle Context', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Return the lifecycle-context envelope for a single plugin: header (name, version, author, description), active state, network-active state, autoupdate enrolment, update availability, and the last activated / deactivated / updated timestamps recorded since 0.0.13.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Return the lifecycle-context envelope for a single plugin: header (name, version, author, description), active state, network-active state, autoupdate enrolment, update availability, and the last activated / deactivated / updated timestamps recorded since 0.0.13. Accepts a plugin file, display name, slug, or partial match, like the other plugin abilities; an ambiguous identifier returns candidate choices instead of a guess.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-plugins',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -42,8 +43,9 @@ class Get_Plugin_Lifecycle_Context extends Ability_Definition {
 					'type'                 => 'object',
 					'properties'           => array(
 						'plugin' => array(
-							'type'      => 'string',
-							'minLength' => 1,
+							'type'        => 'string',
+							'minLength'   => 1,
+							'description' => __( 'Plugin file path (e.g. akismet/akismet.php), display name, slug, or partial match.', 'acrossai-abilities-manager' ),
 						),
 					),
 					'required'             => array( 'plugin' ),
@@ -63,6 +65,12 @@ class Get_Plugin_Lifecycle_Context extends Ability_Definition {
 						'last_deactivated_at' => array( 'type' => 'integer' ),
 						'last_updated_at'     => array( 'type' => 'integer' ),
 						'message'             => array( 'type' => 'string' ),
+						// Resolution context. additionalProperties is false on this ability, so a
+						// key returned but not declared here is stripped by output validation and
+						// the caller silently loses it.
+						'matched_plugin'      => array( 'type' => 'string' ),
+						'certainty'           => array( 'type' => 'number' ),
+						'actions'             => array( 'type' => 'array' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -95,28 +103,64 @@ class Get_Plugin_Lifecycle_Context extends Ability_Definition {
 	 * @return array<string,mixed>
 	 */
 	public function execute( array $input = array() ): array {
-		// Feature 055 hardening — reject basenames containing path traversal
-		// or absolute paths; only match /^[A-Za-z0-9_\-\/\.]+$/ shape.
-		$basename = ltrim( (string) ( $input['plugin'] ?? '' ), '/' );
-		if ( '' === $basename
-			|| str_contains( $basename, '..' )
-			|| str_contains( $basename, '\\' )
-			|| ! preg_match( '/^[A-Za-z0-9_\-\/\.]+$/', $basename ) ) {
+		// Feature 055 hardening — reject traversal and absolute paths before the identifier
+		// reaches anything else. A space is permitted because a display name contains one
+		// ("AcrossAI Abilities Manager") and a space cannot express a traversal; the identifier
+		// is only ever compared against get_plugins() keys and header names, and is never
+		// handed to the filesystem.
+		$identifier = ltrim( (string) ( $input['plugin'] ?? '' ), '/' );
+		if ( '' === $identifier
+			|| str_contains( $identifier, '..' )
+			|| str_contains( $identifier, '\\' )
+			|| ! preg_match( '/^[A-Za-z0-9_\-\/\. ]+$/', $identifier ) ) {
 			return array(
 				'success' => false,
-				'message' => __( 'A valid plugin basename is required (e.g. "hello-dolly/hello.php").', 'acrossai-abilities-manager' ),
+				'message' => __( 'A valid plugin identifier is required (e.g. "hello-dolly/hello.php", "Hello Dolly", or "hello-dolly").', 'acrossai-abilities-manager' ),
 			);
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		require_once ABSPATH . 'wp-admin/includes/update.php';
 
+		// Issue #296: this used to be an exact `isset( $all_plugins[ $identifier ] )`, the only
+		// raw lookup among the ten plugin abilities. Every sibling that takes an identifier goes
+		// through the same six-tier matcher, so a slug accepted by deactivate-plugin was refused
+		// here -- and refused with "not installed", which asserts something false about the site
+		// rather than admitting the name could not be resolved.
+		$resolved = Plugin_Helpers::resolve_plugin( $identifier );
+
+		if ( null === $resolved['plugin_file'] ) {
+			return array(
+				'success'   => false,
+				/* translators: %s: plugin identifier */
+				'message'   => sprintf( __( 'No plugin found matching "%s".', 'acrossai-abilities-manager' ), $identifier ),
+				'certainty' => 0.0,
+			);
+		}
+
+		// Below the same 8.0 threshold the siblings use: offer the candidates rather than
+		// reporting a confident envelope for a plugin the caller may not have meant.
+		if ( $resolved['certainty'] < 8.0 ) {
+			return Plugin_Helpers::build_candidate_response(
+				$resolved,
+				$identifier,
+				'plugins/get-plugin-lifecycle-context',
+				__( 'Inspect', 'acrossai-abilities-manager' )
+			);
+		}
+
+		$basename    = (string) $resolved['plugin_file'];
 		$all_plugins = get_plugins();
+
+		// Defensive: resolve_plugin() derives plugin_file from get_plugins(), so this cannot miss
+		// today. Kept so a future change to the matcher surfaces as a refusal rather than an
+		// undefined-index warning, and worded so it never claims the plugin is absent.
 		if ( ! isset( $all_plugins[ $basename ] ) ) {
 			return array(
-				'success' => false,
-				/* translators: %s: plugin basename */
-				'message' => sprintf( __( 'Plugin "%s" not installed.', 'acrossai-abilities-manager' ), $basename ),
+				'success'   => false,
+				/* translators: %s: plugin identifier */
+				'message'   => sprintf( __( 'Could not resolve "%s" to an installed plugin.', 'acrossai-abilities-manager' ), $identifier ),
+				'certainty' => 0.0,
 			);
 		}
 
@@ -167,6 +211,11 @@ class Get_Plugin_Lifecycle_Context extends Ability_Definition {
 			'last_activated_at'   => (int) $summary['last_activated_at'],
 			'last_deactivated_at' => (int) $summary['last_deactivated_at'],
 			'last_updated_at'     => (int) $summary['last_updated_at'],
+			// Issue #296: report what the identifier resolved to. Without this, a caller that
+			// passed a slug or a partial name cannot tell which plugin the envelope describes
+			// except by reading basename and inferring it.
+			'matched_plugin'      => (string) $resolved['plugin_name'],
+			'certainty'           => (float) $resolved['certainty'],
 			/* translators: %s: plugin basename */
 			'message'             => sprintf( __( 'Lifecycle for %s.', 'acrossai-abilities-manager' ), $basename ),
 		);

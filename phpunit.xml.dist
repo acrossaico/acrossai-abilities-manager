@@ -367,6 +367,9 @@
 			<file>tests/phpunit/abilities/Aioseo/Test_Aioseo_Post_Seo_Repository.php</file>
 			<file>tests/phpunit/abilities/Aioseo/Test_Aioseo_Hostile_Input.php</file>
 		</testsuite>
+		<testsuite name="issue-296-unit">
+			<file>tests/phpunit/abilities/Test_Plugin_Lifecycle_Context_Resolution.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
