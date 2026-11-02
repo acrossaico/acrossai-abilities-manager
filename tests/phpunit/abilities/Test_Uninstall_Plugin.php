@@ -76,6 +76,24 @@ class Test_Uninstall_Plugin extends WP_UnitTestCase {
 	 * wp-admin. A test that greps for a call pins the implementation, not the
 	 * behaviour — which is exactly why it could not notice.
 	 */
+	/**
+	 * The description must name the function actually called.
+	 *
+	 * It said "via WordPress core uninstall_plugin()" for as long as the
+	 * ability was broken, and kept saying it after the fix — so an assistant
+	 * reading the description to decide whether to call this was told the
+	 * wrong thing twice over. The description IS the interface for an AI
+	 * caller; drift in it is a product bug, not a comment typo.
+	 */
+	public function test_the_description_names_the_function_it_actually_calls(): void {
+		$this->assertStringContainsString( 'delete_plugins()', $this->src );
+		$this->assertDoesNotMatchRegularExpression(
+			'/via WordPress core uninstall_plugin\(\)/',
+			$this->src,
+			'The description must not credit uninstall_plugin(), which deletes nothing.'
+		);
+	}
+
 	public function test_calls_wp_core_delete_plugins(): void {
 		$this->assertStringContainsString( 'delete_plugins( array( $plugin_file ) )', $this->src );
 		$this->assertDoesNotMatchRegularExpression(
@@ -100,8 +118,12 @@ class Test_Uninstall_Plugin extends WP_UnitTestCase {
 	public function test_refuses_to_delete_a_symlinked_plugin(): void {
 		$this->assertStringContainsString( 'is_link( $plugin_dir )', $this->src );
 		$this->assertStringContainsString( "'blocked_reason' => 'plugin_is_symlinked'", $this->src );
+		// Compared against the CALL SITE, not any mention of the function.
+		// `delete_plugins()` is also named in the description near the top of
+		// the file, so a loose match put the "delete" before the guard and
+		// failed for the wrong reason.
 		$this->assertLessThan(
-			strpos( $this->src, 'delete_plugins(' ),
+			strpos( $this->src, '$result = delete_plugins(' ),
 			strpos( $this->src, "'plugin_is_symlinked'" ),
 			'The symlink check must precede the delete, or it guards nothing.'
 		);

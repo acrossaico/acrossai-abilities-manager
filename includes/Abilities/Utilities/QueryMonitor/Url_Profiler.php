@@ -273,10 +273,7 @@ final class Url_Profiler {
 			'php_errors'     => self::error_counts( $errors ),
 			'doing_it_wrong' => self::diw_profile( $diw ),
 			'template'       => self::template_profile( $theme ),
-			'assets'         => array(
-				'scripts' => self::asset_count( $scripts ),
-				'styles'  => self::asset_count( $styles ),
-			),
+			'assets'         => self::asset_profile( $scripts, $styles ),
 		);
 	}
 
@@ -407,26 +404,124 @@ final class Url_Profiler {
 	}
 
 	/**
-	 * @param object|null $d assets collector data.
+	 * Asset counts for both collectors, with the breakdown the data already carries.
+	 *
+	 * @since  0.0.45
+	 * @param  object|null $scripts assets_scripts collector data.
+	 * @param  object|null $styles  assets_styles collector data.
+	 * Public because it is a pure function of two collector payloads and is driven directly by the
+	 * tests. #302 shipped because the counting logic sat private inside a method that needs Query
+	 * Monitor and a live loopback, so nothing covering it could run -- the same trap as #298.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public static function asset_profile( $scripts, $styles ): array {
+		return array(
+			'scripts'              => self::asset_count( $scripts ),
+			'styles'               => self::asset_count( $styles ),
+			'scripts_by_position'  => self::asset_positions( $scripts ),
+			'styles_by_position'   => self::asset_positions( $styles ),
+			'missing_dependencies' => array(
+				'scripts' => self::missing_dependency_count( $scripts ),
+				'styles'  => self::missing_dependency_count( $styles ),
+			),
+		);
+	}
+
+	/**
+	 * How many asset handles the collector recorded.
+	 *
+	 * **Issue #302.** This counted the KEYS of each row instead of the rows, so every figure it ever
+	 * returned was exactly eight times the truth -- eight being the number of keys in Query Monitor's
+	 * asset row (`handle`, `position`, `url`, `source`, `ver`, `warning`, `dependents`,
+	 * `dependencies`, set identically at both `$asset_data[]` sites in `QM_Collector_Assets`).
+	 *
+	 * The old code iterated `$d->assets` with the loop variable named `$group`, and that name was the
+	 * mistake: `QM_Collector_Assets` groups nothing. `$this->data->assets` is a flat list, one entry
+	 * per handle. Measured on two sites before the fix:
+	 *
+	 *     staging (56 plugins):  reported 1016 / 712  -> real 127 / 89
+	 *     local (near-stock):    reported   32 / 200  -> real   4 / 25
+	 *
+	 * All four divide by eight exactly, which is what identified the cause.
+	 *
+	 * The old `'raw'` fallback is gone with it: `QM_Collector_Assets` sets only `url`, `assets` and
+	 * `missing_dependencies` on its data, never `raw`, so that branch could never match. A
+	 * speculative fallback to a key the source does not define hides the real shape rather than
+	 * guarding anything.
+	 *
+	 * @since  0.0.45
+	 * @param  object|null $d assets collector data.
 	 * @return int
 	 */
 	private static function asset_count( $d ): int {
-		if ( null === $d ) {
-			return 0;
-		}
-		foreach ( array( 'raw', 'assets' ) as $key ) {
-			if ( isset( $d->{$key} ) && is_array( $d->{$key} ) ) {
-				$total = 0;
-				foreach ( $d->{$key} as $group ) {
-					$total += is_array( $group ) ? count( $group ) : 0;
-				}
-				if ( $total > 0 ) {
-					return $total;
-				}
+		$assets = self::asset_rows( $d );
+
+		return count( $assets );
+	}
+
+	/**
+	 * Handle counts split by where the asset loads.
+	 *
+	 * More useful than one total for the question these profiles get asked: a hundred handles in the
+	 * footer is a different problem from a hundred blocking the head. Query Monitor already records
+	 * `position` per row, so this costs nothing extra.
+	 *
+	 * @since  0.0.45
+	 * @param  object|null $d assets collector data.
+	 * @return array<string,int>
+	 */
+	private static function asset_positions( $d ): array {
+		$positions = array();
+
+		foreach ( self::asset_rows( $d ) as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
 			}
+
+			$position = isset( $row['position'] ) && is_string( $row['position'] ) && '' !== $row['position']
+				? $row['position']
+				: 'unknown';
+
+			$positions[ $position ] = ( $positions[ $position ] ?? 0 ) + 1;
 		}
 
-		return 0;
+		ksort( $positions );
+
+		return $positions;
+	}
+
+	/**
+	 * How many dependencies were enqueued against assets that do not exist.
+	 *
+	 * A missing dependency means WordPress silently dropped an asset's ordering guarantee, which is
+	 * worth surfacing in a profile and was already collected and discarded.
+	 *
+	 * @since  0.0.45
+	 * @param  object|null $d assets collector data.
+	 * @return int
+	 */
+	private static function missing_dependency_count( $d ): int {
+		if ( null === $d || ! isset( $d->missing_dependencies ) || ! is_array( $d->missing_dependencies ) ) {
+			return 0;
+		}
+
+		return count( $d->missing_dependencies );
+	}
+
+	/**
+	 * The collector's flat list of asset rows.
+	 *
+	 * @since  0.0.45
+	 * @param  object|null $d assets collector data.
+	 * @return array<int,mixed>
+	 */
+	private static function asset_rows( $d ): array {
+		if ( null === $d || ! isset( $d->assets ) || ! is_array( $d->assets ) ) {
+			return array();
+		}
+
+		return array_values( $d->assets );
 	}
 
 	/**

@@ -17,9 +17,14 @@ use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Uninstall a plugin by fuzzy identifier. Wraps WP core's own
- * uninstall_plugin() from wp-admin/includes/plugin.php so the plugin's
- * registered uninstall hook fires and its files are deleted.
+ * Uninstall a plugin by fuzzy identifier. Wraps WP core's `delete_plugins()`,
+ * which fires the plugin's registered uninstall hook (by calling
+ * `uninstall_plugin()` itself) and then removes its files.
+ *
+ * The distinction is load-bearing and was wrong here for a while:
+ * `uninstall_plugin()` ALONE fires the hook and deletes nothing, so a plugin
+ * with no uninstall hook — most of them — reported a successful uninstall
+ * while staying on disk and in the plugin list.
  *
  * Guardrails, in order:
  *   1. File_Mods_Guard::blocked_response('install') -> file_mods_disallowed.
@@ -39,7 +44,7 @@ class Uninstall_Plugin extends Ability_Definition {
 			'name' => 'plugins/uninstall-plugin',
 			'args' => array(
 				'label'               => __( 'Uninstall Plugin', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Uninstall a plugin (fires its uninstall hook and deletes its files) via WordPress core uninstall_plugin(). Distinct from deactivate-plugin (which only flips active_plugins). Refuses on active plugins and honours DISALLOW_FILE_MODS.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Uninstall a plugin: fires its uninstall hook and deletes its files, via WordPress core delete_plugins(). Distinct from deactivate-plugin (which only flips active_plugins). Refuses on active plugins, on symlinked plugins, when the filesystem needs FTP credentials, and when DISALLOW_FILE_MODS is set; verifies the files are gone before reporting success.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-plugins',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
