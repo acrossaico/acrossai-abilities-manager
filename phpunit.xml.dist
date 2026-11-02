@@ -361,6 +361,7 @@
 			<file>tests/phpunit/abilities/Database/Test_Db_Policy_Guard.php</file>
 			<file>tests/phpunit/abilities/Database/Test_Db_Policy_Enforcer.php</file>
 			<file>tests/phpunit/abilities/Database/Test_Db_Sql_Tables.php</file>
+			<file>tests/phpunit/abilities/Database/Test_Db_Read_Only_Sql.php</file>
 		</testsuite>
 		<testsuite name="aioseo-integration-unit">
 			<file>tests/phpunit/abilities/Integrations/Test_All_In_One_Seo_Integration.php</file>

@@ -143,7 +143,7 @@ final class Db_Policy_Enforcer {
 				$restore();
 			}
 
-			return self::redact( $result );
+			return self::redact( self::cap_returned_rows( $result ) );
 		};
 
 		return $args;
@@ -297,6 +297,14 @@ final class Db_Policy_Enforcer {
 	 * @return array<string, mixed>
 	 */
 	private static function apply_row_cap( array $input ): array {
+		// Deliberately only tightens an existing parameter. The cap cannot be *injected* here:
+		// the enforcer wraps every ability in the category, most of which declare
+		// `additionalProperties: false` and no `limit` property, so adding the key would fail
+		// their input validation rather than cap anything.
+		//
+		// That is why this is no longer the only place the cap is applied -- on its own it made
+		// max_rows opt-in, binding only a caller who had already volunteered a number. See
+		// self::cap_returned_rows().
 		if ( ! array_key_exists( 'limit', $input ) ) {
 			return $input;
 		}
@@ -305,6 +313,55 @@ final class Db_Policy_Enforcer {
 		$input['limit'] = Db_Policy_Guard::row_cap( $requested );
 
 		return $input;
+	}
+
+	/**
+	 * Enforce the row ceiling on what an ability actually returned.
+	 *
+	 * **Issue #293.** `apply_row_cap()` returns the input untouched when there is no `limit` key,
+	 * which is the normal case -- an MCP caller asks for rows without naming a ceiling. The policy's
+	 * `max_rows` therefore never entered the call, and the ability's own default applied instead.
+	 * Measured on a live install with `max_rows: 2`:
+	 *
+	 *     SELECT ID FROM wp_posts LIMIT 10   -> 10 rows, truncated: false
+	 *     SELECT ID FROM wp_posts            -> 63 rows, truncated: false
+	 *
+	 * A ceiling that binds only when the caller volunteers a number is not a ceiling. Capping the
+	 * returned rows closes it for every ability in the category at once, whatever its input schema
+	 * looks like.
+	 *
+	 * Schema-safe by construction: `rows` is only rewritten when it is already an array in the
+	 * result, and `truncated` only when the ability already declares it. The enforcer must never add
+	 * a key an ability's `output_schema` does not list -- with `additionalProperties: false` that
+	 * fails validation and core replaces the whole response with `ability_invalid_output`, which is
+	 * how an earlier version of this class destroyed its own refusal messages.
+	 *
+	 * @since  0.0.44
+	 * @param  mixed $result Whatever the ability returned.
+	 * @return mixed
+	 */
+	private static function cap_returned_rows( $result ) {
+		$cap = Db_Policy_Guard::row_cap( null );
+
+		if ( $cap < 1 || ! is_array( $result ) || ! isset( $result['rows'] ) || ! is_array( $result['rows'] ) ) {
+			return $result;
+		}
+
+		if ( count( $result['rows'] ) <= $cap ) {
+			return $result;
+		}
+
+		$result['rows'] = array_slice( $result['rows'], 0, $cap );
+
+		if ( array_key_exists( 'row_count', $result ) ) {
+			$result['row_count'] = count( $result['rows'] );
+		}
+
+		if ( array_key_exists( 'truncated', $result ) ) {
+			$result['truncated'] = true;
+		}
+
+		return $result;
 	}
 
 	/**

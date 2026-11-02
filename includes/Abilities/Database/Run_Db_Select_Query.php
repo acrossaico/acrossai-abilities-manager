@@ -12,6 +12,9 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\Database;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Db_Read_Only_Session;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Db_Read_Only_Sql;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -117,13 +120,10 @@ class Run_Db_Select_Query extends Ability_Definition {
 			);
 		}
 
-		// Verb guard: strip SQL comments then check the first keyword.
-		$stripped = preg_replace( '/\/\*.*?\*\/|--[^\n]*|#[^\n]*/s', '', $sql );
-		preg_match( '/^\s*(\w+)/i', $stripped, $m );
-		$first_keyword = strtoupper( $m[1] ?? '' );
-		$allowed_verbs = array( 'SELECT', 'SHOW', 'DESCRIBE', 'DESC', 'EXPLAIN' );
-
-		if ( ! in_array( $first_keyword, $allowed_verbs, true ) ) {
+		// Verb guard — the cheap first filter, kept for its legible message. Issue #293: it is not
+		// the boundary. A statement beginning with SELECT can still write (INTO OUTFILE), so the
+		// refusal below and the read-only transaction further down are what actually hold.
+		if ( ! Db_Read_Only_Sql::verb_allowed( $sql ) ) {
 			return array(
 				'success'   => false,
 				'rows'      => array(),
@@ -132,19 +132,48 @@ class Run_Db_Select_Query extends Ability_Definition {
 				'message'   => sprintf(
 					/* translators: %s: comma-separated list of allowed SQL verbs */
 					__( 'Only %s queries are permitted.', 'acrossai-abilities-manager' ),
-					implode( ', ', $allowed_verbs )
+					implode( ', ', Db_Read_Only_Sql::ALLOWED_VERBS )
 				),
 			);
 		}
 
-		// Append LIMIT if absent and requested.
-		if ( $limit > 0 && ! preg_match( '/\bLIMIT\b/i', $sql ) ) {
-			$sql = rtrim( $sql, '; ' ) . ' LIMIT ' . $limit;
+		// Issue #293: SELECT … INTO OUTFILE / DUMPFILE passes the verb guard and writes a file
+		// through MySQL, never passing the file manager's write allowlist. Refused explicitly so the
+		// refusal is ours and legible even on a host where secure_file_priv would also block it.
+		$file_clause = Db_Read_Only_Sql::file_write_clause( $sql );
+
+		if ( null !== $file_clause ) {
+			return array(
+				'success'   => false,
+				'rows'      => array(),
+				'row_count' => 0,
+				'truncated' => false,
+				'message'   => sprintf(
+					/* translators: %s: the SQL clause, e.g. OUTFILE */
+					__( 'Refused: INTO %s writes a file through the database, which bypasses the file manager\'s write allowlist entirely.', 'acrossai-abilities-manager' ),
+					$file_clause
+				),
+			);
 		}
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared
-		$rows = $wpdb->get_results( $sql, ARRAY_A );
-		// phpcs:enable
+		// Appending LIMIT is an optimisation, not the cap: the cap is enforced by slicing what came
+		// back. The old check matched a LIMIT anywhere in the statement — including in a subquery or
+		// a string literal — and silently skipped capping when it did.
+		$sql = Db_Read_Only_Sql::with_limit( $sql, $limit );
+
+		// Issue #293: run inside a read-only transaction so MySQL refuses any write however the
+		// statement is spelled, rather than leaving correctness to our parsing. Degrades to a plain
+		// query on a server that will not start one — it is defence in depth behind the explicit
+		// refusals above, not a replacement for them.
+		$read_only = Db_Read_Only_Session::begin();
+
+		try {
+			// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared
+			$rows = $wpdb->get_results( $sql, ARRAY_A );
+			// phpcs:enable
+		} finally {
+			$read_only();
+		}
 
 		if ( null === $rows ) {
 			return array(
@@ -156,13 +185,23 @@ class Run_Db_Select_Query extends Ability_Definition {
 			);
 		}
 
+		$fetched   = count( $rows );
+		$truncated = false;
+
+		// The cap, enforced on the result rather than on the SQL. This is what makes it hold for a
+		// statement carrying its own LIMIT, or one the rewrite declined to touch.
+		if ( $limit > 0 && $fetched > $limit ) {
+			$rows      = array_slice( $rows, 0, $limit );
+			$truncated = true;
+		}
+
 		$row_count = count( $rows );
 
 		return array(
 			'success'   => true,
 			'rows'      => $rows,
 			'row_count' => $row_count,
-			'truncated' => $row_count === $limit,
+			'truncated' => $truncated || $row_count === $limit,
 		);
 	}
 }
