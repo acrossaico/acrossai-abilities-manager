@@ -39,7 +39,7 @@ class List_Directory extends Ability_Definition {
 			'name' => 'file-manager/list-directory',
 			'args' => array(
 				'label'               => __( 'List Directory', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Recursively list entries under a directory inside the WordPress installation. Path must be relative to ABSPATH. Results are bounded by max_depth (default 5, max 20) and max_entries (default 1000, max 5000); when either bound is reached the response sets truncated:true. Symlinks are not followed.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Recursively list entries under a directory inside the WordPress installation. Path is relative to the WordPress directories: a leading wp-content/ resolves against WP_CONTENT_DIR, so it reaches the live content directory even on hosts that place it outside ABSPATH. Results are bounded by max_depth (default 5, max 20) and max_entries (default 1000, max 5000); when either bound is reached the response sets truncated:true. Symlinks are not followed.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -50,7 +50,7 @@ class List_Directory extends Ability_Definition {
 					'properties'           => array(
 						'path'        => array(
 							'type'        => 'string',
-							'description' => __( 'Directory path relative to ABSPATH (e.g. wp-content/plugins/hello-dolly).', 'acrossai-abilities-manager' ),
+							'description' => __( 'Directory path relative to a WordPress directory (e.g. wp-content/plugins/hello-dolly).', 'acrossai-abilities-manager' ),
 						),
 						'max_depth'   => array(
 							'type'        => 'integer',

@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Fs_Roots;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Enforcer;
@@ -48,7 +49,7 @@ class Create_File extends Ability_Definition {
 			'name' => 'file-manager/create-file',
 			'args' => array(
 				'label'               => __( 'Create File', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Creates a new file within the WordPress installation. Fails if the file already exists. Path must be relative to ABSPATH. Refuses wp-config.php and .htaccess at ABSPATH root. Pass create_dirs=true to auto-create any missing parent directories.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Creates a new file within the WordPress installation. Fails if the file already exists. Path is relative to the WordPress directories: a leading wp-content/ resolves against WP_CONTENT_DIR, so it reaches the live content directory even on hosts that place it outside ABSPATH. Refuses wp-config.php and .htaccess at ABSPATH root. Pass create_dirs=true to auto-create any missing parent directories.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -59,7 +60,7 @@ class Create_File extends Ability_Definition {
 					'properties'           => array(
 						'path'        => array(
 							'type'        => 'string',
-							'description' => __( 'File path relative to ABSPATH.', 'acrossai-abilities-manager' ),
+							'description' => __( 'File path relative to a WordPress directory.', 'acrossai-abilities-manager' ),
 						),
 						'content'     => array(
 							'type'        => 'string',
@@ -144,8 +145,18 @@ class Create_File extends Ability_Definition {
 		$rel_path    = sanitize_text_field( $input['path'] ?? '' );
 		$content     = $input['content'] ?? '';
 		$create_dirs = ! empty( $input['create_dirs'] );
-		$base        = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
-		$abs_path    = $base . '/' . ltrim( $rel_path, '/' );
+		$base = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
+
+		// Feature 135: resolve_deep() contains the nearest EXISTING ancestor, which is what
+		// create_dirs=true needs. resolve() contains the immediate parent and would refuse a path
+		// whose middle levels are yet to be created.
+		$resolved = Fs_Roots::resolve_deep( $rel_path );
+
+		if ( is_wp_error( $resolved ) ) {
+			return Fs_Roots::blocked_response( $resolved );
+		}
+
+		$abs_path    = $resolved['path'];
 		$parent_want = dirname( $abs_path );
 		$parent      = realpath( $parent_want );
 
@@ -154,12 +165,6 @@ class Create_File extends Ability_Definition {
 				return array(
 					'success' => false,
 					'message' => __( 'Parent directory does not exist. Pass create_dirs=true to create it.', 'acrossai-abilities-manager' ),
-				);
-			}
-			if ( 0 !== strpos( $parent_want, $base . '/' ) ) {
-				return array(
-					'success' => false,
-					'message' => __( 'Invalid or disallowed file path.', 'acrossai-abilities-manager' ),
 				);
 			}
 			if ( ! wp_mkdir_p( $parent_want ) ) {
@@ -171,7 +176,7 @@ class Create_File extends Ability_Definition {
 			$parent = realpath( $parent_want );
 		}
 
-		if ( false === $parent || 0 !== strpos( $parent, $base . '/' ) ) {
+		if ( false === $parent || null === Fs_Roots::match( $parent ) ) {
 			return array(
 				'success' => false,
 				'message' => __( 'Invalid or disallowed file path.', 'acrossai-abilities-manager' ),

@@ -159,30 +159,10 @@ final class Fs_Roots {
 	 * @return array{path:string,root:string,exists:bool}|\WP_Error
 	 */
 	public static function resolve( string $path, bool $must_exist = false, ?array $roots = null ) {
-		$path = trim( $path );
+		$path = self::sanitize( $path );
 
-		if ( '' === $path ) {
-			return new \WP_Error( self::ERR_INVALID, __( 'No path was supplied.', 'acrossai-abilities-manager' ) );
-		}
-
-		// Hardening borrowed from mcp-content-manager-lite, which we had no equivalent of: a null
-		// byte truncates the path inside PHP's filesystem calls, and a stream wrapper makes
-		// "filesystem path" mean something else entirely (phar:// in particular is an RCE primitive).
-		if ( false !== strpos( $path, "\0" ) ) {
-			return new \WP_Error( self::ERR_INVALID, __( 'Null bytes are not allowed in a path.', 'acrossai-abilities-manager' ) );
-		}
-
-		if ( 1 === preg_match( '#^[a-z][a-z0-9+.\-]*://#i', $path ) ) {
-			return new \WP_Error( self::ERR_INVALID, __( 'Stream wrappers are not allowed in a path.', 'acrossai-abilities-manager' ) );
-		}
-
-		$path = wp_normalize_path( $path );
-
-		// Rejected outright rather than left to realpath containment. Containment does catch an
-		// escape, but only once the path exists; on a create the parent check used to run against an
-		// unresolved string. Refusing the segment is cheaper and needs no reasoning about order.
-		if ( self::has_traversal( $path ) ) {
-			return new \WP_Error( self::ERR_INVALID, __( 'Directory traversal is not allowed in a path.', 'acrossai-abilities-manager' ) );
+		if ( is_wp_error( $path ) ) {
+			return $path;
 		}
 
 		$roots = null === $roots ? self::roots() : $roots;
@@ -223,6 +203,124 @@ final class Fs_Roots {
 		}
 
 		return self::resolve_for_create( $path, $roots );
+	}
+
+	/**
+	 * Reject malformed input and normalise what survives.
+	 *
+	 * Hardening borrowed from mcp-content-manager-lite, which we had no equivalent of: a null byte
+	 * truncates the path inside PHP's filesystem calls, and a stream wrapper makes "filesystem path"
+	 * mean something else entirely (`phar://` in particular is an RCE primitive).
+	 *
+	 * Traversal is refused outright rather than left to realpath containment. Containment does catch
+	 * an escape, but only once the path exists; on a create, the old parent check ran against an
+	 * unresolved string. Refusing the segment is cheaper and needs no reasoning about order.
+	 *
+	 * @since  0.0.46
+	 * @param  string $path Caller input.
+	 * @return string|\WP_Error Normalised path.
+	 */
+	private static function sanitize( string $path ) {
+		$path = trim( $path );
+
+		if ( '' === $path ) {
+			return new \WP_Error( self::ERR_INVALID, __( 'No path was supplied.', 'acrossai-abilities-manager' ) );
+		}
+
+		if ( false !== strpos( $path, "\0" ) ) {
+			return new \WP_Error( self::ERR_INVALID, __( 'Null bytes are not allowed in a path.', 'acrossai-abilities-manager' ) );
+		}
+
+		if ( 1 === preg_match( '#^[a-z][a-z0-9+.\-]*://#i', $path ) ) {
+			return new \WP_Error( self::ERR_INVALID, __( 'Stream wrappers are not allowed in a path.', 'acrossai-abilities-manager' ) );
+		}
+
+		$path = wp_normalize_path( $path );
+
+		if ( self::has_traversal( $path ) ) {
+			return new \WP_Error( self::ERR_INVALID, __( 'Directory traversal is not allowed in a path.', 'acrossai-abilities-manager' ) );
+		}
+
+		return $path;
+	}
+
+	/**
+	 * Resolve a path that may be several directory levels deeper than anything on disk.
+	 *
+	 * {@see self::resolve()} contains the *immediate* parent, which is the right rule for a write
+	 * into an existing directory. It is the wrong rule for `create-file` with `create_dirs=true` and
+	 * for a recursive `create-directory`, where the caller legitimately names a path whose middle
+	 * levels do not exist yet — `resolve()` would refuse those as outside every root.
+	 *
+	 * So this walks up to the nearest ancestor that does exist, contains *that*, and returns the
+	 * intended absolute path. Containment is still decided against a real directory, never against
+	 * a string, and the decoy rule still applies to the ancestor.
+	 *
+	 * @since  0.0.46
+	 * @param  string                    $path  Caller input.
+	 * @param  array<string,string>|null $roots Root set; defaults to {@see self::roots()}.
+	 * @return array{path:string,root:string,exists:bool}|\WP_Error
+	 */
+	public static function resolve_deep( string $path, ?array $roots = null ) {
+		$path = self::sanitize( $path );
+
+		if ( is_wp_error( $path ) ) {
+			return $path;
+		}
+
+		$roots = null === $roots ? self::roots() : $roots;
+
+		foreach ( self::candidates( $path, $roots ) as $candidate ) {
+			$trail   = array();
+			$walk    = $candidate;
+			$ancestor = '';
+
+			// Bounded by the path's own depth; each iteration drops one segment.
+			while ( '' !== $walk && '/' !== $walk && '.' !== $walk ) {
+				$real = self::real( $walk );
+
+				if ( '' !== $real ) {
+					$ancestor = $real;
+					break;
+				}
+
+				$trail[] = basename( $walk );
+				$walk    = dirname( $walk );
+			}
+
+			if ( '' === $ancestor ) {
+				continue;
+			}
+
+			$label = self::match( $ancestor, $roots );
+
+			if ( null === $label ) {
+				continue;
+			}
+
+			$decoy = self::decoy_error( $ancestor, $roots );
+
+			if ( null !== $decoy ) {
+				return $decoy;
+			}
+
+			$remainder = implode( '/', array_reverse( $trail ) );
+
+			return array(
+				'path'   => '' === $remainder ? $ancestor : $ancestor . '/' . $remainder,
+				'root'   => $label,
+				'exists' => '' === $remainder,
+			);
+		}
+
+		return new \WP_Error(
+			self::ERR_OUTSIDE,
+			sprintf(
+				/* translators: %s: caller-supplied path. */
+				__( 'Path is outside every WordPress directory: %s', 'acrossai-abilities-manager' ),
+				$path
+			)
+		);
 	}
 
 	/**

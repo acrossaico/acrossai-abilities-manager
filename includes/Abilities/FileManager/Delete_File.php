@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Fs_Roots;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
@@ -44,7 +45,7 @@ class Delete_File extends Ability_Definition {
 			'name' => 'file-manager/delete-file',
 			'args' => array(
 				'label'               => __( 'Delete File', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Deletes a file within the WordPress installation. Path must be relative to ABSPATH. Requires confirm:true, refuses wp-config.php and .htaccess, writes a .bak.<timestamp> copy before deleting, and invalidates OPcache when available.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Deletes a file within the WordPress installation. Path is relative to the WordPress directories: a leading wp-content/ resolves against WP_CONTENT_DIR, so it reaches the live content directory even on hosts that place it outside ABSPATH. Requires confirm:true, refuses wp-config.php and .htaccess, writes a .bak.<timestamp> copy before deleting, and invalidates OPcache when available.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -55,7 +56,7 @@ class Delete_File extends Ability_Definition {
 					'properties'           => array(
 						'path'    => array(
 							'type'        => 'string',
-							'description' => __( 'File path relative to ABSPATH.', 'acrossai-abilities-manager' ),
+							'description' => __( 'File path relative to a WordPress directory.', 'acrossai-abilities-manager' ),
 						),
 						'confirm' => array(
 							'type'        => 'boolean',
@@ -132,15 +133,17 @@ class Delete_File extends Ability_Definition {
 		$fs = Wp_Filesystem_Init::get();
 
 		$rel_path = sanitize_text_field( $input['path'] ?? '' );
-		$base     = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
-		$real     = realpath( $base . '/' . ltrim( $rel_path, '/' ) );
+		// Feature 135: resolve against every root WordPress uses, not just ABSPATH. $base stays
+		// ABSPATH because the protected-file guard below is specifically about wp-config.php and
+		// .htaccess sitting at the install root.
+		$resolved = Fs_Roots::resolve( $rel_path, true );
 
-		if ( false === $real || 0 !== strpos( $real, $base . '/' ) ) {
-			return array(
-				'success' => false,
-				'message' => __( 'Invalid or disallowed file path.', 'acrossai-abilities-manager' ),
-			);
+		if ( is_wp_error( $resolved ) ) {
+			return Fs_Roots::blocked_response( $resolved );
 		}
+
+		$real = $resolved['path'];
+		$base = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
 
 		// Protected-file guard: refuse to delete secret-holding files at
 		// ABSPATH root regardless of the caller's capability.
