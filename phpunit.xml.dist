@@ -367,6 +367,9 @@
 			<file>tests/phpunit/abilities/Aioseo/Test_Aioseo_Post_Seo_Repository.php</file>
 			<file>tests/phpunit/abilities/Aioseo/Test_Aioseo_Hostile_Input.php</file>
 		</testsuite>
+		<testsuite name="feature-135-unit">
+			<file>tests/phpunit/Utilities/Test_Fs_Roots.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

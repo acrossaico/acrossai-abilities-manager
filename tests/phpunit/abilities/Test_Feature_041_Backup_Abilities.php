@@ -470,21 +470,30 @@ class Test_Feature_041_Backup_Abilities extends WP_UnitTestCase {
 	}
 
 	/**
-	 * The `path` branch of Zip_Target_Resolver applies the same
-	 * realpath()-inside-ABSPATH boundary check that Read_File uses.
+	 * The `path` branch of Zip_Target_Resolver bounds its target the same way Read_File does.
+	 *
+	 * Feature 135 moved that bound from a bare ABSPATH prefix to Fs_Roots, which accepts a path
+	 * inside any directory WordPress uses. The previous form of this test pinned
+	 * `realpath( ABSPATH )`, which was pinning the defect: a zip of the live content directory is
+	 * impossible to express when WP_CONTENT_DIR lives outside ABSPATH.
 	 *
 	 * @return void
 	 */
 	public function test_target_resolver_boundary_checks_path_targets(): void {
-		$this->assertMatchesRegularExpression(
-			'/realpath\(\s*ABSPATH\s*\)/',
+		$this->assertStringContainsString(
+			'Fs_Roots::resolve(',
 			$this->target_resolver_source,
-			'Zip_Target_Resolver must resolve ABSPATH via realpath() for boundary checks.'
+			'Zip_Target_Resolver must bound path targets through Fs_Roots.'
 		);
-		$this->assertMatchesRegularExpression(
-			"/strpos\(\s*\\\$parent,\s*\\\$base\s*\\.\s*'\\/'/",
+		$this->assertStringContainsString(
+			"'path_out_of_bounds'",
 			$this->target_resolver_source,
-			'Zip_Target_Resolver must verify the resolved parent lives inside ABSPATH.'
+			'Zip_Target_Resolver must still refuse an out-of-bounds path with its own error code.'
+		);
+		$this->assertStringNotContainsString(
+			'realpath( ABSPATH )',
+			$this->target_resolver_source,
+			'The ABSPATH-only bound is the defect Feature 135 removed.'
 		);
 	}
 }

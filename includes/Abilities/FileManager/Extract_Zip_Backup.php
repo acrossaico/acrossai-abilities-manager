@@ -16,6 +16,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Fs_Roots;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Zip_Target_Resolver;
 
@@ -270,11 +271,12 @@ class Extract_Zip_Backup extends Ability_Definition {
 		if ( '' === $rel_path ) {
 			return array( 'error' => __( 'The "source.path" is empty.', 'acrossai-abilities-manager' ) );
 		}
-		$base = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
-		$abs  = realpath( $base . '/' . ltrim( $rel_path, '/' ) );
-		if ( false === $abs || 0 !== strpos( $abs, $base . '/' ) ) {
-			return array( 'error' => __( 'The "source.path" must resolve to a zip file inside ABSPATH.', 'acrossai-abilities-manager' ) );
+		// Feature 135: any WordPress root, not just ABSPATH.
+		$resolved = Fs_Roots::resolve( $rel_path, true );
+		if ( is_wp_error( $resolved ) ) {
+			return array( 'error' => $resolved->get_error_message() );
 		}
+		$abs = $resolved['path'];
 		if ( ! is_file( $abs ) ) {
 			return array( 'error' => __( 'The zip file does not exist at the given "source.path".', 'acrossai-abilities-manager' ) );
 		}

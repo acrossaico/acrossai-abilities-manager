@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Fs_Roots;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Hardening_Enforcer;
@@ -48,7 +49,7 @@ class Edit_File extends Ability_Definition {
 			'name' => 'file-manager/edit-file',
 			'args' => array(
 				'label'               => __( 'Create or Overwrite File', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Creates a new file or overwrites an existing one within the WordPress installation. Parent directory must already exist. Path must be relative to ABSPATH. Refuses wp-config.php and .htaccess at ABSPATH root.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Creates a new file or overwrites an existing one within the WordPress installation. Parent directory must already exist. Path is relative to the WordPress directories: a leading wp-content/ resolves against WP_CONTENT_DIR, so it reaches the live content directory even on hosts that place it outside ABSPATH. Refuses wp-config.php and .htaccess at ABSPATH root.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -59,7 +60,7 @@ class Edit_File extends Ability_Definition {
 					'properties'           => array(
 						'path'    => array(
 							'type'        => 'string',
-							'description' => __( 'File path relative to ABSPATH.', 'acrossai-abilities-manager' ),
+							'description' => __( 'File path relative to a WordPress directory.', 'acrossai-abilities-manager' ),
 						),
 						'content' => array(
 							'type'        => 'string',
@@ -137,16 +138,18 @@ class Edit_File extends Ability_Definition {
 
 		$rel_path = sanitize_text_field( $input['path'] ?? '' );
 		$content  = $input['content'] ?? '';
-		$base     = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
-		$abs_path = $base . '/' . ltrim( $rel_path, '/' );
-		$parent   = realpath( dirname( $abs_path ) );
+		// Feature 135: resolve against every root WordPress uses, not just ABSPATH. $base stays
+		// ABSPATH because the protected-file guard below is specifically about wp-config.php and
+		// .htaccess sitting at the install root.
+		$resolved = Fs_Roots::resolve( $rel_path );
 
-		if ( false === $parent || ( $parent !== $base && 0 !== strpos( $parent, $base . '/' ) ) ) {
-			return array(
-				'success' => false,
-				'message' => __( 'Invalid or disallowed file path.', 'acrossai-abilities-manager' ),
-			);
+		if ( is_wp_error( $resolved ) ) {
+			return Fs_Roots::blocked_response( $resolved );
 		}
+
+		$abs_path = $resolved['path'];
+		$parent   = dirname( $abs_path );
+		$base     = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
 
 		// Protected-file guard: refuse to overwrite secret-holding files at
 		// ABSPATH root regardless of the caller's capability. Mirrors
