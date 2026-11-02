@@ -411,22 +411,11 @@ final class Url_Profiler {
 	 * @return int
 	 */
 	private static function asset_count( $d ): int {
-		if ( null === $d ) {
+		if ( null === $d || ! isset( $d->assets ) || ! is_array( $d->assets ) ) {
 			return 0;
 		}
-		foreach ( array( 'raw', 'assets' ) as $key ) {
-			if ( isset( $d->{$key} ) && is_array( $d->{$key} ) ) {
-				$total = 0;
-				foreach ( $d->{$key} as $group ) {
-					$total += is_array( $group ) ? count( $group ) : 0;
-				}
-				if ( $total > 0 ) {
-					return $total;
-				}
-			}
-		}
 
-		return 0;
+		return count( $d->assets );
 	}
 
 	/**
