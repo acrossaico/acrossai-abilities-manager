@@ -12,9 +12,11 @@
  *   sentinel). Non-empty means only the listed paths (and their descendants)
  *   permit reads. Default on install: [] (unrestricted).
  *
- * Prefix-match semantics: a target absolute path is inside an allowed root
- * iff realpath($target) equals realpath(ABSPATH . $entry) OR starts with it
- * followed by a '/'.
+ * Prefix-match semantics: a target absolute path is inside an allowed root iff its real path
+ * equals the entry's resolved real path or starts with it followed by a '/'. Entries are resolved
+ * through Fs_Roots (Feature 135), so 'wp-content' means this site's content directory on every
+ * layout -- not ABSPATH/wp-content, which on a split-docroot host is a different, unused
+ * directory.
  *
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
@@ -237,36 +239,38 @@ final class Path_Allowlist_Guard {
 	/**
 	 * Determine whether $absolute_path sits inside any of the allowlist roots.
 	 *
-	 * Resolves each allowlist entry against ABSPATH via realpath() and does a
-	 * prefix check on the absolute target. Roots that fail to realpath (do
-	 * not exist on disk) are simply skipped.
+	 * Feature 135: each entry is resolved through {@see Fs_Roots::resolve()} rather than joined onto
+	 * ABSPATH. The old join made the shipped default actively wrong on hosts that place
+	 * `WP_CONTENT_DIR` outside `ABSPATH`: `DEFAULT_WRITE_ALLOWLIST = array( 'wp-content' )` resolved
+	 * to the unused copy under the core directory, so the out-of-the-box posture denied writes to
+	 * the site's real content directory and permitted them inside the host's core tree -- the exact
+	 * inverse of what the setting reads as.
 	 *
-	 * @param string             $absolute_path Absolute target path.
-	 * @param array<int,string>  $allowlist     ABSPATH-relative roots.
+	 * Entries that do not exist on disk are skipped, as before.
+	 *
+	 * @param string            $absolute_path Absolute target path.
+	 * @param array<int,string> $allowlist     Roots, relative to a WordPress directory.
 	 * @return bool
 	 */
 	private static function path_matches_any_root( string $absolute_path, array $allowlist ): bool {
-		$base = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
 		if ( '' === $absolute_path ) {
 			return false;
 		}
-		$target = str_replace( '\\', '/', $absolute_path );
+
+		$target = rtrim( str_replace( '\\', '/', $absolute_path ), '/' );
 
 		foreach ( $allowlist as $rel ) {
-			$candidate      = $base . '/' . ltrim( $rel, '/' );
-			$root_real      = realpath( $candidate );
-			if ( false === $root_real ) {
+			$resolved = Fs_Roots::resolve( (string) $rel, true );
+
+			if ( is_wp_error( $resolved ) ) {
 				continue;
 			}
-			$root_real = str_replace( '\\', '/', $root_real );
-			$root_real = rtrim( $root_real, '/' );
-			if ( $target === $root_real ) {
-				return true;
-			}
-			if ( 0 === strpos( $target, $root_real . '/' ) ) {
+
+			if ( Fs_Roots::inside( $target, $resolved['path'] ) ) {
 				return true;
 			}
 		}
+
 		return false;
 	}
 }

@@ -11,6 +11,7 @@
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\FileManager;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Fs_Roots;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Audit_Trail;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Path_Allowlist_Guard;
@@ -59,7 +60,7 @@ class Delete_Directory extends Ability_Definition {
 			'name' => 'file-manager/delete-directory',
 			'args' => array(
 				'label'               => __( 'Delete Directory', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Delete a directory inside the WordPress installation. Path must be relative to ABSPATH. Requires confirm:true. Default recursive:false refuses non-empty directories. Refuses a hardcoded list of critical WordPress directories (ABSPATH, wp-admin, wp-includes, wp-content, wp-content/plugins, wp-content/themes, wp-content/mu-plugins, wp-content/uploads, and this plugin\'s directory). Symlinks are not followed during recursive walks. Idempotent — a missing target returns success with entries_removed:0.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Delete a directory inside the WordPress installation. Path is relative to the WordPress directories: a leading wp-content/ resolves against WP_CONTENT_DIR, so it reaches the live content directory even on hosts that place it outside ABSPATH. Requires confirm:true. Default recursive:false refuses non-empty directories. Refuses a hardcoded list of critical WordPress directories (ABSPATH, wp-admin, wp-includes, wp-content, wp-content/plugins, wp-content/themes, wp-content/mu-plugins, wp-content/uploads, and this plugin\'s directory). Symlinks are not followed during recursive walks. Idempotent — a missing target returns success with entries_removed:0.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-file-manager',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -70,7 +71,7 @@ class Delete_Directory extends Ability_Definition {
 					'properties'           => array(
 						'path'      => array(
 							'type'        => 'string',
-							'description' => __( 'Directory path relative to ABSPATH.', 'acrossai-abilities-manager' ),
+							'description' => __( 'Directory path relative to a WordPress directory.', 'acrossai-abilities-manager' ),
 						),
 						'recursive' => array(
 							'type'        => 'boolean',
@@ -154,7 +155,16 @@ class Delete_Directory extends Ability_Definition {
 		$recursive = ! empty( $input['recursive'] );
 
 		$base = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
-		$abs  = $base . '/' . ltrim( $rel_path, '/' );
+
+		// Feature 135: resolve_deep() so a delete of an already-missing nested path still reports
+		// idempotent success rather than failing containment on an unresolvable string.
+		$resolved = Fs_Roots::resolve_deep( $rel_path );
+
+		if ( is_wp_error( $resolved ) ) {
+			return Fs_Roots::blocked_response( $resolved );
+		}
+
+		$abs  = $resolved['path'];
 		$real = realpath( $abs );
 
 		// Missing target: idempotent success — but still enforce ABSPATH scope
@@ -163,13 +173,6 @@ class Delete_Directory extends Ability_Definition {
 		// tightens the allowlist and then checks whether a stale target path is
 		// still reachable — reporting success would be misleading.
 		if ( false === $real ) {
-			if ( 0 !== strpos( $abs, $base . '/' ) && $abs !== $base ) {
-				return array(
-					'success'        => false,
-					'blocked_reason' => 'invalid_path',
-					'message'        => __( 'Invalid or disallowed directory path.', 'acrossai-abilities-manager' ),
-				);
-			}
 			$blocked = Path_Allowlist_Guard::blocked_write_response( $abs );
 			if ( null !== $blocked ) {
 				return $blocked;
@@ -182,7 +185,7 @@ class Delete_Directory extends Ability_Definition {
 			);
 		}
 
-		if ( $real !== $base && 0 !== strpos( $real, $base . '/' ) ) {
+		if ( null === Fs_Roots::match( $real ) ) {
 			return array(
 				'success'        => false,
 				'blocked_reason' => 'invalid_path',
@@ -198,12 +201,21 @@ class Delete_Directory extends Ability_Definition {
 			);
 		}
 
-		// Protected-directory guard: compare $real against each protected
-		// entry resolved to its absolute path. Refuses ABSPATH itself and
-		// the eight critical WordPress subdirectories.
+		// Protected-directory guard: compare $real against each protected entry resolved to its
+		// absolute path. Refuses ABSPATH itself and the eight critical WordPress subdirectories.
+		//
+		// Feature 135: each entry resolves through Fs_Roots, not through ABSPATH. The old join made
+		// this guard miss on hosts that place WP_CONTENT_DIR outside ABSPATH: 'wp-content/plugins'
+		// resolved to the unused copy under the core directory, so the *live* plugins directory was
+		// not in the protected set at all and a recursive delete of it would have been permitted.
 		foreach ( self::PROTECTED_DIRS as $rel ) {
-			$protected_abs = '' === $rel ? $base : $base . '/' . $rel;
-			$protected_real = realpath( $protected_abs );
+			if ( '' === $rel ) {
+				$protected_real = realpath( $base );
+			} else {
+				$protected = Fs_Roots::resolve( (string) $rel, true );
+				$protected_real = is_wp_error( $protected ) ? false : $protected['path'];
+			}
+
 			if ( false !== $protected_real && $protected_real === $real ) {
 				return array(
 					'success'        => false,

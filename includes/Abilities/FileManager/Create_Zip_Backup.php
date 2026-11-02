@@ -57,7 +57,7 @@ class Create_Zip_Backup extends Ability_Definition {
 						),
 						'target'         => array(
 							'type'        => 'string',
-							'description' => __( 'Plugin slug (e.g. "hello-dolly"), theme stylesheet (e.g. "twentytwentyfour"), or path relative to ABSPATH. Ignored for "uploads" and "mu-plugins".', 'acrossai-abilities-manager' ),
+							'description' => __( 'Plugin slug (e.g. "hello-dolly"), theme stylesheet (e.g. "twentytwentyfour"), or path relative to a WordPress directory. Ignored for "uploads" and "mu-plugins".', 'acrossai-abilities-manager' ),
 						),
 						'include_hidden' => array(
 							'type'        => 'boolean',

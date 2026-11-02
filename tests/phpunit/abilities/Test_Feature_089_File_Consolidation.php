@@ -77,9 +77,14 @@ class Test_Feature_089_File_Consolidation extends WP_UnitTestCase {
 		$this->assertStringContainsString( "'truncated' => \$truncated", $this->files['list_directory'] );
 	}
 
-	public function test_list_directory_scopes_paths_to_absroot(): void {
-		$this->assertStringContainsString( 'realpath( ABSPATH )', $this->files['list_directory'] );
-		$this->assertStringContainsString( "'blocked_reason' => 'invalid_path'", $this->files['list_directory'] );
+	public function test_list_directory_scopes_paths_to_wordpress_roots(): void {
+		// Feature 135: scoping moved off a bare ABSPATH prefix and onto Fs_Roots, which accepts a
+		// path inside any directory WordPress actually uses. Pinning 'realpath( ABSPATH )' here is
+		// what this assertion used to do, and it was pinning the bug: on a host where
+		// WP_CONTENT_DIR sits outside ABSPATH that scope cannot reach the live content directory.
+		$this->assertStringContainsString( 'Fs_Roots::resolve(', $this->files['list_directory'] );
+		$this->assertStringContainsString( 'Fs_Roots::blocked_response(', $this->files['list_directory'] );
+		$this->assertStringNotContainsString( 'realpath( ABSPATH )', $this->files['list_directory'] );
 	}
 
 	public function test_list_directory_refuses_when_path_is_not_a_directory(): void {

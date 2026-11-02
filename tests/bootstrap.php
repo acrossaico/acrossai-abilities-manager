@@ -92,6 +92,27 @@ if ( ! function_exists( 'is_wp_error' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_normalize_path' ) ) {
+	/** Stub: core's path normaliser — backslashes to slashes, collapse duplicate slashes. */
+	function wp_normalize_path( string $path ): string {
+		$path = str_replace( '\\', '/', $path );
+		$path = preg_replace( '|(?<=.)/+|', '/', $path );
+
+		if ( ':' === substr( $path, 1, 1 ) ) {
+			$path = ucfirst( $path );
+		}
+
+		return (string) $path;
+	}
+}
+
+if ( ! function_exists( 'wp_get_upload_dir' ) ) {
+	/** Stub: uploads basedir inside the tests' WP_CONTENT_DIR workspace. */
+	function wp_get_upload_dir(): array {
+		return array( 'basedir' => WP_CONTENT_DIR . '/uploads' );
+	}
+}
+
 if ( ! function_exists( 'add_action' ) ) {
 	/**
 	 * Stub: no-op hook registration for unit tests.
@@ -1383,6 +1404,13 @@ if ( ! function_exists( 'get_plugins' ) ) {
 		}
 
 		return (array) ( $GLOBALS['acrossai_test_installed_plugins'] ?? array() );
+	}
+}
+
+if ( ! function_exists( 'get_plugin_updates' ) ) {
+	/** Stub: pending plugin updates, keyed by plugin file. */
+	function get_plugin_updates(): array {
+		return (array) ( $GLOBALS['acrossai_test_plugin_updates'] ?? array() );
 	}
 }
 

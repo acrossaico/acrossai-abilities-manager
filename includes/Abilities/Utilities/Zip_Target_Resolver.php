@@ -345,36 +345,25 @@ final class Zip_Target_Resolver {
 			);
 		}
 
-		$base      = rtrim( realpath( ABSPATH ) ?: ABSPATH, '/' );
-		$candidate = $base . '/' . ltrim( $rel_path, '/' );
+		// Feature 135: resolve against every root WordPress uses. A zip source or destination under
+		// a WP_CONTENT_DIR that lives outside ABSPATH is the common case on managed hosts, and the
+		// old ABSPATH-only bound made backing up the live content directory impossible.
+		$resolved = Fs_Roots::resolve( $rel_path, ! $for_destination );
 
-		// For a source path, the whole path must exist.
+		if ( is_wp_error( $resolved ) ) {
+			return new \WP_Error( 'path_out_of_bounds', $resolved->get_error_message() );
+		}
+
 		if ( ! $for_destination ) {
-			$abs = realpath( $candidate );
-			if ( false === $abs || ( $abs !== $base && 0 !== strpos( $abs, $base . '/' ) ) ) {
-				return new \WP_Error(
-					'path_out_of_bounds',
-					__( 'Path must resolve inside ABSPATH.', 'acrossai-abilities-manager' )
-				);
-			}
 			return array(
-				'abs_path' => $abs,
+				'abs_path' => $resolved['path'],
 				'label'    => 'path:' . $rel_path,
 			);
 		}
 
-		// For a destination path the leaf may not exist yet, but the resolved
-		// parent MUST live inside ABSPATH.
-		$parent = realpath( dirname( $candidate ) );
-		if ( false === $parent || ( $parent !== $base && 0 !== strpos( $parent, $base . '/' ) ) ) {
-			return new \WP_Error(
-				'path_out_of_bounds',
-				__( 'Destination parent must resolve inside ABSPATH.', 'acrossai-abilities-manager' )
-			);
-		}
-
+		// For a destination the leaf may not exist yet; resolve() has already contained its parent.
 		return array(
-			'abs_path' => $parent . '/' . basename( $candidate ),
+			'abs_path' => $resolved['path'],
 			'label'    => 'path:' . $rel_path,
 		);
 	}
