@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "70eb5d8d7df0c20d05402b08d091b516",
+    "content-hash": "ae7a647f7e7cfe5a2a42edf4fa0a670f",
     "packages": [
         {
             "name": "acrossai-co/main-menu",
-            "version": "0.0.37",
+            "version": "0.0.38",
             "source": {
                 "type": "git",
                 "url": "https://github.com/acrossaico/main-menu.git",
-                "reference": "b5462f6c078cf97d1855f768b8fde4123f6de024"
+                "reference": "42ec9db7054afe6deb2fefe650ea33a963adfa56"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/acrossaico/main-menu/zipball/b5462f6c078cf97d1855f768b8fde4123f6de024",
-                "reference": "b5462f6c078cf97d1855f768b8fde4123f6de024",
+                "url": "https://api.github.com/repos/acrossaico/main-menu/zipball/42ec9db7054afe6deb2fefe650ea33a963adfa56",
+                "reference": "42ec9db7054afe6deb2fefe650ea33a963adfa56",
                 "shasum": ""
             },
             "require": {
@@ -41,9 +41,9 @@
             "description": "AcrossAI Admin Dashboard — parent menu, shared Settings page (Settings API, flat or tabbed), and reusable Tabs base for other admin screens.",
             "support": {
                 "issues": "https://github.com/acrossaico/main-menu/issues",
-                "source": "https://github.com/acrossaico/main-menu/tree/0.0.37"
+                "source": "https://github.com/acrossaico/main-menu/tree/0.0.38"
             },
-            "time": "2026-10-26T13:48:01+00:00"
+            "time": "2026-11-02T21:44:32+00:00"
         },
         {
             "name": "automattic/jetpack-autoloader",
