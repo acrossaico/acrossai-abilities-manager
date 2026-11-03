@@ -390,6 +390,9 @@
 			<file>tests/phpunit/abilities/Test_Verify_Plugin_Checksums_Endpoint.php</file>
 			<file>tests/phpunit/Utilities/Test_Checksum_Results.php</file>
 		</testsuite>
+		<testsuite name="feature-136-unit">
+			<file>tests/phpunit/abilities/Test_Version_Targeting_Suggestions.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

@@ -835,6 +835,25 @@ if ( ! function_exists( 'delete_transient' ) ) {
 	}
 }
 
+// WordPress's time constants. HOUR and MINUTE were already here; the longer ones were missing, so
+// any class referencing DAY_IN_SECONDS could not even be instantiated under this harness — which is
+// how the core update abilities ended up untestable.
+if ( ! defined( 'DAY_IN_SECONDS' ) ) {
+	define( 'DAY_IN_SECONDS', 24 * 60 * 60 );
+}
+
+if ( ! defined( 'WEEK_IN_SECONDS' ) ) {
+	define( 'WEEK_IN_SECONDS', 7 * 24 * 60 * 60 );
+}
+
+if ( ! defined( 'MONTH_IN_SECONDS' ) ) {
+	define( 'MONTH_IN_SECONDS', 30 * 24 * 60 * 60 );
+}
+
+if ( ! defined( 'YEAR_IN_SECONDS' ) ) {
+	define( 'YEAR_IN_SECONDS', 365 * 24 * 60 * 60 );
+}
+
 if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
 	define( 'HOUR_IN_SECONDS', 60 * 60 );
 }
