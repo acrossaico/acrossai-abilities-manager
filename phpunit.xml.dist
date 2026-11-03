@@ -393,6 +393,10 @@
 		<testsuite name="feature-136-unit">
 			<file>tests/phpunit/abilities/Test_Version_Targeting_Suggestions.php</file>
 		</testsuite>
+		<testsuite name="feature-136-rollback-unit">
+			<file>tests/phpunit/Utilities/Test_Asset_Versions.php</file>
+			<file>tests/phpunit/abilities/Test_Version_Abilities_Contract.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
