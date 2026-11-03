@@ -293,10 +293,14 @@ final class Main {
 		 */
 		$main_menu = new \AcrossAI_Abilities_Manager\Admin\Partials\Menu( $this->get_plugin_name(), $this->get_version() );
 		$this->loader->add_action( 'admin_menu', $main_menu, 'register_submenu' );
-		// Priority 999: runs after every plugin sharing the `acrossai` parent has
-		// registered, so Quick Connect can be placed relative to Abilities rather
-		// than at an absolute slot other plugins are also competing for.
-		$this->loader->add_action( 'admin_menu', $main_menu, 'reorder_submenu', 999 );
+		// Ordering moved out in main-menu 0.0.38. `MenuRegistrar::enforce_order()`
+		// runs at 1100 — after the 999 this used — and states the whole group's
+		// order in one place, including the two moves this made. Two passes
+		// reordering the same menu is how an order nobody can predict happens;
+		// the package that owns the parent owns the answer.
+		//
+		// `Partials\Menu::reorder_submenu()` is unhooked, not deleted: it is
+		// public API that another plugin may call. Its own docblock says so.
 
 		// Quick Connect onboarding wizard (Feature 099). No page of its own — it
 		// renders through Partials\Menu when `?quick-connect=1` is present. The
@@ -352,9 +356,9 @@ final class Main {
 		$this->loader->add_action( 'admin_init', $core_settings_menu, 'register_settings' );
 
 		// Feature 120 — the Integrations directory, a submenu of its own directly below Abilities.
-		// `register_submenu` runs at the default priority so it is in place before Menu's
-		// `reorder_submenu` at 999 moves it into position. Admin-only, so it belongs in
-		// define_admin_hooks() (Boot Flow Rule). Variable-first per AC-HOOKS-MAIN.
+		// `register_submenu` runs at the default priority so it is in place before
+		// main-menu's `enforce_order()` at 1100 puts the group in order. Admin-only, so it
+		// belongs in define_admin_hooks() (Boot Flow Rule). Variable-first per AC-HOOKS-MAIN.
 		$integrations_menu = \AcrossAI_Abilities_Manager\Admin\Partials\Integrations_Menu::instance();
 		$this->loader->add_action( 'admin_menu', $integrations_menu, 'register_submenu' );
 		$this->loader->add_action( 'admin_init', $integrations_menu, 'register_settings' );
