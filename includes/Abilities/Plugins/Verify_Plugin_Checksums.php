@@ -11,6 +11,7 @@
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Plugins;
 
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Checksum_Results;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Plugin_Helpers;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 
@@ -267,16 +268,8 @@ class Verify_Plugin_Checksums extends Ability_Definition {
 		$omitted = 0;
 
 		if ( ! $include_ok ) {
-			$before  = count( $results );
-			$results = array_values(
-				array_filter(
-					$results,
-					static function ( array $row ): bool {
-						return 'ok' !== ( $row['status'] ?? '' );
-					}
-				)
-			);
-			$omitted = $before - count( $results );
+			$omitted = Checksum_Results::matched_count( $results );
+			$results = Checksum_Results::only_problems( $results );
 		}
 
 		return array(

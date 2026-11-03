@@ -388,6 +388,7 @@
 		</testsuite>
 		<testsuite name="checksums-endpoint-unit">
 			<file>tests/phpunit/abilities/Test_Verify_Plugin_Checksums_Endpoint.php</file>
+			<file>tests/phpunit/Utilities/Test_Checksum_Results.php</file>
 		</testsuite>
 	</testsuites>
 	<source>
