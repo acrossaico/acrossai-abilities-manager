@@ -129,8 +129,51 @@ class Get_Site_Health_Status extends Ability_Definition {
 		);
 	}
 
+	/**
+	 * Load the admin function libraries `WP_Site_Health` calls internally.
+	 *
+	 * Same gap as {@see Get_Site_Health_Info::load_admin_dependencies()}, and
+	 * the same cause: requiring the class file makes the class exist, not the
+	 * functions it calls. `WP_Site_Health`'s own tests reach for five admin
+	 * libraries — `update.php` (the auto-update tests), `plugin.php`,
+	 * `file.php` (`WP_Filesystem`), `misc.php` (`got_mod_rewrite`,
+	 * `wp_check_php_version`) and `screen.php` (`get_current_screen`).
+	 *
+	 * This one had NOT yet been seen to fail, which is the reason it is worth
+	 * fixing now rather than waiting: `get_plugins()` was already loaded by an
+	 * unrelated plugin on the site where its sibling broke, so whether this
+	 * ability works at all depends on which other plugins are active. It is
+	 * the same defect, one plugin deactivation away from showing up.
+	 *
+	 * @since 0.0.46
+	 * @return void
+	 */
+	private static function load_admin_dependencies(): void {
+		if ( ! function_exists( 'get_core_updates' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/update.php';
+		}
+
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+
+		if ( ! function_exists( 'got_mod_rewrite' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/misc.php';
+		}
+
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/screen.php';
+		}
+	}
+
 	public function execute( array $input = array() ): array {
 		$as_text = isset( $input['format'] ) && 'text' === $input['format'];
+
+		self::load_admin_dependencies();
 
 		if ( ! class_exists( 'WP_Site_Health' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/class-wp-site-health.php';
