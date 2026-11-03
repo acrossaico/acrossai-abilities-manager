@@ -11,6 +11,7 @@
 
 namespace AcrossAI_Abilities_Manager\Includes\Abilities\Core;
 
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Checksum_Results;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 
 defined( 'ABSPATH' ) || exit;
@@ -41,7 +42,7 @@ class Verify_Core_Checksums extends Ability_Definition {
 			'name' => 'core/verify-core-checksums',
 			'args' => array(
 				'label'               => __( 'Verify Core Checksums', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Verify WordPress core files against the official checksums manifest returned by get_core_checksums(). Per-file status: ok / modified / missing / added. Skips root-level files by default (set include_root:true to include them).', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Verify WordPress core files against the official checksums manifest returned by get_core_checksums(). Per-file status: ok / modified / missing / added. By default results lists only files needing attention and the summary carries the counts — a clean install has 3,766 files and listing them all exceeds the MCP response limit; pass include_ok:true to list the matching files. Skips root-level files by default (set include_root:true to include them).', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-core',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -52,6 +53,11 @@ class Verify_Core_Checksums extends Ability_Definition {
 					'properties'           => array(
 						'version'      => array( 'type' => 'string' ),
 						'locale'       => array( 'type' => 'string' ),
+						'include_ok'   => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Include every file that matched. Off by default and emphatically so: a clean WordPress install returns 3,766 rows at roughly 608 KB, which exceeds the MCP response limit outright — the ability returned nothing usable at all. The summary carries the counts.', 'acrossai-abilities-manager' ),
+						),
 						'include_root' => array(
 							'type'    => 'boolean',
 							'default' => false,
@@ -113,6 +119,7 @@ class Verify_Core_Checksums extends Ability_Definition {
 		$version       = '' !== $version_input ? $version_input : (string) get_bloginfo( 'version' );
 		$locale        = '' !== $locale_input ? $locale_input : 'en_US';
 		$include_root  = ! empty( $input['include_root'] );
+		$include_ok    = ! empty( $input['include_ok'] );
 		$strict        = ! empty( $input['strict'] );
 
 		$exclude_raw = isset( $input['exclude'] ) && is_array( $input['exclude'] ) ? $input['exclude'] : array();
@@ -211,19 +218,40 @@ class Verify_Core_Checksums extends Ability_Definition {
 
 		$summary['total'] = count( $results );
 
+		// Measured on a clean install: 3,766 rows, 3,763 of them 'ok', 608,677 characters. That
+		// exceeds the MCP response limit, so the ability returned an error instead of an answer --
+		// it has never been usable through an AI client despite working correctly. The three rows
+		// that mattered were a deleted hello.php and two bundled-theme files updated independently
+		// of core. The summary counts every file; results carries what needs attention.
+		$omitted = 0;
+
+		if ( ! $include_ok ) {
+			$omitted = Checksum_Results::matched_count( $results );
+			$results = Checksum_Results::only_problems( $results );
+		}
+
 		return array(
 			'success' => true,
 			'version' => $version,
 			'locale'  => $locale,
 			'results' => $results,
 			'summary' => $summary,
-			'message' => sprintf(
-				/* translators: 1: version, 2: locale, 3: total */
-				__( 'Verified %3$d core file(s) at version "%1$s" (%2$s).', 'acrossai-abilities-manager' ),
-				$version,
-				$locale,
-				$summary['total']
-			),
+			'message' => $omitted > 0
+				? sprintf(
+					/* translators: 1: version, 2: locale, 3: total, 4: omitted count */
+					__( 'Verified %3$d core file(s) at version "%1$s" (%2$s). %4$d matched and are omitted from results; pass include_ok:true to list them.', 'acrossai-abilities-manager' ),
+					$version,
+					$locale,
+					$summary['total'],
+					$omitted
+				)
+				: sprintf(
+					/* translators: 1: version, 2: locale, 3: total */
+					__( 'Verified %3$d core file(s) at version "%1$s" (%2$s).', 'acrossai-abilities-manager' ),
+					$version,
+					$locale,
+					$summary['total']
+				),
 		);
 	}
 
