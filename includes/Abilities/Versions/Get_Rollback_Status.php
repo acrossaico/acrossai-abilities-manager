@@ -132,12 +132,12 @@ class Get_Rollback_Status extends Base_Version_Ability {
 			'version_source'  => 'wordpress.org',
 			'limits'          => array(
 				__( 'Plugins and themes only. WordPress core is not supported by WP Rollback — use the core pinning abilities or core/rollback-wp-core.', 'acrossai-abilities-manager' ),
-				__( 'Release history comes from WordPress.org. A premium or privately-hosted asset has none there, and can only be rolled back to a version this site already holds a local archive of.', 'acrossai-abilities-manager' ),
+				__( 'Release history comes from WordPress.org. A premium or privately-hosted asset has none there, and can only be rolled back to a version this site already holds a local archive of — which requires WP Rollback, the only thing here that does.', 'acrossai-abilities-manager' ),
 				__( 'Only assets already installed can be re-versioned; this does not install something new.', 'acrossai-abilities-manager' ),
 			),
 			'message'         => $active
-				? __( 'WP Rollback is active. Plugins and themes can be moved onto any version WordPress.org publishes.', 'acrossai-abilities-manager' )
-				: __( 'WP Rollback is not active, so no plugin or theme can be moved onto a chosen version yet. Listing published versions still works without it. Install wordpress.org/plugins/wp-rollback/ to enable the rollback abilities.', 'acrossai-abilities-manager' ),
+				? __( 'Plugins and themes can be moved onto any version WordPress.org publishes, via versions/rollback-plugin and versions/rollback-theme. WP Rollback is also active, so versions it has archived locally can be restored too — including for assets the directory does not host.', 'acrossai-abilities-manager' )
+				: __( 'Plugins and themes can be moved onto any version WordPress.org publishes, via versions/rollback-plugin and versions/rollback-theme. These drive WordPress core\'s own upgrader and need no host plugin. WP Rollback is not active; installing wordpress.org/plugins/wp-rollback/ adds local archives of previously installed versions, which are the only source for an asset the directory does not host.', 'acrossai-abilities-manager' ),
 		);
 	}
 }
