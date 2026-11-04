@@ -393,6 +393,9 @@
 		<testsuite name="feature-136-unit">
 			<file>tests/phpunit/abilities/Test_Version_Targeting_Suggestions.php</file>
 		</testsuite>
+		<testsuite name="site-health-admin-includes-unit">
+			<file>tests/phpunit/abilities/Test_Site_Health_Admin_Includes.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

@@ -84,12 +84,70 @@ class Get_Site_Health_Info extends Ability_Definition {
 	}
 
 	/**
+	 * Load the admin function libraries `WP_Debug_Data` calls internally.
+	 *
+	 * ## Why the class file alone is not enough
+	 *
+	 * Requiring `class-wp-debug-data.php` makes the CLASS exist. It does not
+	 * make the functions that class calls exist, and `debug_data()` reaches
+	 * for four admin libraries by name:
+	 *
+	 *   - `update.php`  — `get_core_updates()`, `get_plugin_updates()`,
+	 *                     `get_theme_updates()`, the auto-update helpers
+	 *   - `plugin.php`  — `get_plugins()`, `get_mu_plugins()`, `get_dropins()`
+	 *   - `file.php`    — `get_home_path()`
+	 *   - `misc.php`    — `got_url_rewrite()`
+	 *
+	 * In a real wp-admin request `wp-admin/includes/admin.php` has already
+	 * loaded all of them, which is why this ability worked when it was
+	 * written. Over REST — which is how an MCP client reaches it — none of
+	 * them are loaded, and the ability returned
+	 * `Call to undefined function get_core_updates()` for every request,
+	 * whichever sections were asked for.
+	 *
+	 * ## Why all four, and not just the one that failed
+	 *
+	 * Which function is missing FIRST depends on what else the site happens
+	 * to have loaded. Observed while diagnosing this: `get_plugins()` already
+	 * existed, because an unrelated plugin had pulled in `plugin.php` — so
+	 * the error named `get_core_updates()`. On a site without that plugin the
+	 * same bug would have surfaced as a different undefined function, and a
+	 * fix that only added `update.php` would have looked correct here and
+	 * still failed there.
+	 *
+	 * Matches the pattern the upgrader abilities already use — every one of
+	 * them loads its own dependencies rather than assuming an admin request.
+	 *
+	 * @since 0.0.46
+	 * @return void
+	 */
+	private static function load_admin_dependencies(): void {
+		if ( ! function_exists( 'get_core_updates' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/update.php';
+		}
+
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		if ( ! function_exists( 'get_home_path' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+
+		if ( ! function_exists( 'got_url_rewrite' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/misc.php';
+		}
+	}
+
+	/**
 	 * Execute the ability.
 	 *
 	 * @param array $input Ability input payload.
 	 * @return array
 	 */
 	public function execute( array $input = array() ): array {
+		self::load_admin_dependencies();
+
 		if ( ! class_exists( 'WP_Debug_Data' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/class-wp-debug-data.php';
 		}
