@@ -184,6 +184,7 @@ class AcrossAI_Toolset_Integrations {
 			new Loco_Translate(),
 			new Redirection(),
 			new Query_Monitor(),
+			new Wp_Rollback(),
 			new Consent_Banner(),
 			new Email_Delivery(),
 			new Anti_Spam(),

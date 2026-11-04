@@ -127,6 +127,10 @@ class AcrossAI_Category_Slug_Migration {
 		'classic-editor',
 		'events-calendar',
 		'event-tickets',
+		// Feature 136. Appended rather than inserted alphabetically, matching the three above:
+		// the list is a migration input, so its order is history and reordering it would make the
+		// diff unreadable for no gain.
+		'versions',
 	);
 
 	/**
