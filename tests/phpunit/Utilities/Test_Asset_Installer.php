@@ -161,6 +161,51 @@ final class Test_Asset_Installer extends TestCase {
 	}
 
 	/* ------------------------------------------------------------------ */
+	/* pick_version — exact match only                                     */
+	/* ------------------------------------------------------------------ */
+
+	public function test_pick_version_returns_the_package_for_an_exact_match(): void {
+		$map = array(
+			'1.9.4'  => 'https://downloads.wordpress.org/plugin/p.1.9.4.zip',
+			'1.12.4' => 'https://downloads.wordpress.org/plugin/p.1.12.4.zip',
+		);
+
+		$this->assertSame( 'https://downloads.wordpress.org/plugin/p.1.9.4.zip', Asset_Installer::pick_version( $map, '1.9.4' ) );
+	}
+
+	public function test_pick_version_never_falls_back_to_a_near_miss(): void {
+		// The reason to name a version is usually that a specific one is known to work. Returning
+		// 4.3.1 for a request for 4.3 defeats the point while looking like a success — and
+		// version_compare would happily call them close.
+		$map = array( '4.3.1' => 'u', '4.3.2' => 'u' );
+
+		$this->assertSame( '', Asset_Installer::pick_version( $map, '4.3' ) );
+	}
+
+	public function test_pick_version_rejects_an_empty_request(): void {
+		$this->assertSame( '', Asset_Installer::pick_version( array( '1.0' => 'u' ), '' ) );
+		$this->assertSame( '', Asset_Installer::pick_version( array( '1.0' => 'u' ), '   ' ) );
+	}
+
+	public function test_pick_version_trims_the_requested_version(): void {
+		$this->assertSame( 'u', Asset_Installer::pick_version( array( '1.0' => 'u' ), ' 1.0 ' ) );
+	}
+
+	public function test_pick_version_ignores_a_non_string_package(): void {
+		// The version map comes from an API response cast to an array, so a value need not be a
+		// string. Returning an array here would reach Plugin_Upgrader::install() as a package.
+		$this->assertSame( '', Asset_Installer::pick_version( array( '1.0' => array( 'url' => 'u' ) ), '1.0' ) );
+		$this->assertSame( '', Asset_Installer::pick_version( array( '1.0' => null ), '1.0' ) );
+	}
+
+	public function test_pick_version_treats_trunk_like_any_other_key(): void {
+		// Asset_Versions::releases() is what excludes trunk from the offered list; pick_version is
+		// asked for one exact key and does not second-guess it. Asserted so the division of
+		// responsibility is explicit rather than assumed.
+		$this->assertSame( 'u', Asset_Installer::pick_version( array( 'trunk' => 'u' ), 'trunk' ) );
+	}
+
+	/* ------------------------------------------------------------------ */
 	/* install() refuses before touching anything                          */
 	/* ------------------------------------------------------------------ */
 

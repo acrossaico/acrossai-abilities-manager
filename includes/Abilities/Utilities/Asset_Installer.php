@@ -158,6 +158,30 @@ final class Asset_Installer {
 	}
 
 	/**
+	 * The package URL WordPress.org publishes for one exact version.
+	 *
+	 * Exact match only, deliberately. A caller asking for 6.4 must not silently receive 6.4.1:
+	 * the reason to name a version is usually that a specific one is known to work, and a
+	 * near-miss defeats the point while looking like a success. Pure, so it executes in tests.
+	 *
+	 * @since  0.0.46
+	 * @param  array<string,mixed> $versions WordPress.org version map, version => package URL.
+	 * @param  string              $version  Requested version.
+	 * @return string Package URL, or '' when that version is not published.
+	 */
+	public static function pick_version( array $versions, string $version ): string {
+		$version = trim( $version );
+
+		if ( '' === $version || ! isset( $versions[ $version ] ) ) {
+			return '';
+		}
+
+		$package = $versions[ $version ];
+
+		return is_string( $package ) ? trim( $package ) : '';
+	}
+
+	/**
 	 * Overwrite an installed asset with a package.
 	 *
 	 * @since  0.0.45
