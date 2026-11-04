@@ -117,6 +117,27 @@ class Rollback_Wp_Core extends Ability_Definition {
 	}
 
 	/**
+	 * The pinning ability covers what this one cannot: making the version stick.
+	 *
+	 * Feature 136. `only_if_registered` keeps the hint out of the payload on sites where the
+	 * WP Downgrade suite is not present, so a caller is never pointed at an ability that does not
+	 * exist. Held back from the suggestion PR for exactly that reason — the target had to exist
+	 * first.
+	 *
+	 * @since  0.0.45
+	 * @return array<int,array<string,string|bool>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'               => 'versions/set-core-pin',
+				'reason'             => __( 'This moves core down once; WordPress offers the newer version again at the next update check. Pin the version first to make it hold.', 'acrossai-abilities-manager' ),
+				'only_if_registered' => true,
+			),
+		);
+	}
+
+	/**
 	 * WP Downgrade pins a core version; this ability does not.
 	 *
 	 * Feature 136. This ability rolls core back once; WordPress then re-offers the newer version on the next update check, and an auto-update can undo the rollback silently.
