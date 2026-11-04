@@ -1359,6 +1359,12 @@ if ( ! defined( 'WP_CONTENT_DIR' ) ) {
 		mkdir( WP_CONTENT_DIR, 0777, true );
 	}
 }
+if ( ! defined( 'WP_PLUGIN_DIR' ) ) {
+	// Asset_Installer::temp_backup_args() reads this to build the restore point for a plugin.
+	// Without it defined the default branch returns "cannot be armed" and the test would pass
+	// for the wrong reason.
+	define( 'WP_PLUGIN_DIR', WP_CONTENT_DIR . '/plugins' );
+}
 
 if ( ! class_exists( 'WP_UnitTestCase' ) ) {
 	/**

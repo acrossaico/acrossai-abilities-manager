@@ -110,7 +110,7 @@ class Test_Ability_Group_Map extends TestCase {
 		'appearance'    => 73,
 		'blocks'        => 52,
 		'files'         => 23,
-		'updates'       => 23,
+		'updates'       => 25,
 		'diagnostics'   => 22,
 		'query-monitor' => 4,
 		'configuration' => 19,
