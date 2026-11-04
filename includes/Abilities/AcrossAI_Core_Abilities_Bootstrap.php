@@ -583,6 +583,10 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_version_abilities();
 		}
 
+		if ( $this->integration_on( 'wp-downgrade' ) ) {
+			$this->register_core_pin_abilities();
+		}
+
 		// Feature 055 — register the option-backed lifecycle event log.
 		Utilities\Lifecycle_Event_Log::register_hooks();
 
@@ -1063,6 +1067,20 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Versions\Get_Rollback_Status();
 		new Versions\List_Asset_Versions();
 		new Versions\Check_Asset_Rollback();
+	}
+
+	/**
+	 * Feature 136 — instantiate the core version-pinning ability classes.
+	 *
+	 * Separate from the rollback reads because they answer to a different host plugin: WP Downgrade
+	 * pins core, WP Rollback re-versions plugins and themes, and neither can do the other's job.
+	 *
+	 * @return void
+	 */
+	private function register_core_pin_abilities(): void {
+		new Versions\Get_Core_Pin();
+		new Versions\Set_Core_Pin();
+		new Versions\Clear_Core_Pin();
 	}
 
 	/**

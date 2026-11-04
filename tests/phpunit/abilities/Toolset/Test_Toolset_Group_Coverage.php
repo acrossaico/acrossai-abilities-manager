@@ -187,6 +187,7 @@ class Test_Toolset_Group_Coverage extends TestCase {
 			'WPCode.php'             => 'wpcode',
 			'WPForms.php'            => 'wpforms',
 			'WooCommerce.php'        => 'woocommerce',
+			'Wp_Downgrade.php'       => 'wp-downgrade',
 			'Wp_Rollback.php'        => 'wp-rollback',
 			'Yoast_Seo.php'          => 'yoast-seo',
 		);

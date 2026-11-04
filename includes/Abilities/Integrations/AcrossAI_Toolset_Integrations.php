@@ -185,6 +185,7 @@ class AcrossAI_Toolset_Integrations {
 			new Redirection(),
 			new Query_Monitor(),
 			new Wp_Rollback(),
+			new Wp_Downgrade(),
 			new Consent_Banner(),
 			new Email_Delivery(),
 			new Anti_Spam(),

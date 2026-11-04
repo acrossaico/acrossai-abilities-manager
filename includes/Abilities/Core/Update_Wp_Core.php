@@ -91,6 +91,27 @@ class Update_Wp_Core extends Ability_Definition {
 	}
 
 	/**
+	 * The pinning ability covers what this one cannot: making the version stick.
+	 *
+	 * Feature 136. `only_if_registered` keeps the hint out of the payload on sites where the
+	 * WP Downgrade suite is not present, so a caller is never pointed at an ability that does not
+	 * exist. Held back from the suggestion PR for exactly that reason — the target had to exist
+	 * first.
+	 *
+	 * @since  0.0.45
+	 * @return array<int,array<string,string|bool>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'               => 'versions/set-core-pin',
+				'reason'             => __( 'To hold core on a specific version across future update checks rather than for this one run, pin it first.', 'acrossai-abilities-manager' ),
+				'only_if_registered' => true,
+			),
+		);
+	}
+
+	/**
 	 * WP Downgrade pins a core version; this ability does not.
 	 *
 	 * Feature 136. This ability pins one upgrade to a specific offer, but only to a version the Core API offers, and only for that one run.

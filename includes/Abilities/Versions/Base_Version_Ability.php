@@ -118,15 +118,53 @@ abstract class Base_Version_Ability extends Ability_Definition {
 	/* ------------------------------------------------------------------ */
 
 	/**
-	 * Whether this ability cannot work without WP Rollback loaded.
+	 * Whether this ability cannot work without its host plugin loaded.
 	 *
-	 * False for everything that reads WordPress.org, true for the two that actually move files.
+	 * False for everything that reads WordPress.org, true for anything that drives a host plugin.
 	 *
 	 * @since  0.0.45
 	 * @return bool
 	 */
 	protected function requires_host(): bool {
 		return false;
+	}
+
+	/**
+	 * Whether this ability's host plugin is loaded.
+	 *
+	 * Overridable because this one category spans two host plugins. The first version of this class
+	 * hardcoded the WP Rollback guard here, so a core-pinning ability with `requires_host()` true
+	 * refused with "WP Rollback is not active" — naming a plugin that has nothing to do with
+	 * pinning core, and sending the caller to install the wrong thing.
+	 *
+	 * @since  0.0.45
+	 * @return bool
+	 */
+	protected function host_is_active(): bool {
+		return Wp_Rollback_Guard::is_active();
+	}
+
+	/**
+	 * The refusal when this ability's host plugin is absent.
+	 *
+	 * @since  0.0.45
+	 * @return array<string,mixed>
+	 */
+	protected function host_not_active(): array {
+		return Wp_Rollback_Guard::not_active();
+	}
+
+	/**
+	 * The response key reporting whether the host plugin was present.
+	 *
+	 * Host-specific so a pinning response does not carry a field about WP Rollback, which would be
+	 * noise at best and misdirection at worst.
+	 *
+	 * @since  0.0.45
+	 * @return string
+	 */
+	protected function host_active_key(): string {
+		return 'wp_rollback_active';
 	}
 
 	/**
@@ -137,6 +175,20 @@ abstract class Base_Version_Ability extends Ability_Definition {
 	 */
 	protected function requires_confirmation(): bool {
 		return false;
+	}
+
+	/**
+	 * What the caller is being asked to confirm.
+	 *
+	 * Overridable because the default described replacing files on disk, which is true of a rollback
+	 * and false of a core pin — the pin writes one option. A confirmation prompt that misdescribes
+	 * the operation is worse than none: it trains a caller to pass confirm without reading.
+	 *
+	 * @since  0.0.45
+	 * @return string
+	 */
+	protected function confirmation_message(): string {
+		return __( 'This operation replaces files on disk and cannot be undone automatically. Pass confirm: true to proceed.', 'acrossai-abilities-manager' );
 	}
 
 	/**
@@ -281,8 +333,8 @@ abstract class Base_Version_Ability extends Ability_Definition {
 					'type'                 => 'object',
 					'properties'           => array_merge(
 						array(
-							'success'             => array( 'type' => 'boolean' ),
-							'wp_rollback_active'  => array( 'type' => 'boolean' ),
+							'success'                => array( 'type' => 'boolean' ),
+							$this->host_active_key() => array( 'type' => 'boolean' ),
 						),
 						$this->output_properties(),
 						array(
@@ -320,8 +372,8 @@ abstract class Base_Version_Ability extends Ability_Definition {
 	 * @return array<string,mixed>
 	 */
 	final public function execute( array $input = array() ): array {
-		if ( $this->requires_host() && ! Wp_Rollback_Guard::is_active() ) {
-			return Wp_Rollback_Guard::not_active();
+		if ( $this->requires_host() && ! $this->host_is_active() ) {
+			return $this->host_not_active();
 		}
 
 		if ( $this->writes_files() ) {
@@ -336,7 +388,7 @@ abstract class Base_Version_Ability extends Ability_Definition {
 			return array(
 				'success'        => false,
 				'blocked_reason' => 'confirmation_required',
-				'message'        => __( 'This operation replaces files on disk and cannot be undone automatically. Pass confirm: true to proceed.', 'acrossai-abilities-manager' ),
+				'message'        => $this->confirmation_message(),
 			);
 		}
 
@@ -346,7 +398,7 @@ abstract class Base_Version_Ability extends Ability_Definition {
 			$failure = self::fail( $result );
 			// Always say whether the host plugin was there, so a refusal is never ambiguous about
 			// whether installing it would have helped.
-			$failure['wp_rollback_active'] = Wp_Rollback_Guard::is_active();
+			$failure[ $this->host_active_key() ] = $this->host_is_active();
 
 			return $failure;
 		}
@@ -356,8 +408,8 @@ abstract class Base_Version_Ability extends Ability_Definition {
 
 		return array_merge(
 			array(
-				'success'            => true,
-				'wp_rollback_active' => Wp_Rollback_Guard::is_active(),
+				'success'                     => true,
+				$this->host_active_key()      => $this->host_is_active(),
 			),
 			$result,
 			array( 'message' => $message )

@@ -396,6 +396,7 @@
 		<testsuite name="feature-136-rollback-unit">
 			<file>tests/phpunit/Utilities/Test_Asset_Versions.php</file>
 			<file>tests/phpunit/abilities/Test_Version_Abilities_Contract.php</file>
+			<file>tests/phpunit/abilities/Test_Core_Pin_Contract.php</file>
 		</testsuite>
 	</testsuites>
 	<source>
