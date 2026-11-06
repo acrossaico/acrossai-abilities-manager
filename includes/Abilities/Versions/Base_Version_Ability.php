@@ -28,10 +28,12 @@ defined( 'ABSPATH' ) || exit;
  *   each belongs to its own toolset because `is_active()` differs per plugin. The tagger assigns a
  *   group from `meta.acrossai.tab_group`, so abilities in one namespace can legitimately land in
  *   two groups.
- * - **`requires_host()` defaults to false.** Only the two rollback writes genuinely need WP
- *   Rollback. Listing published versions is `plugins_api()` / `themes_api()`, which is WordPress
- *   core, and reporting whether the host plugin is active obviously cannot require it. Gating the
- *   read abilities on a plugin they do not use would be a restriction invented by this code rather
+ * - **`requires_host()` defaults to false, and nothing in the WP Rollback group overrides it.**
+ *   Listing published versions is `plugins_api()` / `themes_api()`, which is WordPress core, and
+ *   reporting whether the host plugin is active obviously cannot require it. The two rollback
+ *   writes were expected to need WP Rollback and turned out not to: they drive core's own
+ *   `Plugin_Upgrader` / `Theme_Upgrader`, which has carried backup-and-restore since 6.3. Gating
+ *   any of them on a plugin they do not use would be a restriction invented by this code rather
  *   than one the problem has.
  *
  * @since 0.0.45

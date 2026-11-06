@@ -47,6 +47,10 @@ class AcrossAI_Abilities_Formatter {
 			'source'          => $row->source,
 			'tab_group'       => '', // Feature 102: DB-created abilities belong to no toolset.
 			'editable'        => 'db' === $row->source,
+			// Always false: a DB-created ability is never a dispatcher. Emitted
+			// anyway so both formatter shapes carry the same keys — a field
+			// present on only half the rows is one the screen has to guess at.
+			'protected'       => false,
 			'site_allowed'    => $row->site_allowed,
 			'callback_type'   => $row->callback_type,
 			'callback_config' => $row->callback_config,
@@ -136,6 +140,12 @@ class AcrossAI_Abilities_Formatter {
 			'source'          => $merged['source'] ?? 'plugin',
 			'tab_group'       => $merged['tab_group'] ?? '',
 			'editable'        => false,
+			// True for a dispatcher — a `toolset/*` router, an mcp-adapter
+			// router, or a transport ability a sibling declared. It is listed
+			// so the inventory is complete, but the write endpoints refuse it
+			// with `rest_protected_ability`, so the screen must not offer an
+			// override control for it.
+			'protected'       => (bool) ( $merged['protected'] ?? false ),
 			'site_allowed'    => $merged['site_allowed'] ?? null,
 			'callback_type'   => $merged['callback_type'] ?? null,
 			'callback_config' => $merged['callback_config'] ?? null,

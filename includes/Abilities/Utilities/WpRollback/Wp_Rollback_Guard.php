@@ -92,7 +92,7 @@ final class Wp_Rollback_Guard {
 			'success'        => false,
 			'active'         => false,
 			'blocked_reason' => 'wp_rollback_not_active',
-			'message'        => __( 'WP Rollback is not active on this site. Install and activate the WP Rollback plugin (wordpress.org/plugins/wp-rollback/) to move a plugin or theme onto a chosen version.', 'acrossai-abilities-manager' ),
+			'message'        => __( 'WP Rollback is not active on this site. Version moves themselves do not need it — versions/rollback-plugin and versions/rollback-theme use WordPress.org packages through core\'s own upgrader. Install and activate WP Rollback (wordpress.org/plugins/wp-rollback/) for its local archive of previously installed versions, which is the only source for an asset the directory does not host.', 'acrossai-abilities-manager' ),
 		);
 	}
 

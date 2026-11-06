@@ -13,6 +13,9 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\Plugins;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Plugin_Helpers;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Asset_Installer;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\WpRollback\Asset_Lookup;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\WpRollback\Asset_Versions;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -31,7 +34,7 @@ class Install_Plugin extends Ability_Definition {
 			'name' => 'plugins/install-plugin',
 			'args' => array(
 				'label'               => __( 'Install Plugin', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Install a plugin from the WordPress.org plugin directory by name or slug.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Install a plugin from the WordPress.org plugin directory by name or slug. Installs the latest release unless "version" names a specific published one. For a plugin that is already installed, use versions/rollback-plugin to change its version.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-plugins',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -48,6 +51,10 @@ class Install_Plugin extends Ability_Definition {
 							'type'        => 'string',
 							'description' => __( 'Alias for "plugin". If both are provided, "plugin" wins.', 'acrossai-abilities-manager' ),
 						),
+						'version'  => array(
+							'type'        => 'string',
+							'description' => __( 'Install this exact published version instead of the latest. Matched exactly — 4.3 will not install 4.3.1. versions/list-asset-versions returns the valid values.', 'acrossai-abilities-manager' ),
+						),
 						'activate' => array(
 							'type'        => 'boolean',
 							'description' => __( 'Whether to activate the plugin after installing.', 'acrossai-abilities-manager' ),
@@ -63,11 +70,14 @@ class Install_Plugin extends Ability_Definition {
 				'output_schema'       => array(
 					'type'       => 'object',
 					'properties' => array(
-						'success'     => array( 'type' => 'boolean' ),
-						'message'     => array( 'type' => 'string' ),
-						'plugin_name' => array( 'type' => 'string' ),
-						'plugin_slug' => array( 'type' => 'string' ),
-						'activated'   => array( 'type' => 'boolean' ),
+						'success'           => array( 'type' => 'boolean' ),
+						'message'           => array( 'type' => 'string' ),
+						'plugin_name'       => array( 'type' => 'string' ),
+						'plugin_slug'       => array( 'type' => 'string' ),
+						'activated'         => array( 'type' => 'boolean' ),
+						'version'           => array( 'type' => 'string' ),
+						'already_installed' => array( 'type' => 'boolean' ),
+						'active'            => array( 'type' => 'boolean' ),
 					),
 				),
 				'meta'                => array(
@@ -141,6 +151,7 @@ class Install_Plugin extends Ability_Definition {
 
 		$plugin_slug = sanitize_text_field( $raw_plugin );
 		$activate    = ! empty( $input['activate'] );
+		$version     = isset( $input['version'] ) && is_scalar( $input['version'] ) ? trim( (string) $input['version'] ) : '';
 
 		$plugin_slug = sanitize_title( $plugin_slug );
 
@@ -157,10 +168,23 @@ class Install_Plugin extends Ability_Definition {
 			$plugin_data = Plugin_Helpers::get_plugin_by_slug( $resolved['plugin_file'] );
 			$status      = $plugin_data && $plugin_data['active'] ? __( 'active', 'acrossai-abilities-manager' ) : __( 'inactive', 'acrossai-abilities-manager' );
 
+			// A version was asked for and the plugin is already here. Installing does not overwrite,
+			// so saying only "already installed" would leave a caller who asked for 4.3.1 believing
+			// they got it. Name the ability that does change a version.
+			$already = '' === $version
+				/* translators: 1: plugin name, 2: plugin status */
+				? sprintf( __( 'Plugin "%1$s" is already installed (%2$s).', 'acrossai-abilities-manager' ), $resolved['plugin_name'], $status )
+				: sprintf(
+					/* translators: 1: plugin name, 2: installed version, 3: requested version */
+					__( 'Plugin "%1$s" is already installed at version %2$s and was not changed. To put it on version %3$s, use versions/rollback-plugin, which replaces the files and keeps a restore point.', 'acrossai-abilities-manager' ),
+					$resolved['plugin_name'],
+					( $plugin_data && isset( $plugin_data['version'] ) ) ? (string) $plugin_data['version'] : __( 'unknown', 'acrossai-abilities-manager' ),
+					$version
+				);
+
 			return array(
 				'success'           => true,
-				/* translators: 1: plugin name, 2: plugin status */
-				'message'           => sprintf( __( 'Plugin "%1$s" is already installed (%2$s).', 'acrossai-abilities-manager' ), $resolved['plugin_name'], $status ),
+				'message'           => $already,
 				'already_installed' => true,
 				'plugin_name'       => $resolved['plugin_name'],
 				'plugin_slug'       => $resolved['plugin_file'],
@@ -214,9 +238,42 @@ class Install_Plugin extends Ability_Definition {
 			);
 		}
 
+		$package = (string) $api->download_link;
+
+		if ( '' !== $version ) {
+			// download_link always points at the latest release, so a named version has to come
+			// from the published version map instead. Exact match only — a caller asking for 4.3
+			// must not silently receive 4.3.1.
+			$versions = Asset_Lookup::published_versions( 'plugin', $plugin_slug );
+
+			if ( is_wp_error( $versions ) ) {
+				return array(
+					'success' => false,
+					'message' => $versions->get_error_message(),
+				);
+			}
+
+			$package = Asset_Installer::pick_version( (array) $versions, $version );
+
+			if ( '' === $package ) {
+				$releases = array_slice( Asset_Versions::releases( (array) $versions ), 0, 5 );
+
+				return array(
+					'success' => false,
+					'message' => sprintf(
+						/* translators: 1: version, 2: plugin name, 3: newest published versions */
+						__( 'WordPress.org publishes no version %1$s of "%2$s". Recent releases: %3$s. Use versions/list-asset-versions for the full list.', 'acrossai-abilities-manager' ),
+						$version,
+						$api->name ?? $plugin_slug,
+						implode( ', ', $releases )
+					),
+				);
+			}
+		}
+
 		$skin     = new \WP_Ajax_Upgrader_Skin();
 		$upgrader = new \Plugin_Upgrader( $skin );
-		$result   = $upgrader->install( $api->download_link );
+		$result   = $upgrader->install( $package );
 
 		if ( is_wp_error( $result ) ) {
 			return array(
@@ -268,12 +325,27 @@ class Install_Plugin extends Ability_Definition {
 			$message = sprintf( __( 'Plugin "%s" has been installed successfully.', 'acrossai-abilities-manager' ), $api->name );
 		}
 
-		return array(
+		$result_payload = array(
 			'success'     => true,
 			'message'     => $message,
 			'plugin_name' => $api->name,
 			'plugin_slug' => $plugin_slug,
 			'activated'   => $activated,
 		);
+
+		// Report which version landed, read back from the installed header rather than echoed from
+		// the request, so the answer is what is on disk and not what was asked for.
+		wp_clean_plugins_cache();
+		$installed_now = Plugin_Helpers::resolve_plugin( $plugin_slug );
+
+		if ( null !== $installed_now['plugin_file'] ) {
+			$data = Plugin_Helpers::get_plugin_by_slug( (string) $installed_now['plugin_file'] );
+
+			if ( null !== $data && isset( $data['version'] ) ) {
+				$result_payload['version'] = (string) $data['version'];
+			}
+		}
+
+		return $result_payload;
 	}
 }
