@@ -164,7 +164,7 @@ final class Asset_Installer {
 	 * the reason to name a version is usually that a specific one is known to work, and a
 	 * near-miss defeats the point while looking like a success. Pure, so it executes in tests.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @param  array<string,mixed> $versions WordPress.org version map, version => package URL.
 	 * @param  string              $version  Requested version.
 	 * @return string Package URL, or '' when that version is not published.
