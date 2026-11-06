@@ -398,6 +398,9 @@
 			<file>tests/phpunit/abilities/Test_Version_Abilities_Contract.php</file>
 			<file>tests/phpunit/abilities/Test_Core_Pin_Contract.php</file>
 		</testsuite>
+		<testsuite name="core-rollback-safety-unit">
+			<file>tests/phpunit/Utilities/Test_Core_Php_Compat.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
