@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Versions
- * @since      0.0.46
+ * @since      0.0.45
  */
 
 declare( strict_types = 1 );
@@ -39,20 +39,20 @@ defined( 'ABSPATH' ) || exit;
  * earlier version of an asset the directory does not host. That path is used when present and its
  * absence is explained when it is not.
  *
- * @since 0.0.46
+ * @since 0.0.45
  */
 abstract class Base_Asset_Rollback extends Base_Version_Ability {
 
 	/**
 	 * The caller key naming the asset — `plugin` or `stylesheet`.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	abstract protected function identifier_key(): string;
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function tab_group(): string {
@@ -60,7 +60,7 @@ abstract class Base_Asset_Rollback extends Base_Version_Ability {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function sub_group(): string {
@@ -68,7 +68,7 @@ abstract class Base_Asset_Rollback extends Base_Version_Ability {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return bool
 	 */
 	protected function requires_confirmation(): bool {
@@ -76,7 +76,7 @@ abstract class Base_Asset_Rollback extends Base_Version_Ability {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return bool
 	 */
 	protected function writes_files(): bool {
@@ -84,7 +84,7 @@ abstract class Base_Asset_Rollback extends Base_Version_Ability {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return array{readonly:bool,destructive:bool,idempotent:bool}
 	 */
 	protected function annotations(): array {
@@ -98,7 +98,7 @@ abstract class Base_Asset_Rollback extends Base_Version_Ability {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return array<string,mixed>
 	 */
 	protected function input_properties(): array {
@@ -119,7 +119,7 @@ abstract class Base_Asset_Rollback extends Base_Version_Ability {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return array<int,string>
 	 */
 	protected function required_input(): array {
@@ -127,7 +127,7 @@ abstract class Base_Asset_Rollback extends Base_Version_Ability {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return array<string,mixed>
 	 */
 	protected function output_properties(): array {
@@ -154,7 +154,7 @@ abstract class Base_Asset_Rollback extends Base_Version_Ability {
 	 * the ordering matters: the directory's copy is canonical and verifiable afterwards with
 	 * `plugins/verify-plugin-checksums`, whereas an archive is whatever this site happened to keep.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @param  string $type    `plugin` or `theme`.
 	 * @param  string $slug    Asset slug.
 	 * @param  string $version Requested version.
@@ -214,7 +214,7 @@ abstract class Base_Asset_Rollback extends Base_Version_Ability {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @param  array<string,mixed> $input Caller input.
 	 * @return array<string,mixed>|\WP_Error
 	 */
@@ -320,7 +320,7 @@ abstract class Base_Asset_Rollback extends Base_Version_Ability {
 	/**
 	 * A type-specific refusal before anything is touched, or null to proceed.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @param  array<string,string> $asset Resolved asset.
 	 * @param  array<string,mixed>  $input Caller input.
 	 * @return array<string,mixed>|\WP_Error|null
@@ -332,7 +332,7 @@ abstract class Base_Asset_Rollback extends Base_Version_Ability {
 	/**
 	 * State to capture before the files change.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @param  array<string,string> $asset Resolved asset.
 	 * @return array<string,mixed>
 	 */
@@ -343,7 +343,7 @@ abstract class Base_Asset_Rollback extends Base_Version_Ability {
 	/**
 	 * Fields to merge into the response, and any state to restore.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @param  array<string,string> $asset   Resolved asset.
 	 * @param  array<string,mixed>  $state   Whatever before_install() captured.
 	 * @param  string               $version Version now installed.
@@ -356,7 +356,7 @@ abstract class Base_Asset_Rollback extends Base_Version_Ability {
 	/**
 	 * Consequences worth stating after a successful move.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @param  array<string,string> $asset    Resolved asset.
 	 * @param  string               $relation older, newer, same or unknown.
 	 * @param  string               $source   Where the package came from.

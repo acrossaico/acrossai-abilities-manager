@@ -12,6 +12,13 @@
  * `versions/` namespace is shared with the core-pinning abilities, which belong to the WP Downgrade
  * group. Claiming the prefix would pull those into this one.
  *
+ * `is_active()` reports whether WP Rollback is loaded, and that is all it does here: it drives how
+ * the Integrations row presents itself, NOT whether these abilities are served. Verified, because
+ * the opposite would have been a quiet disaster — with WP Rollback deactivated, `discover` on this
+ * toolset still returns all five, both writes included. It has to: since the writes moved onto
+ * core's own upgrader they do not need the host plugin, so gating their visibility on it would hide
+ * the commonest recovery path from exactly the sites that have no other route to it.
+ *
  * @package    AcrossAI_Abilities_Manager
  * @subpackage AcrossAI_Abilities_Manager/includes/Abilities/Integrations
  * @since      0.0.45
@@ -65,7 +72,7 @@ final class Wp_Rollback implements AcrossAI_Toolset_Integration {
 	 */
 	public function toolset_description(): string {
 		return __(
-			'Put an installed plugin or theme onto a version you choose, rather than only the latest. List every release WordPress.org published for it, pre-flight the move — including whether other sites on a multisite use it — and roll it back. Two limits are worth knowing up front: WordPress core is not covered, because WP Rollback supports plugins and themes only; and release history comes from WordPress.org, so a premium or privately-hosted asset has none there and can only be restored to a version this site already holds a local archive of. Listing versions works without WP Rollback installed; moving versions does not.',
+			'Put an installed plugin or theme onto a version you choose, rather than only the latest. List every release WordPress.org published for it, pre-flight the move — including whether other sites on a multisite use it — and roll it back. Two limits are worth knowing up front: WordPress core is not covered — use the core pinning abilities or core/rollback-wp-core for that; and release history comes from WordPress.org, so a premium or privately-hosted asset has none there and can only be restored to a version this site already holds a local archive of. Nothing here requires the WP Rollback plugin: version moves go through WordPress core\'s own upgrader, which backs the previous copy up and restores it if the package fails. WP Rollback adds one thing — its local archive of previously installed versions, the only source for an asset the directory does not host.',
 			'acrossai-abilities-manager'
 		);
 	}

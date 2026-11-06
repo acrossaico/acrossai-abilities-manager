@@ -9,7 +9,7 @@
  * route back from a bad update, and nothing else in the suite would notice.
  *
  * @package AcrossAI_Abilities_Manager
- * @since   0.0.46
+ * @since   0.0.45
  */
 
 declare( strict_types = 1 );

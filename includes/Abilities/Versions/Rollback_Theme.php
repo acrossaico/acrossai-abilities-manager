@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Versions
- * @since      0.0.46
+ * @since      0.0.45
  */
 
 declare( strict_types = 1 );
@@ -24,12 +24,12 @@ defined( 'ABSPATH' ) || exit;
  * up; a caller rolling back the active one is changing what the site looks like right now, and
  * should have had to say so.
  *
- * @since 0.0.46
+ * @since 0.0.45
  */
 class Rollback_Theme extends Base_Asset_Rollback {
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -37,7 +37,7 @@ class Rollback_Theme extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function asset_type(): string {
@@ -45,7 +45,7 @@ class Rollback_Theme extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function identifier_key(): string {
@@ -53,7 +53,7 @@ class Rollback_Theme extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -61,7 +61,7 @@ class Rollback_Theme extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -69,7 +69,7 @@ class Rollback_Theme extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -77,7 +77,7 @@ class Rollback_Theme extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return array<string,mixed>
 	 */
 	protected function input_properties(): array {
@@ -94,7 +94,7 @@ class Rollback_Theme extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return array<string,mixed>
 	 */
 	protected function output_properties(): array {
@@ -114,7 +114,7 @@ class Rollback_Theme extends Base_Asset_Rollback {
 	 * `force` says "I accept that this one is live". Folding them together would let a caller who
 	 * meant to tidy a dormant theme change the site's appearance with the same single flag.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @param  array<string,string> $asset Resolved asset.
 	 * @param  array<string,mixed>  $input Caller input.
 	 * @return \WP_Error|null
@@ -137,7 +137,7 @@ class Rollback_Theme extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @param  array<string,string> $asset Resolved asset.
 	 * @return array<string,mixed>
 	 */
@@ -146,7 +146,7 @@ class Rollback_Theme extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @param  array<string,string> $asset   Resolved asset.
 	 * @param  array<string,mixed>  $state   State from before_install().
 	 * @param  string               $version Version now installed.

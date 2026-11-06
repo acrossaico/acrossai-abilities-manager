@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Versions
- * @since      0.0.46
+ * @since      0.0.45
  */
 
 declare( strict_types = 1 );
@@ -25,12 +25,12 @@ defined( 'ABSPATH' ) || exit;
  * Also covers installing a version *forward* of the installed one without waiting for an update
  * offer, since the operation is the same either way.
  *
- * @since 0.0.46
+ * @since 0.0.45
  */
 class Rollback_Plugin extends Base_Asset_Rollback {
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function slug(): string {
@@ -38,7 +38,7 @@ class Rollback_Plugin extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function asset_type(): string {
@@ -46,7 +46,7 @@ class Rollback_Plugin extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function identifier_key(): string {
@@ -54,7 +54,7 @@ class Rollback_Plugin extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function ability_label(): string {
@@ -62,7 +62,7 @@ class Rollback_Plugin extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function ability_description(): string {
@@ -70,7 +70,7 @@ class Rollback_Plugin extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return string
 	 */
 	protected function confirmation_message(): string {
@@ -78,7 +78,7 @@ class Rollback_Plugin extends Base_Asset_Rollback {
 	}
 
 	/**
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @return array<string,mixed>
 	 */
 	protected function output_properties(): array {
@@ -91,7 +91,7 @@ class Rollback_Plugin extends Base_Asset_Rollback {
 	/**
 	 * Whether the plugin was active before its files were replaced.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @param  array<string,string> $asset Resolved asset.
 	 * @return array<string,mixed>
 	 */
@@ -110,7 +110,7 @@ class Rollback_Plugin extends Base_Asset_Rollback {
 	 * never asked for. Rolling back and silently deactivating would look like the new version
 	 * crashing the site.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.45
 	 * @param  array<string,string> $asset   Resolved asset.
 	 * @param  array<string,mixed>  $state   State from before_install().
 	 * @param  string               $version Version now installed.
