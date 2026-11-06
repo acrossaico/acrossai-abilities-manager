@@ -408,6 +408,9 @@
 		<testsuite name="feature-136-writes-unit">
 			<file>tests/phpunit/abilities/Test_Rollback_Writes_Contract.php</file>
 		</testsuite>
+		<testsuite name="core-rollback-safety-unit">
+			<file>tests/phpunit/Utilities/Test_Core_Php_Compat.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
