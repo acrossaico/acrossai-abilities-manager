@@ -54,7 +54,7 @@ class Set_Core_Pin extends Base_Version_Ability {
 	 * @return string
 	 */
 	protected function ability_description(): string {
-		return __( 'Pin WordPress core to a specific version through WP Downgrade, so update checks keep offering that version instead of the latest. IMPORTANT: this does not move core — it only changes what WordPress offers. Run core/update-wp-core afterwards to actually apply it. The target package must exist on WordPress.org, and pinning the version already running is refused because WP Downgrade ignores such a pin. Refused outright while a caller-supplied download URL is enabled, since the pin would then resolve through an archive this plugin did not choose. Requires confirm: true.', 'acrossai-abilities-manager' );
+		return __( 'Pin WordPress core to a specific version through WP Downgrade, so update checks keep offering that version instead of the latest. IMPORTANT: this does not move core — it only repoints the update offer\'s package at the pinned release. Run core/update-wp-core with confirm: true afterwards to actually apply it, and note that core/reinstall-wp-core cannot run while a pin is set. The target package must exist on WordPress.org, and pinning the version already running is refused because WP Downgrade ignores such a pin. Refused outright while a caller-supplied download URL is enabled, since the pin would then resolve through an archive this plugin did not choose. Requires confirm: true.', 'acrossai-abilities-manager' );
 	}
 
 	/**
@@ -266,6 +266,13 @@ class Set_Core_Pin extends Base_Version_Ability {
 		}
 
 		$warnings = array();
+
+		// Stated because it is surprising and was found by testing rather than by reading. WP
+		// Downgrade's filter rewrites the offer's `current` to the pinned version, and
+		// find_core_update() matches on `current` — so while a pin is set, reinstalling the
+		// running version cannot resolve an offer at all. core/reinstall-wp-core now says so
+		// rather than blaming a stale transient, but a caller setting a pin should know up front.
+		$warnings[] = __( 'While this pin is set, core/reinstall-wp-core will refuse: WP Downgrade rewrites the update offer to the pinned release, so there is no offer for the running version to reinstall. Clear the pin first if you need to reinstall.', 'acrossai-abilities-manager' );
 		$relation = Asset_Versions::relation( $version, $running );
 
 		if ( 'older' === $relation ) {
@@ -289,11 +296,11 @@ class Set_Core_Pin extends Base_Version_Ability {
 			// The single most important field here. Stated explicitly so no caller can read a
 			// success as "core is now on that version".
 			'core_moved'          => false,
-			'next_step'           => __( 'Core has NOT changed. Run core/update-wp-core to apply the pinned version.', 'acrossai-abilities-manager' ),
+			'next_step'           => __( 'Core has NOT changed. Run core/update-wp-core with confirm: true to apply the pinned version — it is a downgrade, so it asks for confirmation.', 'acrossai-abilities-manager' ),
 			'warnings'            => $warnings,
 			'message'             => sprintf(
 				/* translators: 1: pinned version, 2: running version */
-				__( 'Core is now pinned to %1$s. WordPress %2$s is still running — the pin only changes what update checks offer. Run core/update-wp-core to apply it.', 'acrossai-abilities-manager' ),
+				__( 'Core is now pinned to %1$s. WordPress %2$s is still running — the pin only changes which package the update offer points at, not the version or response it reports, so nothing has moved yet. Run core/update-wp-core with confirm: true to apply it.', 'acrossai-abilities-manager' ),
 				$stored,
 				$running
 			),

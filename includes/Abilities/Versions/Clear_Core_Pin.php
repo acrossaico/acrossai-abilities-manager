@@ -109,7 +109,19 @@ class Clear_Core_Pin extends Base_Version_Ability {
 	 * @return array<string,mixed>
 	 */
 	protected function input_properties(): array {
-		return array();
+		return array(
+			// Accepted and ignored, on purpose. This ability needs no confirmation — it restores
+			// WordPress's default update behaviour — but `additionalProperties` is false, so a
+			// caller that learned `confirm: true` from versions/set-core-pin had its clear call
+			// rejected outright as ability_invalid_input. That is the escape hatch refusing the
+			// flag the caller just learned, while the pin it would have removed is actively
+			// blocking core/reinstall-wp-core. Found by hitting it mid-test and being left pinned.
+			'confirm' => array(
+				'type'        => 'boolean',
+				'default'     => false,
+				'description' => __( 'Not required — clearing a pin restores WordPress\'s normal update behaviour. Accepted so a caller that passes it by habit is not refused.', 'acrossai-abilities-manager' ),
+			),
+		);
 	}
 
 	/**

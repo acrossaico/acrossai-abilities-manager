@@ -411,6 +411,9 @@
 		<testsuite name="core-rollback-safety-unit">
 			<file>tests/phpunit/Utilities/Test_Core_Php_Compat.php</file>
 		</testsuite>
+		<testsuite name="core-pin-applicability-unit">
+			<file>tests/phpunit/abilities/Test_Core_Pin_Applicability.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
