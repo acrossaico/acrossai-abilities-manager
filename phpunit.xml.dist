@@ -405,6 +405,9 @@
 			<file>tests/phpunit/Utilities/Test_Asset_Installer.php</file>
 			<file>tests/phpunit/abilities/Test_Reinstall_Contract.php</file>
 		</testsuite>
+		<testsuite name="feature-136-writes-unit">
+			<file>tests/phpunit/abilities/Test_Rollback_Writes_Contract.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>

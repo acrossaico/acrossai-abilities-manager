@@ -160,8 +160,12 @@ class Check_Asset_Rollback extends Base_Version_Ability {
 		$reasons  = array();
 		$warnings = array();
 
+		// Not a blocking reason any more. versions/rollback-plugin and versions/rollback-theme drive
+		// WordPress core's own upgrader, so a version move needs no host plugin. WP Rollback still
+		// matters for one thing — the local archives that are the only route to a version of an
+		// asset WordPress.org does not host — and that is reported where it applies, below.
 		if ( ! Wp_Rollback_Guard::is_active() ) {
-			$reasons[] = __( 'WP Rollback is not active, so nothing can be moved onto another version yet.', 'acrossai-abilities-manager' );
+			$warnings[] = __( 'WP Rollback is not active. Version moves still work without it, using packages from WordPress.org; what is unavailable is its local archive of previously installed versions, which is the only source for an asset the directory does not host.', 'acrossai-abilities-manager' );
 		}
 
 		$archived  = Wp_Rollback_Guard::archived_versions( $asset['slug'] );
