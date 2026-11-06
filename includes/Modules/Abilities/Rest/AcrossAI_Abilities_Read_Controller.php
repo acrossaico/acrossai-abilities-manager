@@ -24,7 +24,6 @@ use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Merger;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Registry_Query;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Sanitizer;
 use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Ability_Group;
-use AcrossAI_Abilities_Manager\Includes\Utilities\AcrossAI_Protected_Abilities;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Integrations\AcrossAI_Toolset_Integrations;
 
 // Exit if accessed directly.
@@ -99,15 +98,17 @@ class AcrossAI_Abilities_Read_Controller {
 		// response: the list's total is the *filtered* total, so on a toolset view it is that
 		// toolset's count — using it for the "All" entry made All read 7 while 419 abilities
 		// existed. Counted here, on the same PATH A read as the counts, so the two agree.
-		$total = 0;
-
-		foreach ( array_keys( wp_get_abilities() ) as $slug ) {
-			if ( AcrossAI_Protected_Abilities::is_protected( (string) $slug ) ) {
-				continue;
-			}
-
-			++$total;
-		}
+		// Counts what the LIST returns, dispatchers included. The list stopped
+		// excluding protected slugs; had this kept excluding them the strip
+		// would have read "All 376" above a table showing 399 — the same
+		// contradiction BUG-PATH-B-AGGREGATE-UNDERCOUNT describes, arrived at
+		// from the other direction.
+		//
+		// The per-group counts below still exclude them, and that is not an
+		// inconsistency: a dispatcher is in the inventory but is not a MEMBER
+		// of a toolset, so the tabs sum to less than All — which is already
+		// true of every ability carrying no group at all.
+		$total = count( wp_get_abilities() );
 
 		return rest_ensure_response(
 			array(

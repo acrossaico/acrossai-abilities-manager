@@ -157,9 +157,58 @@ class Test_Dispatchers_Listed_But_Protected extends WP_UnitTestCase {
 			'Grouping stopped excluding protected slugs — dispatchers will reappear as members of their own toolsets.'
 		);
 		$this->assertStringContainsString(
-			'in_array( $ability->get_name(), $protected, true )',
+			'in_array( $name, $protected, true ) && ! in_array( $name, $groupable, true )',
 			$src,
 			'The exclusion itself is gone from the grouping loop.'
+		);
+	}
+
+	/**
+	 * A dispatcher may own its own tab, but only by asking.
+	 *
+	 * The exclusion is the default and stays the default: the opt-in list
+	 * starts empty, so a dispatcher that says nothing is grouped exactly as
+	 * before. Fleet names itself and gets a tab of one; nothing else does.
+	 *
+	 * @return void
+	 */
+	public function test_owning_a_group_is_opt_in_and_defaults_to_empty(): void {
+		$src = (string) file_get_contents(
+			dirname( __DIR__, 3 ) . '/includes/Utilities/AcrossAI_Ability_Group.php'
+		);
+
+		$this->assertStringContainsString(
+			"apply_filters( 'acrossai_abilities_manager_groupable_protected_slugs', array() )",
+			$src,
+			'The opt-in must default to an empty list, or the exclusion stops being the default.'
+		);
+
+		$this->assertSame(
+			array(),
+			apply_filters( 'acrossai_abilities_manager_groupable_protected_slugs', array() ),
+			'Nothing in this plugin may opt itself in — the list is for siblings.'
+		);
+	}
+
+	/**
+	 * The All count must agree with what the list returns.
+	 *
+	 * The counts endpoint used to exclude protected slugs while the list
+	 * included them, which would have read "All 376" above a table of 399 —
+	 * the contradiction BUG-PATH-B-AGGREGATE-UNDERCOUNT names, reached from
+	 * the other direction.
+	 *
+	 * @return void
+	 */
+	public function test_the_all_count_counts_what_the_list_returns(): void {
+		$src = (string) file_get_contents(
+			dirname( __DIR__, 3 ) . '/includes/Modules/Abilities/Rest/AcrossAI_Abilities_Read_Controller.php'
+		);
+
+		$this->assertStringContainsString(
+			'$total = count( wp_get_abilities() );',
+			$src,
+			'The All count must not filter differently from the list it sits above.'
 		);
 	}
 
