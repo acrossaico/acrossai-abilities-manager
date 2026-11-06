@@ -185,6 +185,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Plugins\Search_Wp_Plugin_Directory();
 		new Plugins\Uninstall_Plugin();
 		new Plugins\Verify_Plugin_Checksums();
+		// The repair for what Verify_Plugin_Checksums reports: until now nothing could put
+		// mismatched files back. Ungated and core-only — no host plugin involved.
+		new Plugins\Reinstall_Plugin();
 		new Settings\Get_Permalink_Structure();
 		new Settings\Set_Permalink_Structure();
 		new Settings\Flush_Permalink_Structure();
@@ -201,6 +204,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Themes\Delete_Theme();
 		new Themes\Install_Theme();
 		new Themes\Update_Theme();
+		new Themes\Reinstall_Theme();
 		new Themes\List_Themes();
 		new Users\Get_User();
 		new Users\List_Users();
@@ -1067,6 +1071,10 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Versions\Get_Rollback_Status();
 		new Versions\List_Asset_Versions();
 		new Versions\Check_Asset_Rollback();
+		// The write pair, deferred from the first pass of Feature 136 and now built on core's own
+		// upgrader rather than WP Rollback's staged pipeline, so neither needs the host plugin.
+		new Versions\Rollback_Plugin();
+		new Versions\Rollback_Theme();
 	}
 
 	/**

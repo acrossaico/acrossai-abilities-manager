@@ -401,6 +401,13 @@
 		<testsuite name="dispatchers-listed-unit">
 			<file>tests/phpunit/abilities/Test_Dispatchers_Listed_But_Protected.php</file>
 		</testsuite>
+		<testsuite name="reinstall-unit">
+			<file>tests/phpunit/Utilities/Test_Asset_Installer.php</file>
+			<file>tests/phpunit/abilities/Test_Reinstall_Contract.php</file>
+		</testsuite>
+		<testsuite name="feature-136-writes-unit">
+			<file>tests/phpunit/abilities/Test_Rollback_Writes_Contract.php</file>
+		</testsuite>
 		<testsuite name="core-rollback-safety-unit">
 			<file>tests/phpunit/Utilities/Test_Core_Php_Compat.php</file>
 		</testsuite>
