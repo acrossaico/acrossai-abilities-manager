@@ -1071,6 +1071,10 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Versions\Get_Rollback_Status();
 		new Versions\List_Asset_Versions();
 		new Versions\Check_Asset_Rollback();
+		// The write pair, deferred from the first pass of Feature 136 and now built on core's own
+		// upgrader rather than WP Rollback's staged pipeline, so neither needs the host plugin.
+		new Versions\Rollback_Plugin();
+		new Versions\Rollback_Theme();
 	}
 
 	/**
