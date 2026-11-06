@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\Core;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\WpDowngrade\Wp_Downgrade_Guard;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -56,10 +57,13 @@ class Reinstall_Wp_Core extends Ability_Definition {
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'     => array( 'type' => 'boolean' ),
-						'reinstalled' => array( 'type' => 'boolean' ),
-						'version'     => array( 'type' => 'string' ),
-						'message'     => array( 'type' => 'string' ),
+						'success'        => array( 'type' => 'boolean' ),
+						'reinstalled'    => array( 'type' => 'boolean' ),
+						'version'        => array( 'type' => 'string' ),
+						'pinned_version' => array( 'type' => 'string' ),
+						'error_code'     => array( 'type' => 'string' ),
+						'blocked_reason' => array( 'type' => 'string' ),
+						'message'        => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -121,14 +125,40 @@ class Reinstall_Wp_Core extends Ability_Definition {
 			$locale = get_locale();
 		}
 
+		// A WP Downgrade pin makes this ability dangerous and then makes it fail, in that order.
+		// Its filter rewrites the offer's `current` to the pinned version and its package URLs to
+		// that release, so "reinstall the running version" would in fact install the pinned one —
+		// and because find_core_update() matches on `current`, looking up the running version
+		// returns nothing at all. Measured: with a 7.0.8 pin on a 7.1.4 site, reinstall failed
+		// with "refresh the update_core transient", which is not the reason and refreshing does
+		// not help. Refuse with the actual cause instead.
+		$pin = Wp_Downgrade_Guard::pinned_version();
+
+		if ( '' !== $pin && $pin !== $current_version ) {
+			return array(
+				'success'        => false,
+				'reinstalled'    => false,
+				'error_code'     => 'core_version_pinned',
+				'version'        => $current_version,
+				'pinned_version' => $pin,
+				'message'        => sprintf(
+					/* translators: 1: pinned version, 2: running version */
+					__( 'A WP Downgrade pin on %1$s is active, so reinstalling would install %1$s rather than the running %2$s. Clear it with versions/clear-core-pin to reinstall %2$s, or run core/update-wp-core to apply the pin deliberately.', 'acrossai-abilities-manager' ),
+					$pin,
+					$current_version
+				),
+			);
+		}
+
 		$update = find_core_update( $current_version, $locale );
 
 		if ( null === $update || false === $update ) {
 			return array(
-				'success'     => true,
+				'success'     => false,
 				'reinstalled' => false,
+				'error_code'  => 'no_reinstall_offer',
 				'version'     => $current_version,
-				'message'     => __( 'No core update offer available for reinstall. Run wp-core-update-check first to refresh the update_core transient.', 'acrossai-abilities-manager' ),
+				'message'     => __( 'No core update offer is available for reinstall. Run core/check-wp-core-update to refresh the update_core transient; if that does not help, the WP.org API is not currently offering this exact version and locale.', 'acrossai-abilities-manager' ),
 			);
 		}
 
@@ -148,8 +178,9 @@ class Reinstall_Wp_Core extends Ability_Definition {
 
 		if ( is_wp_error( $result ) ) {
 			return array(
-				'success'     => true,
+				'success'     => false,
 				'reinstalled' => false,
+				'error_code'  => $result->get_error_code(),
 				'version'     => $current_version,
 				'message'     => $result->get_error_message(),
 			);
@@ -161,8 +192,9 @@ class Reinstall_Wp_Core extends Ability_Definition {
 				? $skin_errors->get_error_message()
 				: __( 'Core reinstall did not report success.', 'acrossai-abilities-manager' );
 			return array(
-				'success'     => true,
+				'success'     => false,
 				'reinstalled' => false,
+				'error_code'  => 'reinstall_failed',
 				'version'     => $current_version,
 				'message'     => $msg,
 			);

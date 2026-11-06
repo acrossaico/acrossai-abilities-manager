@@ -12,6 +12,8 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\Core;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Core_Php_Compat;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\WpDowngrade\Wp_Downgrade_Guard;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -36,7 +38,7 @@ class Update_Wp_Core extends Ability_Definition {
 			'name' => 'core/update-wp-core',
 			'args' => array(
 				'label'               => __( 'Update WordPress Core', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Apply the pending WordPress core update via WP core\'s Core_Upgrader. When called with no arguments, upgrades to the latest available offer. Provide "version" (+ optional "locale") to pin to a specific offer. Re-running when no update is available is a clean no-op. Honours DISALLOW_FILE_MODS.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Apply a WordPress core update via WP core\'s Core_Upgrader. With no arguments, installs the offer WordPress is advertising. Pass "version" (+ optional "locale") to install a specific offered release, and this is also the ability that applies a WP Downgrade pin set by versions/set-core-pin. If the resolved target is older than what is running — which a pin or an explicit version can make it — the move is treated as a downgrade: it requires confirm: true and refuses a release that predates support for the PHP this site runs. Re-running with nothing on offer is a clean no-op. Honours DISALLOW_FILE_MODS.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-core',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -54,17 +56,28 @@ class Update_Wp_Core extends Ability_Definition {
 							'type'        => 'string',
 							'description' => __( 'Optional locale of the update offer to pin to (e.g. "en_US"). When omitted, defaults to the site\'s active locale from get_locale().', 'acrossai-abilities-manager' ),
 						),
+						'confirm' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Required only when the resolved target is older than the running version, which makes this a downgrade. Not needed for a normal upgrade.', 'acrossai-abilities-manager' ),
+						),
 					),
 					'additionalProperties' => false,
 				),
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'      => array( 'type' => 'boolean' ),
-						'updated'      => array( 'type' => 'boolean' ),
-						'from_version' => array( 'type' => 'string' ),
-						'to_version'   => array( 'type' => 'string' ),
-						'message'      => array( 'type' => 'string' ),
+						'success'        => array( 'type' => 'boolean' ),
+						'updated'        => array( 'type' => 'boolean' ),
+						'from_version'   => array( 'type' => 'string' ),
+						'to_version'     => array( 'type' => 'string' ),
+						'target_version' => array( 'type' => 'string' ),
+						'php_version'    => array( 'type' => 'string' ),
+						'compatibility'  => array( 'type' => 'string' ),
+						'error_code'     => array( 'type' => 'string' ),
+						'blocked_reason' => array( 'type' => 'string' ),
+						'warnings'       => array( 'type' => 'array' ),
+						'message'        => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -182,8 +195,9 @@ class Update_Wp_Core extends Ability_Definition {
 
 		if ( null === $update || false === $update ) {
 			return array(
-				'success'      => true,
+				'success'      => false,
 				'updated'      => false,
+				'error_code'   => 'no_offer_found',
 				'from_version' => $from_version,
 				'to_version'   => $from_version,
 				'message'      => '' !== $version
@@ -197,18 +211,137 @@ class Update_Wp_Core extends Ability_Definition {
 		}
 
 		$response = isset( $update->response ) ? (string) $update->response : '';
-		if ( 'upgrade' !== $response ) {
+
+		// What this offer actually installs. Normally `current` equals `version`; WP Downgrade's
+		// filter rewrites `current` and the package URLs to the pinned release while leaving
+		// `version` and `response` untouched — measured on a pinned site: version 7.1.4,
+		// response latest, current 7.0.8, packages->full wordpress-7.0.8.zip. So `current` is the
+		// field that says where the site ends up, and it is also the field `find_core_update()`
+		// matches on.
+		$target = isset( $update->current ) && '' !== (string) $update->current
+			? (string) $update->current
+			: ( isset( $update->version ) ? (string) $update->version : '' );
+
+		$pin        = Wp_Downgrade_Guard::pinned_version();
+		$pin_active = '' !== $pin && $pin !== $from_version;
+
+		// The response check belongs to the "is there an update?" question only. Refusing whenever
+		// response is not `upgrade` made the WP Downgrade workflow impossible: the pinned package
+		// sits in this very offer, and response stays `latest` forever because WP Downgrade never
+		// changes it — so set-core-pin's own instruction to run this ability could not work. When
+		// the caller names a version, or a pin is active, the intent is explicit and the offer is
+		// real; the check would only be second-guessing a request that resolved.
+		$explicit = '' !== $version || $pin_active;
+
+		if ( ! $explicit && 'upgrade' !== $response ) {
 			return array(
-				'success'      => true,
+				'success'      => false,
 				'updated'      => false,
+				'error_code'   => 'no_update_offered',
 				'from_version' => $from_version,
 				'to_version'   => $from_version,
 				'message'      => sprintf(
 					/* translators: %s: WP update offer response value (e.g. "latest") */
-					__( 'Core offer is not upgradable (response=%s).', 'acrossai-abilities-manager' ),
+					__( 'No core update is being offered (response=%s). Pass a version to install a specific release, or use core/rollback-wp-core to move backwards.', 'acrossai-abilities-manager' ),
 					'' !== $response ? $response : 'unknown'
 				),
 			);
+		}
+
+		// Naming the version already running used to be refused as "not upgradable". Honouring an
+		// explicit version turned that into a silent core reinstall, which is a different
+		// ability's job. Report the no-op and name it, exactly as versions/rollback-plugin does
+		// for the same request — a caller wanting to re-apply the current release would otherwise
+		// get it from here by accident and never find the ability built for it.
+		if ( '' !== $version && $target === $from_version && ! $pin_active ) {
+			return array(
+				'success'        => true,
+				'updated'        => false,
+				'from_version'   => $from_version,
+				'to_version'     => $from_version,
+				'target_version' => $target,
+				'message'        => sprintf(
+					/* translators: %s: running WordPress version */
+					__( 'WordPress is already on %s — nothing was changed. To re-apply that release\'s files, use core/reinstall-wp-core.', 'acrossai-abilities-manager' ),
+					$from_version
+				),
+			);
+		}
+
+		$warnings = array();
+
+		if ( $pin_active ) {
+			$warnings[] = sprintf(
+				/* translators: %s: pinned version */
+				__( 'A WP Downgrade pin on %s is active, so this offer installs the pinned release rather than the latest.', 'acrossai-abilities-manager' ),
+				$pin
+			);
+		}
+
+		// A pinned or explicitly named target can be older than what is running, which makes this
+		// a downgrade wearing an update's name. Same guard and same confirmation as
+		// core/rollback-wp-core, because it is the same operation and the same hazard.
+		$going_back = '' !== $target && version_compare( $target, $from_version, '<' );
+		$compat     = array( 'verdict' => 'ok', 'message' => '' );
+
+		if ( $going_back ) {
+			$compat = Core_Php_Compat::assess( $target, PHP_VERSION );
+
+			if ( 'unsupported' === $compat['verdict'] ) {
+				return array(
+					'success'        => false,
+					'updated'        => false,
+					'error_code'     => 'php_incompatible',
+					'from_version'   => $from_version,
+					'to_version'     => $from_version,
+					'target_version' => $target,
+					'php_version'    => PHP_VERSION,
+					'compatibility'  => $compat['verdict'],
+					'message'        => $compat['message'],
+				);
+			}
+
+			if ( empty( $input['confirm'] ) ) {
+				return array(
+					'success'        => false,
+					'updated'        => false,
+					'blocked_reason' => 'confirmation_required',
+					'from_version'   => $from_version,
+					'to_version'     => $from_version,
+					'target_version' => $target,
+					'php_version'    => PHP_VERSION,
+					'compatibility'  => $compat['verdict'],
+					'message'        => sprintf(
+						/* translators: 1: running version, 2: target version, 3: compatibility note */
+						__( 'This would move WordPress backwards, from %1$s to %2$s, replacing every core file. The database is not downgraded with it. %3$s Pass confirm: true to proceed.', 'acrossai-abilities-manager' ),
+						$from_version,
+						$target,
+						$compat['message']
+					),
+				);
+			}
+
+			if ( 'unknown' === $compat['verdict'] ) {
+				$warnings[] = $compat['message'];
+			}
+
+			$warnings[] = __( 'Core moved backwards but the database did not. WordPress does not reverse schema changes, so the stored db_version stays ahead of the installed release.', 'acrossai-abilities-manager' );
+		}
+
+		// Core_Upgrader has its own gate: `if ( 'latest' === $current->response ) return up_to_date`
+		// at class-core-upgrader.php:85. So deciding to honour this offer is not enough — the
+		// response has to be forced, exactly as WordPress does at update-core.php:897 for the
+		// same situation. Found by running the pinned workflow and watching it stop here with
+		// "WordPress is at the latest version" before the upgrader was ever reached.
+		//
+		// `reinstall` and not `upgrade`, for a reason worth recording: at
+		// class-core-upgrader.php:111 the partial package is chosen unless the response is
+		// `reinstall`. WP Downgrade rewrites `packages->full` and blanks `no_content` and
+		// `new_bundled`, but leaves `partial` populated — so `upgrade` could pick a diff built
+		// against a different release and corrupt the install. `reinstall` excludes partials and
+		// forces the full package.
+		if ( $explicit && 'upgrade' !== $response ) {
+			$update->response = 'reinstall';
 		}
 
 		$skin     = new \WP_Ajax_Upgrader_Skin();
@@ -219,11 +352,13 @@ class Update_Wp_Core extends Ability_Definition {
 
 		if ( is_wp_error( $result ) ) {
 			return array(
-				'success'      => true,
-				'updated'      => false,
-				'from_version' => $from_version,
-				'to_version'   => $to_version,
-				'message'      => $result->get_error_message(),
+				'success'        => false,
+				'updated'        => false,
+				'error_code'     => $result->get_error_code(),
+				'from_version'   => $from_version,
+				'to_version'     => $to_version,
+				'target_version' => $target,
+				'message'        => $result->get_error_message(),
 			);
 		}
 
@@ -233,25 +368,40 @@ class Update_Wp_Core extends Ability_Definition {
 				? $skin_errors->get_error_message()
 				: __( 'Core upgrade did not report success.', 'acrossai-abilities-manager' );
 			return array(
-				'success'      => true,
-				'updated'      => false,
-				'from_version' => $from_version,
-				'to_version'   => $to_version,
-				'message'      => $msg,
+				'success'        => false,
+				'updated'        => false,
+				'error_code'     => 'update_failed',
+				'from_version'   => $from_version,
+				'to_version'     => $to_version,
+				'target_version' => $target,
+				'message'        => $msg,
 			);
 		}
 
+		$moved_back = version_compare( $to_version, $from_version, '<' );
+
 		return array(
-			'success'      => true,
-			'updated'      => true,
-			'from_version' => $from_version,
-			'to_version'   => $to_version,
-			'message'      => sprintf(
-				/* translators: 1: from version, 2: to version */
-				__( 'WordPress upgraded from %1$s to %2$s.', 'acrossai-abilities-manager' ),
-				$from_version,
-				$to_version
-			),
+			'success'        => true,
+			'updated'        => true,
+			'from_version'   => $from_version,
+			'to_version'     => $to_version,
+			'target_version' => $target,
+			'php_version'    => PHP_VERSION,
+			'compatibility'  => (string) $compat['verdict'],
+			'warnings'       => $warnings,
+			'message'        => $moved_back
+				? sprintf(
+					/* translators: 1: from version, 2: to version */
+					__( 'WordPress moved from %1$s down to %2$s.', 'acrossai-abilities-manager' ),
+					$from_version,
+					$to_version
+				)
+				: sprintf(
+					/* translators: 1: from version, 2: to version */
+					__( 'WordPress upgraded from %1$s to %2$s.', 'acrossai-abilities-manager' ),
+					$from_version,
+					$to_version
+				),
 		);
 	}
 }
