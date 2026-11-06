@@ -184,12 +184,38 @@ class AcrossAI_Ability_Group {
 			? AcrossAI_Protected_Abilities::get_protected_slugs()
 			: array();
 
+		/**
+		 * Protected slugs that may nonetheless be a member of their OWN group.
+		 *
+		 * Protection keeps dispatchers out of groups because they kept turning
+		 * up in groups they did not belong to — `toolset/other` once listed the
+		 * server guide that describes how to call a Toolset, because the guide
+		 * carried no `tab_group` and the tagger filed it in the catch-all.
+		 *
+		 * That is an argument against the CATCH-ALL, not against a dispatcher
+		 * ever being grouped. One that declares a `tab_group` of its own, and
+		 * is the only thing in it, is not being mis-filed — it is asking for a
+		 * tab, which is the only way an operator can find it on a screen with
+		 * thirty of them.
+		 *
+		 * Opt-in rather than a rule, so the default stays exactly as it was:
+		 * nothing is grouped unless it names itself here, so the bug above
+		 * cannot come back by accident.
+		 *
+		 * @since 0.0.46
+		 *
+		 * @param string[] $slugs Protected slugs allowed to own a group.
+		 */
+		$groupable = (array) apply_filters( 'acrossai_abilities_manager_groupable_protected_slugs', array() );
+
 		foreach ( wp_get_abilities() as $ability ) {
 			if ( ! $ability instanceof WP_Ability ) {
 				continue;
 			}
 
-			if ( in_array( $ability->get_name(), $protected, true ) ) {
+			$name = $ability->get_name();
+
+			if ( in_array( $name, $protected, true ) && ! in_array( $name, $groupable, true ) ) {
 				continue;
 			}
 
