@@ -401,6 +401,10 @@
 		<testsuite name="dispatchers-listed-unit">
 			<file>tests/phpunit/abilities/Test_Dispatchers_Listed_But_Protected.php</file>
 		</testsuite>
+		<testsuite name="reinstall-unit">
+			<file>tests/phpunit/Utilities/Test_Asset_Installer.php</file>
+			<file>tests/phpunit/abilities/Test_Reinstall_Contract.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
