@@ -71,10 +71,27 @@ class AcrossAI_Ability_Registry_Query {
 				$ability_data['slug'] = $slug;
 			}
 
-			// Skip protected system abilities (hidden from REST endpoints and UI).
-			if ( AcrossAI_Protected_Abilities::is_protected( $slug ) ) {
-				continue;
-			}
+			// Protected abilities are LISTED here, and marked — not skipped.
+			//
+			// "Protected" covers the dispatchers: every `toolset/*`, the
+			// mcp-adapter routers, and any transport ability a sibling plugin
+			// declares (acrossai-pro's Fleet tool arrives this way, through
+			// `ToolAbilities::protect_from_toolsets()`). Protection exists to
+			// keep them out of toolset MEMBERSHIP — `toolset/other` was
+			// observed listing the server guide that describes how to call a
+			// Toolset — and to refuse overrides on something that only routes.
+			//
+			// Neither of those is a reason to hide them from the operator's
+			// own inventory. A dispatcher that cannot be seen cannot be
+			// understood, and "791 abilities" that silently omits the 21 tools
+			// an assistant actually calls is a worse answer than listing them.
+			//
+			// The other five consumers of the protected list are unchanged, so
+			// the behaviours protection was built for all survive: grouping
+			// (`AcrossAI_Ability_Group`), override writes, toolset counts and
+			// Quick Connect all still exclude these slugs. Only the inventory
+			// shows them, flagged so the UI can present them as read-only.
+			$merged_protected = AcrossAI_Protected_Abilities::is_protected( $slug );
 
 			// Restrict to an explicit slug set when one was supplied (Feature 102 toolset filter).
 			// Placed after the protected-slug skip so protected abilities stay excluded even when a
@@ -89,6 +106,10 @@ class AcrossAI_Ability_Registry_Query {
 
 			// Merge registry + override into the Effective Ability shape.
 			$merged = AcrossAI_Ability_Merger::merge( $ability_data, $override );
+
+			// Carried through to the REST shape so the screen can render the
+			// row as something it must not try to edit.
+			$merged['protected'] = $merged_protected;
 
 			// Detect source if not already set.
 			if ( empty( $merged['source'] ) ) {
