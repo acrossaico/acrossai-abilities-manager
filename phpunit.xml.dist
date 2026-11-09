@@ -414,6 +414,9 @@
 		<testsuite name="core-pin-applicability-unit">
 			<file>tests/phpunit/abilities/Test_Core_Pin_Applicability.php</file>
 		</testsuite>
+		<testsuite name="site-health-admin-includes-unit">
+			<file>tests/phpunit/abilities/Test_Site_Health_Admin_Includes.php</file>
+		</testsuite>
 	</testsuites>
 	<source>
 		<include>
