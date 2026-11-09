@@ -12,6 +12,7 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\Core;
 
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Core_Php_Compat;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -62,7 +63,7 @@ class Rollback_Wp_Core extends Ability_Definition {
 			'name' => 'core/rollback-wp-core',
 			'args' => array(
 				'label'               => __( 'Rollback WordPress Core', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Roll back WordPress core to an earlier offered version via the WP.org Core API. Fetches the available offers from api.wordpress.org, picks the requested version, and hands the offer to Core_Upgrader::upgrade() — the same class the WP dashboard uses. Uses only WordPress functions; no bundled updater code. Refuses when the target version is equal to or newer than the currently-running version (use wp-core-update for upgrades). Honours DISALLOW_FILE_MODS.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Roll back WordPress core to an earlier version offered by the WP.org Core API, by handing that offer to Core_Upgrader::upgrade() — the same class the dashboard uses. Only the latest patch of each release series is reachable, because that is all api.wordpress.org still offers: 7.0.8 and 6.8.12 yes, 6.8.1 no. Call core/check-wp-core-update for the running version, and note that this does not pin anything — WordPress will offer the newer version again at the next update check. Requires confirm: true, and refuses a target that predates support for the PHP this site runs, which would fatal on every request including wp-admin. Honours DISALLOW_FILE_MODS.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-core',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -73,24 +74,38 @@ class Rollback_Wp_Core extends Ability_Definition {
 					'properties'           => array(
 						'version' => array(
 							'type'        => 'string',
-							'description' => __( 'Target WordPress version to roll back to (e.g. "6.8.1"). MUST be strictly older than the currently-installed version — use wp-core-update to move forward.', 'acrossai-abilities-manager' ),
+							'description' => __( 'Target WordPress version, strictly older than the installed one — use core/update-wp-core to move forward. Must be a version api.wordpress.org still offers, which is the latest patch of each series: "6.8.12", not "6.8.1". core/check-wp-core-update reports what is current.', 'acrossai-abilities-manager' ),
 						),
 						'locale'  => array(
 							'type'        => 'string',
 							'description' => __( 'Optional locale for the WP.org Core API offer (e.g. "en_US"). Defaults to get_locale().', 'acrossai-abilities-manager' ),
 						),
+						'confirm' => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'Must be true. Downgrading core replaces every WordPress file and cannot be undone automatically; the database is not downgraded with it.', 'acrossai-abilities-manager' ),
+						),
 					),
+					// `confirm` is deliberately NOT required here: core validates input_schema
+					// before execute() runs, so a schema-required flag fails as a generic
+					// ability_invalid_input and the caller never sees which flag was missing or
+					// why. Enforced in execute() instead, as the versions/ writes do.
 					'required'             => array( 'version' ),
 					'additionalProperties' => false,
 				),
 				'output_schema'       => array(
 					'type'                 => 'object',
 					'properties'           => array(
-						'success'      => array( 'type' => 'boolean' ),
-						'updated'      => array( 'type' => 'boolean' ),
-						'from_version' => array( 'type' => 'string' ),
-						'to_version'   => array( 'type' => 'string' ),
-						'message'      => array( 'type' => 'string' ),
+						'success'        => array( 'type' => 'boolean' ),
+						'updated'        => array( 'type' => 'boolean' ),
+						'from_version'   => array( 'type' => 'string' ),
+						'to_version'     => array( 'type' => 'string' ),
+						'error_code'     => array( 'type' => 'string' ),
+						'blocked_reason' => array( 'type' => 'string' ),
+						'php_version'    => array( 'type' => 'string' ),
+						'compatibility'  => array( 'type' => 'string' ),
+						'warnings'       => array( 'type' => 'array' ),
+						'message'        => array( 'type' => 'string' ),
 					),
 					'required'             => array( 'success' ),
 					'additionalProperties' => false,
@@ -112,6 +127,27 @@ class Rollback_Wp_Core extends Ability_Definition {
 						'idempotent'  => false,
 					),
 				),
+			),
+		);
+	}
+
+	/**
+	 * The pinning ability covers what this one cannot: making the version stick.
+	 *
+	 * Feature 136. `only_if_registered` keeps the hint out of the payload on sites where the
+	 * WP Downgrade suite is not present, so a caller is never pointed at an ability that does not
+	 * exist. Held back from the suggestion PR for exactly that reason — the target had to exist
+	 * first.
+	 *
+	 * @since  0.0.45
+	 * @return array<int,array<string,string|bool>>
+	 */
+	protected function suggested_abilities(): array {
+		return array(
+			array(
+				'slug'               => 'versions/set-core-pin',
+				'reason'             => __( 'This moves core down once; WordPress offers the newer version again at the next update check. Pin the version first to make it hold.', 'acrossai-abilities-manager' ),
+				'only_if_registered' => true,
 			),
 		);
 	}
@@ -184,6 +220,7 @@ class Rollback_Wp_Core extends Ability_Definition {
 			return array(
 				'success'      => false,
 				'updated'      => false,
+				'error_code'   => 'not_older_than_installed',
 				'from_version' => $from_version,
 				'to_version'   => $from_version,
 				'message'      => sprintf(
@@ -200,11 +237,83 @@ class Rollback_Wp_Core extends Ability_Definition {
 			return array(
 				'success'      => false,
 				'updated'      => false,
+				'error_code'   => $offer->get_error_code(),
 				'from_version' => $from_version,
 				'to_version'   => $from_version,
 				'message'      => $offer->get_error_message(),
 			);
 		}
+
+		// The check WordPress's own update screen makes and Core_Upgrader does not. Calling the
+		// upgrader directly skipped it entirely; it guards the forward direction, which this
+		// ability can still hit when an old release demands a newer MySQL than the site has.
+		global $wpdb;
+		$mysql = isset( $wpdb ) && is_object( $wpdb ) && method_exists( $wpdb, 'db_version' ) ? (string) $wpdb->db_version() : '';
+
+		$minimums = Core_Php_Compat::offer_minimums(
+			isset( $offer->php_version ) ? (string) $offer->php_version : '',
+			isset( $offer->mysql_version ) ? (string) $offer->mysql_version : '',
+			PHP_VERSION,
+			$mysql
+		);
+
+		if ( array() !== $minimums ) {
+			return array(
+				'success'      => false,
+				'updated'      => false,
+				'error_code'   => 'offer_requirements_not_met',
+				'from_version' => $from_version,
+				'to_version'   => $from_version,
+				'php_version'  => PHP_VERSION,
+				'message'      => implode( ' ', $minimums ),
+			);
+		}
+
+		// And the check nothing makes, because WordPress.org publishes no maximum PHP per release.
+		// This is the one that matters for a downgrade: install a release older than the PHP it
+		// runs on and the site fatals on every request, wp-admin included.
+		$compat = Core_Php_Compat::assess( $version, PHP_VERSION );
+
+		if ( 'unsupported' === $compat['verdict'] ) {
+			return array(
+				'success'       => false,
+				'updated'       => false,
+				'error_code'    => 'php_incompatible',
+				'from_version'  => $from_version,
+				'to_version'    => $from_version,
+				'php_version'   => PHP_VERSION,
+				'compatibility' => $compat['verdict'],
+				'message'       => $compat['message'],
+			);
+		}
+
+		if ( empty( $input['confirm'] ) ) {
+			return array(
+				'success'        => false,
+				'updated'        => false,
+				'blocked_reason' => 'confirmation_required',
+				'from_version'   => $from_version,
+				'to_version'     => $from_version,
+				'php_version'    => PHP_VERSION,
+				'compatibility'  => $compat['verdict'],
+				'message'        => sprintf(
+					/* translators: 1: current version, 2: target version, 3: compatibility note */
+					__( 'Rolling WordPress back from %1$s to %2$s replaces every core file and cannot be undone automatically. The database is not downgraded with it, and WordPress will offer the newer version again at the next update check. %3$s Pass confirm: true to proceed.', 'acrossai-abilities-manager' ),
+					$from_version,
+					$version,
+					$compat['message']
+				),
+			);
+		}
+
+		$warnings = array();
+
+		if ( 'unknown' === $compat['verdict'] ) {
+			$warnings[] = $compat['message'];
+		}
+
+		$warnings[] = __( 'Core was downgraded but the database was not. WordPress does not reverse schema changes, so the stored db_version stays ahead of the installed release.', 'acrossai-abilities-manager' );
+		$warnings[] = __( 'This does not pin anything. The next update check will offer the newer version again, and an automatic update can undo this — versions/set-core-pin with WP Downgrade is what makes it hold.', 'acrossai-abilities-manager' );
 
 		if ( ! function_exists( 'get_core_updates' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/update.php';
@@ -222,11 +331,17 @@ class Rollback_Wp_Core extends Ability_Definition {
 		$to_version = (string) get_bloginfo( 'version' );
 
 		if ( is_wp_error( $result ) ) {
+			// False, not true. This branch means the rollback failed; reporting success true with
+			// updated false made the only required output field say the opposite of what happened,
+			// and the same ability already returned false for an unknown version — so the meaning
+			// of `success` changed with how far execution got.
 			return array(
-				'success'      => true,
+				'success'      => false,
 				'updated'      => false,
+				'error_code'   => $result->get_error_code(),
 				'from_version' => $from_version,
 				'to_version'   => $to_version,
+				'php_version'  => PHP_VERSION,
 				'message'      => $result->get_error_message(),
 			);
 		}
@@ -237,20 +352,25 @@ class Rollback_Wp_Core extends Ability_Definition {
 				? $skin_errors->get_error_message()
 				: __( 'Core rollback did not report success.', 'acrossai-abilities-manager' );
 			return array(
-				'success'      => true,
+				'success'      => false,
 				'updated'      => false,
+				'error_code'   => 'rollback_failed',
 				'from_version' => $from_version,
 				'to_version'   => $to_version,
+				'php_version'  => PHP_VERSION,
 				'message'      => $msg,
 			);
 		}
 
 		return array(
-			'success'      => true,
-			'updated'      => true,
-			'from_version' => $from_version,
-			'to_version'   => $to_version,
-			'message'      => sprintf(
+			'success'       => true,
+			'updated'       => true,
+			'from_version'  => $from_version,
+			'to_version'    => $to_version,
+			'php_version'   => PHP_VERSION,
+			'compatibility' => $compat['verdict'],
+			'warnings'      => $warnings,
+			'message'       => sprintf(
 				/* translators: 1: from version, 2: to version */
 				__( 'WordPress rolled back from %1$s to %2$s.', 'acrossai-abilities-manager' ),
 				$from_version,
@@ -285,13 +405,43 @@ class Rollback_Wp_Core extends Ability_Definition {
 		}
 
 		if ( ! isset( $cached[ $version ] ) ) {
+			// Name the version that would have worked. The API offers only the latest patch of
+			// each release series — measured live: 26 offers, 6.8.12 present and 6.8.1 absent —
+			// and "not found" alone reads as "that version never existed", which sends a caller
+			// looking for the wrong thing. This ability's own documentation used 6.8.1 as its
+			// example until a test tried it.
+			$series = '';
+
+			if ( 1 === preg_match( '/^(\d+)\.(\d+)/', $version, $m ) ) {
+				$series = $m[1] . '.' . $m[2];
+			}
+
+			$nearest = '';
+
+			if ( '' !== $series ) {
+				foreach ( array_keys( $cached ) as $offered ) {
+					if ( 0 === strpos( (string) $offered, $series . '.' ) || (string) $offered === $series ) {
+						$nearest = (string) $offered;
+						break;
+					}
+				}
+			}
+
 			return new \WP_Error(
 				'core_version_not_found',
-				sprintf(
-					/* translators: %s: requested WordPress version */
-					__( 'WordPress %s was not found in the WP.org Core API offer list. Only versions the WP.org API still exposes can be installed.', 'acrossai-abilities-manager' ),
-					$version
-				)
+				'' !== $nearest
+					? sprintf(
+						/* translators: 1: requested version, 2: the offered version in the same series */
+						__( 'WordPress %1$s is not offered by api.wordpress.org. Only the latest patch of each release series is still offered, which for that series is %2$s — use that instead.', 'acrossai-abilities-manager' ),
+						$version,
+						$nearest
+					)
+					: sprintf(
+						/* translators: 1: requested version, 2: comma-separated offered versions */
+						__( 'WordPress %1$s is not offered by api.wordpress.org, which carries only the latest patch of each release series. Currently offered: %2$s.', 'acrossai-abilities-manager' ),
+						$version,
+						implode( ', ', array_slice( array_keys( $cached ), 0, 12 ) )
+					)
 			);
 		}
 

@@ -13,6 +13,9 @@ namespace AcrossAI_Abilities_Manager\Includes\Abilities\Themes;
 use AcrossAI_Abilities_Manager\Includes\Modules\Library\Ability_Definition;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\File_Mods_Guard;
 use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Theme_Helpers;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\Asset_Installer;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\WpRollback\Asset_Lookup;
+use AcrossAI_Abilities_Manager\Includes\Abilities\Utilities\WpRollback\Asset_Versions;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -31,7 +34,7 @@ class Install_Theme extends Ability_Definition {
 			'name' => 'themes/install-theme',
 			'args' => array(
 				'label'               => __( 'Install Theme', 'acrossai-abilities-manager' ),
-				'description'         => __( 'Install a theme from the WordPress.org theme directory by name or slug.', 'acrossai-abilities-manager' ),
+				'description'         => __( 'Install a theme from the WordPress.org theme directory by name or slug. Installs the latest release unless "version" names a specific published one. For a theme that is already installed, use versions/rollback-theme to change its version.', 'acrossai-abilities-manager' ),
 				'category'            => 'acrossai-themes',
 				'execute_callback'    => array( $this, 'execute' ),
 				'permission_callback' => static function (): bool {
@@ -43,6 +46,10 @@ class Install_Theme extends Ability_Definition {
 						'theme'    => array(
 							'type'        => 'string',
 							'description' => __( 'The theme name or slug to install from WordPress.org.', 'acrossai-abilities-manager' ),
+						),
+						'version'  => array(
+							'type'        => 'string',
+							'description' => __( 'Install this exact published version instead of the latest. Matched exactly — 3.3 will not install 3.3.1. versions/list-asset-versions returns the valid values.', 'acrossai-abilities-manager' ),
 						),
 						'activate' => array(
 							'type'        => 'boolean',
@@ -56,11 +63,14 @@ class Install_Theme extends Ability_Definition {
 				'output_schema'       => array(
 					'type'       => 'object',
 					'properties' => array(
-						'success'    => array( 'type' => 'boolean' ),
-						'message'    => array( 'type' => 'string' ),
-						'theme_name' => array( 'type' => 'string' ),
-						'theme_slug' => array( 'type' => 'string' ),
-						'activated'  => array( 'type' => 'boolean' ),
+						'success'           => array( 'type' => 'boolean' ),
+						'message'           => array( 'type' => 'string' ),
+						'theme_name'        => array( 'type' => 'string' ),
+						'theme_slug'        => array( 'type' => 'string' ),
+						'activated'         => array( 'type' => 'boolean' ),
+						'version'           => array( 'type' => 'string' ),
+						'already_installed' => array( 'type' => 'boolean' ),
+						'active'            => array( 'type' => 'boolean' ),
 					),
 				),
 				'meta'                => array(
@@ -132,6 +142,7 @@ class Install_Theme extends Ability_Definition {
 
 		$theme_slug = sanitize_text_field( $input['theme'] );
 		$activate   = ! empty( $input['activate'] );
+		$version    = isset( $input['version'] ) && is_scalar( $input['version'] ) ? trim( (string) $input['version'] ) : '';
 
 		$theme_slug = sanitize_title( $theme_slug );
 
@@ -148,10 +159,22 @@ class Install_Theme extends Ability_Definition {
 			$theme_data = Theme_Helpers::get_theme_by_slug( $resolved['stylesheet'] );
 			$status     = $theme_data && $theme_data['active'] ? __( 'active', 'acrossai-abilities-manager' ) : __( 'inactive', 'acrossai-abilities-manager' );
 
+			// Installing does not overwrite, so a caller who named a version would otherwise read
+			// "already installed" as "you now have the version you asked for".
+			$already = '' === $version
+				/* translators: 1: theme name, 2: theme status */
+				? sprintf( __( 'Theme "%1$s" is already installed (%2$s).', 'acrossai-abilities-manager' ), $resolved['theme_name'], $status )
+				: sprintf(
+					/* translators: 1: theme name, 2: installed version, 3: requested version */
+					__( 'Theme "%1$s" is already installed at version %2$s and was not changed. To put it on version %3$s, use versions/rollback-theme, which replaces the files and keeps a restore point.', 'acrossai-abilities-manager' ),
+					$resolved['theme_name'],
+					( $theme_data && isset( $theme_data['version'] ) ) ? (string) $theme_data['version'] : __( 'unknown', 'acrossai-abilities-manager' ),
+					$version
+				);
+
 			return array(
 				'success'           => true,
-				/* translators: 1: theme name, 2: theme status */
-				'message'           => sprintf( __( 'Theme "%1$s" is already installed (%2$s).', 'acrossai-abilities-manager' ), $resolved['theme_name'], $status ),
+				'message'           => $already,
 				'already_installed' => true,
 				'theme_name'        => $resolved['theme_name'],
 				'theme_slug'        => $resolved['stylesheet'],
@@ -200,9 +223,40 @@ class Install_Theme extends Ability_Definition {
 			);
 		}
 
+		$package = (string) $api->download_link;
+
+		if ( '' !== $version ) {
+			// download_link always points at the latest release.
+			$versions = Asset_Lookup::published_versions( 'theme', $theme_slug );
+
+			if ( is_wp_error( $versions ) ) {
+				return array(
+					'success' => false,
+					'message' => $versions->get_error_message(),
+				);
+			}
+
+			$package = Asset_Installer::pick_version( (array) $versions, $version );
+
+			if ( '' === $package ) {
+				$releases = array_slice( Asset_Versions::releases( (array) $versions ), 0, 5 );
+
+				return array(
+					'success' => false,
+					'message' => sprintf(
+						/* translators: 1: version, 2: theme name, 3: newest published versions */
+						__( 'WordPress.org publishes no version %1$s of "%2$s". Recent releases: %3$s. Use versions/list-asset-versions for the full list.', 'acrossai-abilities-manager' ),
+						$version,
+						$api->name ?? $theme_slug,
+						implode( ', ', $releases )
+					),
+				);
+			}
+		}
+
 		$skin     = new \WP_Ajax_Upgrader_Skin();
 		$upgrader = new \Theme_Upgrader( $skin );
-		$result   = $upgrader->install( $api->download_link );
+		$result   = $upgrader->install( $package );
 
 		if ( is_wp_error( $result ) ) {
 			return array(
@@ -255,12 +309,22 @@ class Install_Theme extends Ability_Definition {
 			$message = sprintf( __( 'Theme "%s" has been installed successfully.', 'acrossai-abilities-manager' ), $api->name );
 		}
 
-		return array(
+		$result_payload = array(
 			'success'    => true,
 			'message'    => $message,
 			'theme_name' => $api->name,
 			'theme_slug' => $theme_slug,
 			'activated'  => $activated,
 		);
+
+		// Read the version back off disk rather than echoing the request.
+		wp_clean_themes_cache();
+		$installed_now = wp_get_theme( $theme_slug );
+
+		if ( $installed_now->exists() ) {
+			$result_payload['version'] = (string) $installed_now->get( 'Version' );
+		}
+
+		return $result_payload;
 	}
 }

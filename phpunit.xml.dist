@@ -393,6 +393,27 @@
 		<testsuite name="feature-136-unit">
 			<file>tests/phpunit/abilities/Test_Version_Targeting_Suggestions.php</file>
 		</testsuite>
+		<testsuite name="feature-136-rollback-unit">
+			<file>tests/phpunit/Utilities/Test_Asset_Versions.php</file>
+			<file>tests/phpunit/abilities/Test_Version_Abilities_Contract.php</file>
+			<file>tests/phpunit/abilities/Test_Core_Pin_Contract.php</file>
+		</testsuite>
+		<testsuite name="dispatchers-listed-unit">
+			<file>tests/phpunit/abilities/Test_Dispatchers_Listed_But_Protected.php</file>
+		</testsuite>
+		<testsuite name="reinstall-unit">
+			<file>tests/phpunit/Utilities/Test_Asset_Installer.php</file>
+			<file>tests/phpunit/abilities/Test_Reinstall_Contract.php</file>
+		</testsuite>
+		<testsuite name="feature-136-writes-unit">
+			<file>tests/phpunit/abilities/Test_Rollback_Writes_Contract.php</file>
+		</testsuite>
+		<testsuite name="core-rollback-safety-unit">
+			<file>tests/phpunit/Utilities/Test_Core_Php_Compat.php</file>
+		</testsuite>
+		<testsuite name="core-pin-applicability-unit">
+			<file>tests/phpunit/abilities/Test_Core_Pin_Applicability.php</file>
+		</testsuite>
 		<testsuite name="site-health-admin-includes-unit">
 			<file>tests/phpunit/abilities/Test_Site_Health_Admin_Includes.php</file>
 		</testsuite>

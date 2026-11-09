@@ -146,6 +146,12 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		// Feature 130 — Redirection category. Guarded on the plugin so it is
 		// absent on sites without Redirection.
 		$loader->add_action( 'wp_abilities_api_categories_init', Redirection\Category_Registrar::instance(), 'register' );
+		// Feature 136 — Versions category. Registered UNCONDITIONALLY: the abilities that claim it
+		// are registered whether or not WP Rollback is installed, because on a site without it they
+		// are the thing that says so. A category guarded on the host plugin while the abilities are
+		// not is exactly what silently dropped all 17 backup abilities (#258) — WordPress rejects an
+		// ability whose category does not exist, with no signal anyone sees.
+		$loader->add_action( 'wp_abilities_api_categories_init', Versions\Category_Registrar::instance(), 'register' );
 	}
 
 	/**
@@ -179,6 +185,9 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Plugins\Search_Wp_Plugin_Directory();
 		new Plugins\Uninstall_Plugin();
 		new Plugins\Verify_Plugin_Checksums();
+		// The repair for what Verify_Plugin_Checksums reports: until now nothing could put
+		// mismatched files back. Ungated and core-only — no host plugin involved.
+		new Plugins\Reinstall_Plugin();
 		new Settings\Get_Permalink_Structure();
 		new Settings\Set_Permalink_Structure();
 		new Settings\Flush_Permalink_Structure();
@@ -195,6 +204,7 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Themes\Delete_Theme();
 		new Themes\Install_Theme();
 		new Themes\Update_Theme();
+		new Themes\Reinstall_Theme();
 		new Themes\List_Themes();
 		new Users\Get_User();
 		new Users\List_Users();
@@ -569,6 +579,17 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 			$this->register_query_monitor_abilities();
 		}
 		Utilities\QueryMonitor\Url_Profiler::register();
+
+		// Feature 136 — version targeting. Self-guarded at execute time, so they are registered
+		// whether or not WP Rollback is installed; listing published versions needs only
+		// WordPress.org and works either way. Gated on the integration switch, like Query Monitor.
+		if ( $this->integration_on( 'wp-rollback' ) ) {
+			$this->register_version_abilities();
+		}
+
+		if ( $this->integration_on( 'wp-downgrade' ) ) {
+			$this->register_core_pin_abilities();
+		}
 
 		// Feature 055 — register the option-backed lifecycle event log.
 		Utilities\Lifecycle_Event_Log::register_hooks();
@@ -1032,6 +1053,42 @@ final class AcrossAI_Core_Abilities_Bootstrap {
 		new Debugging\Get_Object_Cache_Status();
 		new Debugging\Toggle_Query_Monitor();
 		new Debugging\Profile_Url();
+	}
+
+	/**
+	 * Feature 136 — instantiate the version-targeting ability classes.
+	 *
+	 * Reads only in this pass. The two abilities that actually move files are held back: WP
+	 * Rollback performs a rollback as a sequence of steps driven one HTTP call at a time
+	 * (MaintenanceMode, DownloadAsset, validate, BackupAsset, ReplaceAsset, Cleanup), so driving it
+	 * from an ability means orchestrating someone else's internal state machine and guaranteeing
+	 * maintenance mode is lifted if a later step fails. That wants its own design and review rather
+	 * than riding along with the read abilities, which are useful on their own.
+	 *
+	 * @return void
+	 */
+	private function register_version_abilities(): void {
+		new Versions\Get_Rollback_Status();
+		new Versions\List_Asset_Versions();
+		new Versions\Check_Asset_Rollback();
+		// The write pair, deferred from the first pass of Feature 136 and now built on core's own
+		// upgrader rather than WP Rollback's staged pipeline, so neither needs the host plugin.
+		new Versions\Rollback_Plugin();
+		new Versions\Rollback_Theme();
+	}
+
+	/**
+	 * Feature 136 — instantiate the core version-pinning ability classes.
+	 *
+	 * Separate from the rollback reads because they answer to a different host plugin: WP Downgrade
+	 * pins core, WP Rollback re-versions plugins and themes, and neither can do the other's job.
+	 *
+	 * @return void
+	 */
+	private function register_core_pin_abilities(): void {
+		new Versions\Get_Core_Pin();
+		new Versions\Set_Core_Pin();
+		new Versions\Clear_Core_Pin();
 	}
 
 	/**
