@@ -7,7 +7,7 @@
  * site that is false whenever the plugin is present under a different identifier.
  *
  * @package AcrossAI_Abilities_Manager
- * @since   0.0.46
+ * @since   0.0.44
  */
 
 declare( strict_types = 1 );

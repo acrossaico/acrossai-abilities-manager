@@ -5,7 +5,7 @@
  * @license    GPL-2.0-or-later
  * @package    AcrossAI_Abilities_Manager
  * @subpackage Includes\Abilities\Utilities
- * @since      0.0.46
+ * @since      0.0.44
  */
 
 declare( strict_types = 1 );
@@ -46,7 +46,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * On a standard single-directory install every candidate below coincides, so nothing changes.
  *
- * @since 0.0.46
+ * @since 0.0.44
  */
 final class Fs_Roots {
 
@@ -58,7 +58,7 @@ final class Fs_Roots {
 	/**
 	 * Resolved path lies outside every root WordPress knows about.
 	 *
-	 * @since 0.0.46
+	 * @since 0.0.44
 	 * @var   string
 	 */
 	public const ERR_OUTSIDE = 'path_outside_roots';
@@ -66,7 +66,7 @@ final class Fs_Roots {
 	/**
 	 * Path resolved into an `ABSPATH/wp-content` that is not this site's content directory.
 	 *
-	 * @since 0.0.46
+	 * @since 0.0.44
 	 * @var   string
 	 */
 	public const ERR_DECOY = 'path_in_unused_core_content';
@@ -74,7 +74,7 @@ final class Fs_Roots {
 	/**
 	 * Malformed input — empty, null byte, stream wrapper, or a traversal segment.
 	 *
-	 * @since 0.0.46
+	 * @since 0.0.44
 	 * @var   string
 	 */
 	public const ERR_INVALID = 'invalid_path';
@@ -82,7 +82,7 @@ final class Fs_Roots {
 	/**
 	 * Nothing exists at any candidate, and existence was required.
 	 *
-	 * @since 0.0.46
+	 * @since 0.0.44
 	 * @var   string
 	 */
 	public const ERR_MISSING = 'file_not_found';
@@ -96,7 +96,7 @@ final class Fs_Roots {
 	 * `core` is last for the same reason inverted — on a standard install ABSPATH contains all the
 	 * others, and labelling a theme file `core` would be true but useless.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.44
 	 * @return array<string,string> Label => absolute real path, no trailing slash.
 	 */
 	public static function roots(): array {
@@ -149,7 +149,7 @@ final class Fs_Roots {
 	/**
 	 * Resolve a caller-supplied path to an absolute one, or explain why not.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.44
 	 * @param  string             $path       Caller input — relative to a root, or already absolute.
 	 * @param  bool               $must_exist Whether to fail when nothing exists at the resolved path.
 	 * @param  array<string,string>|null $roots Root set to resolve against. Defaults to
@@ -216,7 +216,7 @@ final class Fs_Roots {
 	 * an escape, but only once the path exists; on a create, the old parent check ran against an
 	 * unresolved string. Refusing the segment is cheaper and needs no reasoning about order.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.44
 	 * @param  string $path Caller input.
 	 * @return string|\WP_Error Normalised path.
 	 */
@@ -256,7 +256,7 @@ final class Fs_Roots {
 	 * intended absolute path. Containment is still decided against a real directory, never against
 	 * a string, and the decoy rule still applies to the ancestor.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.44
 	 * @param  string                    $path  Caller input.
 	 * @param  array<string,string>|null $roots Root set; defaults to {@see self::roots()}.
 	 * @return array{path:string,root:string,exists:bool}|\WP_Error
@@ -326,7 +326,7 @@ final class Fs_Roots {
 	/**
 	 * Resolve a path whose target does not exist yet, by containing its parent.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.44
 	 * @param  string               $path  Normalised caller path.
 	 * @param  array<string,string> $roots Roots from {@see self::roots()}.
 	 * @return array{path:string,root:string,exists:bool}|\WP_Error
@@ -376,7 +376,7 @@ final class Fs_Roots {
 	 * ABSPATH join would land in the unused core copy instead, and that copy may well contain a
 	 * same-named file.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.44
 	 * @param  string               $path  Normalised caller path.
 	 * @param  array<string,string> $roots Roots from {@see self::roots()}.
 	 * @return string[]
@@ -424,7 +424,7 @@ final class Fs_Roots {
 	 * `WP_CONTENT_DIR` is inside `ABSPATH` the two are the same directory and there is no decoy to
 	 * confuse it with.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.44
 	 * @param  string               $real  Resolved real path.
 	 * @param  array<string,string> $roots Roots from {@see self::roots()}.
 	 * @return \WP_Error|null
@@ -472,7 +472,7 @@ final class Fs_Roots {
 	 * `WP_CONTENT_DIR`, which yields the same `wp-content/...` string from a completely different
 	 * absolute path.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.44
 	 * @param  string                    $real  Absolute real path.
 	 * @param  array<string,string>|null $roots Root set; defaults to {@see self::roots()}.
 	 * @return string Absolute prefix, no trailing slash.
@@ -501,7 +501,7 @@ final class Fs_Roots {
 	/**
 	 * Label of the first root containing a path, or null when none does.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.44
 	 * @param  string               $real  Resolved real path.
 	 * @param  array<string,string> $roots Roots from {@see self::roots()}.
 	 * @return string|null
@@ -524,7 +524,7 @@ final class Fs_Roots {
 	 * The `'/'` in the prefix test is load-bearing: without it `/srv/htdocs/wp-content-backup`
 	 * counts as inside `/srv/htdocs/wp-content`.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.44
 	 * @param  string $path Absolute path.
 	 * @param  string $root Absolute root.
 	 * @return bool
@@ -546,7 +546,7 @@ final class Fs_Roots {
 	 * Segment-wise rather than a substring search, so a legitimate name containing two dots
 	 * (`my..plugin`) is not refused.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.44
 	 * @param  string $path Normalised path.
 	 * @return bool
 	 */
@@ -563,7 +563,7 @@ final class Fs_Roots {
 	/**
 	 * `realpath()`, normalised, with failure expressed as an empty string.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.44
 	 * @param  string $path Path to resolve.
 	 * @return string Empty when the path does not exist.
 	 */
@@ -587,7 +587,7 @@ final class Fs_Roots {
 	 * Mirrors {@see Path_Allowlist_Guard::blocked_read_response()} so a caller sees one refusal
 	 * vocabulary across both layers.
 	 *
-	 * @since  0.0.46
+	 * @since  0.0.44
 	 * @param  \WP_Error $error Error from {@see self::resolve()}.
 	 * @return array<string,mixed>
 	 */

@@ -202,7 +202,7 @@ class AcrossAI_Ability_Group {
 		 * nothing is grouped unless it names itself here, so the bug above
 		 * cannot come back by accident.
 		 *
-		 * @since 0.0.46
+		 * @since 0.0.45
 		 *
 		 * @param string[] $slugs Protected slugs allowed to own a group.
 		 */

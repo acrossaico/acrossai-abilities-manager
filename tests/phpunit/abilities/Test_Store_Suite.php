@@ -3,7 +3,7 @@
  * Feature 121 — the store toolset spine and the adoption of WooCommerce's own abilities.
  *
  * @package AcrossAI_Abilities_Manager
- * @since   0.0.51
+ * @since   0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Tests\PHPUnit\Abilities;

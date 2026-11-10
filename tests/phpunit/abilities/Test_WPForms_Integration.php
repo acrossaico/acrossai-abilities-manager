@@ -3,7 +3,7 @@
  * Feature 117 — the WPForms integration: adoption, the write toggle, and the default-on seed.
  *
  * @package AcrossAI_Abilities_Manager
- * @since   0.0.47
+ * @since   0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Tests\PHPUnit\Abilities;
