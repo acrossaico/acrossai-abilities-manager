@@ -145,7 +145,7 @@ class Get_Site_Health_Status extends Ability_Definition {
 	 * ability works at all depends on which other plugins are active. It is
 	 * the same defect, one plugin deactivation away from showing up.
 	 *
-	 * @since 0.0.46
+	 * @since 0.0.45
 	 * @return void
 	 */
 	private static function load_admin_dependencies(): void {

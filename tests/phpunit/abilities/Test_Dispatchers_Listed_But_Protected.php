@@ -25,7 +25,7 @@
  * place.
  *
  * @package AcrossAI_Abilities_Manager
- * @since   0.0.46
+ * @since   0.0.45
  */
 
 namespace AcrossAI_Abilities_Manager\Tests\PHPUnit\Abilities;

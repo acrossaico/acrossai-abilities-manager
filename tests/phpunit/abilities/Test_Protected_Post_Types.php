@@ -3,7 +3,7 @@
  * Feature 120 — the generic writers must not treat a plugin-owned post type as ordinary.
  *
  * @package AcrossAI_Abilities_Manager
- * @since   0.0.50
+ * @since   0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Tests\PHPUnit\Abilities;

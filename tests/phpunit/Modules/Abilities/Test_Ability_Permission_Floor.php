@@ -3,7 +3,7 @@
  * Issue #200 — this plugin owns the lock on every ability.
  *
  * @package AcrossAI_Abilities_Manager
- * @since   0.0.46
+ * @since   0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Tests\PHPUnit\Modules\Abilities;

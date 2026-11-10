@@ -3,7 +3,7 @@
  * Feature 119 — invariants across the email delivery suite and the adopted anti-spam group.
  *
  * @package AcrossAI_Abilities_Manager
- * @since   0.0.49
+ * @since   0.0.34
  */
 
 namespace AcrossAI_Abilities_Manager\Tests\PHPUnit\Abilities;

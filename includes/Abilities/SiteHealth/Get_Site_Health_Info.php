@@ -118,7 +118,7 @@ class Get_Site_Health_Info extends Ability_Definition {
 	 * Matches the pattern the upgrader abilities already use — every one of
 	 * them loads its own dependencies rather than assuming an admin request.
 	 *
-	 * @since 0.0.46
+	 * @since 0.0.45
 	 * @return void
 	 */
 	private static function load_admin_dependencies(): void {
