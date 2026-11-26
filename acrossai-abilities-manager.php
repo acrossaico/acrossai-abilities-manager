@@ -23,7 +23,7 @@ namespace AcrossAI_Abilities_Manager;
  * Plugin Name:       AcrossAI Abilities Manager
  * Plugin URI:        https://acrossai.co/abilities-manager/
  * Description:       357 ready-made WordPress abilities for Claude, ChatGPT and any AI agent, plus full control over every ability on your site.
- * Version:           0.0.45
+ * Version:           0.0.46
  * Requires PHP:      8.1
  * Requires at least: 6.9
  * Tested up to:      7.1
@@ -41,17 +41,77 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Currently plugin version.
- * Start at version 0.0.1 and use SemVer - https://semver.org
- * Rename this for your plugin and update it as you release new versions.
+ * Whether this plugin should load its own code at all.
+ *
+ * AcrossAI MCP Manager now carries this plugin's entire tree inside itself. On
+ * a site running both, every ability, Toolset and admin screen would be
+ * declared twice — so MCP Manager returns false here and this plugin loads
+ * nothing, rather than the two racing for the same ability slugs, the same
+ * `acrossai-toolset` category and the same settings tabs.
+ *
+ * ## Why the answer is taken on `plugins_loaded` and not at file scope
+ *
+ * WordPress reads active plugins in the order they sit in the `active_plugins`
+ * option, and `activate_plugin()` sorts that array — so load order is
+ * alphabetical and `acrossai-abilities-manager` comes before
+ * `acrossai-mcp-manager`. MCP Manager therefore cannot have added a callback by
+ * the time this file is read: a filter applied here would always see its own
+ * default, and the switch could never be thrown.
+ *
+ * So nothing is decided at file scope. The bootstrap below is deferred to
+ * `plugins_loaded` at the earliest priority — the first moment every plugin
+ * file has been read and any of them can hold an opinion. Hooks this plugin
+ * attaches at later priorities of that same action still fire, because
+ * WordPress walks a hook's priority list as it runs rather than snapshotting
+ * it.
+ *
+ * ## What runs even when the answer is false
+ *
+ * Only the activation and deactivation hooks, which must be registered at file
+ * scope or WordPress cannot find them during an activation request. Both
+ * consult this gate themselves.
+ *
+ * `ACROSSAI_ABILITIES_MANAGER_PLUGIN_FILE` is deliberately no longer defined at
+ * file scope. MCP Manager derives its copy of this tree's paths from that
+ * constant and reads finding it already defined as "the standalone plugin is
+ * live, stand down" — so defining it unconditionally here would switch off the
+ * half that is meant to win.
+ *
+ * @since 0.0.46
+ * @return bool
  */
-define( 'ACROSSAI_ABILITIES_MANAGER_PLUGIN_FILE', __FILE__ );
+function acrossai_abilities_manager_should_load(): bool {
+	/**
+	 * Filters whether the AcrossAI Abilities Manager plugin loads its own code.
+	 *
+	 * Return false to make this plugin inert: no constants, no autoloader, no
+	 * abilities, no admin screens. Intended for a plugin that ships this tree
+	 * itself and would otherwise register everything twice.
+	 *
+	 * Must be added before `plugins_loaded` fires — any plugin file qualifies,
+	 * whatever the load order.
+	 *
+	 * @since 0.0.46
+	 * @param bool $load Whether to load this plugin's code. Default true.
+	 */
+	return (bool) apply_filters( 'acrossai_abilities_manager_load_plugin', true );
+}
 
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/activator.php
  */
 function acrossai_abilities_manager_activate() {
+	// Another plugin is carrying this tree, so its copy owns the tables and the
+	// option migrations. Running ours would load a second set of these classes
+	// into a request where theirs is already live. Harmless by itself — every
+	// step is guarded by its own claim option — but there is nothing here left
+	// to do, and loading the tree to discover that is the thing the gate exists
+	// to avoid.
+	if ( ! acrossai_abilities_manager_should_load() ) {
+		return;
+	}
+
 	require_once plugin_dir_path( __FILE__ ) . 'includes/AcrossAI_Activator.php';
 	Includes\AcrossAI_Activator::activate();
 }
@@ -61,6 +121,10 @@ function acrossai_abilities_manager_activate() {
  * This action is documented in includes/deactivator.php
  */
 function acrossai_abilities_manager_deactivate() {
+	if ( ! acrossai_abilities_manager_should_load() ) {
+		return;
+	}
+
 	require_once plugin_dir_path( __FILE__ ) . 'includes/AcrossAI_Deactivator.php';
 	Includes\AcrossAI_Deactivator::deactivate();
 }
@@ -94,12 +158,6 @@ add_action(
 	1
 );
 
-/**
- * The core plugin class that is used to define internationalization,
- * admin-specific hooks, and public-facing site hooks.
- */
-require plugin_dir_path( __FILE__ ) . 'includes/Main.php';
-
 use AcrossAI_Abilities_Manager\Includes\Main;
 
 /**
@@ -109,9 +167,23 @@ use AcrossAI_Abilities_Manager\Includes\Main;
  * then kicking off the plugin from this point in the file does
  * not affect the page life cycle.
  *
+ * Loads `includes/Main.php` itself rather than being handed an already-loaded
+ * class. That `require` used to sit at file scope, and moving it in here is
+ * the point of the gate: when another plugin carries this tree, not one line of
+ * it is read.
+ *
  * @since    0.0.1
  */
 function acrossai_abilities_manager_run() {
+
+	/**
+	 * Defines this tree's paths, so it must not be set when the gate is shut —
+	 * AcrossAI MCP Manager reads an already-defined value as "the standalone
+	 * plugin is live" and stands its own copy down.
+	 */
+	define( 'ACROSSAI_ABILITIES_MANAGER_PLUGIN_FILE', __FILE__ );
+
+	require plugin_dir_path( __FILE__ ) . 'includes/Main.php';
 
 	$plugin = Main::instance();
 
@@ -142,6 +214,9 @@ function acrossai_abilities_manager_run() {
 add_action(
 	'plugins_loaded',
 	static function () {
+		if ( ! acrossai_abilities_manager_should_load() ) {
+			return;
+		}
 		if ( did_action( 'acrossai_main_menu_bootstrapped' ) ) {
 			return;
 		}
@@ -153,4 +228,28 @@ add_action(
 	0
 );
 
-acrossai_abilities_manager_run();
+/**
+ * Boot the plugin, unless something else is carrying its code.
+ *
+ * `PHP_INT_MIN` rather than a merely small number: this has to be the first
+ * thing on `plugins_loaded`, because it is what loads the classes every later
+ * callback on that action depends on. Anything attached ahead of it would run
+ * against a tree that has not been read yet.
+ *
+ * The call used to sit bare at the end of this file. It cannot any more — at
+ * file scope no other plugin has been read, so nothing could answer the gate.
+ * See {@see acrossai_abilities_manager_should_load()}.
+ *
+ * @since 0.0.46
+ */
+add_action(
+	'plugins_loaded',
+	static function () {
+		if ( ! acrossai_abilities_manager_should_load() ) {
+			return;
+		}
+
+		acrossai_abilities_manager_run();
+	},
+	PHP_INT_MIN
+);
