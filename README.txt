@@ -5,7 +5,7 @@ Tags: abilities, ai assistant, chatgpt, claude, mcp
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.0.45
+Stable tag: 0.0.46
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -245,6 +245,12 @@ A few admin-only actions can cause an external service to receive data — all d
 No data is sent to any external server without an administrator action, and the plugin loads no external script into wp-admin.
 == Changelog ==
 
+= 0.0.46 - 2026-11-26 =
+
+* **Added: this plugin can now step aside for AcrossAI MCP Manager.** MCP Manager has absorbed everything this plugin does, so on a site running both, every ability, Toolset and settings screen was being declared twice. MCP Manager can now switch this plugin off from the inside: it loads no code at all — no abilities, no admin screens, not even its own settings — and MCP Manager serves the same abilities in its place. Nothing is lost and nothing needs reconnecting; your abilities, overrides and access rules are read from the same tables either way.
+* **This changes nothing on a site without MCP Manager.** The plugin loads and behaves exactly as before. The switch is off unless another plugin asks for it.
+* **For developers: a new `acrossai_abilities_manager_load_plugin` filter.** Return false from any plugin file and this plugin loads none of its own code. It is answered on `plugins_loaded` rather than when the file is read, because plugins load in alphabetical order — anything wanting to throw the switch has not been loaded yet at that point. Activation and deactivation respect it too, so activating this plugin while another carries its code does nothing rather than half-installing.
+
 = 0.0.45 - 2026-11-10 =
 
 * **Added: put a plugin or theme back on an earlier version — the recovery step this plugin had no answer for.** Until now an update could only move forward. Once a plugin was on 4.3.5 there was no route back to 4.3.1, which is the single most common thing you need after an update breaks a site. `versions/rollback-plugin` and `versions/rollback-theme` move an installed plugin or theme onto any version WordPress.org published for it, in either direction, and `versions/list-asset-versions` tells you which versions those are with the installed one marked. Before touching anything, `versions/check-asset-rollback` pre-flights the move and states the two consequences people forget: on a multisite, whether other sites use the asset, and for a theme, whether it is the active one. The previous copy is backed up before the new files land and restored automatically if the package fails to apply — that is WordPress's own mechanism, not ours. The active theme is refused unless you explicitly force it, because its appearance changes for visitors the moment the files are replaced. None of this needs a third-party plugin. If you do run WP Rollback, its local archive of versions it has installed before is used as well, which is the only way to reach an earlier version of a plugin the directory does not host.
@@ -299,6 +305,9 @@ No data is sent to any external server without an administrator action, and the 
 Every release before 0.0.42 is recorded in full at https://acrossai.co/changelog/acrossai-abilities-manager/ and in changelog.txt, shipped inside the plugin.
 
 == Upgrade Notice ==
+
+= 0.0.46 =
+Lets AcrossAI MCP Manager take over. If you run both plugins, MCP Manager now switches this one off from the inside so nothing is registered twice, and serves the same abilities itself — your abilities, overrides and access rules are untouched and nothing needs reconnecting. On a site without MCP Manager nothing changes at all.
 
 = 0.0.45 =
 Adds version targeting: put an installed plugin or theme back on any version WordPress.org published, install a specific version rather than only the latest, and repair a plugin or theme whose files have been altered without changing its version. Also fixes two ways core version changes could go wrong — a core rollback could install a WordPress too old for your PHP and fatal the whole site including wp-admin, with nothing asking first, and a core version pin could be set but never applied. Fixes plugins/verify-plugin-checksums, which had never worked, and two Site Health abilities that failed for every AI client. No breaking changes.
